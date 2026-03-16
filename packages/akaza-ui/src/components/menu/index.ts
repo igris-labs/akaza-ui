@@ -1,0 +1,6 @@
+export { default as Menu } from './Menu.vue'
+export { default as MenuItem } from './MenuItem.vue'
+export { default as MenuSeparator } from './MenuSeparator.vue'
+export type { MenuProps } from './Menu.vue'
+export type { MenuItemProps } from './MenuItem.vue'
+export type { MenuSeparatorProps } from './MenuSeparator.vue'

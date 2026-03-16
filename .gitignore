@@ -1,0 +1,12 @@
+node_modules
+.pnp.*
+*.log
+dist
+coverage
+.DS_Store
+*.local
+.vercel
+.nuxt
+.idea
+.vscode
+pnpm-lock.yaml

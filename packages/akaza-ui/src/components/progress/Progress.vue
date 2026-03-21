@@ -1,20 +1,20 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import type { ProgressProps } from '.'
+import type { ProgressProps } from ".";
+import { computed } from "vue";
 
-const { max = 100, ui } = defineProps<ProgressProps>()
+const { max = 100, ui } = defineProps<ProgressProps>();
 
-const model = defineModel<number | null>({ default: null })
+const model = defineModel<number | null>({ default: null });
 
 const state = computed(() => {
-  if (model.value === null) return 'indeterminate'
-  return model.value >= max ? 'complete' : 'loading'
-})
+  if (model.value === null) return "indeterminate";
+  return model.value >= max ? "complete" : "loading";
+});
 
 const percentage = computed(() => {
-  if (model.value === null) return null
-  return Math.min(100, Math.max(0, (model.value / max) * 100))
-})
+  if (model.value === null) return null;
+  return Math.min(100, Math.max(0, (model.value / max) * 100));
+});
 </script>
 
 <template>
@@ -32,7 +32,13 @@ const percentage = computed(() => {
       :data-akaza-state="state"
       class="akaza-progress-indicator"
     >
-      <slot name="indicator" :value="model" :percentage="percentage" :max="max" :state="state" />
+      <slot
+        name="indicator"
+        :value="model"
+        :percentage="percentage"
+        :max="max"
+        :state="state"
+      />
     </div>
   </div>
 </template>

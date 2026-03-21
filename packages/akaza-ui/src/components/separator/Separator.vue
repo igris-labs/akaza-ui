@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import type { SeparatorProps } from '.'
+import type { SeparatorProps } from ".";
 
 const {
-  as = 'div',
-  orientation = 'horizontal',
+  as = "div",
+  orientation = "horizontal",
   decorative = false,
-} = defineProps<SeparatorProps>()
+} = defineProps<SeparatorProps>();
 </script>
 
 <template>

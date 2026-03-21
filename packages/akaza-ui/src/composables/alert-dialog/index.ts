@@ -1,2 +1,2 @@
-export { useAlertDialog } from './useAlertDialog'
-export type { UseAlertDialogReturn } from './useAlertDialog'
+export { useAlertDialog } from "./useAlertDialog";
+export type { UseAlertDialogReturn } from "./useAlertDialog";

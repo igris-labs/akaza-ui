@@ -1,46 +1,47 @@
 <script setup lang="ts">
-import type { AccordionProps } from '.'
+import type { AccordionProps } from ".";
 
 const {
   items,
   valueKey,
-  type = 'single',
+  type = "single",
   collapsible = false,
-  as = 'div',
+  as = "div",
   ui,
-} = defineProps<AccordionProps>()
+} = defineProps<AccordionProps>();
 
-const model = defineModel<string | string[]>({ default: '' })
+const model = defineModel<string | string[]>({ default: "" });
 
 function getValue(item: any): string {
-  if (valueKey) return String(item[valueKey])
-  if (typeof item === 'string' || typeof item === 'number') return String(item)
-  return String(item?.value ?? item?.id ?? item)
+  if (valueKey) return String(item[valueKey]);
+  if (typeof item === "string" || typeof item === "number") return String(item);
+  return String(item?.value ?? item?.id ?? item);
 }
 
 function isOpen(item: any): boolean {
-  const v = getValue(item)
-  if (type === 'single') return (model.value as string) === v
-  return Array.isArray(model.value) && model.value.includes(v)
+  const v = getValue(item);
+  if (type === "single") return (model.value as string) === v;
+  return Array.isArray(model.value) && model.value.includes(v);
 }
 
 function toggle(item: any) {
-  const v = getValue(item)
-  if (type === 'single') {
-    const current = (model.value as string) ?? ''
-    model.value = current === v && collapsible ? '' : v
-  }
-  else {
-    const current = Array.isArray(model.value) ? model.value : []
-    model.value = current.includes(v)
-      ? current.filter(x => x !== v)
-      : [...current, v]
+  const v = getValue(item);
+  if (type === "single") {
+    const current = (model.value as string) ?? "";
+    model.value = current === v && collapsible ? "" : v;
+  } else {
+    const current = Array.isArray(model.value) ? model.value : [];
+    model.value = current.includes(v) ? current.filter((x) => x !== v) : [...current, v];
   }
 }
 </script>
 
 <template>
-  <component :is="as" data-akaza-orientation="vertical" class="akaza-accordion">
+  <component
+    :is="as"
+    data-akaza-orientation="vertical"
+    class="akaza-accordion"
+  >
     <div
       v-for="item in items"
       :key="getValue(item)"
@@ -62,7 +63,11 @@ function toggle(item: any) {
           :is-open="isOpen(item)"
           :toggle="() => toggle(item)"
         />
-        <slot name="icon" :is-open="isOpen(item)" :item="item">
+        <slot
+          name="icon"
+          :is-open="isOpen(item)"
+          :item="item"
+        >
           <svg
             class="akaza-accordion-icon"
             :data-akaza-state="isOpen(item) ? 'open' : 'closed'"
@@ -86,7 +91,10 @@ function toggle(item: any) {
         class="akaza-accordion-content"
         :data-akaza-state="isOpen(item) ? 'open' : 'closed'"
       >
-        <div :class="ui?.content" class="akaza-accordion-content-inner">
+        <div
+          :class="ui?.content"
+          class="akaza-accordion-content-inner"
+        >
           <slot
             name="content"
             :item="item"

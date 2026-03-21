@@ -1,17 +1,17 @@
 <script setup lang="ts">
-import { computed, inject } from 'vue'
-import { TABS_CONTEXT_KEY } from './context'
+import type { TabPanelProps } from ".";
+import { computed, inject } from "vue";
 
-import type { TabPanelProps } from '.'
-const { value, as = 'div' } = defineProps<TabPanelProps>()
+import { TABS_CONTEXT_KEY } from "./context";
+const { value, as = "div" } = defineProps<TabPanelProps>();
 
-const ctx = inject(TABS_CONTEXT_KEY)
-if (ctx === undefined) throw new Error('TabPanel must be used inside Tabs')
-const { activeTab } = ctx()
+const ctx = inject(TABS_CONTEXT_KEY);
+if (ctx === undefined) throw new Error("TabPanel must be used inside Tabs");
+const { activeTab } = ctx();
 
-const isActive = computed(() => activeTab.value === value)
-const panelId = `akaza-tab-panel-${value}`
-const tabId = `akaza-tab-${value}`
+const isActive = computed(() => activeTab.value === value);
+const panelId = `akaza-tab-panel-${value}`;
+const tabId = `akaza-tab-${value}`;
 </script>
 
 <template>

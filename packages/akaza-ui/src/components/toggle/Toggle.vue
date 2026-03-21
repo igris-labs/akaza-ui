@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import type { ToggleProps } from '.'
+import type { ToggleProps } from ".";
 
-const { as = 'button', disabled = false } = defineProps<ToggleProps>()
+const { as = "button", disabled = false } = defineProps<ToggleProps>();
 
-const model = defineModel<boolean>({ default: false })
+const model = defineModel<boolean>({ default: false });
 
 function toggle() {
-  if (!disabled) model.value = !model.value
+  if (!disabled) model.value = !model.value;
 }
 </script>
 
@@ -21,6 +21,9 @@ function toggle() {
     class="akaza-toggle"
     @click="toggle"
   >
-    <slot :pressed="model" :state="model ? 'on' : 'off'" />
+    <slot
+      :pressed="model"
+      :state="model ? 'on' : 'off'"
+    />
   </component>
 </template>

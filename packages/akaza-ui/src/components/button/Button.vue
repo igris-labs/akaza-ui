@@ -1,26 +1,44 @@
 <script setup lang="ts">
-import { computed } from 'vue'
-import type { ButtonProps } from '.'
+import type { ButtonProps } from ".";
+import { computed, ref } from "vue";
 
 const {
-  as = 'button',
+  as = "button",
   disabled = false,
   focusableWhenDisabled = false,
   loading = false,
-} = defineProps<ButtonProps>()
+  loadingAuto = false,
+  onClick: onClickProp,
+} = defineProps<ButtonProps>();
 
-const emit = defineEmits<{ click: [event: MouseEvent] }>()
+const emit = defineEmits<{ click: [event: MouseEvent] }>();
 
-// loading implies disabled — neither should fire clicks
-const isDisabled = computed(() => disabled || loading)
+const autoLoading = ref(false);
 
-function onClick(event: MouseEvent) {
+const isLoading = computed(() => loading || autoLoading.value);
+const isDisabled = computed(() => disabled || isLoading.value);
+
+async function handleClick(event: MouseEvent) {
   if (isDisabled.value) {
-    event.preventDefault()
-    event.stopImmediatePropagation()
-    return
+    event.preventDefault();
+    event.stopImmediatePropagation();
+    return;
   }
-  emit('click', event)
+
+  if (loadingAuto && onClickProp) {
+    const result = onClickProp(event);
+    if (result instanceof Promise) {
+      autoLoading.value = true;
+      try {
+        await result;
+      } finally {
+        autoLoading.value = false;
+      }
+    }
+    return;
+  }
+
+  emit("click", event);
 }
 </script>
 
@@ -30,16 +48,19 @@ function onClick(event: MouseEvent) {
     :type="as === 'button' ? 'button' : undefined"
     :disabled="as === 'button' && isDisabled && !focusableWhenDisabled ? true : undefined"
     :aria-disabled="isDisabled ? true : undefined"
-    :aria-busy="loading ? true : undefined"
+    :aria-busy="isLoading ? true : undefined"
     :tabindex="focusableWhenDisabled ? 0 : isDisabled ? -1 : undefined"
     :data-akaza-disabled="disabled || undefined"
-    :data-akaza-loading="loading || undefined"
-    :data-akaza-state="loading ? 'loading' : disabled ? 'disabled' : 'enabled'"
+    :data-akaza-loading="isLoading || undefined"
+    :data-akaza-state="isLoading ? 'loading' : disabled ? 'disabled' : 'enabled'"
     class="akaza-button"
-    @click="onClick"
+    @click="handleClick"
   >
-    <slot v-if="!loading" />
-    <slot v-else name="loading">
+    <slot v-if="!isLoading" />
+    <slot
+      v-else
+      name="loading"
+    >
       <svg
         class="akaza-button-spinner"
         xmlns="http://www.w3.org/2000/svg"

@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import type { SwitchProps } from '.'
+import type { SwitchProps } from ".";
 
-const { disabled = false, ui } = defineProps<SwitchProps>()
+const { disabled = false, ui } = defineProps<SwitchProps>();
 
-const model = defineModel<boolean>({ default: false })
+const model = defineModel<boolean>({ default: false });
 
 function toggle() {
-  if (!disabled) model.value = !model.value
+  if (!disabled) model.value = !model.value;
 }
 </script>
 
@@ -29,7 +29,10 @@ function toggle() {
       :data-akaza-state="model ? 'checked' : 'unchecked'"
       class="akaza-switch-thumb"
     >
-      <slot name="thumb" :checked="model" />
+      <slot
+        name="thumb"
+        :checked="model"
+      />
     </span>
   </button>
 </template>

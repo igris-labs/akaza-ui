@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import type { MenuSeparatorProps } from '.'
+import type { MenuSeparatorProps } from ".";
 
-const { as = 'div' } = defineProps<MenuSeparatorProps>()
+const { as = "div" } = defineProps<MenuSeparatorProps>();
 </script>
 
 <template>

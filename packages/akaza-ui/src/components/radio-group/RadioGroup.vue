@@ -1,25 +1,25 @@
 <script setup lang="ts">
-import type { RadioGroupProps } from '.'
+import type { RadioGroupProps } from ".";
 
 const {
   options,
   valueKey,
   disabled = false,
-  orientation = 'vertical',
-  as = 'div',
+  orientation = "vertical",
+  as = "div",
   ui,
-} = defineProps<RadioGroupProps>()
+} = defineProps<RadioGroupProps>();
 
-const model = defineModel<string>({ default: '' })
+const model = defineModel<string>({ default: "" });
 
 function getValue(option: any): string {
-  if (valueKey) return String(option[valueKey])
-  if (typeof option === 'string' || typeof option === 'number') return String(option)
-  return String(option?.value ?? option?.id ?? option)
+  if (valueKey) return String(option[valueKey]);
+  if (typeof option === "string" || typeof option === "number") return String(option);
+  return String(option?.value ?? option?.id ?? option);
 }
 
 function select(option: any) {
-  if (!disabled) model.value = getValue(option)
+  if (!disabled) model.value = getValue(option);
 }
 </script>
 

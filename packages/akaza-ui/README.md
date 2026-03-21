@@ -38,9 +38,9 @@ pnpm add akaza-ui
 
 ```vue
 <script setup lang="ts">
-import { Dialog, useDialog } from 'akaza-ui'
+import { Dialog, useDialog } from "akaza-ui";
 
-const dialog = useDialog()
+const dialog = useDialog();
 </script>
 
 <template>
@@ -48,7 +48,8 @@ const dialog = useDialog()
     v-model="dialog.isOpen.value"
     :ui="{
       overlay: 'fixed inset-0 bg-black/50',
-      content: 'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl shadow-xl w-full max-w-md',
+      content:
+        'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl shadow-xl w-full max-w-md',
       header: 'flex items-center justify-between p-6 border-b',
       body: 'p-6',
       footer: 'flex justify-end gap-2 p-6 border-t',

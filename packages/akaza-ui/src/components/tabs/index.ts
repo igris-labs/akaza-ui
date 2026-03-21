@@ -1,33 +1,33 @@
-import type { Component } from 'vue'
+import type { Component } from "vue";
 
-export { default as Tabs } from './Tabs.vue'
-export { default as TabList } from './TabList.vue'
-export { default as Tab } from './Tab.vue'
-export { default as TabPanels } from './TabPanels.vue'
-export { default as TabPanel } from './TabPanel.vue'
-export { TABS_CONTEXT_KEY } from './context'
-export type { TabsContextState, TabsContextFactory } from './context'
+export { TABS_CONTEXT_KEY } from "./context";
+export type { TabsContextFactory, TabsContextState } from "./context";
+export { default as Tab } from "./Tab.vue";
+export { default as TabList } from "./TabList.vue";
+export { default as TabPanel } from "./TabPanel.vue";
+export { default as TabPanels } from "./TabPanels.vue";
+export { default as Tabs } from "./Tabs.vue";
 
 export interface TabsProps {
-  as?: string
-  orientation?: 'horizontal' | 'vertical'
+  as?: string;
+  orientation?: "horizontal" | "vertical";
 }
 
 export interface TabListProps {
-  as?: string
+  as?: string;
 }
 
 export interface TabProps {
-  value: string
-  as?: string | Component
-  disabled?: boolean
+  value: string;
+  as?: string | Component;
+  disabled?: boolean;
 }
 
 export interface TabPanelsProps {
-  as?: string
+  as?: string;
 }
 
 export interface TabPanelProps {
-  value: string
-  as?: string
+  value: string;
+  as?: string;
 }

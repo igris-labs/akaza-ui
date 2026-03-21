@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import type { DialogProps } from ".";
-import { onKeyStroke } from "@vueuse/core";
 import { nextTick, useId, useTemplateRef, watch } from "vue";
 import { useDialog } from "../../composables/dialog";
-import { useFocusTrap } from "../../utils/focusTrap";
+import { useDismissableLayer } from "../../utils/dismissableLayer";
+import { useFocusScope } from "../../utils/focusScope";
 
 const {
   as = "div",
@@ -20,27 +20,23 @@ const { isOpen, open, close, toggle } = useDialog(model);
 const contentRef = useTemplateRef<HTMLElement>("contentRef");
 const titleId = useId();
 const descriptionId = useId();
-const { activate, deactivate } = useFocusTrap(contentRef);
+const { activate, deactivate } = useFocusScope(contentRef);
+const { register, unregister } = useDismissableLayer(() => close());
 
 watch(isOpen, async (val) => {
   if (val) {
     await nextTick();
     activate();
+    register();
   } else {
     deactivate();
+    unregister();
   }
 });
 
 function onBackdropClick() {
   if (closeOnBackdropClick) close();
 }
-
-onKeyStroke("Escape", (e) => {
-  if (isOpen.value) {
-    e.preventDefault();
-    close();
-  }
-});
 
 defineExpose({ open, close, toggle, titleId, descriptionId });
 </script>
@@ -71,9 +67,7 @@ defineExpose({ open, close, toggle, titleId, descriptionId });
       </div>
     </Transition>
 
-    <Transition
-      v-bind="typeof transition === 'string' ? { name: transition } : {}"
-    >
+    <Transition v-bind="typeof transition === 'string' ? { name: transition } : {}">
       <component
         :is="as"
         v-if="isOpen"
@@ -93,11 +87,22 @@ defineExpose({ open, close, toggle, titleId, descriptionId });
           :class="ui?.header"
           class="akaza-dialog-header"
         >
-          <slot name="header" :close="close" :title-id="titleId" />
+          <slot
+            name="header"
+            :close="close"
+            :title-id="titleId"
+          />
         </div>
 
-        <div :class="ui?.body" class="akaza-dialog-body">
-          <slot name="body" :close="close" :description-id="descriptionId" />
+        <div
+          :class="ui?.body"
+          class="akaza-dialog-body"
+        >
+          <slot
+            name="body"
+            :close="close"
+            :description-id="descriptionId"
+          />
         </div>
 
         <div
@@ -105,7 +110,10 @@ defineExpose({ open, close, toggle, titleId, descriptionId });
           :class="ui?.footer"
           class="akaza-dialog-footer"
         >
-          <slot name="footer" :close="close" />
+          <slot
+            name="footer"
+            :close="close"
+          />
         </div>
       </component>
     </Transition>

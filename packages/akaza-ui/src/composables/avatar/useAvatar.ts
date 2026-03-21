@@ -1,9 +1,9 @@
-import { readonly, ref } from 'vue'
+import { readonly, ref } from "vue";
 
-export type AvatarImageStatus = 'idle' | 'loading' | 'loaded' | 'error'
+export type AvatarImageStatus = "idle" | "loading" | "loaded" | "error";
 
 export interface UseAvatarReturn {
-  imageStatus: Readonly<ReturnType<typeof ref<AvatarImageStatus>>>
+  imageStatus: Readonly<ReturnType<typeof ref<AvatarImageStatus>>>;
 }
 
 /**
@@ -11,13 +11,17 @@ export interface UseAvatarReturn {
  * react to load status outside the Avatar component itself.
  */
 export function useAvatar(src: string): UseAvatarReturn {
-  const imageStatus = ref<AvatarImageStatus>('idle')
+  const imageStatus = ref<AvatarImageStatus>("idle");
 
-  const img = new Image()
-  imageStatus.value = 'loading'
-  img.addEventListener('load', () => { imageStatus.value = 'loaded' })
-  img.addEventListener('error', () => { imageStatus.value = 'error' })
-  img.src = src
+  const img = new Image();
+  imageStatus.value = "loading";
+  img.addEventListener("load", () => {
+    imageStatus.value = "loaded";
+  });
+  img.addEventListener("error", () => {
+    imageStatus.value = "error";
+  });
+  img.src = src;
 
-  return { imageStatus: readonly(imageStatus) }
+  return { imageStatus: readonly(imageStatus) };
 }

@@ -1,6 +1,6 @@
-export { default as Toggle } from './Toggle.vue'
+export { default as Toggle } from "./Toggle.vue";
 
 export interface ToggleProps {
-  as?: string
-  disabled?: boolean
+  as?: string;
+  disabled?: boolean;
 }

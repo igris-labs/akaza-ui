@@ -32,13 +32,7 @@ function computePosition() {
   const vh = window.innerHeight;
 
   // Try preferred direction first, then fall back
-  const order: TooltipDirection[] = [
-    direction,
-    "top",
-    "bottom",
-    "right",
-    "left",
-  ];
+  const order: TooltipDirection[] = [direction, "top", "bottom", "right", "left"];
   const candidates = [...new Set(order)];
 
   let chosen: TooltipDirection = candidates[candidates.length - 1]!;
@@ -113,7 +107,10 @@ onKeyStroke("Escape", (e) => {
       @focus="open"
       @blur="close"
     >
-      <slot name="trigger" :is-open="model" />
+      <slot
+        name="trigger"
+        :is-open="model"
+      />
     </span>
     <Teleport
       :to="typeof teleport === 'string' ? teleport : 'body'"
@@ -134,7 +131,10 @@ onKeyStroke("Escape", (e) => {
           :style="posStyle"
           class="akaza-tooltip-content"
         >
-          <slot name="content" :close="close" />
+          <slot
+            name="content"
+            :close="close"
+          />
         </div>
       </Transition>
     </Teleport>

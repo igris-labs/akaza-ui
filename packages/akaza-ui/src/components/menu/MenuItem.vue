@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import type { MenuItemProps } from '.'
+import type { MenuItemProps } from ".";
 
-const { as = 'div', disabled = false } = defineProps<MenuItemProps>()
-const emit = defineEmits<{ select: [] }>()
+const { as = "div", disabled = false } = defineProps<MenuItemProps>();
+const emit = defineEmits<{ select: [] }>();
 
 function onSelect() {
-  if (disabled) return
-  emit('select')
+  if (disabled) return;
+  emit("select");
 }
 </script>
 

@@ -1,15 +1,15 @@
-export { default as RadioGroup } from './RadioGroup.vue'
+export { default as RadioGroup } from "./RadioGroup.vue";
 
 export interface RadioGroupUi {
-  item?: string
+  item?: string;
 }
 
 export interface RadioGroupProps {
-  options: any[]
+  options: any[];
   /** Property to use as value when options are objects. Falls back to option.value → option.id → String(option). */
-  valueKey?: string
-  disabled?: boolean
-  orientation?: 'horizontal' | 'vertical'
-  as?: string
-  ui?: RadioGroupUi
+  valueKey?: string;
+  disabled?: boolean;
+  orientation?: "horizontal" | "vertical";
+  as?: string;
+  ui?: RadioGroupUi;
 }

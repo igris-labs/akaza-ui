@@ -1,11 +1,21 @@
 {
   "name": "akaza-ui",
+  "type": "module",
   "version": "0.0.1",
   "description": "Vue-native headless UI primitives — accessible, unstyled, composable.",
-  "type": "module",
-  "main": "./dist/akaza-ui.cjs",
-  "module": "./dist/akaza-ui.js",
-  "types": "./dist/types/index.d.ts",
+  "license": "MIT",
+  "keywords": [
+    "vue",
+    "vue3",
+    "headless",
+    "ui",
+    "accessible",
+    "a11y",
+    "composable",
+    "unstyled",
+    "primitives"
+  ],
+  "sideEffects": false,
   "exports": {
     ".": {
       "import": {
@@ -18,27 +28,29 @@
       }
     }
   },
+  "main": "./dist/akaza-ui.cjs",
+  "module": "./dist/akaza-ui.js",
+  "types": "./dist/types/index.d.ts",
   "files": [
-    "dist",
-    "README.md"
+    "README.md",
+    "dist"
   ],
-  "sideEffects": false,
   "scripts": {
     "build": "pnpm typecheck && vite build",
     "typecheck": "vue-tsc --noEmit -p tsconfig.build.json",
     "lint": "oxlint . && eslint .",
     "lint:fix": "oxlint . --fix && eslint . --fix",
-    "format": "oxfmt",
-    "format:fix": "oxfmt --check",
+    "format": "oxfmt --check",
+    "format:fix": "oxfmt",
     "test": "vitest run",
     "test:watch": "vitest",
     "coverage": "vitest run --coverage"
   },
-  "dependencies": {
-    "@vueuse/core": "^13.1.0"
-  },
   "peerDependencies": {
     "vue": ">=3.5.0"
+  },
+  "dependencies": {
+    "@vueuse/core": "^13.1.0"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^4.10.3",
@@ -61,17 +73,5 @@
   },
   "publishConfig": {
     "access": "public"
-  },
-  "keywords": [
-    "vue",
-    "vue3",
-    "headless",
-    "ui",
-    "accessible",
-    "a11y",
-    "composable",
-    "unstyled",
-    "primitives"
-  ],
-  "license": "MIT"
+  }
 }

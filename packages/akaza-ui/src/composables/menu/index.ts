@@ -1,2 +1,2 @@
-export { useMenu } from './useMenu'
-export type { UseMenuReturn } from './useMenu'
+export { useMenu } from "./useMenu";
+export type { UseMenuReturn } from "./useMenu";

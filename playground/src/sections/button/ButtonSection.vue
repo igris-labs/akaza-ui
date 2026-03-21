@@ -9,6 +9,14 @@ function simulateLoad() {
   isLoading.value = true;
   setTimeout(() => (isLoading.value = false), 2000);
 }
+
+async function asyncSave() {
+  await new Promise<void>((res) => setTimeout(res, 2000));
+}
+
+async function asyncFail() {
+  await new Promise<void>((_, rej) => setTimeout(rej, 2000));
+}
 </script>
 
 <template>
@@ -86,6 +94,22 @@ function simulateLoad() {
         class="px-4 py-1.5 rounded-md text-sm font-medium text-foreground transition-colors underline"
       >
         As anchor
+      </Button>
+
+      <Button
+        loading-auto
+        :on-click="asyncSave"
+        class="px-4 py-1.5 rounded-md text-sm font-medium bg-primary text-primary-foreground hover:opacity-90 transition-opacity flex items-center gap-2 [&_.akaza-button-spinner]:animate-spin"
+      >
+        Auto Load (2s)
+      </Button>
+
+      <Button
+        loading-auto
+        :on-click="asyncFail"
+        class="px-4 py-1.5 rounded-md text-sm font-medium border border-border bg-background text-foreground hover:bg-muted transition-colors flex items-center gap-2 [&_.akaza-button-spinner]:animate-spin"
+      >
+        Auto Load (fails)
       </Button>
     </div>
   </section>

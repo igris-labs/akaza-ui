@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { CollapsibleProps } from '.'
+import type { CollapsibleProps } from ".";
 
 const { as = "div", disabled = false, ui } = defineProps<CollapsibleProps>();
 
@@ -31,8 +31,15 @@ function close() {
       class="akaza-collapsible-trigger"
       @click="toggle"
     >
-      <slot name="trigger" :is-open="model" :toggle="toggle" />
-      <slot name="icon" :is-open="model">
+      <slot
+        name="trigger"
+        :is-open="model"
+        :toggle="toggle"
+      />
+      <slot
+        name="icon"
+        :is-open="model"
+      >
         <svg
           class="akaza-collapsible-icon"
           :data-akaza-state="model ? 'open' : 'closed'"
@@ -56,8 +63,14 @@ function close() {
       class="akaza-collapsible-content"
       :data-akaza-state="model ? 'open' : 'closed'"
     >
-      <div :class="ui?.content" class="akaza-collapsible-content-inner">
-        <slot name="content" :close="close" />
+      <div
+        :class="ui?.content"
+        class="akaza-collapsible-content-inner"
+      >
+        <slot
+          name="content"
+          :close="close"
+        />
       </div>
     </div>
   </component>

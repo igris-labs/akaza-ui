@@ -1,39 +1,52 @@
 <script setup lang="ts">
-import { nextTick, useId, useTemplateRef, watch } from 'vue'
-import { useFocusTrap } from '../../utils/focusTrap'
-import { useAlertDialog } from '../../composables/alert-dialog'
-import type { AlertDialogProps } from '.'
+import type { AlertDialogProps } from ".";
+import { nextTick, useId, useTemplateRef, watch } from "vue";
+import { useAlertDialog } from "../../composables/alert-dialog";
+import { useFocusScope } from "../../utils/focusScope";
 
 const {
-  as = 'div',
-  teleport = 'body',
-  transition = 'akaza-alert-dialog',
+  as = "div",
+  teleport = "body",
+  transition = "akaza-alert-dialog",
   duration = 150,
   ui,
-} = defineProps<AlertDialogProps>()
+} = defineProps<AlertDialogProps>();
 
-const model = defineModel<boolean>({ default: false })
-const { isOpen, open, close, toggle } = useAlertDialog(model)
+const model = defineModel<boolean>({ default: false });
+const { isOpen, open, close, toggle } = useAlertDialog(model);
 
-const contentRef = useTemplateRef<HTMLElement>('contentRef')
-const titleId = useId()
-const descriptionId = useId()
-const { activate, deactivate } = useFocusTrap(contentRef)
+const contentRef = useTemplateRef<HTMLElement>("contentRef");
+const titleId = useId();
+const descriptionId = useId();
+const { activate, deactivate } = useFocusScope(contentRef);
 
 watch(isOpen, async (val) => {
-  if (val) { await nextTick(); activate() }
-  else { deactivate() }
-})
+  if (val) {
+    await nextTick();
+    activate();
+  } else {
+    deactivate();
+  }
+});
 
 // Alert dialogs must NOT close on backdrop click or Escape — WAI-ARIA spec.
 
-defineExpose({ open, close, toggle, titleId, descriptionId })
+defineExpose({ open, close, toggle, titleId, descriptionId });
 </script>
 
 <template>
-  <slot name="trigger" :is-open="isOpen" :open="open" :close="close" :toggle="toggle" />
+  <slot
+    name="trigger"
+    :is-open="isOpen"
+    :open="open"
+    :close="close"
+    :toggle="toggle"
+  />
 
-  <Teleport :to="typeof teleport === 'string' ? teleport : 'body'" :disabled="teleport === false">
+  <Teleport
+    :to="typeof teleport === 'string' ? teleport : 'body'"
+    :disabled="teleport === false"
+  >
     <Transition name="akaza-alert-dialog-overlay">
       <div
         v-if="isOpen"
@@ -59,16 +72,38 @@ defineExpose({ open, close, toggle, titleId, descriptionId })
         data-akaza-state="open"
         tabindex="-1"
       >
-        <div v-if="$slots.header" :class="ui?.header" class="akaza-alert-dialog-header">
-          <slot name="header" :close="close" :title-id="titleId" />
+        <div
+          v-if="$slots.header"
+          :class="ui?.header"
+          class="akaza-alert-dialog-header"
+        >
+          <slot
+            name="header"
+            :close="close"
+            :title-id="titleId"
+          />
         </div>
 
-        <div :class="ui?.body" class="akaza-alert-dialog-body">
-          <slot name="body" :close="close" :description-id="descriptionId" />
+        <div
+          :class="ui?.body"
+          class="akaza-alert-dialog-body"
+        >
+          <slot
+            name="body"
+            :close="close"
+            :description-id="descriptionId"
+          />
         </div>
 
-        <div v-if="$slots.footer" :class="ui?.footer" class="akaza-alert-dialog-footer">
-          <slot name="footer" :close="close" />
+        <div
+          v-if="$slots.footer"
+          :class="ui?.footer"
+          class="akaza-alert-dialog-footer"
+        >
+          <slot
+            name="footer"
+            :close="close"
+          />
         </div>
       </component>
     </Transition>
@@ -88,7 +123,8 @@ defineExpose({ open, close, toggle, titleId, descriptionId })
 
 .akaza-alert-dialog-enter-active,
 .akaza-alert-dialog-leave-active {
-  transition: opacity var(--akaza-dialog-duration, 150ms) ease-out,
+  transition:
+    opacity var(--akaza-dialog-duration, 150ms) ease-out,
     transform var(--akaza-dialog-duration, 150ms) ease-out;
 }
 

@@ -1,56 +1,66 @@
 <script setup lang="ts">
-import { onKeyStroke } from '@vueuse/core'
-import { computed, nextTick, useId, useTemplateRef, watch } from 'vue'
-import { useDrawer } from '../../composables/drawer'
-import { useFocusTrap } from '../../utils/focusTrap'
-import type { DrawerProps } from '.'
+import type { DrawerProps } from ".";
+import { computed, nextTick, useId, useTemplateRef, watch } from "vue";
+import { useDrawer } from "../../composables/drawer";
+import { useDismissableLayer } from "../../utils/dismissableLayer";
+import { useFocusScope } from "../../utils/focusScope";
 
 const {
-  as = 'div',
-  side = 'right',
+  as = "div",
+  side = "right",
   inset = 0,
   closeOnBackdropClick = true,
-  teleport = 'body',
+  teleport = "body",
   ui,
-} = defineProps<DrawerProps>()
+} = defineProps<DrawerProps>();
 
-const model = defineModel<boolean>({ default: false })
-const { isOpen, open, close, toggle } = useDrawer(model)
+const model = defineModel<boolean>({ default: false });
+const { isOpen, open, close, toggle } = useDrawer(model);
 
-const contentRef = useTemplateRef<HTMLElement>('contentRef')
-const titleId = useId()
-const descriptionId = useId()
-const { activate, deactivate } = useFocusTrap(contentRef)
+const contentRef = useTemplateRef<HTMLElement>("contentRef");
+const titleId = useId();
+const descriptionId = useId();
+const { activate, deactivate } = useFocusScope(contentRef);
+const { register, unregister } = useDismissableLayer(() => close());
 
 watch(isOpen, async (val) => {
-  if (val) { await nextTick(); activate() }
-  else { deactivate() }
-})
+  if (val) {
+    await nextTick();
+    activate();
+    register();
+  } else {
+    deactivate();
+    unregister();
+  }
+});
 
 function onOverlayClick() {
-  if (closeOnBackdropClick) close()
+  if (closeOnBackdropClick) close();
 }
 
-onKeyStroke('Escape', (e) => {
-  if (isOpen.value) { e.preventDefault(); close() }
-})
-
-const insetValue = computed(() =>
-  typeof inset === 'number' ? `${inset}px` : inset,
-)
+const insetValue = computed(() => (typeof inset === "number" ? `${inset}px` : inset));
 
 const drawerStyle = computed(() => ({
-  '--akaza-drawer-inset': insetValue.value,
-  borderRadius: inset && Number(inset) !== 0 ? '12px' : undefined,
-}))
+  "--akaza-drawer-inset": insetValue.value,
+  borderRadius: inset && Number(inset) !== 0 ? "12px" : undefined,
+}));
 
-defineExpose({ open, close, toggle, titleId, descriptionId })
+defineExpose({ open, close, toggle, titleId, descriptionId });
 </script>
 
 <template>
-  <slot name="trigger" :is-open="isOpen" :open="open" :close="close" :toggle="toggle" />
+  <slot
+    name="trigger"
+    :is-open="isOpen"
+    :open="open"
+    :close="close"
+    :toggle="toggle"
+  />
 
-  <Teleport :to="typeof teleport === 'string' ? teleport : 'body'" :disabled="teleport === false">
+  <Teleport
+    :to="typeof teleport === 'string' ? teleport : 'body'"
+    :disabled="teleport === false"
+  >
     <Transition name="akaza-drawer-overlay">
       <div
         v-if="isOpen"
@@ -77,16 +87,38 @@ defineExpose({ open, close, toggle, titleId, descriptionId })
         data-akaza-state="open"
         tabindex="-1"
       >
-        <div v-if="$slots.header" :class="ui?.header" class="akaza-drawer-header">
-          <slot name="header" :close="close" :title-id="titleId" />
+        <div
+          v-if="$slots.header"
+          :class="ui?.header"
+          class="akaza-drawer-header"
+        >
+          <slot
+            name="header"
+            :close="close"
+            :title-id="titleId"
+          />
         </div>
 
-        <div :class="ui?.body" class="akaza-drawer-body">
-          <slot name="body" :close="close" :description-id="descriptionId" />
+        <div
+          :class="ui?.body"
+          class="akaza-drawer-body"
+        >
+          <slot
+            name="body"
+            :close="close"
+            :description-id="descriptionId"
+          />
         </div>
 
-        <div v-if="$slots.footer" :class="ui?.footer" class="akaza-drawer-footer">
-          <slot name="footer" :close="close" />
+        <div
+          v-if="$slots.footer"
+          :class="ui?.footer"
+          class="akaza-drawer-footer"
+        >
+          <slot
+            name="footer"
+            :close="close"
+          />
         </div>
       </component>
     </Transition>

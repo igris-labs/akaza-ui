@@ -1,11 +1,11 @@
-export { default as Progress } from './Progress.vue'
+export { default as Progress } from "./Progress.vue";
 
 export interface ProgressUi {
-  root?: string
-  indicator?: string
+  root?: string;
+  indicator?: string;
 }
 
 export interface ProgressProps {
-  max?: number
-  ui?: ProgressUi
+  max?: number;
+  ui?: ProgressUi;
 }

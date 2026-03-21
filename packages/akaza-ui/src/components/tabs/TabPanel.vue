@@ -2,7 +2,7 @@
 import { computed, inject } from 'vue'
 import { TABS_CONTEXT_KEY } from './context'
 
-export interface TabPanelProps { value: string; as?: string }
+import type { TabPanelProps } from '.'
 const { value, as = 'div' } = defineProps<TabPanelProps>()
 
 const ctx = inject(TABS_CONTEXT_KEY)

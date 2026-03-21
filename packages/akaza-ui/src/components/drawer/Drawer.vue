@@ -1,26 +1,9 @@
 <script setup lang="ts">
-import { computed, nextTick, useId, useTemplateRef, watch } from 'vue'
 import { onKeyStroke } from '@vueuse/core'
-import { useFocusTrap } from '../../utils/focusTrap'
+import { computed, nextTick, useId, useTemplateRef, watch } from 'vue'
 import { useDrawer } from '../../composables/drawer'
-import type { DrawerSide } from '../../composables/drawer'
-
-export interface DrawerUi {
-  overlay?: string
-  content?: string
-  header?: string
-  body?: string
-  footer?: string
-}
-
-export interface DrawerProps {
-  as?: string
-  side?: DrawerSide
-  inset?: number | string
-  closeOnBackdropClick?: boolean
-  teleport?: string | false
-  ui?: DrawerUi
-}
+import { useFocusTrap } from '../../utils/focusTrap'
+import type { DrawerProps } from '.'
 
 const {
   as = 'div',

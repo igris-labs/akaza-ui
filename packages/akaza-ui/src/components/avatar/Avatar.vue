@@ -1,12 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import type { AvatarImageStatus } from '../../composables/avatar/useAvatar'
-
-export interface AvatarProps {
-  as?: string
-  src?: string
-  alt?: string
-}
+import type { AvatarProps } from '.'
 
 const {
   as = 'span',

@@ -2,15 +2,7 @@
 import { useId, useTemplateRef } from 'vue'
 import { onClickOutside, onKeyStroke } from '@vueuse/core'
 import { useMenu } from '../../composables/menu'
-
-export interface MenuUi {
-  content?: string
-}
-
-export interface MenuProps {
-  as?: string
-  ui?: MenuUi
-}
+import type { MenuProps } from '.'
 
 const { as = 'div', ui } = defineProps<MenuProps>()
 

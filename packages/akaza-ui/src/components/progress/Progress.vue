@@ -1,15 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-
-export interface ProgressUi {
-  root?: string
-  indicator?: string
-}
-
-export interface ProgressProps {
-  max?: number
-  ui?: ProgressUi
-}
+import type { ProgressProps } from '.'
 
 const { max = 100, ui } = defineProps<ProgressProps>()
 

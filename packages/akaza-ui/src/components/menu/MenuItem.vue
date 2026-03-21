@@ -1,10 +1,5 @@
 <script setup lang="ts">
-import type { Component } from 'vue'
-
-export interface MenuItemProps {
-  as?: string | Component
-  disabled?: boolean
-}
+import type { MenuItemProps } from '.'
 
 const { as = 'div', disabled = false } = defineProps<MenuItemProps>()
 const emit = defineEmits<{ select: [] }>()

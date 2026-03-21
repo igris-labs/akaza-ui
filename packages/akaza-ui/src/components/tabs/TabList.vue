@@ -3,7 +3,7 @@ import { inject, onMounted, nextTick, ref, useTemplateRef, watch } from 'vue'
 import { onKeyStroke } from '@vueuse/core'
 import { TABS_CONTEXT_KEY } from './context'
 
-export interface TabListProps { as?: string }
+import type { TabListProps } from '.'
 const { as = 'div' } = defineProps<TabListProps>()
 
 const ctx = inject(TABS_CONTEXT_KEY)

@@ -1,13 +1,6 @@
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { Component } from 'vue'
-
-export interface ButtonProps {
-  as?: string | Component
-  disabled?: boolean
-  focusableWhenDisabled?: boolean
-  loading?: boolean
-}
+import type { ButtonProps } from '.'
 
 const {
   as = 'button',

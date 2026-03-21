@@ -1,15 +1,5 @@
 <script setup lang="ts">
-export type CheckboxValue = boolean | 'indeterminate'
-
-export interface CheckboxUi {
-  root?: string
-  indicator?: string
-}
-
-export interface CheckboxProps {
-  disabled?: boolean
-  ui?: CheckboxUi
-}
+import type { CheckboxProps, CheckboxValue } from '.'
 
 const { disabled = false, ui } = defineProps<CheckboxProps>()
 

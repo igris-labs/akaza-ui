@@ -1,7 +1,5 @@
 <script setup lang="ts">
-export interface MenuSeparatorProps {
-  as?: string
-}
+import type { MenuSeparatorProps } from '.'
 
 const { as = 'div' } = defineProps<MenuSeparatorProps>()
 </script>

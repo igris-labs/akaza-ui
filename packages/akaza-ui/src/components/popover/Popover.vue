@@ -2,19 +2,7 @@
 import { nextTick, ref, useId, useTemplateRef, watch } from 'vue'
 import { onClickOutside, onKeyStroke } from '@vueuse/core'
 import { usePopover } from '../../composables/popover'
-
-export type PopoverDirection = 'top' | 'bottom' | 'left' | 'right'
-
-export interface PopoverUi {
-  content?: string
-}
-
-export interface PopoverProps {
-  direction?: PopoverDirection
-  teleport?: string | false
-  transition?: string | false
-  ui?: PopoverUi
-}
+import type { PopoverDirection, PopoverProps } from '.'
 
 const { direction = 'bottom', teleport = 'body', transition = 'akaza-popover', ui } = defineProps<PopoverProps>()
 

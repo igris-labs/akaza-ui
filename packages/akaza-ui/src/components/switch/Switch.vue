@@ -1,13 +1,5 @@
 <script setup lang="ts">
-export interface SwitchUi {
-  root?: string
-  thumb?: string
-}
-
-export interface SwitchProps {
-  disabled?: boolean
-  ui?: SwitchUi
-}
+import type { SwitchProps } from '.'
 
 const { disabled = false, ui } = defineProps<SwitchProps>()
 

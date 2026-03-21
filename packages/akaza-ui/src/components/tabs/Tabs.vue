@@ -3,11 +3,7 @@ import { provide, ref } from 'vue'
 import { createSharedComposable } from '@vueuse/core'
 import { TABS_CONTEXT_KEY } from './context'
 import type { TabsContextState } from './context'
-
-export interface TabsProps {
-  as?: string
-  orientation?: 'horizontal' | 'vertical'
-}
+import type { TabsProps } from '.'
 
 const { as = 'div', orientation: orientationProp = 'horizontal' } = defineProps<TabsProps>()
 

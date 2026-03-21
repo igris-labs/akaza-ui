@@ -2,22 +2,7 @@
 import { nextTick, useId, useTemplateRef, watch } from 'vue'
 import { useFocusTrap } from '../../utils/focusTrap'
 import { useAlertDialog } from '../../composables/alert-dialog'
-
-export interface AlertDialogUi {
-  overlay?: string
-  content?: string
-  header?: string
-  body?: string
-  footer?: string
-}
-
-export interface AlertDialogProps {
-  as?: string
-  teleport?: string | false
-  transition?: string | false
-  duration?: number
-  ui?: AlertDialogUi
-}
+import type { AlertDialogProps } from '.'
 
 const {
   as = 'div',

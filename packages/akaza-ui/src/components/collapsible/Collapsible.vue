@@ -1,14 +1,5 @@
 <script setup lang="ts">
-export interface CollapsibleUi {
-  trigger?: string;
-  content?: string;
-}
-
-export interface CollapsibleProps {
-  as?: string;
-  disabled?: boolean;
-  ui?: CollapsibleUi;
-}
+import type { CollapsibleProps } from '.'
 
 const { as = "div", disabled = false, ui } = defineProps<CollapsibleProps>();
 

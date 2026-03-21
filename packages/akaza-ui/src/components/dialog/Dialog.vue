@@ -1,25 +1,9 @@
 <script setup lang="ts">
+import type { DialogProps } from ".";
 import { onKeyStroke } from "@vueuse/core";
 import { nextTick, useId, useTemplateRef, watch } from "vue";
 import { useDialog } from "../../composables/dialog";
 import { useFocusTrap } from "../../utils/focusTrap";
-
-export interface DialogUi {
-  overlay?: string;
-  content?: string;
-  header?: string;
-  body?: string;
-  footer?: string;
-}
-
-export interface DialogProps {
-  as?: string;
-  closeOnBackdropClick?: boolean;
-  teleport?: string | false;
-  transition?: string | false;
-  duration?: number;
-  ui?: DialogUi;
-}
 
 const {
   as = "div",
@@ -82,7 +66,9 @@ defineExpose({ open, close, toggle, titleId, descriptionId });
         class="akaza-dialog-overlay"
         data-akaza-state="open"
         @click="onBackdropClick"
-      />
+      >
+        <slot name="overlay" />
+      </div>
     </Transition>
 
     <Transition

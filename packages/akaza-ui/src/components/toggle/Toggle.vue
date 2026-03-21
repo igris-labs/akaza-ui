@@ -1,8 +1,5 @@
 <script setup lang="ts">
-export interface ToggleProps {
-  as?: string
-  disabled?: boolean
-}
+import type { ToggleProps } from '.'
 
 const { as = 'button', disabled = false } = defineProps<ToggleProps>()
 

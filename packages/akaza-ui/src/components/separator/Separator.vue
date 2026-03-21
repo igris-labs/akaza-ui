@@ -1,9 +1,5 @@
 <script setup lang="ts">
-export interface SeparatorProps {
-  as?: string
-  orientation?: 'horizontal' | 'vertical'
-  decorative?: boolean
-}
+import type { SeparatorProps } from '.'
 
 const {
   as = 'div',

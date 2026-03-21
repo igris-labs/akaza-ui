@@ -1,7 +1,5 @@
 <script setup lang="ts">
-export interface TabPanelsProps {
-  as?: string
-}
+import type { TabPanelsProps } from '.'
 
 const { as = 'div' } = defineProps<TabPanelsProps>()
 </script>

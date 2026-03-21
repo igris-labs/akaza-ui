@@ -1,13 +1,7 @@
 <script setup lang="ts">
 import { computed, inject } from 'vue'
-import type { Component } from 'vue'
 import { TABS_CONTEXT_KEY } from './context'
-
-export interface TabProps {
-  value: string
-  as?: string | Component
-  disabled?: boolean
-}
+import type { TabProps } from '.'
 
 const { value, as = 'button', disabled = false } = defineProps<TabProps>()
 

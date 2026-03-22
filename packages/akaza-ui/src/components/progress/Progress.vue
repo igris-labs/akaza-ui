@@ -1,8 +1,15 @@
 <script setup lang="ts">
-import type { ProgressProps } from ".";
+import type { ProgressOrientation, ProgressProps } from ".";
 import { computed } from "vue";
 
-const { max = 100, ui } = defineProps<ProgressProps>();
+const {
+  min = 0,
+  max = 100,
+  orientation = "horizontal",
+  ariaLabel,
+  getValueLabel,
+  ui,
+} = defineProps<ProgressProps>();
 
 const model = defineModel<number | null>({ default: null });
 
@@ -13,18 +20,29 @@ const state = computed(() => {
 
 const percentage = computed(() => {
   if (model.value === null) return null;
-  return Math.min(100, Math.max(0, (model.value / max) * 100));
+  const range = max - min;
+  if (range <= 0) return 0;
+  return Math.min(100, Math.max(0, ((model.value - min) / range) * 100));
+});
+
+const ariaValueText = computed(() => {
+  if (getValueLabel) return getValueLabel(model.value, max);
+  return undefined;
 });
 </script>
 
 <template>
   <div
     role="progressbar"
-    :aria-valuemin="0"
+    :aria-label="ariaLabel"
+    :aria-valuemin="min"
     :aria-valuemax="max"
     :aria-valuenow="model ?? undefined"
+    :aria-valuetext="ariaValueText"
     :class="ui?.root"
     :data-akaza-state="state"
+    :data-akaza-orientation="orientation"
+    :style="percentage !== null ? { '--akaza-progress-percentage': `${percentage}%` } : {}"
     class="akaza-progress"
   >
     <div
@@ -37,8 +55,16 @@ const percentage = computed(() => {
         :value="model"
         :percentage="percentage"
         :max="max"
+        :min="min"
         :state="state"
       />
     </div>
   </div>
 </template>
+
+<style>
+.akaza-progress-indicator {
+  height: 100%;
+  width: 100%;
+}
+</style>

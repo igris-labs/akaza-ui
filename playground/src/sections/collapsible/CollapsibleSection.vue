@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, useTemplateRef } from "vue";
 import { Collapsible } from "akaza-ui";
+import type { AkazaChangeEventDetails } from "akaza-ui";
 
 // ── 1. Basic ─────────────────────────────────────────────────────────────────
 const open1 = ref(false);
@@ -27,6 +28,13 @@ const collapsibleRef = useTemplateRef<{ open: () => void; close: () => void; tog
 
 // ── 8. ui prop ───────────────────────────────────────────────────────────────
 const open8 = ref(false);
+
+// ── 9. @open-change event details ────────────────────────────────────────────
+const open9 = ref(false);
+const clLog = ref<string[]>([]);
+function onCollapsibleChange(open: boolean, details: AkazaChangeEventDetails) {
+  clLog.value = [`${open ? 'open' : 'close'} — reason: ${details.reason}`, ...clLog.value].slice(0, 5);
+}
 </script>
 
 <template>
@@ -255,6 +263,34 @@ const open8 = ref(false);
             through the <code class="cl-code">ui</code> prop.
           </template>
         </Collapsible>
+      </div>
+    </div>
+
+    <!-- ── 9. @open-change event details ──────────────────────────────────── -->
+    <div class="cl-demo-block">
+      <div class="cl-demo-label">
+        <span class="cl-demo-label-title">@open-change event details</span>
+        <span class="cl-demo-label-desc">
+          Listen to <code>@open-change</code> to inspect <code>reason</code> (<code>"trigger"</code> or <code>"programmatic"</code>)
+          and optionally call <code>details.cancel()</code> to prevent the change.
+        </span>
+      </div>
+      <div class="cl-demo-canvas cl-demo-canvas--col">
+        <Collapsible
+          v-model="open9"
+          :ui="{ root: 'cl-root', trigger: 'cl-trigger', content: 'cl-content-body' }"
+          @open-change="onCollapsibleChange"
+        >
+          <template #trigger>
+            <span class="cl-trigger-label">Click to toggle</span>
+          </template>
+          <template #content>
+            Every open/close fires <code class="cl-code">@open-change</code> with a details object.
+          </template>
+        </Collapsible>
+        <div v-if="clLog.length" class="cl-event-log">
+          <code v-for="(entry, i) in clLog" :key="i" class="cl-event-entry">{{ entry }}</code>
+        </div>
       </div>
     </div>
   </section>
@@ -490,5 +526,20 @@ const open8 = ref(false);
 .cl-demo-canvas--col {
   flex-direction: column;
   gap: 12px;
+}
+
+/* Event log */
+.cl-event-log {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.cl-event-entry {
+  font-family: monospace;
+  font-size: 11px;
+  color: var(--muted-foreground);
+  background: var(--muted);
+  padding: 2px 8px;
+  border-radius: 4px;
 }
 </style>

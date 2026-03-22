@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { AccordionItem, AccordionProps } from ".";
+import type { AkazaChangeEventDetails } from "../../types";
 import { onKeyStroke } from "@vueuse/core";
 import { useTemplateRef } from "vue";
 
@@ -17,6 +18,10 @@ const {
   as = "div",
   ui,
 } = defineProps<AccordionProps>();
+
+const emit = defineEmits<{
+  'value-change': [value: string | string[], details: AkazaChangeEventDetails];
+}>();
 
 const model = defineModel<string | string[]>({ default: "" });
 
@@ -49,16 +54,20 @@ function isOpen(item: AccordionItem): boolean {
   return Array.isArray(model.value) && model.value.includes(v);
 }
 
-function toggle(item: AccordionItem) {
+function toggle(item: AccordionItem, event?: Event) {
   if (isItemDisabled(item)) return;
   const v = getValue(item);
+  let nextValue: string | string[];
   if (type === "single") {
     const current = (model.value as string) ?? "";
-    model.value = current === v && collapsible ? "" : v;
+    nextValue = current === v && collapsible ? "" : v;
   } else {
     const current = Array.isArray(model.value) ? model.value : [];
-    model.value = current.includes(v) ? current.filter((x) => x !== v) : [...current, v];
+    nextValue = current.includes(v) ? current.filter((x) => x !== v) : [...current, v];
   }
+  let canceled = false;
+  emit('value-change', nextValue, { reason: 'trigger', ...(event && { event }), cancel: () => { canceled = true; } });
+  if (!canceled) model.value = nextValue;
 }
 
 function triggerId(item: AccordionItem): string {
@@ -118,7 +127,7 @@ onKeyStroke(["ArrowDown", "ArrowUp", "ArrowRight", "ArrowLeft", "Home", "End"], 
         :data-akaza-state="isOpen(item) ? 'open' : 'closed'"
         :data-akaza-disabled="isItemDisabled(item) ? '' : undefined"
         class="akaza-accordion-trigger"
-        @click="toggle(item)"
+        @click="toggle(item, $event)"
       >
         <slot
           name="trigger"

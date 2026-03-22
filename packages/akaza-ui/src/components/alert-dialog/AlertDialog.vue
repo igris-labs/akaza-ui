@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { AlertDialogProps } from ".";
+import type { AkazaChangeEventDetails } from "../../types";
 import { nextTick, useId, useTemplateRef, watch } from "vue";
 import { useAlertDialog } from "../../composables/alert-dialog";
 import { useFocusScope } from "../../utils/focusScope";
@@ -14,8 +15,12 @@ const {
   ui,
 } = defineProps<AlertDialogProps>();
 
+const emit = defineEmits<{
+  'open-change': [open: boolean, details: AkazaChangeEventDetails];
+}>();
+
 const model = defineModel<boolean>({ default: false });
-const { isOpen, open, close, toggle } = useAlertDialog(model);
+const { isOpen, open: _open, close: _close, toggle: _toggle } = useAlertDialog(model);
 
 const contentRef = useTemplateRef<HTMLElement>("contentRef");
 const titleId = useId();
@@ -30,6 +35,17 @@ watch(isOpen, async (val) => {
     deactivate();
   }
 });
+
+function handleChange(open: boolean, reason: string, event?: Event) {
+  let canceled = false;
+  emit('open-change', open, { reason, ...(event && { event }), cancel: () => { canceled = true; } });
+  if (canceled) return;
+  open ? _open() : _close();
+}
+
+function open(reason = 'programmatic', event?: Event) { handleChange(true, reason, event); }
+function close(reason = 'programmatic', event?: Event) { handleChange(false, reason, event); }
+function toggle(reason = 'programmatic', event?: Event) { handleChange(!isOpen.value, reason, event); }
 
 // Alert dialogs must NOT close on backdrop click or Escape — WAI-ARIA spec.
 

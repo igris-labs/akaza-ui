@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { CheckboxProps, CheckboxValue } from ".";
+import type { AkazaChangeEventDetails } from "../../types";
 import { computed, useId, useSlots } from "vue";
 
 const {
@@ -13,6 +14,10 @@ const {
   description,
   ui,
 } = defineProps<CheckboxProps>();
+
+const emit = defineEmits<{
+  'value-change': [value: CheckboxValue, details: AkazaChangeEventDetails];
+}>();
 
 const model = defineModel<CheckboxValue>({ default: false });
 
@@ -28,9 +33,13 @@ const hasDescription = computed(() => !!(description || slots.description));
 const isChecked = computed(() => model.value === trueValue);
 const isIndeterminate = computed(() => model.value === "indeterminate");
 
-function toggle() {
+function toggle(reason = 'click', event?: Event) {
   if (disabled) return;
-  model.value = (isChecked.value ? falseValue : trueValue) as CheckboxValue;
+  const nextValue = (isChecked.value ? falseValue : trueValue) as CheckboxValue;
+  let canceled = false;
+  emit('value-change', nextValue, { reason, ...(event && { event }), cancel: () => { canceled = true; } });
+  if (canceled) return;
+  model.value = nextValue;
 }
 </script>
 
@@ -51,8 +60,8 @@ function toggle() {
       :data-akaza-disabled="disabled || undefined"
       :disabled="disabled"
       class="akaza-checkbox"
-      @click="toggle"
-      @keydown.space.prevent="toggle"
+      @click="toggle('click', $event)"
+      @keydown.space.prevent="toggle('keyboard', $event)"
     >
       <span
         v-if="!isChecked && !isIndeterminate ? false : true"

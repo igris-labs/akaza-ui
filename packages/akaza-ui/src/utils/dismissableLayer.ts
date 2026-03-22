@@ -10,11 +10,11 @@ import { onUnmounted } from "vue";
  * (highest index) acts — all others return early.
  */
 const useLayerStack = createGlobalState(() => {
-  const layers: Array<() => void> = [];
+  const layers: Array<(event?: KeyboardEvent) => void> = [];
   return layers;
 });
 
-export function useDismissableLayer(onDismiss: () => void) {
+export function useDismissableLayer(onDismiss: (event?: KeyboardEvent) => void) {
   const layers = useLayerStack();
 
   function register() {
@@ -31,7 +31,7 @@ export function useDismissableLayer(onDismiss: () => void) {
     const isTop = layers[layers.length - 1] === onDismiss;
     if (!isTop) return;
     event.preventDefault();
-    onDismiss();
+    onDismiss(event);
   });
 
   onUnmounted(unregister);

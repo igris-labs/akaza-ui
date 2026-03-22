@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { Drawer } from "akaza-ui";
+import type { AkazaChangeEventDetails } from "akaza-ui";
 
 const openRight = ref(false);
 const openLeft = ref(false);
@@ -10,6 +11,13 @@ const openInset = ref(false);
 const openTitleProp = ref(false);
 const openTitleSlot = ref(false);
 const openNoSwipe = ref(false);
+
+// ── 9. Event details ────────────────────────────────────────────────────────
+const openEvents = ref(false);
+const drawerLog = ref<string[]>([]);
+function onDrawerChange(open: boolean, details: AkazaChangeEventDetails) {
+  drawerLog.value = [`${open ? 'open' : 'close'} — reason: ${details.reason}`, ...drawerLog.value].slice(0, 5);
+}
 </script>
 
 <template>
@@ -203,6 +211,30 @@ const openNoSwipe = ref(false);
         </Drawer>
       </div>
     </div>
+
+    <!-- 9. @open-change event details -->
+    <div class="demo-block">
+      <span class="demo-label">@open-change event details</span>
+      <div class="demo-canvas" style="flex-direction: column; align-items: flex-start; gap: 12px;">
+        <Drawer
+          v-model="openEvents"
+          title="Event details demo"
+          description="Close via backdrop, Escape, swipe, or the button — each reports a different reason."
+          :ui="{ overlay: 'drw-overlay', content: 'drw-panel drw-panel-right' }"
+          @open-change="onDrawerChange"
+        >
+          <template #trigger="{ toggle }">
+            <button class="drw-btn-primary" @click="toggle">Open</button>
+          </template>
+          <template #footer="{ close }">
+            <button class="drw-btn-ghost drw-btn-full" @click="close">Close</button>
+          </template>
+        </Drawer>
+        <div v-if="drawerLog.length" class="drw-event-log">
+          <code v-for="(entry, i) in drawerLog" :key="i" class="drw-event-entry">{{ entry }}</code>
+        </div>
+      </div>
+    </div>
   </section>
 </template>
 
@@ -338,6 +370,21 @@ const openNoSwipe = ref(false);
 }
 .drw-btn-full {
   width: 100%;
+}
+
+/* Event log */
+.drw-event-log {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.drw-event-entry {
+  font-family: monospace;
+  font-size: 11px;
+  color: var(--muted-foreground);
+  background: var(--muted);
+  padding: 2px 8px;
+  border-radius: 4px;
 }
 
 /* Demo block layout */

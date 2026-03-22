@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { Dialog } from "akaza-ui";
+import type { AkazaChangeEventDetails } from "akaza-ui";
 
 const open1 = ref(false);
 const open2 = ref(false);
@@ -11,6 +12,22 @@ const open5Inner = ref(false);
 const open6 = ref(false);
 const open7 = ref(false);
 const open8 = ref(false);
+
+// ── 9. Event details ────────────────────────────────────────────────────────
+const open9 = ref(false);
+const eventLog = ref<string[]>([]);
+function onDialogChange(open: boolean, details: AkazaChangeEventDetails) {
+  eventLog.value = [`${open ? 'open' : 'close'} — reason: ${details.reason}`, ...eventLog.value].slice(0, 5);
+}
+
+// ── 10. Cancel close ────────────────────────────────────────────────────────
+const open10 = ref(false);
+const hasUnsaved = ref(true);
+function onGuardedChange(_open: boolean, details: AkazaChangeEventDetails) {
+  if (!_open && hasUnsaved.value && details.reason !== 'confirm') {
+    details.cancel();
+  }
+}
 </script>
 
 <template>
@@ -219,6 +236,60 @@ const open8 = ref(false);
         </Dialog>
       </div>
     </div>
+
+    <!-- 9. @open-change event details -->
+    <div class="demo-block">
+      <span class="demo-label">@open-change event details</span>
+      <div class="demo-canvas" style="flex-direction: column; align-items: flex-start; gap: 12px;">
+        <Dialog
+          v-model="open9"
+          title="Event details demo"
+          description="Close via backdrop, Escape, or the button — each reports a different reason."
+          :ui="{ overlay: 'dlg-overlay', content: 'dlg-content' }"
+          @open-change="onDialogChange"
+        >
+          <template #trigger="{ toggle }">
+            <button class="dlg-btn-primary" @click="toggle">Open</button>
+          </template>
+          <template #footer="{ close }">
+            <div class="dlg-footer-row">
+              <button class="dlg-btn-primary" @click="close">Close</button>
+            </div>
+          </template>
+        </Dialog>
+        <div v-if="eventLog.length" class="dlg-event-log">
+          <code v-for="(entry, i) in eventLog" :key="i" class="dlg-event-entry">{{ entry }}</code>
+        </div>
+      </div>
+    </div>
+
+    <!-- 10. cancel() — unsaved changes guard -->
+    <div class="demo-block">
+      <span class="demo-label">cancel() — unsaved changes guard</span>
+      <div class="demo-canvas" style="flex-direction: column; align-items: flex-start; gap: 12px;">
+        <label class="dlg-guard-label">
+          <input type="checkbox" v-model="hasUnsaved" />
+          Simulate unsaved changes
+        </label>
+        <Dialog
+          v-model="open10"
+          title="Unsaved changes"
+          description="Try closing via backdrop or Escape while 'unsaved changes' is checked — the close is prevented."
+          :ui="{ overlay: 'dlg-overlay', content: 'dlg-content' }"
+          @open-change="onGuardedChange"
+        >
+          <template #trigger="{ toggle }">
+            <button class="dlg-btn-primary" @click="toggle">Open guarded dialog</button>
+          </template>
+          <template #footer="{ close }">
+            <div class="dlg-footer-row">
+              <button class="dlg-btn-ghost" @click="close('discard')">Discard</button>
+              <button class="dlg-btn-primary" @click="close('confirm')">Save &amp; close</button>
+            </div>
+          </template>
+        </Dialog>
+      </div>
+    </div>
   </section>
 </template>
 
@@ -357,6 +428,29 @@ const open8 = ref(false);
   cursor: pointer;
 }
 .dlg-btn-ghost:hover { background: var(--muted); }
+
+/* Event log */
+.dlg-event-log {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.dlg-event-entry {
+  font-family: monospace;
+  font-size: 11px;
+  color: var(--muted-foreground);
+  background: var(--muted);
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+.dlg-guard-label {
+  font-size: 13px;
+  color: var(--foreground);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
 
 /* Demo block layout */
 .demo-block {

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { DrawerProps } from ".";
+import type { AkazaChangeEventDetails } from "../../types";
 import { usePointerSwipe } from "@vueuse/core";
 import { computed, nextTick, useId, useTemplateRef, watch } from "vue";
 import { useDrawer } from "../../composables/drawer";
@@ -21,15 +22,30 @@ const {
   ui,
 } = defineProps<DrawerProps>();
 
+const emit = defineEmits<{
+  'open-change': [open: boolean, details: AkazaChangeEventDetails];
+}>();
+
 const model = defineModel<boolean>({ default: false });
-const { isOpen, open, close, toggle } = useDrawer(model);
+const { isOpen, open: _open, close: _close, toggle: _toggle } = useDrawer(model);
+
+function handleChange(nextOpen: boolean, reason: string, event?: Event) {
+  let canceled = false;
+  emit('open-change', nextOpen, { reason, ...(event && { event }), cancel: () => { canceled = true; } });
+  if (canceled) return;
+  nextOpen ? _open() : _close();
+}
+
+function open(reason = 'programmatic', event?: Event) { handleChange(true, reason, event); }
+function close(reason = 'programmatic', event?: Event) { handleChange(false, reason, event); }
+function toggle(reason = 'programmatic', event?: Event) { handleChange(!isOpen.value, reason, event); }
 
 const contentRef = useTemplateRef<HTMLElement>("contentRef");
 const overlayRef = useTemplateRef<HTMLElement>("overlayRef");
 const titleId = useId();
 const descriptionId = useId();
 const { activate, deactivate } = useFocusScope(contentRef);
-const { register, unregister } = useDismissableLayer(() => close());
+const { register, unregister } = useDismissableLayer((event?: KeyboardEvent) => close('escape', event));
 
 watch(isOpen, async (val) => {
   if (val) {
@@ -42,8 +58,8 @@ watch(isOpen, async (val) => {
   }
 });
 
-function onOverlayClick() {
-  if (closeOnBackdropClick) close();
+function onOverlayClick(event: MouseEvent) {
+  if (closeOnBackdropClick) close('backdrop-click', event);
 }
 
 const insetValue = computed(() =>
@@ -112,7 +128,7 @@ const { distanceX, distanceY } = usePointerSwipe(contentRef, {
     const movement = getMovement(distanceX.value, distanceY.value);
     if (swipeToClose && movement >= DISMISS_THRESHOLD) {
       // Keep data-swiping on; onLeave() removes it and animates from current offset.
-      close();
+      close('swipe');
     } else {
       // Snap back: restore transition, then clear var → animates to 0.
       contentRef.value.removeAttribute("data-swiping");

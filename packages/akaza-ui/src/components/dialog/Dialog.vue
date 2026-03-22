@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { DialogProps } from ".";
+import type { AkazaChangeEventDetails } from "../../types";
 import { nextTick, useId, useTemplateRef, watch } from "vue";
 import { useDialog } from "../../composables/dialog";
 import { useDismissableLayer } from "../../utils/dismissableLayer";
@@ -17,14 +18,29 @@ const {
   ui,
 } = defineProps<DialogProps>();
 
+const emit = defineEmits<{
+  'open-change': [open: boolean, details: AkazaChangeEventDetails];
+}>();
+
 const model = defineModel<boolean>({ default: false });
-const { isOpen, open, close, toggle } = useDialog(model);
+const { isOpen, open: _open, close: _close, toggle: _toggle } = useDialog(model);
 
 const contentRef = useTemplateRef<HTMLElement>("contentRef");
 const titleId = useId();
 const descriptionId = useId();
 const { activate, deactivate } = useFocusScope(contentRef);
-const { register, unregister } = useDismissableLayer(() => close());
+const { register, unregister } = useDismissableLayer((event?: KeyboardEvent) => close('escape', event));
+
+function handleChange(nextOpen: boolean, reason: string, event?: Event) {
+  let canceled = false;
+  emit('open-change', nextOpen, { reason, ...(event && { event }), cancel: () => { canceled = true; } });
+  if (canceled) return;
+  nextOpen ? _open() : _close();
+}
+
+function open(reason = 'programmatic', event?: Event) { handleChange(true, reason, event); }
+function close(reason = 'programmatic', event?: Event) { handleChange(false, reason, event); }
+function toggle(reason = 'programmatic', event?: Event) { handleChange(!isOpen.value, reason, event); }
 
 watch(isOpen, async (val) => {
   if (val) {
@@ -37,8 +53,8 @@ watch(isOpen, async (val) => {
   }
 });
 
-function onBackdropClick() {
-  if (closeOnBackdropClick) close();
+function onBackdropClick(event: MouseEvent) {
+  if (closeOnBackdropClick) close('backdrop-click', event);
 }
 
 defineExpose({ open, close, toggle, titleId, descriptionId });

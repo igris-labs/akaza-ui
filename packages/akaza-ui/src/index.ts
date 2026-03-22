@@ -17,8 +17,8 @@ export * from "./components/switch";
 export * from "./components/tabs";
 export * from "./components/toggle";
 export * from "./components/tooltip";
-
 export * from "./composables/alert-dialog";
+
 // Composables
 export * from "./composables/avatar";
 export * from "./composables/dialog";
@@ -28,3 +28,4 @@ export * from "./composables/overlay";
 export * from "./composables/popover";
 export * from "./composables/tabs";
 export * from "./composables/tooltip";
+export * from "./types";

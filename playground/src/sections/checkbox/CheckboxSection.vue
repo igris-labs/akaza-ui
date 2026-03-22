@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { Checkbox } from "akaza-ui";
-import type { CheckboxValue } from "akaza-ui";
+import type { CheckboxValue, AkazaChangeEventDetails } from "akaza-ui";
 
 // ── 1. States ────────────────────────────────────────────────────────────────
 const checked = ref<CheckboxValue>(false);
@@ -43,6 +43,13 @@ function handleSubmit(e: Event) {
 
 // ── 7. ui prop ───────────────────────────────────────────────────────────────
 const uiChecked = ref<CheckboxValue>(false);
+
+// ── 8. @value-change event details ──────────────────────────────────────────
+const eventChecked = ref<CheckboxValue>(false);
+const cbLog = ref<string[]>([]);
+function onCheckboxChange(value: CheckboxValue, details: AkazaChangeEventDetails) {
+  cbLog.value = [`→ ${value} — reason: ${details.reason}`, ...cbLog.value].slice(0, 5);
+}
 </script>
 
 <template>
@@ -261,7 +268,31 @@ const uiChecked = ref<CheckboxValue>(false);
       </div>
     </div>
 
-    <!-- ── 8. ui prop ─────────────────────────────────────────────────────── -->
+    <!-- ── 8. @value-change event details ─────────────────────────────────── -->
+    <div class="cb-demo-block">
+      <div class="cb-demo-label">
+        <span class="cb-demo-label-title">@value-change event details</span>
+        <span class="cb-demo-label-desc">
+          Listen to <code>@value-change</code> to inspect <code>reason</code> (<code>"click"</code> or <code>"keyboard"</code>)
+          and optionally call <code>details.cancel()</code> to prevent the change.
+        </span>
+      </div>
+      <div class="cb-demo-canvas cb-demo-canvas--col">
+        <Checkbox
+          v-model="eventChecked"
+          label="Toggle me (click or Space)"
+          :ui="{ root: 'cb-box', indicator: 'cb-indicator', label: 'cb-label' }"
+          @value-change="onCheckboxChange"
+        >
+          <template #indicator><svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg></template>
+        </Checkbox>
+        <div v-if="cbLog.length" class="cb-event-log">
+          <code v-for="(entry, i) in cbLog" :key="i" class="cb-event-entry">{{ entry }}</code>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── 9. ui prop ─────────────────────────────────────────────────────── -->
     <div class="cb-demo-block">
       <div class="cb-demo-label">
         <span class="cb-demo-label-title">ui prop</span>
@@ -514,5 +545,20 @@ const uiChecked = ref<CheckboxValue>(false);
 .cb-demo-canvas--col {
   flex-direction: column;
   align-items: flex-start;
+}
+
+/* Event log */
+.cb-event-log {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.cb-event-entry {
+  font-family: monospace;
+  font-size: 11px;
+  color: var(--muted-foreground);
+  background: var(--muted);
+  padding: 2px 8px;
+  border-radius: 4px;
 }
 </style>

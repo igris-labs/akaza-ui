@@ -1,24 +1,29 @@
 <script setup lang="ts">
 import type { CollapsibleProps } from ".";
+import type { AkazaChangeEventDetails } from "../../types";
 import { useId } from "vue";
 
 const { as = "div", disabled = false, unmountOnHide = false, ui } = defineProps<CollapsibleProps>();
+
+const emit = defineEmits<{
+  'open-change': [open: boolean, details: AkazaChangeEventDetails];
+}>();
 
 const model = defineModel<boolean>({ default: false });
 
 const panelId = `akaza-collapsible-panel-${useId()}`;
 
-function open() {
-  if (!disabled) model.value = true;
+function handleChange(nextOpen: boolean, reason: string, event?: Event) {
+  if (disabled && nextOpen) return;
+  let canceled = false;
+  emit('open-change', nextOpen, { reason, ...(event && { event }), cancel: () => { canceled = true; } });
+  if (canceled) return;
+  model.value = nextOpen;
 }
 
-function close() {
-  model.value = false;
-}
-
-function toggle() {
-  if (!disabled) model.value = !model.value;
-}
+function open(reason = 'programmatic', event?: Event) { handleChange(true, reason, event); }
+function close(reason = 'programmatic', event?: Event) { handleChange(false, reason, event); }
+function toggle(reason = 'programmatic', event?: Event) { handleChange(!model.value, reason, event); }
 
 defineExpose({ open, close, toggle });
 </script>
@@ -40,7 +45,7 @@ defineExpose({ open, close, toggle });
       :data-akaza-disabled="disabled || undefined"
       :disabled="disabled"
       class="akaza-collapsible-trigger"
-      @click="toggle"
+      @click="toggle('trigger', $event)"
     >
       <slot
         name="trigger"

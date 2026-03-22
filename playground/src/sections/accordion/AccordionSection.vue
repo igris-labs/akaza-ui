@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import type { AccordionItem } from "akaza-ui";
+import type { AccordionItem, AkazaChangeEventDetails } from "akaza-ui";
 import { Accordion } from "akaza-ui";
 
 // ── 1. Zero-config ───────────────────────────────────────────────────────────
@@ -88,6 +88,17 @@ const unmountItems: AccordionItem[] = [
     content: "This panel uses the default behaviour (unmountOnHide=false). It stays in the DOM hidden via CSS grid.",
   },
 ];
+
+// ── 9. @value-change event details ──────────────────────────────────────────
+const eventOpen = ref("");
+const eventItems: AccordionItem[] = [
+  { label: "First panel", content: "Open or close panels and watch the event log below." },
+  { label: "Second panel", content: "Each change shows the new value and the reason." },
+];
+const accLog = ref<string[]>([]);
+function onAccordionChange(value: string | string[], details: AkazaChangeEventDetails) {
+  accLog.value = [`→ ${JSON.stringify(value)} — reason: ${details.reason}`, ...accLog.value].slice(0, 5);
+}
 </script>
 
 <template>
@@ -334,6 +345,30 @@ const unmountItems: AccordionItem[] = [
         </Accordion>
       </div>
     </div>
+
+    <!-- ── 9. @value-change event details ─────────────────────────────────── -->
+    <div class="demo-block">
+      <div class="demo-label">
+        <span class="demo-label-title">@value-change event details</span>
+        <span class="demo-label-desc">
+          Listen to <code>@value-change</code> to inspect <code>reason</code> and optionally
+          call <code>details.cancel()</code> to prevent the change.
+        </span>
+      </div>
+      <div class="demo-canvas" style="flex-direction: column; align-items: stretch; gap: 12px;">
+        <Accordion
+          v-model="eventOpen"
+          :items="eventItems"
+          collapsible
+          :ui="{ trigger: 'acc-trigger', content: 'acc-content-inner' }"
+          class="acc-root"
+          @value-change="onAccordionChange"
+        />
+        <div v-if="accLog.length" class="acc-event-log">
+          <code v-for="(entry, i) in accLog" :key="i" class="acc-event-entry">{{ entry }}</code>
+        </div>
+      </div>
+    </div>
   </section>
 </template>
 
@@ -547,5 +582,20 @@ const unmountItems: AccordionItem[] = [
   padding: 4px 14px 12px;
   font-size: 13px;
   color: var(--muted-foreground);
+}
+
+/* Event log */
+.acc-event-log {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.acc-event-entry {
+  font-family: monospace;
+  font-size: 11px;
+  color: var(--muted-foreground);
+  background: var(--muted);
+  padding: 2px 8px;
+  border-radius: 4px;
 }
 </style>

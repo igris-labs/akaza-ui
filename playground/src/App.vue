@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from "vue";
-import { Separator } from "akaza-ui";
+import { Separator, OverlayProvider } from "akaza-ui";
 import ButtonSection from "./sections/button/ButtonSection.vue";
 import ToggleSection from "./sections/toggle/ToggleSection.vue";
 import SwitchSection from "./sections/switch/SwitchSection.vue";
@@ -18,6 +18,7 @@ import AlertDialogSection from "./sections/alert-dialog/AlertDialogSection.vue";
 import DrawerSection from "./sections/drawer/DrawerSection.vue";
 import MenuSection from "./sections/menu/MenuSection.vue";
 import TabsSection from "./sections/tabs/TabsSection.vue";
+import OverlaySection from "./sections/overlay/OverlaySection.vue";
 
 const isDark = ref(false);
 
@@ -40,6 +41,7 @@ const sections = [
     items: ["tooltip", "popover", "dialog", "alert-dialog", "drawer", "menu"],
   },
   { id: "navigation", label: "Navigation", items: ["tabs"] },
+  { id: "programmatic", label: "Programmatic", items: ["overlay"] },
 ];
 </script>
 
@@ -124,7 +126,10 @@ const sections = [
         <MenuSection />
         <Separator class="border-t border-border" />
         <TabsSection />
+        <Separator class="border-t border-border" />
+        <OverlaySection />
       </main>
+      <OverlayProvider />
     </div>
   </div>
 </template>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { _OverlayEntry } from "../../composables/overlay";
+import type { _OverlayEntry } from "../../composables/overlay/useOverlay";
 import { useOverlay } from "../../composables/overlay";
 
 const { overlays } = useOverlay();
@@ -31,10 +31,10 @@ function onCloseEvent(overlay: _OverlayEntry, value: unknown) {
     v-bind="overlay.props"
     :model-value="overlay.modelValue"
     @update:model-value="
-      (val) => {
+      (val: boolean) => {
         if (!val) onModelClose(overlay);
       }
     "
-    @close="(val) => onCloseEvent(overlay, val)"
+    @close="(val: unknown) => onCloseEvent(overlay, val)"
   />
 </template>

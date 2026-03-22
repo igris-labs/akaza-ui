@@ -1,10 +1,19 @@
-import type { Component } from "vue";
+import type { Component, DefineComponent } from "vue";
 import { createSharedComposable } from "@vueuse/core";
 import { reactive } from "vue";
 
-export interface OverlayOptions {
+/**
+ * Extracts the props type from a Vue component.
+ * Works with components defined via defineComponent / defineProps.
+ */
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type ComponentProps<T extends Component> = T extends DefineComponent<infer P, any, any, any, any, any, any, any>
+  ? Omit<P, "modelValue" | "onUpdate:modelValue" | "onClose">
+  : Record<string, unknown>;
+
+export interface OverlayOptions<T extends Component> {
   /** Default props to pass to the component. Can be overridden per-open call. */
-  props?: Record<string, unknown>;
+  props?: Partial<ComponentProps<T>>;
   /** Open immediately after create(). Default: false. */
   defaultOpen?: boolean;
   /** Remove the component from the DOM when closed. Default: false. */
@@ -17,13 +26,13 @@ export interface OverlayOpenResult {
   result: Promise<unknown>;
 }
 
-export interface OverlayInstance {
+export interface OverlayInstance<T extends Component> {
   /** Open the overlay, optionally merging new props. Returns a promise. */
-  open: (props?: Record<string, unknown>) => OverlayOpenResult;
+  open: (props?: Partial<ComponentProps<T>>) => OverlayOpenResult;
   /** Close the overlay, optionally passing a return value. */
   close: (value?: unknown) => void;
   /** Update props on an already-open overlay without closing it. */
-  patch: (props: Record<string, unknown>) => void;
+  patch: (props: Partial<ComponentProps<T>>) => void;
   /** Remove the overlay from the DOM entirely. */
   unmount: () => void;
   /** Whether the overlay is currently visible. */
@@ -46,18 +55,25 @@ let _idCounter = 0;
 function _useOverlay() {
   const overlays = reactive<_OverlayEntry[]>([]);
 
-  function create(component: Component, options?: OverlayOptions): OverlayInstance {
+  function create<T extends Component>(component: T, options?: OverlayOptions<T>): OverlayInstance<T> {
     const id = ++_idCounter;
 
-    const entry: _OverlayEntry = {
+    // Raw entry — pushed into the reactive array on first open.
+    // All state mutations MUST go through getEntry() to hit the reactive proxy.
+    const raw: _OverlayEntry = {
       id,
       component,
-      props: { ...options?.props },
+      props: { ...options?.props } as Record<string, unknown>,
       modelValue: false,
       destroyOnClose: options?.destroyOnClose ?? false,
       resolve: null,
       _close: () => {}, // filled in below
     };
+
+    /** Returns the reactive proxy for this entry, or undefined if unmounted. */
+    function getEntry() {
+      return overlays.find((o) => o.id === id);
+    }
 
     function unmount() {
       const idx = overlays.findIndex((o) => o.id === id);
@@ -65,33 +81,38 @@ function _useOverlay() {
     }
 
     function close(value?: unknown) {
-      entry.modelValue = false;
-      if (entry.resolve) {
-        entry.resolve(value);
-        entry.resolve = null;
+      const entry = getEntry();
+      if (entry) entry.modelValue = false;
+      // resolve lives on the raw object — not reactive state, just a callback
+      if (raw.resolve) {
+        raw.resolve(value);
+        raw.resolve = null;
       }
-      if (entry.destroyOnClose) unmount();
+      if (raw.destroyOnClose) unmount();
     }
 
-    // Stored on the entry so OverlayProvider can delegate to it
-    entry._close = close;
+    // Stored on the raw entry so OverlayProvider can delegate to it
+    raw._close = close;
 
-    function open(props?: Record<string, unknown>): OverlayOpenResult {
+    function open(props?: Partial<ComponentProps<T>>): OverlayOpenResult {
+      if (!overlays.find((o) => o.id === id)) overlays.push(raw);
+      const entry = getEntry()!;
       if (props) Object.assign(entry.props, props);
-      if (!overlays.find((o) => o.id === id)) overlays.push(entry);
       entry.modelValue = true;
       const result = new Promise<unknown>((resolve) => {
-        entry.resolve = resolve;
+        raw.resolve = resolve;
       });
       return { result };
     }
 
-    function patch(props: Record<string, unknown>) {
-      Object.assign(entry.props, props);
+    function patch(props: Partial<ComponentProps<T>>) {
+      const entry = getEntry();
+      if (entry) Object.assign(entry.props, props);
     }
 
     function isOpen() {
-      return entry.modelValue;
+      const entry = getEntry();
+      return entry?.modelValue ?? false;
     }
 
     if (options?.defaultOpen) {

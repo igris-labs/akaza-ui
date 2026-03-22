@@ -1,22 +1,32 @@
 <script setup lang="ts">
 import type { CollapsibleProps } from ".";
+import { useId } from "vue";
 
-const { as = "div", disabled = false, ui } = defineProps<CollapsibleProps>();
+const { as = "div", disabled = false, unmountOnHide = false, ui } = defineProps<CollapsibleProps>();
 
 const model = defineModel<boolean>({ default: false });
 
-function toggle() {
-  if (!disabled) model.value = !model.value;
+const panelId = `akaza-collapsible-panel-${useId()}`;
+
+function open() {
+  if (!disabled) model.value = true;
 }
 
 function close() {
   model.value = false;
 }
+
+function toggle() {
+  if (!disabled) model.value = !model.value;
+}
+
+defineExpose({ open, close, toggle });
 </script>
 
 <template>
   <component
     :is="as"
+    :class="ui?.root"
     :data-akaza-state="model ? 'open' : 'closed'"
     :data-akaza-disabled="disabled || undefined"
     class="akaza-collapsible"
@@ -24,6 +34,7 @@ function close() {
     <button
       type="button"
       :aria-expanded="model"
+      :aria-controls="panelId"
       :class="ui?.trigger"
       :data-akaza-state="model ? 'open' : 'closed'"
       :data-akaza-disabled="disabled || undefined"
@@ -34,12 +45,11 @@ function close() {
       <slot
         name="trigger"
         :is-open="model"
+        :open="open"
+        :close="close"
         :toggle="toggle"
       />
-      <slot
-        name="icon"
-        :is-open="model"
-      >
+      <slot name="icon" :is-open="model">
         <svg
           class="akaza-collapsible-icon"
           :data-akaza-state="model ? 'open' : 'closed'"
@@ -60,17 +70,24 @@ function close() {
     </button>
 
     <div
+      :id="panelId"
+      role="region"
       class="akaza-collapsible-content"
       :data-akaza-state="model ? 'open' : 'closed'"
     >
-      <div
-        :class="ui?.content"
-        class="akaza-collapsible-content-inner"
-      >
-        <slot
-          name="content"
-          :close="close"
-        />
+      <div class="akaza-collapsible-content-inner">
+        <div
+          :class="ui?.content"
+          class="akaza-collapsible-content-body"
+        >
+          <template v-if="!unmountOnHide || model">
+            <slot
+              name="content"
+              :is-open="model"
+              :close="close"
+            />
+          </template>
+        </div>
       </div>
     </div>
   </component>
@@ -89,6 +106,12 @@ function close() {
   text-align: left;
 }
 
+.akaza-collapsible-trigger:disabled,
+.akaza-collapsible-trigger[data-akaza-disabled] {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
 .akaza-collapsible-icon {
   flex-shrink: 0;
   transition: transform 0.2s ease;
@@ -101,7 +124,7 @@ function close() {
 .akaza-collapsible-content {
   display: grid;
   grid-template-rows: 0fr;
-  transition: grid-template-rows 0.11s ease-out;
+  transition: grid-template-rows 0.15s ease-out;
 }
 
 .akaza-collapsible-content[data-akaza-state="open"] {

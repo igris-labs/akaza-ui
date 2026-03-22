@@ -1,33 +1,31 @@
-import type { Component } from "vue";
-
-export { TABS_CONTEXT_KEY } from "./context";
-export type { TabsContextFactory, TabsContextState } from "./context";
-export { default as Tab } from "./Tab.vue";
-export { default as TabList } from "./TabList.vue";
-export { default as TabPanel } from "./TabPanel.vue";
-export { default as TabPanels } from "./TabPanels.vue";
 export { default as Tabs } from "./Tabs.vue";
 
-export interface TabsProps {
-  as?: string;
-  orientation?: "horizontal" | "vertical";
-}
-
-export interface TabListProps {
-  as?: string;
-}
-
-export interface TabProps {
+export interface TabsItem {
   value: string;
-  as?: string | Component;
+  label?: string;
   disabled?: boolean;
+  [key: string]: any;
 }
 
-export interface TabPanelsProps {
-  as?: string;
+export interface TabsUi {
+  root?: string;
+  list?: string;
+  tab?: string;
+  indicator?: string;
+  panels?: string;
+  panel?: string;
 }
 
-export interface TabPanelProps {
-  value: string;
-  as?: string;
+export interface TabsProps {
+  items: TabsItem[];
+  orientation?: "horizontal" | "vertical";
+  /** "automatic": arrow keys move focus and activate. "manual": arrow keys move focus only, Space/Enter activates. Default: "automatic". */
+  activationMode?: "automatic" | "manual";
+  /** When true, inactive panels are removed from the DOM (v-if). Default: false (v-show). */
+  unmountOnHide?: boolean;
+  /** aria-label for the tab list. */
+  ariaLabel?: string;
+  /** Property to use as label when items are objects. Default: "label". */
+  labelKey?: string;
+  ui?: TabsUi;
 }

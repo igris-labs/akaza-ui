@@ -36,7 +36,12 @@ const useScopeStack = createGlobalState(() => {
   };
 });
 
-export function useFocusScope(containerRef: Ref<HTMLElement | null>) {
+interface FocusScopeOptions {
+  /** CSS selector for the element to focus when the scope activates. Falls back to the first focusable element. */
+  initialFocusSelector?: string;
+}
+
+export function useFocusScope(containerRef: Ref<HTMLElement | null>, options: FocusScopeOptions = {}) {
   let previouslyFocused: HTMLElement | null = null;
 
   const scope: FocusScopeAPI = {
@@ -79,8 +84,15 @@ export function useFocusScope(containerRef: Ref<HTMLElement | null>) {
   function activate() {
     previouslyFocused = document.activeElement as HTMLElement;
     if (containerRef.value) {
-      const focusable = getFocusableElements(containerRef.value);
-      (focusable[0] ?? containerRef.value).focus();
+      const initial = options.initialFocusSelector
+        ? containerRef.value.querySelector<HTMLElement>(options.initialFocusSelector)
+        : null;
+      if (initial) {
+        initial.focus();
+      } else {
+        const focusable = getFocusableElements(containerRef.value);
+        (focusable[0] ?? containerRef.value).focus();
+      }
     }
     document.addEventListener("keydown", handleKeyDown);
     add(scope);

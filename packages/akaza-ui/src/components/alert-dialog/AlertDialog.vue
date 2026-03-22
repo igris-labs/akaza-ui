@@ -9,6 +9,8 @@ const {
   teleport = "body",
   transition = "akaza-alert-dialog",
   duration = 150,
+  title,
+  description,
   ui,
 } = defineProps<AlertDialogProps>();
 
@@ -18,7 +20,7 @@ const { isOpen, open, close, toggle } = useAlertDialog(model);
 const contentRef = useTemplateRef<HTMLElement>("contentRef");
 const titleId = useId();
 const descriptionId = useId();
-const { activate, deactivate } = useFocusScope(contentRef);
+const { activate, deactivate } = useFocusScope(contentRef, { initialFocusSelector: "[data-akaza-cancel]" });
 
 watch(isOpen, async (val) => {
   if (val) {
@@ -64,8 +66,8 @@ defineExpose({ open, close, toggle, titleId, descriptionId });
         ref="contentRef"
         role="alertdialog"
         aria-modal="true"
-        :aria-labelledby="titleId"
-        :aria-describedby="descriptionId"
+        :aria-labelledby="($slots.title || title) ? titleId : undefined"
+        :aria-describedby="($slots.description || description) ? descriptionId : undefined"
         :class="ui?.content"
         :style="{ '--akaza-dialog-duration': `${duration}ms` }"
         class="akaza-alert-dialog-content"
@@ -73,21 +75,34 @@ defineExpose({ open, close, toggle, titleId, descriptionId });
         tabindex="-1"
       >
         <div
-          v-if="$slots.header"
+          v-if="$slots.header || $slots.title || title"
           :class="ui?.header"
           class="akaza-alert-dialog-header"
         >
-          <slot
-            name="header"
-            :close="close"
-            :title-id="titleId"
-          />
+          <slot name="header" :close="close" :title-id="titleId">
+            <div
+              v-if="$slots.title || title"
+              :id="titleId"
+              :class="ui?.title"
+              class="akaza-alert-dialog-title"
+            >
+              <slot name="title">{{ title }}</slot>
+            </div>
+          </slot>
         </div>
 
         <div
           :class="ui?.body"
           class="akaza-alert-dialog-body"
         >
+          <div
+            v-if="$slots.description || description"
+            :id="descriptionId"
+            :class="ui?.description"
+            class="akaza-alert-dialog-description"
+          >
+            <slot name="description">{{ description }}</slot>
+          </div>
           <slot
             name="body"
             :close="close"

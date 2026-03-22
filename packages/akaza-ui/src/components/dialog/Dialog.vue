@@ -7,7 +7,10 @@ import { useFocusScope } from "../../utils/focusScope";
 
 const {
   as = "div",
+  title,
+  description,
   closeOnBackdropClick = true,
+  fullscreen = false,
   teleport = "body",
   transition = "akaza-dialog",
   duration = 100,
@@ -74,30 +77,39 @@ defineExpose({ open, close, toggle, titleId, descriptionId });
         ref="contentRef"
         role="dialog"
         aria-modal="true"
-        :aria-labelledby="titleId"
-        :aria-describedby="descriptionId"
+        :aria-labelledby="($slots.title || title) ? titleId : undefined"
+        :aria-describedby="($slots.description || description) ? descriptionId : undefined"
         :class="ui?.content"
         :style="{ '--akaza-dialog-duration': `${duration}ms` }"
+        :data-akaza-fullscreen="fullscreen || undefined"
         class="akaza-dialog-content"
         data-akaza-state="open"
         tabindex="-1"
       >
         <div
-          v-if="$slots.header"
+          v-if="$slots.header || $slots.title || title"
           :class="ui?.header"
           class="akaza-dialog-header"
         >
-          <slot
-            name="header"
-            :close="close"
-            :title-id="titleId"
-          />
+          <slot name="header" :close="close" :title-id="titleId">
+            <div :id="titleId" :class="ui?.title" class="akaza-dialog-title">
+              <slot name="title">{{ title }}</slot>
+            </div>
+          </slot>
         </div>
 
         <div
           :class="ui?.body"
           class="akaza-dialog-body"
         >
+          <div
+            v-if="$slots.description || description"
+            :id="descriptionId"
+            :class="ui?.description"
+            class="akaza-dialog-description"
+          >
+            <slot name="description">{{ description }}</slot>
+          </div>
           <slot
             name="body"
             :close="close"

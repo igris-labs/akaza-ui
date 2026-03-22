@@ -1,108 +1,148 @@
 <script setup lang="ts">
-import type { PopoverDirection, PopoverProps } from ".";
+import type { PopoverAlign, PopoverProps, PopoverSide } from ".";
+import type { AkazaChangeEventDetails } from "../../types";
 import { onClickOutside, onKeyStroke } from "@vueuse/core";
-import { nextTick, ref, useId, useTemplateRef, watch } from "vue";
+import { computed, nextTick, onUnmounted, ref, useId, useTemplateRef, watch } from "vue";
 import { usePopover } from "../../composables/popover";
 
 const {
-  direction = "bottom",
+  side = "bottom",
+  align = "start",
+  sideOffset = 6,
   teleport = "body",
   transition = "akaza-popover",
   ui,
 } = defineProps<PopoverProps>();
 
+const emit = defineEmits<{
+  "open-change": [open: boolean, details: AkazaChangeEventDetails];
+}>();
+
 const model = defineModel<boolean>({ default: false });
-const { open, close, toggle } = usePopover(model);
+const { open: _open, close: _close } = usePopover(model);
+
+function handleChange(nextOpen: boolean, reason: string, event?: Event) {
+  let canceled = false;
+  emit("open-change", nextOpen, { reason, ...(event && { event }), cancel: () => { canceled = true; } });
+  if (canceled) return;
+  nextOpen ? _open() : _close();
+}
+
+function open(reason = "programmatic", event?: Event) { handleChange(true, reason, event); }
+function close(reason = "programmatic", event?: Event) { handleChange(false, reason, event); }
+function toggle(reason = "programmatic", event?: Event) { handleChange(!model.value, reason, event); }
 
 const popoverId = useId();
-const triggerRef = useTemplateRef<HTMLElement>("triggerRef");
+const rootRef = useTemplateRef<HTMLElement>("rootRef");
 const contentRef = useTemplateRef<HTMLElement>("contentRef");
 
-// Ignore clicks inside the popover content so it doesn't close on interaction
 onClickOutside(
-  triggerRef,
-  () => {
-    if (model.value) close();
-  },
+  rootRef,
+  (e) => { if (model.value) close("outside-click", e); },
   { ignore: [contentRef] },
 );
+
 onKeyStroke("Escape", (e) => {
   if (model.value) {
     e.preventDefault();
-    close();
+    close("escape", e);
   }
 });
 
-const GAP = 6;
+// ── Positioning ───────────────────────────────────────────────────────────────
+
 const posStyle = ref({ top: "-9999px", left: "-9999px" });
-const actualDirection = ref<PopoverDirection>(direction);
+const actualSide = ref<PopoverSide>(side);
 
 function computePosition() {
-  if (!triggerRef.value || !contentRef.value) return;
+  if (!rootRef.value || !contentRef.value) return;
 
-  const t = triggerRef.value.getBoundingClientRect();
+  const t = rootRef.value.getBoundingClientRect();
   const c = contentRef.value.getBoundingClientRect();
   const vw = window.innerWidth;
   const vh = window.innerHeight;
+  const gap = sideOffset;
 
-  const order: PopoverDirection[] = [direction, "bottom", "top", "right", "left"];
+  // Auto-flip: prefer requested side, fall back if no room
+  const order: PopoverSide[] = [side, "bottom", "top", "right", "left"];
   const candidates = [...new Set(order)];
 
-  let chosen: PopoverDirection = candidates[candidates.length - 1]!;
+  let chosen: PopoverSide = candidates[candidates.length - 1]!;
   for (const d of candidates) {
-    if (d === "top" && t.top >= c.height + GAP) {
-      chosen = d;
-      break;
-    }
-    if (d === "bottom" && vh - t.bottom >= c.height + GAP) {
-      chosen = d;
-      break;
-    }
-    if (d === "right" && vw - t.right >= c.width + GAP) {
-      chosen = d;
-      break;
-    }
-    if (d === "left" && t.left >= c.width + GAP) {
-      chosen = d;
-      break;
-    }
+    if (d === "top" && t.top >= c.height + gap) { chosen = d; break; }
+    if (d === "bottom" && vh - t.bottom >= c.height + gap) { chosen = d; break; }
+    if (d === "right" && vw - t.right >= c.width + gap) { chosen = d; break; }
+    if (d === "left" && t.left >= c.width + gap) { chosen = d; break; }
   }
 
   let top = 0;
   let left = 0;
-  if (chosen === "top") {
-    top = t.top - c.height - GAP;
-    left = t.left;
-  } else if (chosen === "bottom") {
-    top = t.bottom + GAP;
-    left = t.left;
-  } else if (chosen === "left") {
-    top = t.top;
-    left = t.left - c.width - GAP;
+
+  // Main axis
+  if (chosen === "top") top = t.top - c.height - gap;
+  else if (chosen === "bottom") top = t.bottom + gap;
+  else if (chosen === "left") left = t.left - c.width - gap;
+  else left = t.right + gap;
+
+  // Cross axis (align)
+  if (chosen === "top" || chosen === "bottom") {
+    if (align === "start") left = t.left;
+    else if (align === "end") left = t.right - c.width;
+    else left = t.left + t.width / 2 - c.width / 2;
   } else {
-    top = t.top;
-    left = t.right + GAP;
+    if (align === "start") top = t.top;
+    else if (align === "end") top = t.bottom - c.height;
+    else top = t.top + t.height / 2 - c.height / 2;
   }
 
   // Clamp to viewport
   top = Math.max(4, Math.min(top, vh - c.height - 4));
   left = Math.max(4, Math.min(left, vw - c.width - 4));
 
-  actualDirection.value = chosen;
+  actualSide.value = chosen;
   posStyle.value = { top: `${top}px`, left: `${left}px` };
+}
+
+// ── Open/close with scroll tracking ──────────────────────────────────────────
+
+function addListeners() {
+  window.addEventListener("scroll", computePosition, { passive: true, capture: true });
+  window.addEventListener("resize", computePosition, { passive: true });
+}
+
+function removeListeners() {
+  window.removeEventListener("scroll", computePosition, { capture: true });
+  window.removeEventListener("resize", computePosition);
 }
 
 watch(model, async (val) => {
   if (val) {
     await nextTick();
-    computePosition();
+    // Use rAF so the browser completes layout before we measure content dimensions.
+    // Without this, c.width/c.height can be 0 for sides that depend on content size (top/left).
+    requestAnimationFrame(computePosition);
+    addListeners();
+  } else {
+    removeListeners();
   }
 });
+
+onUnmounted(removeListeners);
+
+// ── Trigger ARIA props ────────────────────────────────────────────────────────
+
+const triggerProps = computed(() => ({
+  "aria-haspopup": "dialog" as const,
+  "aria-expanded": model.value,
+  "aria-controls": model.value ? popoverId : undefined,
+}));
+
+defineExpose({ open, close, toggle });
 </script>
 
 <template>
-  <span
-    ref="triggerRef"
+  <div
+    ref="rootRef"
     :data-akaza-state="model ? 'open' : 'closed'"
     class="akaza-popover-root"
   >
@@ -112,6 +152,7 @@ watch(model, async (val) => {
       :open="open"
       :close="close"
       :toggle="toggle"
+      :trigger-props="triggerProps"
     />
     <Teleport
       :to="typeof teleport === 'string' ? teleport : 'body'"
@@ -126,9 +167,10 @@ watch(model, async (val) => {
           :id="popoverId"
           ref="contentRef"
           :class="ui?.content"
-          data-akaza-state="open"
-          :data-akaza-direction="actualDirection"
           :style="posStyle"
+          :data-akaza-side="actualSide"
+          :data-akaza-align="align"
+          data-akaza-state="open"
           class="akaza-popover-content"
         >
           <slot
@@ -138,10 +180,20 @@ watch(model, async (val) => {
         </div>
       </Transition>
     </Teleport>
-  </span>
+  </div>
 </template>
 
 <style>
+.akaza-popover-root {
+  position: relative;
+  display: inline-block;
+}
+
+.akaza-popover-content {
+  position: fixed;
+  z-index: 50;
+}
+
 .akaza-popover-enter-active,
 .akaza-popover-leave-active {
   transition:

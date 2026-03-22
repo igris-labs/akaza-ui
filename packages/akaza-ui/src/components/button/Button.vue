@@ -4,6 +4,7 @@ import { computed, ref } from "vue";
 
 const {
   as = "button",
+  type = "button",
   disabled = false,
   focusableWhenDisabled = false,
   loading = false,
@@ -45,7 +46,7 @@ async function handleClick(event: MouseEvent) {
 <template>
   <component
     :is="as"
-    :type="as === 'button' ? 'button' : undefined"
+    :type="as === 'button' ? type : undefined"
     :disabled="as === 'button' && isDisabled && !focusableWhenDisabled ? true : undefined"
     :aria-disabled="isDisabled ? true : undefined"
     :aria-busy="isLoading ? true : undefined"

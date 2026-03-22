@@ -4,6 +4,8 @@ export { default as Button } from "./Button.vue";
 
 export interface ButtonProps {
   as?: string | Component;
+  /** Native button type. Only applied when as="button". Defaults to "button". */
+  type?: "button" | "submit" | "reset";
   disabled?: boolean;
   focusableWhenDisabled?: boolean;
   loading?: boolean;

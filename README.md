@@ -1,63 +1,46 @@
 # Akaza UI
 
-Vue-native headless UI primitives — accessible, unstyled, composable.
+Vue-native headless UI primitives — accessible, unstyled, and built for Vue 3.
 
-Unlike libraries ported from React (Radix, Reka), Akaza UI is designed from scratch for Vue 3. It uses `v-model`, named scoped slots, and `useX` composables as first-class primitives — no sub-component trees, no `asChild`, no fighting the framework.
+Unlike libraries ported from React (Radix, Reka), Akaza UI is designed from scratch for Vue 3. It uses `v-model`, named scoped slots, and the `ui` prop as first-class primitives — no sub-component trees, no `asChild`, no fighting the framework.
 
 ## Why Akaza UI?
 
-| Others                                                                    | Akaza UI                                                         |
-| ------------------------------------------------------------------------- | ---------------------------------------------------------------- |
-| `<DialogRoot><DialogTrigger><DialogPortal><DialogOverlay><DialogContent>` | `<Dialog v-model="isOpen">` with named slots                     |
-| Composables as optional wrappers                                          | Composables as the core — use standalone or pair with components |
-| React-adapted DX                                                          | Vue-native: `v-model`, scoped slots, `inject/provide`            |
-| Styled or opinionated defaults                                            | Fully unstyled — `data-akaza-*` attributes and class hooks only  |
+| Others                                                                    | Akaza UI                                                      |
+| ------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| `<DialogRoot><DialogTrigger><DialogPortal><DialogOverlay><DialogContent>` | `<Dialog v-model="isOpen">` with named slots                  |
+| React-adapted DX                                                          | Vue-native: `v-model`, scoped slots, `inject/provide`         |
+| Styled or opinionated defaults                                            | Fully unstyled — `data-akaza-*` attributes and class hooks only |
 
 ## Core Philosophy
 
 - **Slot-based, not sub-component-based** — named scoped slots (`#trigger`, `#header`, `#body`, `#footer`) keep templates flat and readable
 - **`v-model`-native** — all stateful components bind via standard `v-model`
 - **`ui` prop for structural styling** — pass class strings per part (`ui.overlay`, `ui.content`, `ui.header`…) instead of wrapping sub-components
-- **Composable-first** — `useDialog()`, `useMenu()`, `useDrawer()` etc. work standalone for headless control or pair with components for full behavior
+- **Items-based API for lists** — `RadioGroup`, `Menu`, `Tabs` accept an `items` array; per-item rendering uses named slots, not sub-components
 - **Accessible by default** — WAI-ARIA roles, keyboard navigation, and focus management built in
 
 ## Components
 
-| Component                                             | Description                                                                     |
-| ----------------------------------------------------- | ------------------------------------------------------------------------------- |
-| `Button`                                              | Accessible button with `disabled`, `loading`, `focusableWhenDisabled`, and `as` |
-| `Toggle`                                              | On/off button with `aria-pressed`                                               |
-| `Switch`                                              | Binary toggle with WAI-ARIA switch role                                         |
-| `Checkbox`                                            | Tri-state checkbox (`true`, `false`, `'indeterminate'`)                         |
-| `RadioGroup`                                          | Accessible radio group with custom item rendering                               |
-| `Progress`                                            | Progressbar with indeterminate support                                          |
-| `Avatar`                                              | Image with fallback slot on load error                                          |
-| `Separator`                                           | Horizontal or vertical divider, decorative or semantic                          |
-| `Collapsible`                                         | Single show/hide region with animated height                                    |
-| `Accordion`                                           | Single or multi-open collapsible item list                                      |
-| `Tooltip`                                             | Hover tooltip with auto-positioning and delay                                   |
-| `Popover`                                             | Click-triggered floating panel with auto-positioning                            |
-| `Dialog`                                              | Modal dialog with focus trap, Escape, backdrop                                  |
-| `AlertDialog`                                         | Confirmation dialog (no Escape/backdrop close per WAI-ARIA)                     |
-| `Drawer`                                              | Side panel with slide-in animation (`top`, `right`, `bottom`, `left`)           |
-| `Menu`                                                | Dropdown menu with arrow-key navigation                                         |
-| `MenuItem`                                            | Individual menu item with keyboard activation                                   |
-| `MenuSeparator`                                       | Visual/semantic separator inside a menu                                         |
-| `Tabs` + `TabList` + `Tab` + `TabPanel` + `TabPanels` | Full accessible tab set with animated indicator                                 |
-
-## Composables
-
-| Composable         | Pairs with    | Standalone use                                                  |
-| ------------------ | ------------- | --------------------------------------------------------------- |
-| `useDialog()`      | `Dialog`      | Control a dialog externally (`dialog.open()`, `dialog.close()`) |
-| `useAlertDialog()` | `AlertDialog` | Same as above for alert dialogs                                 |
-| `useDrawer()`      | `Drawer`      | Control drawer side panel                                       |
-| `useMenu()`        | `Menu`        | Control menu open state                                         |
-| `usePopover()`     | `Popover`     | Control popover open state                                      |
-| `useTooltip()`     | `Tooltip`     | Control tooltip with delay                                      |
-| `useTabs()`        | `Tabs`        | Control active tab externally                                   |
-| `useButton()`      | `Button`      | Disabled/loading click guard logic                              |
-| `useAvatar()`      | `Avatar`      | Image load status (`idle`, `loading`, `loaded`, `error`)        |
+| Component     | Description                                                                     |
+| ------------- | ------------------------------------------------------------------------------- |
+| `Button`      | Accessible button with `disabled`, `loading`, `focusableWhenDisabled`, and `as` |
+| `Toggle`      | On/off button with `aria-pressed`                                               |
+| `Switch`      | Binary toggle with WAI-ARIA switch role                                         |
+| `Checkbox`    | Tri-state checkbox (`true`, `false`, `'indeterminate'`)                         |
+| `RadioGroup`  | Accessible radio group with roving tabindex and custom item rendering           |
+| `Progress`    | Progressbar with indeterminate support                                          |
+| `Avatar`      | Image with fallback slot on load error                                          |
+| `Separator`   | Horizontal or vertical divider, decorative or semantic                          |
+| `Collapsible` | Single show/hide region with animated height                                    |
+| `Accordion`   | Single or multi-open collapsible item list                                      |
+| `Tooltip`     | Hover tooltip with auto-positioning and delay                                   |
+| `Popover`     | Click-triggered floating panel with auto-positioning                            |
+| `Dialog`      | Modal dialog with focus trap, Escape, backdrop                                  |
+| `AlertDialog` | Confirmation dialog (no Escape/backdrop close per WAI-ARIA)                     |
+| `Drawer`      | Side panel with slide-in animation (`top`, `right`, `bottom`, `left`)           |
+| `Menu`        | Dropdown menu with items-based API, submenus, checkbox/radio items              |
+| `Tabs`        | Accessible tab set with animated indicator, items-based API                     |
 
 ## Usage
 
@@ -65,16 +48,14 @@ Unlike libraries ported from React (Radix, Reka), Akaza UI is designed from scra
 
 ```vue
 <script setup lang="ts">
-import { Dialog, useDialog } from "akaza-ui";
+import { ref } from "vue";
+import { Dialog } from "akaza-ui";
 
-const dialog = useDialog();
+const isOpen = ref(false);
 </script>
 
 <template>
-  <Dialog
-    v-model="dialog.isOpen.value"
-    :ui="{ overlay: 'my-overlay', content: 'my-dialog' }"
-  >
+  <Dialog v-model="isOpen" :ui="{ overlay: 'my-overlay', content: 'my-dialog' }">
     <template #trigger="{ toggle }">
       <button @click="toggle">Open</button>
     </template>
@@ -96,48 +77,78 @@ const dialog = useDialog();
 </template>
 ```
 
-### Drawer
-
-```vue
-<Drawer v-model="drawer.isOpen.value" side="right" :inset="16">
-  <template #trigger="{ toggle }">
-    <button @click="toggle">Open Drawer</button>
-  </template>
-  <template #body>
-    <p>Drawer content</p>
-  </template>
-</Drawer>
-```
-
 ### Menu
 
 ```vue
-<Menu v-model="menu.isOpen.value">
-  <template #trigger="{ toggle }">
-    <button @click="toggle">Options</button>
-  </template>
-  <template #content="{ close }">
-    <MenuItem @select="close">Profile</MenuItem>
-    <MenuItem @select="close">Settings</MenuItem>
-    <MenuSeparator />
-    <MenuItem @select="close">Sign out</MenuItem>
-  </template>
-</Menu>
+<script setup lang="ts">
+import { ref } from "vue";
+import { Menu } from "akaza-ui";
+
+const isOpen = ref(false);
+const items = [
+  { label: "Profile", onSelect: () => {} },
+  { label: "Settings", onSelect: () => {} },
+  { type: "separator" },
+  { label: "Sign out", onSelect: () => {} },
+];
+</script>
+
+<template>
+  <Menu v-model="isOpen" :items="items">
+    <template #trigger="{ toggle }">
+      <button @click="toggle">Options</button>
+    </template>
+  </Menu>
+</template>
 ```
 
 ### Tabs
 
 ```vue
-<Tabs v-model="activeTab">
-  <TabList>
-    <Tab value="overview">Overview</Tab>
-    <Tab value="settings">Settings</Tab>
-  </TabList>
-  <TabPanels>
-    <TabPanel value="overview">Overview content</TabPanel>
-    <TabPanel value="settings">Settings content</TabPanel>
-  </TabPanels>
-</Tabs>
+<script setup lang="ts">
+import { ref } from "vue";
+import { Tabs } from "akaza-ui";
+
+const activeTab = ref("overview");
+const items = [
+  { value: "overview", label: "Overview" },
+  { value: "settings", label: "Settings" },
+];
+</script>
+
+<template>
+  <Tabs v-model="activeTab" :items="items" aria-label="Main navigation">
+    <template #panel-overview>Overview content</template>
+    <template #panel-settings>Settings content</template>
+  </Tabs>
+</template>
+```
+
+### useOverlay
+
+Programmatically mount and open any overlay component (Dialog, Drawer, custom) without placing it in the template:
+
+```vue
+<script setup lang="ts">
+import { useOverlay, OverlayProvider, Dialog } from "akaza-ui";
+
+const overlay = useOverlay();
+const confirmDialog = overlay.create(Dialog, {
+  props: { ui: { content: 'my-dialog' } },
+  destroyOnClose: true,
+});
+
+async function handleDelete() {
+  const { result } = confirmDialog.open();
+  const confirmed = await result;
+  if (confirmed) { /* proceed */ }
+}
+</script>
+
+<template>
+  <OverlayProvider />
+  <button @click="handleDelete">Delete</button>
+</template>
 ```
 
 ### Tooltip
@@ -207,9 +218,9 @@ The playground resolves `akaza-ui` directly from source via a Vite alias — no 
 packages/
   akaza-ui/       — publishable library
     src/
-      components/ — Vue component primitives
-      composables/— useX composables (standalone + component-paired)
-      utils/      — focusTrap, focusable helpers
+      components/  — Vue component primitives
+      composables/ — internal composables (useOverlay exported as public API)
+      utils/       — focusTrap, focusable helpers
 playground/       — interactive demo app (Tailwind v4 + Vue Router)
 docs/             — future documentation site
 ```

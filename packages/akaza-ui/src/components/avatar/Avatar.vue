@@ -1,6 +1,5 @@
 <script setup lang="ts">
-import type { AvatarProps } from ".";
-import type { AvatarImageStatus } from "../../composables/avatar/useAvatar";
+import type { AvatarImageStatus, AvatarProps } from ".";
 import { onMounted, ref } from "vue";
 
 const {

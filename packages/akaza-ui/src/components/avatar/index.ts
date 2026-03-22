@@ -1,5 +1,7 @@
 export { default as Avatar } from "./Avatar.vue";
 
+export type AvatarImageStatus = "idle" | "loading" | "loaded" | "error";
+
 export interface AvatarUi {
   root?: string;
   image?: string;

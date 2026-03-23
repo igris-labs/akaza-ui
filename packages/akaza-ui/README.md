@@ -1,4 +1,4 @@
-# akaza-ui
+# Akaza UI
 
 Vue-native headless UI primitives — accessible, unstyled, composable.
 

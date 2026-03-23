@@ -1,15 +1,35 @@
-# Akaza UI
+<p align="center">
+  <a href="https://github.com/igris-labs/akaza-ui">
+    <img src="./logo.png" alt="Logo" width="150" />
+  </a>
+</p>
+<h1 align="center">
+  Akaza UI
+</h1>
+<p align="center">
+  <b>Vue-native headless UI primitives — accessible, unstyled, and built for Vue.</b>
+  <br>
+</p>
 
-Vue-native headless UI primitives — accessible, unstyled, and built for Vue 3.
+<p align="center">
+  <a href="https://github.com/igris-labs/akaza-ui/stargazers">
+    <img alt="GitHub stars" src="https://img.shields.io/github/stars/igris-labs/akaza-ui?style=social">
+  </a>
+  <a href="https://github.com/igris-labs/akaza-ui/blob/main/LICENSE.md">
+    <img alt="License" src="https://img.shields.io/badge/License-MIT-yellow.svg">
+  </a>  
+</p>
+
+# Akaza UI
 
 Unlike libraries ported from React (Radix, Reka), Akaza UI is designed from scratch for Vue 3. It uses `v-model`, named scoped slots, and the `ui` prop as first-class primitives — no sub-component trees, no `asChild`, no fighting the framework.
 
 ## Why Akaza UI?
 
-| Others                                                                    | Akaza UI                                                      |
-| ------------------------------------------------------------------------- | ------------------------------------------------------------- |
-| `<DialogRoot><DialogTrigger><DialogPortal><DialogOverlay><DialogContent>` | `<Dialog v-model="isOpen">` with named slots                  |
-| React-adapted DX                                                          | Vue-native: `v-model`, scoped slots, `inject/provide`         |
+| Others                                                                    | Akaza UI                                                        |
+| ------------------------------------------------------------------------- | --------------------------------------------------------------- |
+| `<DialogRoot><DialogTrigger><DialogPortal><DialogOverlay><DialogContent>` | `<Dialog v-model="isOpen">` with named slots                    |
+| React-adapted DX                                                          | Vue-native: `v-model`, scoped slots, `inject/provide`           |
 | Styled or opinionated defaults                                            | Fully unstyled — `data-akaza-*` attributes and class hooks only |
 
 ## Core Philosophy
@@ -55,7 +75,10 @@ const isOpen = ref(false);
 </script>
 
 <template>
-  <Dialog v-model="isOpen" :ui="{ overlay: 'my-overlay', content: 'my-dialog' }">
+  <Dialog
+    v-model="isOpen"
+    :ui="{ overlay: 'my-overlay', content: 'my-dialog' }"
+  >
     <template #trigger="{ toggle }">
       <button @click="toggle">Open</button>
     </template>
@@ -134,14 +157,16 @@ import { useOverlay, OverlayProvider, Dialog } from "akaza-ui";
 
 const overlay = useOverlay();
 const confirmDialog = overlay.create(Dialog, {
-  props: { ui: { content: 'my-dialog' } },
+  props: { ui: { content: "my-dialog" } },
   destroyOnClose: true,
 });
 
 async function handleDelete() {
   const { result } = confirmDialog.open();
   const confirmed = await result;
-  if (confirmed) { /* proceed */ }
+  if (confirmed) {
+    /* proceed */
+  }
 }
 </script>
 

@@ -3,6 +3,7 @@ import { ref } from "vue";
 
 export interface UseTooltipOptions {
   delayDuration?: number;
+  closeDelay?: number;
 }
 export interface UseTooltipReturn {
   isOpen: Ref<boolean>;
@@ -16,20 +17,17 @@ export function useTooltip(
   options: UseTooltipOptions = {},
 ): UseTooltipReturn {
   const isOpen = modelRef ?? ref(false);
-  const { delayDuration = 300 } = options;
-  let timer: ReturnType<typeof setTimeout> | null = null;
+  const { delayDuration = 300, closeDelay = 0 } = options;
+  let openTimer: ReturnType<typeof setTimeout> | null = null;
+  let closeTimer: ReturnType<typeof setTimeout> | null = null;
 
   function open() {
-    timer = setTimeout(() => {
-      isOpen.value = true;
-    }, delayDuration);
+    if (closeTimer) { clearTimeout(closeTimer); closeTimer = null; }
+    openTimer = setTimeout(() => { isOpen.value = true; }, delayDuration);
   }
   function close() {
-    if (timer) {
-      clearTimeout(timer);
-      timer = null;
-    }
-    isOpen.value = false;
+    if (openTimer) { clearTimeout(openTimer); openTimer = null; }
+    closeTimer = setTimeout(() => { isOpen.value = false; }, closeDelay);
   }
   function toggle() {
     isOpen.value ? close() : open();

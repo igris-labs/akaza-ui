@@ -1,19 +1,25 @@
 <script setup lang="ts">
 import type { TooltipDirection, TooltipProps } from ".";
 import { onKeyStroke } from "@vueuse/core";
-import { nextTick, ref, useId, useTemplateRef, watch } from "vue";
+import { nextTick, onUnmounted, ref, useId, useTemplateRef, watch } from "vue";
 import { useTooltip } from "../../composables/tooltip";
 
 const {
   direction = "top",
   delayDuration = 300,
+  closeDelay = 0,
+  disabled = false,
+  arrow = false,
   teleport = "body",
   transition = "akaza-tooltip",
   ui,
 } = defineProps<TooltipProps>();
 
 const model = defineModel<boolean>({ default: false });
-const { open, close } = useTooltip(model, { delayDuration });
+const { open: _open, close: _close } = useTooltip(model, { delayDuration, closeDelay });
+
+function open() { if (!disabled) _open(); }
+function close() { if (!disabled || model.value) _close(); }
 
 const tooltipId = useId();
 const triggerRef = useTemplateRef<HTMLElement>("triggerRef");
@@ -79,12 +85,30 @@ function computePosition() {
   posStyle.value = { top: `${top}px`, left: `${left}px` };
 }
 
+const posReady = ref(false);
+let posCleanup: (() => void) | null = null;
+
 watch(model, async (val) => {
   if (val) {
+    posReady.value = false;
     await nextTick();
     computePosition();
+    posReady.value = true;
+    const update = () => computePosition();
+    window.addEventListener("scroll", update, { passive: true, capture: true });
+    window.addEventListener("resize", update, { passive: true });
+    posCleanup = () => {
+      window.removeEventListener("scroll", update, { capture: true });
+      window.removeEventListener("resize", update);
+    };
+  } else {
+    posReady.value = false;
+    posCleanup?.();
+    posCleanup = null;
   }
 });
+
+onUnmounted(() => posCleanup?.());
 
 onKeyStroke("Escape", (e) => {
   if (model.value) {
@@ -96,11 +120,12 @@ onKeyStroke("Escape", (e) => {
 </script>
 
 <template>
-  <span class="akaza-tooltip-root">
+  <span :class="ui?.root" class="akaza-tooltip-root">
     <span
       ref="triggerRef"
       :aria-describedby="model ? tooltipId : undefined"
       :data-akaza-state="model ? 'open' : 'closed'"
+      :class="ui?.trigger"
       class="akaza-tooltip-trigger"
       @mouseenter="open"
       @mouseleave="close"
@@ -128,13 +153,11 @@ onKeyStroke("Escape", (e) => {
           :class="ui?.content"
           data-akaza-state="open"
           :data-akaza-direction="actualDirection"
-          :style="posStyle"
+          :style="[posStyle, posReady ? {} : { visibility: 'hidden' }]"
           class="akaza-tooltip-content"
         >
-          <slot
-            name="content"
-            :close="close"
-          />
+          <slot name="content" :close="close" />
+          <span v-if="arrow" class="akaza-tooltip-arrow" aria-hidden="true" />
         </div>
       </Transition>
     </Teleport>
@@ -142,6 +165,51 @@ onKeyStroke("Escape", (e) => {
 </template>
 
 <style>
+.akaza-tooltip-trigger {
+  display: inline-block;
+}
+
+.akaza-tooltip-arrow {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: inherit;
+  border: inherit;
+  transform: rotate(45deg);
+}
+
+[data-akaza-direction="top"] .akaza-tooltip-arrow {
+  bottom: -4px;
+  left: 50%;
+  margin-left: -4px;
+  border-top: none;
+  border-left: none;
+}
+
+[data-akaza-direction="bottom"] .akaza-tooltip-arrow {
+  top: -4px;
+  left: 50%;
+  margin-left: -4px;
+  border-bottom: none;
+  border-right: none;
+}
+
+[data-akaza-direction="left"] .akaza-tooltip-arrow {
+  right: -4px;
+  top: 50%;
+  margin-top: -4px;
+  border-top: none;
+  border-right: none;
+}
+
+[data-akaza-direction="right"] .akaza-tooltip-arrow {
+  left: -4px;
+  top: 50%;
+  margin-top: -4px;
+  border-bottom: none;
+  border-left: none;
+}
+
 .akaza-tooltip-enter-active,
 .akaza-tooltip-leave-active {
   transition:

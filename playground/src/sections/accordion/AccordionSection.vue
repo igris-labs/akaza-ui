@@ -400,7 +400,12 @@ function onAccordionChange(value: string | string[], details: AkazaChangeEventDe
 }
 
 .acc-trigger:hover:not(:disabled):not([data-akaza-disabled]) {
-  background: var(--muted);
+  /* var(--muted) == canvas color in dark mode; use a lighter blend instead */
+  background: color-mix(in oklch, var(--muted-foreground) 12%, var(--background));
+}
+
+.acc-trigger[data-akaza-state="open"] {
+  background: color-mix(in oklch, var(--muted-foreground) 8%, var(--background));
 }
 
 .acc-trigger:focus-visible {
@@ -562,7 +567,7 @@ function onAccordionChange(value: string | string[], details: AkazaChangeEventDe
 }
 
 .acc-ui-trigger:hover:not(:disabled) {
-  background: var(--muted);
+  background: color-mix(in oklch, var(--muted-foreground) 12%, var(--background));
 }
 
 .acc-ui-trigger:focus-visible {

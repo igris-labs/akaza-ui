@@ -234,6 +234,16 @@ function onPanelBMount() { mountCount.value++; }
   z-index: 0;
 }
 
+/* Dark mode: --muted == canvas color, so the pill bar vanishes.
+   Use a clearly distinct tone for the tray and a lighter shade for the indicator. */
+.dark .tabs-pill-list {
+  background: color-mix(in oklch, var(--muted-foreground) 35%, var(--background));
+}
+.dark .tabs-pill-list .akaza-tab-indicator {
+  background: color-mix(in oklch, var(--muted-foreground) 55%, var(--background));
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+}
+
 /* Button reset for pill tabs — rendered above indicator */
 .tabs-pill-btn {
   all: unset;

@@ -444,7 +444,7 @@ function onMenuSelect(item: MenuItem, details: AkazaChangeEventDetails) {
   cursor: pointer;
   transition: background 0.1s;
 }
-.mn-btn:hover { background: var(--muted); }
+.mn-btn:hover { background: color-mix(in oklch, var(--muted-foreground) 15%, transparent); }
 .mn-btn-sm { padding: 4px 10px; font-size: 12px; }
 
 /* ── Panel ───────────────────────────────────────────────────────────────── */

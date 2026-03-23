@@ -314,7 +314,7 @@ function onCollapsibleChange(open: boolean, details: AkazaChangeEventDetails) {
 }
 
 .cl-trigger:hover:not(:disabled):not([data-akaza-disabled]) {
-  background: var(--muted);
+  background: color-mix(in oklch, var(--muted-foreground) 12%, var(--background));
 }
 
 .cl-trigger:focus-visible {
@@ -455,7 +455,7 @@ function onCollapsibleChange(open: boolean, details: AkazaChangeEventDetails) {
   transition: background 0.1s;
 }
 
-.cl-prog-btn:hover { background: var(--muted); }
+.cl-prog-btn:hover { background: color-mix(in oklch, var(--muted-foreground) 15%, var(--background)); }
 
 /* ── ui prop example ─────────────────────────────────────────────────────── */
 .cl-ui-root {

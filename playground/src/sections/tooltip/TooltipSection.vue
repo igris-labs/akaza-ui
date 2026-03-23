@@ -107,7 +107,7 @@ const disabled = ref(false);
   cursor: pointer;
 }
 .tt-btn:hover {
-  background: var(--muted);
+  background: color-mix(in oklch, var(--muted-foreground) 15%, var(--background));
 }
 
 .tt-content {

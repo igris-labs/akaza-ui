@@ -243,7 +243,7 @@ function handleSubmit(e: Event) {
   color: var(--foreground);
 }
 .btn--ghost:hover:not([data-akaza-disabled]):not([data-akaza-loading]) {
-  background: var(--muted);
+  background: color-mix(in oklch, var(--muted-foreground) 15%, transparent);
 }
 
 .btn--destructive {

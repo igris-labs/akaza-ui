@@ -284,6 +284,6 @@ const slotValue = ref(72);
   cursor: pointer;
 }
 .pg-btn:hover {
-  background: var(--muted);
+  background: color-mix(in oklch, var(--muted-foreground) 15%, transparent);
 }
 </style>

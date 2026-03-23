@@ -228,7 +228,8 @@ function handleFormSubmit(e: Event) {
   transition: background 0.15s;
 }
 .rg-item:hover:not(.rg-item--disabled) {
-  background: color-mix(in oklch, var(--muted) 60%, transparent);
+  /* var(--muted) == canvas in dark mode; use muted-foreground at low opacity instead */
+  background: color-mix(in oklch, var(--muted-foreground) 12%, transparent);
 }
 .rg-item--checked {
   color: var(--primary);

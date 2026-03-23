@@ -163,7 +163,7 @@ async function openDestroyModal() {
   border: 1px solid var(--border);
   cursor: pointer;
 }
-.ov-btn-ghost:hover { background: var(--muted); }
+.ov-btn-ghost:hover { background: color-mix(in oklch, var(--muted-foreground) 15%, transparent); }
 
 /* ── State / log ─────────────────────────────────────────────────────────── */
 .ov-state {

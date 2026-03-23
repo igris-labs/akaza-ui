@@ -354,7 +354,7 @@ function onOpenChangeCancelEscape(open: boolean, details: AkazaChangeEventDetail
   border: 1px solid var(--border);
   cursor: pointer;
 }
-.po-btn-ghost:hover { background: var(--muted); }
+.po-btn-ghost:hover { background: color-mix(in oklch, var(--muted-foreground) 15%, transparent); }
 
 /* ── State / log ────────────────────────────────────────────────────────── */
 .po-state {

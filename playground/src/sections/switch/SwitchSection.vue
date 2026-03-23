@@ -170,7 +170,9 @@ function handleFormSubmit(e: Event) {
   width: 44px;
   height: 24px;
   border-radius: 9999px;
-  background: var(--border);
+  /* In dark mode --border == --accent (canvas), so use a blend that stays
+     visibly distinct from the canvas background in both colour schemes. */
+  background: color-mix(in oklch, var(--muted-foreground) 28%, var(--muted));
   border: none;
   padding: 2px;
   cursor: pointer;

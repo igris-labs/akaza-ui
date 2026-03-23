@@ -36,7 +36,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "pnpm typecheck && vite build",
+    "build": "vite build",
     "typecheck": "vue-tsc --noEmit -p tsconfig.build.json",
     "lint": "oxlint . && eslint .",
     "lint:fix": "oxlint . --fix && eslint . --fix",

@@ -6,7 +6,8 @@
     "node": ">=18.18.0"
   },
   "scripts": {
-    "build": "pnpm -r --filter ./packages/** run build",
+    "build": "pnpm build:projects && pnpm build:playground",
+    "build:projects": "pnpm -r --filter ./packages/** run build",
     "build:playground": "pnpm -r --filter ./playground/** run build",
     "lint": "pnpm -r --filter ./packages/** run lint",
     "test": "pnpm -r --filter ./packages/** run test"

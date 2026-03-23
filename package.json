@@ -9,8 +9,7 @@
     "build": "pnpm -r --filter ./packages/** run build",
     "build:playground": "pnpm -r --filter ./playground/** run build",
     "lint": "pnpm -r --filter ./packages/** run lint",
-    "test": "pnpm -r --filter ./packages/** run test",
-    "install": "pnpm -r --filter ./packages/** install"
+    "test": "pnpm -r --filter ./packages/** run test"
   },
   "license": "MIT",
   "pnpm": {

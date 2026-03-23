@@ -254,6 +254,10 @@ docs/             — future documentation site
 
 Early development. API is not stable. Breaking changes may occur between minor versions.
 
+## Playground
+
+[Akaza UI Playground](https://playground.akaza-ui.com)
+
 ## License
 
 MIT

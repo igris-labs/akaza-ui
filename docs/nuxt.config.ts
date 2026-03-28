@@ -7,7 +7,6 @@ export default defineNuxtConfig({
     "@nuxt/content",
     "nuxt-og-image",
     "nuxt-llms",
-    "@nuxtjs/mcp-toolkit",
     "akaza-ui/nuxt",
   ],
 
@@ -75,7 +74,4 @@ export default defineNuxtConfig({
     ],
   },
 
-  mcp: {
-    name: "Akaza UI Docs",
-  },
 });

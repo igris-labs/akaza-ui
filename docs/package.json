@@ -23,6 +23,7 @@
     "@nuxtjs/mcp-toolkit": "^0.12.0",
     "@nuxtjs/mdc": "^0.21.0",
     "@resvg/resvg-js": "^2.6.2",
+    "@resvg/resvg-wasm": "^2.6.2",
     "@vueuse/core": "^14.2.1",
     "akaza-ui": "workspace:*",
     "better-sqlite3": "^12.8.0",

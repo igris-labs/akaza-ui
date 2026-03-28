@@ -35,7 +35,7 @@ try {
   // Commit, tag, push
   execSync('git add packages/akaza-ui/package.json package.json', { cwd: root, stdio: 'inherit' });
   execSync(`git commit -m "chore: release v${newVersion}"`, { cwd: root, stdio: 'inherit' });
-  execSync(`git tag v${newVersion}`, { cwd: root, stdio: 'inherit' });
+  execSync(`git tag -a v${newVersion} -m "v${newVersion}"`, { cwd: root, stdio: 'inherit' });
   execSync('git push', { cwd: root, stdio: 'inherit' });
   execSync('git push --tags', { cwd: root, stdio: 'inherit' });
 

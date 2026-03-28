@@ -44,6 +44,7 @@
     "dist"
   ],
   "scripts": {
+    "prepare": "vite build",
     "build": "vite build",
     "typecheck": "vue-tsc --noEmit -p tsconfig.build.json",
     "lint": "oxlint . && eslint .",

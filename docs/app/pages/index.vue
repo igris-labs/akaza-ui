@@ -13,7 +13,8 @@ if (!page.value) {
 const title = page.value.seo?.title || page.value.title;
 const description = page.value.seo?.description || page.value.description;
 defineOgImage("Docs", {
-  headline: title,
+  title,
+  description,
 });
 
 useSeoMeta({

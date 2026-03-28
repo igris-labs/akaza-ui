@@ -2,8 +2,8 @@
 const props = withDefaults(
   defineProps<{ title?: string; description?: string; headline?: string }>(),
   {
-    title: "title",
-    description: "description",
+    title: "Akaza UI",
+    description: "Vue-native headless UI primitives — accessible, unstyled, and built for Vue.",
   },
 );
 
@@ -38,37 +38,20 @@ const description = computed(() => (props.description || "").slice(0, 200));
           color-interpolation-filters="sRGB"
         >
           <feFlood flood-opacity="0" result="BackgroundImageFix" />
-          <feBlend
-            mode="normal"
-            in="SourceGraphic"
-            in2="BackgroundImageFix"
-            result="shape"
-          />
-          <feGaussianBlur
-            stdDeviation="40.5"
-            result="effect1_foregroundBlur_199_94966"
-          />
+          <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape" />
+          <feGaussianBlur stdDeviation="40.5" result="effect1_foregroundBlur_199_94966" />
         </filter>
       </defs>
     </svg>
 
     <div class="pl-[100px]">
-      <p
-        v-if="headline"
-        class="uppercase text-[24px] text-[#E4E4E7] mb-4 font-semibold"
-      >
+      <p v-if="headline" class="uppercase text-[24px] text-[#E4E4E7] mb-4 font-semibold">
         {{ headline }}
       </p>
-      <h1
-        v-if="title"
-        class="m-0 text-[75px] font-semibold mb-4 text-white flex items-center"
-      >
+      <h1 v-if="title" class="m-0 text-[75px] font-semibold mb-4 text-white flex items-center">
         <span>{{ title }}</span>
       </h1>
-      <p
-        v-if="description"
-        class="text-[32px] text-[#E4E4E7] leading-tight w-[700px]"
-      >
+      <p v-if="description" class="text-[32px] text-[#E4E4E7] leading-tight w-[700px]">
         {{ description }}
       </p>
     </div>

@@ -10,7 +10,6 @@ Built for Vue 3, not adapted from React. Every primitive uses `v-model`, named s
 
 - **Slot-based** — `#trigger`, `#header`, `#body`, `#footer` slots keep templates flat
 - **`ui` prop** — inject CSS classes per structural part (`ui.overlay`, `ui.content`, …)
-- **Composable-first** — use `useDialog()`, `useMenu()` etc. standalone or paired with components
 - **Accessible** — WAI-ARIA roles, keyboard navigation, focus management
 - **Unstyled** — `data-akaza-*` attributes and semantic class hooks; no style opinion
 
@@ -21,35 +20,59 @@ Built for Vue 3, not adapted from React. Every primitive uses `v-model`, named s
 ## Installation
 
 ```sh
-npm install akaza-ui
-# or
 pnpm add akaza-ui
+# or
+npm install akaza-ui
 ```
+
+## Setup
+
+### Vue
+
+Import component styles once in your app entry point:
+
+```ts
+// main.ts
+import 'akaza-ui/dist/akaza-ui.css'
+```
+
+**If you use Tailwind CSS**, declare the `akaza-reset` layer before Tailwind to allow utility classes to override component base styles:
+
+```css
+/* main.css */
+@layer akaza-reset;
+@import "tailwindcss";
+```
+
+### Nuxt
+
+Add the Nuxt module — it auto-registers all components and injects CSS:
+
+```ts
+// nuxt.config.ts
+export default defineNuxtConfig({
+  modules: ['akaza-ui/nuxt'],
+})
+```
+
+No manual CSS import or component registration needed.
 
 ## Components
 
-`Button` · `Toggle` · `Switch` · `Checkbox` · `RadioGroup` · `Progress` · `Avatar` · `Separator` · `Collapsible` · `Accordion` · `Tooltip` · `Popover` · `Dialog` · `AlertDialog` · `Drawer` · `Menu` · `MenuItem` · `MenuSeparator` · `Tabs` · `TabList` · `Tab` · `TabPanel` · `TabPanels`
-
-## Composables
-
-`useDialog` · `useAlertDialog` · `useDrawer` · `useMenu` · `usePopover` · `useTooltip` · `useTabs` · `useButton` · `useAvatar`
+`Button` · `Toggle` · `Switch` · `Checkbox` · `RadioGroup` · `Progress` · `Avatar` · `Separator` · `Collapsible` · `Accordion` · `Tooltip` · `Popover` · `Dialog` · `AlertDialog` · `Drawer` · `Menu` · `Tabs`
 
 ## Usage
 
 ```vue
 <script setup lang="ts">
-import { Dialog, useDialog } from "akaza-ui";
-
-const dialog = useDialog();
+import { Dialog } from "akaza-ui";
 </script>
 
 <template>
   <Dialog
-    v-model="dialog.isOpen.value"
     :ui="{
       overlay: 'fixed inset-0 bg-black/50',
-      content:
-        'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl shadow-xl w-full max-w-md',
+      content: 'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl shadow-xl w-full max-w-md',
       header: 'flex items-center justify-between p-6 border-b',
       body: 'p-6',
       footer: 'flex justify-end gap-2 p-6 border-t',

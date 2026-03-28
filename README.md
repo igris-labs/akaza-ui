@@ -17,7 +17,7 @@
   </a>
   <a href="https://github.com/igris-labs/akaza-ui/blob/main/LICENSE.md">
     <img alt="License" src="https://img.shields.io/badge/License-MIT-yellow.svg">
-  </a>  
+  </a>
 </p>
 
 # Akaza UI
@@ -39,6 +39,44 @@ Unlike libraries ported from React (Radix, Reka), Akaza UI is designed from scra
 - **`ui` prop for structural styling** — pass class strings per part (`ui.overlay`, `ui.content`, `ui.header`…) instead of wrapping sub-components
 - **Items-based API for lists** — `RadioGroup`, `Menu`, `Tabs` accept an `items` array; per-item rendering uses named slots, not sub-components
 - **Accessible by default** — WAI-ARIA roles, keyboard navigation, and focus management built in
+
+## Installation
+
+```sh
+pnpm add akaza-ui
+# or
+npm install akaza-ui
+```
+
+### Vue
+
+Import the CSS in your app entry point:
+
+```ts
+// main.ts
+import 'akaza-ui/dist/akaza-ui.css'
+```
+
+**If you use Tailwind CSS**, declare the `akaza-reset` layer before Tailwind so utility classes can override component base styles:
+
+```css
+/* main.css */
+@layer akaza-reset;
+@import "tailwindcss";
+```
+
+### Nuxt
+
+Use the built-in Nuxt module — it registers all components as auto-imports and injects the CSS automatically:
+
+```ts
+// nuxt.config.ts
+export default defineNuxtConfig({
+  modules: ['akaza-ui/nuxt'],
+})
+```
+
+No manual CSS import or component registration needed.
 
 ## Components
 
@@ -77,7 +115,13 @@ const isOpen = ref(false);
 <template>
   <Dialog
     v-model="isOpen"
-    :ui="{ overlay: 'my-overlay', content: 'my-dialog' }"
+    :ui="{
+      overlay: 'fixed inset-0 bg-black/50 backdrop-blur-sm',
+      content: 'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl shadow-xl w-full max-w-md',
+      header: 'flex items-center justify-between p-6 border-b',
+      body: 'p-6',
+      footer: 'flex justify-end gap-2 p-6 border-t',
+    }"
   >
     <template #trigger="{ toggle }">
       <button @click="toggle">Open</button>
@@ -104,10 +148,8 @@ const isOpen = ref(false);
 
 ```vue
 <script setup lang="ts">
-import { ref } from "vue";
 import { Menu } from "akaza-ui";
 
-const isOpen = ref(false);
 const items = [
   { label: "Profile", onSelect: () => {} },
   { label: "Settings", onSelect: () => {} },
@@ -117,7 +159,7 @@ const items = [
 </script>
 
 <template>
-  <Menu v-model="isOpen" :items="items">
+  <Menu :items="items">
     <template #trigger="{ toggle }">
       <button @click="toggle">Options</button>
     </template>
@@ -145,48 +187,6 @@ const items = [
     <template #panel-settings>Settings content</template>
   </Tabs>
 </template>
-```
-
-### useOverlay
-
-Programmatically mount and open any overlay component (Dialog, Drawer, custom) without placing it in the template:
-
-```vue
-<script setup lang="ts">
-import { useOverlay, OverlayProvider, Dialog } from "akaza-ui";
-
-const overlay = useOverlay();
-const confirmDialog = overlay.create(Dialog, {
-  props: { ui: { content: "my-dialog" } },
-  destroyOnClose: true,
-});
-
-async function handleDelete() {
-  const { result } = confirmDialog.open();
-  const confirmed = await result;
-  if (confirmed) {
-    /* proceed */
-  }
-}
-</script>
-
-<template>
-  <OverlayProvider />
-  <button @click="handleDelete">Delete</button>
-</template>
-```
-
-### Tooltip
-
-```vue
-<Tooltip direction="top" :delay-duration="200">
-  <template #trigger>
-    <button>Hover me</button>
-  </template>
-  <template #content>
-    Helpful information
-  </template>
-</Tooltip>
 ```
 
 ## Styling
@@ -220,43 +220,23 @@ Or target via CSS:
 ## Requirements
 
 - Vue `>=3.5.0`
-- `@vueuse/core` (peer dependency, auto-installed)
-
-## Installation
-
-```sh
-pnpm add akaza-ui
-```
-
-## Development
-
-```sh
-pnpm install
-pnpm --filter playground dev   # playground with live source (no build needed)
-```
-
-The playground resolves `akaza-ui` directly from source via a Vite alias — no rebuild step required during development.
+- `@vueuse/core` (peer dependency)
 
 ## Repo Structure
 
 ```
 packages/
-  akaza-ui/       — publishable library
+  akaza-ui/       — publishable library (akaza-ui on npm)
     src/
       components/  — Vue component primitives
-      composables/ — internal composables (useOverlay exported as public API)
+      composables/ — internal + public composables (useOverlay)
       utils/       — focusTrap, focusable helpers
-playground/       — interactive demo app (Tailwind v4 + Vue Router)
-docs/             — future documentation site
+docs/             — documentation site (Nuxt + Nuxt UI)
 ```
 
 ## Status
 
 Early development. API is not stable. Breaking changes may occur between minor versions.
-
-## Playground
-
-[Akaza UI Playground](https://playground.akaza-ui.com)
 
 ## License
 

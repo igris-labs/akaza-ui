@@ -32,6 +32,7 @@
     "nuxt-llms": "0.2.0",
     "nuxt-og-image": "^6.2.6",
     "satori": "^0.26.0",
+    "secure-exec": "^0.1.0",
     "tailwindcss": "^4.2.2",
     "ufo": "^1.6.3",
     "unist-util-visit": "^5.1.0",

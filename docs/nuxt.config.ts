@@ -8,6 +8,7 @@ export default defineNuxtConfig({
     "nuxt-og-image",
     "nuxt-llms",
     "akaza-ui/nuxt",
+    "nuxt-gtag",
   ],
 
   devtools: {

@@ -28,6 +28,7 @@
     "better-sqlite3": "^12.8.0",
     "minimark": "^1.0.0",
     "nuxt": "^4.4.2",
+    "nuxt-gtag": "^4.1.0",
     "nuxt-llms": "0.2.0",
     "nuxt-og-image": "^6.2.6",
     "satori": "^0.26.0",

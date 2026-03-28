@@ -4,9 +4,10 @@
   "private": true,
   "license": "MIT",
   "scripts": {
-    "build": "pnpm build:projects && pnpm build:playground",
+    "build": "pnpm build:projects && pnpm build:playground && pnpm build:docs",
     "build:projects": "pnpm -r --filter ./packages/** run build",
     "build:playground": "pnpm -r --filter ./playground run build",
+    "build:docs": "pnpm -r --filter ./docs run build",
     "lint": "pnpm -r --filter ./packages/** run lint",
     "test": "pnpm -r --filter ./packages/** run test"
   },

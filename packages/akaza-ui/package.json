@@ -1,7 +1,7 @@
 {
   "name": "akaza-ui",
   "type": "module",
-  "version": "0.0.1",
+  "version": "0.0.1-alpha",
   "description": "Vue-native headless UI primitives — accessible, unstyled, composable.",
   "license": "MIT",
   "keywords": [

@@ -1,10 +1,10 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { Toggle } from 'akaza-ui'
+import { Toggle } from "akaza-ui";
+import { ref } from "vue";
 
-const bold = ref(false)
-const italic = ref(false)
-const underline = ref(false)
+const bold = ref(false);
+const italic = ref(false);
+const underline = ref(false);
 </script>
 
 <template>
@@ -18,9 +18,11 @@ const underline = ref(false)
         v-model="bold"
         aria-label="Bold"
         class="flex size-8 cursor-pointer items-center justify-center rounded-lg text-sm font-bold transition-colors"
-        :class="bold
-          ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900'
-          : 'text-neutral-600 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800'"
+        :class="
+          bold
+            ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900'
+            : 'text-neutral-600 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800'
+        "
       >
         B
       </Toggle>
@@ -29,9 +31,11 @@ const underline = ref(false)
         v-model="italic"
         aria-label="Italic"
         class="flex size-8 cursor-pointer items-center justify-center rounded-lg text-sm italic transition-colors"
-        :class="italic
-          ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900'
-          : 'text-neutral-600 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800'"
+        :class="
+          italic
+            ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900'
+            : 'text-neutral-600 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800'
+        "
       >
         I
       </Toggle>
@@ -40,9 +44,11 @@ const underline = ref(false)
         v-model="underline"
         aria-label="Underline"
         class="flex size-8 cursor-pointer items-center justify-center rounded-lg text-sm underline transition-colors"
-        :class="underline
-          ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900'
-          : 'text-neutral-600 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800'"
+        :class="
+          underline
+            ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900'
+            : 'text-neutral-600 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800'
+        "
       >
         U
       </Toggle>
@@ -52,8 +58,8 @@ const underline = ref(false)
       class="text-sm text-neutral-600 dark:text-neutral-400"
       :class="{
         'font-bold': bold,
-        'italic': italic,
-        'underline': underline,
+        italic,
+        underline,
       }"
     >
       The quick brown fox jumps over the lazy dog.

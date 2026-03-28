@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import { Progress } from 'akaza-ui'
+import { Progress } from "akaza-ui";
+import { ref } from "vue";
 
-const value = ref(65)
+const value = ref(65);
 </script>
 
 <template>
@@ -51,7 +51,9 @@ const value = ref(65)
         aria-label="Loading"
       >
         <template #indicator>
-          <div class="h-full w-1/3 animate-[indeterminate_1.4s_ease_infinite] rounded-full bg-neutral-900 dark:bg-white" />
+          <div
+            class="h-full w-1/3 animate-[indeterminate_1.4s_ease_infinite] rounded-full bg-neutral-900 dark:bg-white"
+          />
         </template>
       </Progress>
     </div>
@@ -60,8 +62,14 @@ const value = ref(65)
 
 <style>
 @keyframes indeterminate {
-  0% { transform: translateX(-100%) scaleX(1); }
-  50% { transform: translateX(100%) scaleX(2); }
-  100% { transform: translateX(300%) scaleX(1); }
+  0% {
+    transform: translateX(-100%) scaleX(1);
+  }
+  50% {
+    transform: translateX(100%) scaleX(2);
+  }
+  100% {
+    transform: translateX(300%) scaleX(1);
+  }
 }
 </style>

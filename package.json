@@ -1,10 +1,8 @@
 {
   "name": "akaza-ui-monorepo",
-  "private": true,
   "version": "0.0.0",
-  "engines": {
-    "node": ">=18.18.0"
-  },
+  "private": true,
+  "license": "MIT",
   "scripts": {
     "build": "pnpm build:projects && pnpm build:playground",
     "build:projects": "pnpm -r --filter ./packages/** run build",
@@ -12,12 +10,8 @@
     "lint": "pnpm -r --filter ./packages/** run lint",
     "test": "pnpm -r --filter ./packages/** run test"
   },
-  "license": "MIT",
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "esbuild",
-      "vue-demi"
-    ]
+  "engines": {
+    "node": ">=18.18.0"
   },
   "packageManager": "pnpm@10.32.1+sha512.a706938f0e89ac1456b6563eab4edf1d1faf3368d1191fc5c59790e96dc918e4456ab2e67d613de1043d2e8c81f87303e6b40d4ffeca9df15ef1ad567348f2be"
 }

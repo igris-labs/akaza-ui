@@ -195,31 +195,33 @@ onKeyStroke(["ArrowDown", "ArrowUp", "ArrowRight", "ArrowLeft", "Home", "End"], 
 </template>
 
 <style>
-.akaza-accordion-trigger {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  text-align: left;
-}
+@layer akaza-reset {
+  .akaza-accordion-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    text-align: left;
+  }
 
-.akaza-accordion-trigger:disabled,
-.akaza-accordion-trigger[data-akaza-disabled] {
-  cursor: not-allowed;
-  opacity: 0.5;
-}
+  .akaza-accordion-trigger:disabled,
+  .akaza-accordion-trigger[data-akaza-disabled] {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
 
-.akaza-accordion-icon {
-  flex-shrink: 0;
-  transition: transform 0.2s ease;
-}
+  .akaza-accordion-icon {
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+  }
 
-.akaza-accordion-icon[data-akaza-state="open"] {
-  transform: rotate(180deg);
+  .akaza-accordion-icon[data-akaza-state="open"] {
+    transform: rotate(180deg);
+  }
 }
 
 .akaza-accordion-content {

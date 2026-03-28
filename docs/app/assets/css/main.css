@@ -1,6 +1,6 @@
+@layer akaza-reset;
 @import "tailwindcss";
 @import "@nuxt/ui";
-@import "akaza-ui/dist/akaza-ui.css";
 
 @source "../../../content/**/*";
 

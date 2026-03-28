@@ -1,4 +1,15 @@
 packages:
   - "packages/*"
-  - "docs/*"
+  - "docs"
   - "playground"
+
+ignoredBuiltDependencies:
+  - "@parcel/watcher"
+  - unrs-resolver
+  - vue-demi
+
+onlyBuiltDependencies:
+  - sharp
+  - "@tailwindcss/oxide"
+  - esbuild
+  - better-sqlite3

@@ -1,9 +1,14 @@
 <script setup lang="ts">
-import { Dialog } from 'akaza-ui'
+import { Dialog } from "akaza-ui";
 </script>
 
 <template>
-  <Dialog>
+  <Dialog
+    :ui="{
+      overlay: 'bg-black/50',
+      content: 'w-full max-w-md rounded-xl bg-white shadow-xl ring-1 ring-neutral-200 dark:bg-neutral-900 dark:ring-neutral-800',
+    }"
+  >
     <template #trigger="{ toggle }">
       <button
         class="rounded-lg border border-neutral-200 bg-white px-4 py-2 text-sm font-medium text-neutral-700 shadow-sm transition-colors hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
@@ -14,7 +19,9 @@ import { Dialog } from 'akaza-ui'
     </template>
 
     <template #header="{ close, titleId }">
-      <div class="flex items-center justify-between border-b border-neutral-100 px-5 py-4 dark:border-neutral-800">
+      <div
+        class="flex items-center justify-between border-b border-neutral-100 px-5 py-4 dark:border-neutral-800"
+      >
         <h2 :id="titleId" class="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
           Edit profile
         </h2>
@@ -23,7 +30,13 @@ import { Dialog } from 'akaza-ui'
           aria-label="Close"
           @click="() => close()"
         >
-          <svg class="size-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+          <svg
+            class="size-4"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.5"
+          >
             <path d="M4 4l8 8M12 4l-8 8" stroke-linecap="round" />
           </svg>
         </button>
@@ -33,7 +46,9 @@ import { Dialog } from 'akaza-ui'
     <template #body>
       <div class="flex flex-col gap-4 px-5 py-4">
         <label class="flex flex-col gap-1.5">
-          <span class="text-xs font-medium text-neutral-700 dark:text-neutral-300">Display name</span>
+          <span class="text-xs font-medium text-neutral-700 dark:text-neutral-300">
+            Display name
+          </span>
           <input
             type="text"
             placeholder="Jane Doe"
@@ -52,7 +67,9 @@ import { Dialog } from 'akaza-ui'
     </template>
 
     <template #footer="{ close }">
-      <div class="flex justify-end gap-2 border-t border-neutral-100 px-5 py-4 dark:border-neutral-800">
+      <div
+        class="flex justify-end gap-2 border-t border-neutral-100 px-5 py-4 dark:border-neutral-800"
+      >
         <button
           class="rounded-lg border border-neutral-200 bg-white px-4 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
           @click="() => close()"

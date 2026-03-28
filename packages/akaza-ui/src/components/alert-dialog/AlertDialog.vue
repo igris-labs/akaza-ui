@@ -142,6 +142,20 @@ defineExpose({ open, close, toggle, titleId, descriptionId });
 </template>
 
 <style>
+.akaza-alert-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+}
+
+.akaza-alert-dialog-content {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  z-index: 50;
+}
+
 .akaza-alert-dialog-overlay-enter-active,
 .akaza-alert-dialog-overlay-leave-active {
   transition: opacity var(--akaza-dialog-duration, 150ms) ease-out;

@@ -1,16 +1,14 @@
 <script setup lang="ts">
-import { Menu } from 'akaza-ui'
+import { Menu } from "akaza-ui";
 
 const items = [
   [
-    { label: 'Edit', value: 'edit' },
-    { label: 'Duplicate', value: 'duplicate' },
-    { label: 'Rename', value: 'rename' },
+    { label: "Edit", value: "edit" },
+    { label: "Duplicate", value: "duplicate" },
+    { label: "Rename", value: "rename" },
   ],
-  [
-    { label: 'Move to trash', value: 'delete' },
-  ],
-]
+  [{ label: "Move to trash", value: "delete" }],
+];
 </script>
 
 <template>
@@ -31,7 +29,13 @@ const items = [
         @click="() => toggle()"
       >
         Actions
-        <svg class="size-3.5 text-neutral-400" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5">
+        <svg
+          class="size-3.5 text-neutral-400"
+          viewBox="0 0 16 16"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+        >
           <path d="M4 6l4 4 4-4" stroke-linecap="round" stroke-linejoin="round" />
         </svg>
       </button>
@@ -40,6 +44,8 @@ const items = [
 </template>
 
 <style>
+@reference "tailwindcss";
+
 .menu-content {
   @apply z-50 min-w-40 overflow-hidden rounded-xl border border-neutral-200 bg-white p-1 shadow-lg dark:border-neutral-800 dark:bg-neutral-900;
 }

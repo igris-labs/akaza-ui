@@ -15,7 +15,10 @@
     "unstyled",
     "primitives"
   ],
-  "sideEffects": false,
+  "sideEffects": [
+    "*.css",
+    "dist/akaza-ui.css"
+  ],
   "exports": {
     ".": {
       "import": {
@@ -26,7 +29,12 @@
         "types": "./dist/types/index.d.ts",
         "default": "./dist/akaza-ui.cjs"
       }
-    }
+    },
+    "./nuxt": {
+      "import": "./dist/nuxt.js",
+      "require": "./dist/nuxt.cjs"
+    },
+    "./dist/akaza-ui.css": "./dist/akaza-ui.css"
   },
   "main": "./dist/akaza-ui.cjs",
   "module": "./dist/akaza-ui.js",
@@ -47,13 +55,20 @@
     "coverage": "vitest run --coverage"
   },
   "peerDependencies": {
+    "@nuxt/kit": ">=3.0.0",
     "vue": ">=3.5.0"
+  },
+  "peerDependenciesMeta": {
+    "@nuxt/kit": {
+      "optional": true
+    }
   },
   "dependencies": {
     "@vueuse/core": "^13.1.0"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^4.10.3",
+    "@nuxt/kit": "^4.4.2",
     "@testing-library/vue": "^8.1.0",
     "@vitejs/plugin-vue": "^5.2.1",
     "@vitest/coverage-v8": "^3.0.7",

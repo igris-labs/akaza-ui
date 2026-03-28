@@ -9,6 +9,7 @@ export default defineConfig({
     dts({
       tsconfigPath: "./tsconfig.build.json",
       outDir: "dist/types",
+      exclude: ["src/nuxt.ts"],
     }),
   ],
   resolve: {
@@ -18,13 +19,16 @@ export default defineConfig({
   },
   build: {
     lib: {
-      entry: resolve(__dirname, "src/index.ts"),
-      name: "AkazaUI",
+      entry: {
+        "akaza-ui": resolve(__dirname, "src/index.ts"),
+        nuxt: resolve(__dirname, "src/nuxt.ts"),
+      },
       formats: ["es", "cjs"],
-      fileName: (format) => `akaza-ui.${format === "es" ? "js" : "cjs"}`,
+      fileName: (format, entryName) =>
+        `${entryName}.${format === "es" ? "js" : "cjs"}`,
     },
     rollupOptions: {
-      external: ["vue"],
+      external: ["vue", "@nuxt/kit"],
       output: {
         globals: {
           vue: "Vue",

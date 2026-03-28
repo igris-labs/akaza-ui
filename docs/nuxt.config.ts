@@ -8,6 +8,7 @@ export default defineNuxtConfig({
     "nuxt-og-image",
     "nuxt-llms",
     "@nuxtjs/mcp-toolkit",
+    "akaza-ui/nuxt",
   ],
 
   devtools: {

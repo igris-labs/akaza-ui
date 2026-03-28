@@ -99,31 +99,33 @@ defineExpose({ open, close, toggle });
 </template>
 
 <style>
-.akaza-collapsible-trigger {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  width: 100%;
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  text-align: left;
-}
+@layer akaza-reset {
+  .akaza-collapsible-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    background: none;
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    text-align: left;
+  }
 
-.akaza-collapsible-trigger:disabled,
-.akaza-collapsible-trigger[data-akaza-disabled] {
-  cursor: not-allowed;
-  opacity: 0.5;
-}
+  .akaza-collapsible-trigger:disabled,
+  .akaza-collapsible-trigger[data-akaza-disabled] {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
 
-.akaza-collapsible-icon {
-  flex-shrink: 0;
-  transition: transform 0.2s ease;
-}
+  .akaza-collapsible-icon {
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+  }
 
-.akaza-collapsible-icon[data-akaza-state="open"] {
-  transform: rotate(180deg);
+  .akaza-collapsible-icon[data-akaza-state="open"] {
+    transform: rotate(180deg);
+  }
 }
 
 .akaza-collapsible-content {

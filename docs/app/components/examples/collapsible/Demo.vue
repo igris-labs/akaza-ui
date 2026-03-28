@@ -1,12 +1,20 @@
 <script setup lang="ts">
-import { Collapsible } from 'akaza-ui'
+import { Collapsible } from "akaza-ui";
 </script>
 
 <template>
-  <div class="w-full max-w-sm rounded-xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900">
-    <Collapsible :ui="{ trigger: 'px-4 py-3.5 transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/60' }">
+  <div
+    class="w-full max-w-sm rounded-xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900"
+  >
+    <Collapsible
+      :ui="{
+        trigger: 'px-4 py-3.5 transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/60',
+      }"
+    >
       <template #trigger>
-        <span class="text-sm font-medium text-neutral-900 dark:text-neutral-100">Advanced settings</span>
+        <span class="text-sm font-medium text-neutral-900 dark:text-neutral-100">
+          Advanced settings
+        </span>
       </template>
       <template #icon="{ isOpen }">
         <svg
@@ -34,7 +42,11 @@ import { Collapsible } from 'akaza-ui'
             </label>
             <label class="flex items-center justify-between text-sm">
               <span class="text-neutral-700 dark:text-neutral-300">Beta features</span>
-              <span class="rounded-full bg-emerald-100 px-2 py-0.5 text-xs text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">on</span>
+              <span
+                class="rounded-full bg-emerald-100 px-2 py-0.5 text-xs text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400"
+              >
+                on
+              </span>
             </label>
           </div>
         </div>

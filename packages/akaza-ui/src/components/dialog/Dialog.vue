@@ -149,6 +149,28 @@ defineExpose({ open, close, toggle, titleId, descriptionId });
 </template>
 
 <style>
+.akaza-dialog-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+}
+
+.akaza-dialog-content {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  z-index: 50;
+}
+
+.akaza-dialog-content[data-akaza-fullscreen] {
+  top: 0;
+  left: 0;
+  translate: 0;
+  width: 100%;
+  height: 100%;
+}
+
 .akaza-dialog-overlay-enter-active,
 .akaza-dialog-overlay-leave-active {
   transition: opacity var(--akaza-dialog-duration, 100ms) ease-out;

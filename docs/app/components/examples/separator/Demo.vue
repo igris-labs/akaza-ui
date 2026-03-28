@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { Separator } from 'akaza-ui'
+import { Separator } from "akaza-ui";
 </script>
 
 <template>

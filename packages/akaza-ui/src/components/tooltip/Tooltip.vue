@@ -169,6 +169,11 @@ onKeyStroke("Escape", (e) => {
   display: inline-block;
 }
 
+.akaza-tooltip-content {
+  position: fixed;
+  z-index: 50;
+}
+
 .akaza-tooltip-arrow {
   position: absolute;
   width: 8px;

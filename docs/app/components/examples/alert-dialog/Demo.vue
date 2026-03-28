@@ -4,8 +4,10 @@ import { AlertDialog } from "akaza-ui";
 
 <template>
   <AlertDialog
-    title="Delete account"
-    description="This action is permanent and cannot be undone. All your data will be removed."
+    :ui="{
+      overlay: 'bg-black/50',
+      content: 'w-full max-w-md rounded-xl bg-white shadow-xl ring-1 ring-neutral-200 dark:bg-neutral-900 dark:ring-neutral-800',
+    }"
   >
     <template #trigger="{ toggle }">
       <button
@@ -39,8 +41,8 @@ import { AlertDialog } from "akaza-ui";
       </div>
     </template>
 
-    <template #body="{ descriptionId }">
-      <p :id="descriptionId" class="px-5 py-3 text-sm text-neutral-600 dark:text-neutral-400">
+    <template #body>
+      <p class="px-5 py-3 text-sm text-neutral-600 dark:text-neutral-400">
         This action is permanent and cannot be undone. All your data will be removed from our
         servers.
       </p>

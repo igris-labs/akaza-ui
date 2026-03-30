@@ -21,7 +21,7 @@ const {
 
 const emit = defineEmits<{
   "open-change": [open: boolean, details: AkazaChangeEventDetails];
-  "select": [item: MenuItem, details: AkazaChangeEventDetails];
+  select: [item: MenuItem, details: AkazaChangeEventDetails];
   "check-change": [item: MenuItem, checked: boolean, details: AkazaChangeEventDetails];
   "radio-change": [group: string, value: string, details: AkazaChangeEventDetails];
   "update:radioValues": [values: Record<string, string>];
@@ -32,14 +32,26 @@ const { isOpen, open: _open, close: _close, toggle: _toggle } = useMenu(model);
 
 function handleChange(nextOpen: boolean, reason: string, event?: Event) {
   let canceled = false;
-  emit("open-change", nextOpen, { reason, ...(event && { event }), cancel: () => { canceled = true; } });
+  emit("open-change", nextOpen, {
+    reason,
+    ...(event && { event }),
+    cancel: () => {
+      canceled = true;
+    },
+  });
   if (canceled) return;
   nextOpen ? _open() : _close();
 }
 
-function open(reason = "programmatic", event?: Event) { handleChange(true, reason, event); }
-function close(reason = "programmatic", event?: Event) { handleChange(false, reason, event); }
-function toggle(reason = "programmatic", event?: Event) { handleChange(!isOpen.value, reason, event); }
+function open(reason = "programmatic", event?: Event) {
+  handleChange(true, reason, event);
+}
+function close(reason = "programmatic", event?: Event) {
+  handleChange(false, reason, event);
+}
+function toggle(reason = "programmatic", event?: Event) {
+  handleChange(!isOpen.value, reason, event);
+}
 
 const menuId = useId();
 const rootRef = useTemplateRef<HTMLElement>("rootRef");
@@ -72,11 +84,17 @@ const positionStyle = computed(() => {
   if (side === "top" || side === "bottom") {
     if (align === "start") s.left = "0";
     else if (align === "end") s.right = "0";
-    else { s.left = "50%"; s.transform = "translateX(-50%)"; }
+    else {
+      s.left = "50%";
+      s.transform = "translateX(-50%)";
+    }
   } else {
     if (align === "start") s.top = "0";
     else if (align === "end") s.bottom = "0";
-    else { s.top = "50%"; s.transform = "translateY(-50%)"; }
+    else {
+      s.top = "50%";
+      s.transform = "translateY(-50%)";
+    }
   }
 
   return s;
@@ -100,7 +118,15 @@ onClickOutside(rootRef, (e) => {
 
 // Boundary keydown on the content wrapper — prevents menu keyboard events
 // from leaking to the rest of the page (e.g. scrolling, triggering other components).
-const NAV_KEYS = new Set(["ArrowDown", "ArrowUp", "ArrowLeft", "ArrowRight", "Home", "End", "Escape"]);
+const NAV_KEYS = new Set([
+  "ArrowDown",
+  "ArrowUp",
+  "ArrowLeft",
+  "ArrowRight",
+  "Home",
+  "End",
+  "Escape",
+]);
 
 function onContentKeydown(e: KeyboardEvent) {
   if (NAV_KEYS.has(e.key) || (e.key.length === 1 && !e.ctrlKey && !e.metaKey)) {
@@ -118,7 +144,13 @@ function onContentKeydown(e: KeyboardEvent) {
 function onItemSelect(item: MenuItem, event: Event) {
   if (item.disabled) return;
   let canceled = false;
-  emit("select", item, { reason: "select", event, cancel: () => { canceled = true; } });
+  emit("select", item, {
+    reason: "select",
+    event,
+    cancel: () => {
+      canceled = true;
+    },
+  });
   if (canceled) return;
   item.onSelect?.();
   if (closeOnSelect) close("select", event);
@@ -128,7 +160,13 @@ function onCheckboxSelect(item: MenuItem, event: Event) {
   if (item.disabled) return;
   const next = !item.checked;
   let canceled = false;
-  emit("check-change", item, next, { reason: "select", event, cancel: () => { canceled = true; } });
+  emit("check-change", item, next, {
+    reason: "select",
+    event,
+    cancel: () => {
+      canceled = true;
+    },
+  });
   if (canceled) return;
   item.onUpdateChecked?.(next);
 }
@@ -142,7 +180,13 @@ function onRadioSelect(item: MenuItem, event: Event) {
   const group = item.radioGroup ?? "";
   const value = (item.value ?? "") as string;
   let canceled = false;
-  emit("radio-change", group, value, { reason: "select", event, cancel: () => { canceled = true; } });
+  emit("radio-change", group, value, {
+    reason: "select",
+    event,
+    cancel: () => {
+      canceled = true;
+    },
+  });
   if (canceled) return;
   if (radioValues) {
     emit("update:radioValues", { ...radioValues, [group]: value });
@@ -179,11 +223,7 @@ defineExpose({ open, close, toggle });
 </script>
 
 <template>
-  <div
-    ref="rootRef"
-    :data-akaza-state="isOpen ? 'open' : 'closed'"
-    class="akaza-menu-root"
-  >
+  <div ref="rootRef" :data-akaza-state="isOpen ? 'open' : 'closed'" class="akaza-menu-root">
     <slot
       name="trigger"
       :is-open="isOpen"
@@ -193,10 +233,7 @@ defineExpose({ open, close, toggle });
       :trigger-props="triggerProps"
     />
 
-    <Teleport
-      v-if="teleport !== false"
-      :to="typeof teleport === 'string' ? teleport : 'body'"
-    >
+    <Teleport v-if="teleport !== false" :to="typeof teleport === 'string' ? teleport : 'body'">
       <Transition name="akaza-menu">
         <component
           :is="as"
@@ -240,6 +277,7 @@ defineExpose({ open, close, toggle });
 .akaza-menu-root {
   position: relative;
   display: inline-block;
+  isolation: isolate;
 }
 
 .akaza-menu-content {

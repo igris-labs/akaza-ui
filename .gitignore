@@ -9,7 +9,3 @@ coverage
 .nuxt
 .idea
 .vscode
-
-packages/reka-reference
-
-*/**/.DS_Store

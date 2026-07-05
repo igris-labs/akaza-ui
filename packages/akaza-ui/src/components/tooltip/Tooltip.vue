@@ -161,14 +161,19 @@ const triggerProps = computed(() => ({
           role="tooltip"
           :class="ui?.content"
           data-akaza-state="open"
-          :data-akaza-direction="actualDirection"
+          :data-akaza-side="actualDirection"
           :style="[posStyle, posReady ? {} : { visibility: 'hidden' }]"
           class="akaza-tooltip-content"
           @mouseenter="open"
           @mouseleave="close"
         >
           <slot name="content" :close="close" />
-          <span v-if="arrow" class="akaza-tooltip-arrow" aria-hidden="true" />
+          <span
+            v-if="arrow"
+            :class="ui?.arrow"
+            class="akaza-tooltip-arrow"
+            aria-hidden="true"
+          />
         </div>
       </Transition>
     </Teleport>
@@ -194,7 +199,7 @@ const triggerProps = computed(() => ({
   transform: rotate(45deg);
 }
 
-[data-akaza-direction="top"] .akaza-tooltip-arrow {
+.akaza-tooltip-content[data-akaza-side="top"] .akaza-tooltip-arrow {
   bottom: -4px;
   left: 50%;
   margin-left: -4px;
@@ -202,7 +207,7 @@ const triggerProps = computed(() => ({
   border-left: none;
 }
 
-[data-akaza-direction="bottom"] .akaza-tooltip-arrow {
+.akaza-tooltip-content[data-akaza-side="bottom"] .akaza-tooltip-arrow {
   top: -4px;
   left: 50%;
   margin-left: -4px;
@@ -210,7 +215,7 @@ const triggerProps = computed(() => ({
   border-right: none;
 }
 
-[data-akaza-direction="left"] .akaza-tooltip-arrow {
+.akaza-tooltip-content[data-akaza-side="left"] .akaza-tooltip-arrow {
   right: -4px;
   top: 50%;
   margin-top: -4px;
@@ -218,7 +223,7 @@ const triggerProps = computed(() => ({
   border-right: none;
 }
 
-[data-akaza-direction="right"] .akaza-tooltip-arrow {
+.akaza-tooltip-content[data-akaza-side="right"] .akaza-tooltip-arrow {
   left: -4px;
   top: 50%;
   margin-top: -4px;

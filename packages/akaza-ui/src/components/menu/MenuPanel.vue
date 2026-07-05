@@ -181,6 +181,8 @@ defineExpose({ panelRef, getItems, highlightItem });
     ref="panelRef"
     role="menu"
     aria-orientation="vertical"
+    :class="ctx.ui?.panel"
+    class="akaza-menu-panel"
     @keydown="onPanelKeydown"
   >
     <template v-for="(group, gi) in items" :key="gi">
@@ -226,7 +228,7 @@ defineExpose({ panelRef, getItems, highlightItem });
             :data-akaza-disabled="item.disabled || undefined"
             :data-akaza-state="item.checked ? 'checked' : 'unchecked'"
             :tabindex="-1"
-            :class="ctx.ui?.item"
+            :class="[ctx.ui?.item, ctx.ui?.checkboxItem]"
             class="akaza-menu-item akaza-menu-checkbox-item"
             @click="ctx.onCheckboxSelect(item, $event)"
             @keydown.enter.prevent="ctx.onCheckboxSelect(item, $event)"
@@ -256,7 +258,7 @@ defineExpose({ panelRef, getItems, highlightItem });
               ctx.isRadioChecked(item) ? 'checked' : 'unchecked'
             "
             :tabindex="-1"
-            :class="ctx.ui?.item"
+            :class="[ctx.ui?.item, ctx.ui?.radioItem]"
             class="akaza-menu-item akaza-menu-radio-item"
             @click="ctx.onRadioSelect(item, $event)"
             @keydown.enter.prevent="ctx.onRadioSelect(item, $event)"
@@ -278,6 +280,8 @@ defineExpose({ panelRef, getItems, highlightItem });
           <!-- ── Submenu item ───────────────────────────────────────── -->
           <div
             v-else-if="item.children"
+            :class="ctx.ui?.submenu"
+            :data-akaza-state="activeSubmenu === ctx.getItemValue(item) ? 'open' : 'closed'"
             class="akaza-menu-submenu"
             @mouseenter="openSubmenu(item)"
             @mouseleave="closeSubmenuDelayed()"
@@ -288,9 +292,10 @@ defineExpose({ panelRef, getItems, highlightItem });
               :aria-expanded="activeSubmenu === ctx.getItemValue(item)"
               :aria-disabled="item.disabled || undefined"
               :data-akaza-disabled="item.disabled || undefined"
+              :data-akaza-state="activeSubmenu === ctx.getItemValue(item) ? 'open' : 'closed'"
               :data-akaza-value="ctx.getItemValue(item)"
               :tabindex="-1"
-              :class="ctx.ui?.item"
+              :class="[ctx.ui?.item, ctx.ui?.submenuTrigger]"
               class="akaza-menu-item akaza-menu-submenu-trigger"
               @click="openSubmenuAndFocus(item)"
               @keydown.enter.prevent="openSubmenuAndFocus(item)"

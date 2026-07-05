@@ -128,7 +128,12 @@ provide(fieldContextKey, {
       class="akaza-field-label"
     >
       <slot name="label">{{ label }}</slot>
-      <span v-if="required" aria-hidden="true" class="akaza-field-required">*</span>
+      <span
+        v-if="required"
+        aria-hidden="true"
+        :class="ui?.required"
+        class="akaza-field-required"
+      >*</span>
     </label>
 
     <div :class="ui?.control" v-bind="stateAttrs" class="akaza-field-control">

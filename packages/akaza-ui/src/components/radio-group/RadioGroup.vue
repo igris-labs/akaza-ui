@@ -144,6 +144,7 @@ function handleKeyDown(event: KeyboardEvent, index: number) {
     :aria-required="required || undefined"
     :data-akaza-orientation="orientation"
     :data-akaza-disabled="disabled || undefined"
+    :class="ui?.root"
     class="akaza-radio-group"
   >
     <slot name="legend" :legend="legend">
@@ -161,6 +162,7 @@ function handleKeyDown(event: KeyboardEvent, index: number) {
         :disabled="isItemDisabled(option)"
         aria-hidden="true"
         tabindex="-1"
+        :class="ui?.input"
         class="akaza-radio-group-input"
       >
 
@@ -189,7 +191,7 @@ function handleKeyDown(event: KeyboardEvent, index: number) {
           :select="() => select(option)"
         >
           <span :class="ui?.indicator" class="akaza-radio-group-indicator" aria-hidden="true" />
-          <span class="akaza-radio-group-text">
+          <span :class="ui?.text" class="akaza-radio-group-text">
             <span v-if="getLabel(option)" :class="ui?.label" class="akaza-radio-group-label">
               {{ getLabel(option) }}
             </span>

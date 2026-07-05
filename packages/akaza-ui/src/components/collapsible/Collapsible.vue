@@ -66,6 +66,7 @@ defineExpose({ open, close, toggle });
       />
       <slot name="icon" :is-open="model">
         <svg
+          :class="ui?.icon"
           class="akaza-collapsible-icon"
           :data-akaza-state="model ? 'open' : 'closed'"
           xmlns="http://www.w3.org/2000/svg"
@@ -89,10 +90,11 @@ defineExpose({ open, close, toggle });
       role="region"
       :aria-hidden="!model || undefined"
       :inert="!model || undefined"
+      :class="ui?.contentWrapper"
       class="akaza-collapsible-content"
       :data-akaza-state="model ? 'open' : 'closed'"
     >
-      <div class="akaza-collapsible-content-inner">
+      <div :class="ui?.contentInner" class="akaza-collapsible-content-inner">
         <div
           :class="ui?.content"
           class="akaza-collapsible-content-body"

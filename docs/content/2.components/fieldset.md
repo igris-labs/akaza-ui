@@ -60,3 +60,12 @@ import { Fieldset } from "akaza-ui";
 ### State Attributes
 
 `Fieldset` sets `data-disabled`, `data-invalid`, and matching `data-akaza-*` attributes.
+
+### Styling Hooks
+
+| UI key | CSS class | Data attrs |
+|--------|-----------|------------|
+| `root` | `akaza-fieldset` | `data-disabled`, `data-invalid`, `data-akaza-disabled`, `data-akaza-invalid` |
+| `legend` | `akaza-fieldset-legend` | — |
+| `description` | `akaza-fieldset-description` | — |
+| `content` | `akaza-fieldset-content` | — |

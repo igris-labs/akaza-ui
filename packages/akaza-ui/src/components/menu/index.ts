@@ -28,11 +28,17 @@ export interface MenuItem {
 }
 
 export interface MenuUi {
+  root?: string;
   content?: string;
+  panel?: string;
   item?: string;
+  checkboxItem?: string;
+  radioItem?: string;
   separator?: string;
   label?: string;
   group?: string;
+  submenu?: string;
+  submenuTrigger?: string;
   submenuContent?: string;
 }
 

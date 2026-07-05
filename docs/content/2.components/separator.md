@@ -68,3 +68,9 @@ Use `decorative` when the separator is purely visual and carries no semantic mea
 | Key | Description |
 |-----|-------------|
 | `root` | The separator element. |
+
+### Styling Hooks
+
+| UI key | CSS class | Data attrs |
+|--------|-----------|------------|
+| `root` | `akaza-separator` | `data-akaza-orientation` |

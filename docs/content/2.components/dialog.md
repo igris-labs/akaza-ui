@@ -134,6 +134,7 @@ const dialog = ref();
 |------|------|---------|-------------|
 | `title` | `string` | — | Convenience title. Slot `#title` takes priority. |
 | `description` | `string` | — | Convenience description. Slot `#description` takes priority. |
+| `ariaLabel` | `string` | — | Fallback accessible name when no title is rendered. |
 | `closeOnBackdropClick` | `boolean` | `true` | Close when clicking the overlay. |
 | `fullscreen` | `boolean` | `false` | Expand the dialog to fill the viewport. |
 | `teleport` | `string \| false` | `"body"` | Teleport target. |
@@ -181,3 +182,17 @@ const dialog = ref();
 | `description` | The description element. |
 | `body` | The body region. |
 | `footer` | The footer region. |
+
+### Styling Hooks
+
+| UI key | CSS class | Data attrs |
+|--------|-----------|------------|
+| `overlay` | `akaza-dialog-overlay` | `data-akaza-state` |
+| `content` | `akaza-dialog-content` | `data-akaza-state`, `data-akaza-fullscreen` |
+| `header` | `akaza-dialog-header` | — |
+| `title` | `akaza-dialog-title` | — |
+| `description` | `akaza-dialog-description` | — |
+| `body` | `akaza-dialog-body` | — |
+| `footer` | `akaza-dialog-footer` | — |
+
+`Dialog` renders trigger slot content plus teleported overlay/content. Use `ui` keys instead of relying on plain `class` fallthrough.

@@ -207,7 +207,12 @@ defineExpose({ open, close, toggle });
 </script>
 
 <template>
-  <div ref="rootRef" :data-akaza-state="model ? 'open' : 'closed'" class="akaza-popover-root">
+  <div
+    ref="rootRef"
+    :class="ui?.root"
+    :data-akaza-state="model ? 'open' : 'closed'"
+    class="akaza-popover-root"
+  >
     <slot
       name="trigger"
       :is-open="model"

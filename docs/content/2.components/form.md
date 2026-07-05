@@ -74,3 +74,11 @@ function onFormSubmit(values: FormValues) {
 ### State Attributes
 
 `Form` sets `data-akaza-state` to `idle`, `submitted`, or `invalid`, and `data-akaza-invalid` after an invalid submit.
+
+### Styling Hooks
+
+| UI key | CSS class | Data attrs |
+|--------|-----------|------------|
+| `root` | `akaza-form` | `data-akaza-state`, `data-akaza-invalid` |
+
+Plain `class` also applies to the native form root. `ui.root` is the structured equivalent.

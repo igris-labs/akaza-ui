@@ -65,10 +65,20 @@ import { Field, Input } from "akaza-ui";
 |-----|-------------|
 | `root` | The field wrapper. |
 | `label` | The label element. |
+| `required` | The required marker inside the label. |
 | `control` | The control wrapper around the default slot. |
 | `description` | The description element. |
 | `error` | The error element. |
 
-### State Attributes
+### Styling Hooks
 
-`Field` sets `data-valid`, `data-invalid`, `data-dirty`, `data-touched`, `data-filled`, `data-focused`, and `data-disabled` on its parts, plus matching `data-akaza-*` attributes.
+| UI key | CSS class | Data attrs |
+|--------|-----------|------------|
+| `root` | `akaza-field` | granular field attrs |
+| `label` | `akaza-field-label` | granular field attrs |
+| `required` | `akaza-field-required` | — |
+| `control` | `akaza-field-control` | granular field attrs |
+| `description` | `akaza-field-description` | granular field attrs |
+| `error` | `akaza-field-error` | granular field attrs |
+
+Granular field attrs are `data-valid`, `data-invalid`, `data-dirty`, `data-touched`, `data-filled`, `data-focused`, `data-disabled`, plus matching `data-akaza-*` attributes.

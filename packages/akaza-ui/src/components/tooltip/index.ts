@@ -6,6 +6,7 @@ export interface TooltipUi {
   root?: string;
   trigger?: string;
   content?: string;
+  arrow?: string;
 }
 
 export interface TooltipProps {

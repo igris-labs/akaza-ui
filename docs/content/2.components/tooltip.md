@@ -128,7 +128,7 @@ const open = ref(false);
 
 | Slot | Scoped props | Description |
 |------|-------------|-------------|
-| `trigger` | `{ isOpen }` | The element that triggers the tooltip. |
+| `trigger` | `{ isOpen, triggerProps }` | The element that triggers the tooltip. |
 | `content` | `{ close }` | The tooltip popup content. |
 
 ### UI Options
@@ -138,3 +138,13 @@ const open = ref(false);
 | `root` | The outer wrapper element. |
 | `trigger` | The trigger element wrapper. |
 | `content` | The tooltip popup element. |
+| `arrow` | The optional arrow element. |
+
+### Styling Hooks
+
+| UI key | CSS class | Data attrs |
+|--------|-----------|------------|
+| `root` | `akaza-tooltip-root` | — |
+| `trigger` | `akaza-tooltip-trigger` | `data-akaza-state` |
+| `content` | `akaza-tooltip-content` | `data-akaza-state`, `data-akaza-side` |
+| `arrow` | `akaza-tooltip-arrow` | — |

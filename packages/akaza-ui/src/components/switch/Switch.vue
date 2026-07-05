@@ -85,12 +85,14 @@ function toggle(reason = "click", event?: Event) {
       :disabled="disabled"
       aria-hidden="true"
       tabindex="-1"
+      :class="ui?.input"
       class="akaza-switch-input"
     >
 
     <!-- Label + description -->
     <span
       v-if="hasLabel || hasDescription"
+      :class="ui?.text"
       class="akaza-switch-text"
       @click="toggle('label-click', $event)"
     >

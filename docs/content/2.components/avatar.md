@@ -96,6 +96,12 @@ Use `#image` to render a custom element instead of a plain `<img>`.
 
 `status` is one of: `"idle"` · `"loading"` · `"loaded"` · `"error"`
 
+### Emits
+
+| Event | Payload | Description |
+|-------|---------|-------------|
+| `status-change` | `[status: AvatarImageStatus]` | Fired when image loading status changes. |
+
 ### UI Options
 
 | Key | Description |
@@ -103,3 +109,11 @@ Use `#image` to render a custom element instead of a plain `<img>`.
 | `root` | The outer container element. |
 | `image` | The image element. |
 | `fallback` | The fallback element. |
+
+### Styling Hooks
+
+| UI key | CSS class | Data attrs |
+|--------|-----------|------------|
+| `root` | `akaza-avatar` | `data-akaza-status` |
+| `image` | `akaza-avatar-image` | — |
+| `fallback` | `akaza-avatar-fallback` | `data-akaza-status` |

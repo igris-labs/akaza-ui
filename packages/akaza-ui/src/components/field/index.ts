@@ -6,6 +6,7 @@ export type { FieldErrorMatch };
 export interface FieldUi {
   root?: string;
   label?: string;
+  required?: string;
   control?: string;
   description?: string;
   error?: string;

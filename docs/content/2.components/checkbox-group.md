@@ -57,6 +57,16 @@ const options = [
 | `ariaLabelledby` | `string` | — | External accessible label id. |
 | `ui` | `CheckboxGroupUi` | — | Classes for root, legend, item, and nested checkbox parts. |
 
+### CheckboxGroupOption
+
+| Key | Type | Description |
+|-----|------|-------------|
+| `label` | `string` | Visible option label. |
+| `value` | `string \| number` | Submitted/model value. |
+| `description` | `string` | Optional help text passed to the nested checkbox. |
+| `disabled` | `boolean` | Disables this option. |
+| `slot` | `string` | Named slot key for custom item label content. |
+
 ### Emits
 
 | Event | Payload | Description |
@@ -84,3 +94,13 @@ const options = [
 ### State Attributes
 
 `CheckboxGroup` sets `data-akaza-orientation` and `data-akaza-disabled` on the root. Parent and item wrappers set `data-akaza-state` to `checked`, `unchecked`, or `indeterminate`, plus disabled attributes when disabled.
+
+### Styling Hooks
+
+| UI key | CSS class | Data attrs |
+|--------|-----------|------------|
+| `root` | `akaza-checkbox-group` | `data-akaza-orientation`, `data-akaza-disabled` |
+| `legend` | `akaza-checkbox-group-legend` | — |
+| `parentItem` | `akaza-checkbox-group-parent` | `data-akaza-state`, `data-akaza-disabled` |
+| `item` | `akaza-checkbox-group-item` | `data-akaza-state`, `data-akaza-disabled` |
+| `checkbox` | nested `Checkbox` classes | see [Checkbox](/components/checkbox) |

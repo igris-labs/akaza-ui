@@ -3,6 +3,9 @@ export { default as Collapsible } from "./Collapsible.vue";
 export interface CollapsibleUi {
   root?: string;
   trigger?: string;
+  icon?: string;
+  contentWrapper?: string;
+  contentInner?: string;
   content?: string;
 }
 

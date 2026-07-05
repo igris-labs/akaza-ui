@@ -111,6 +111,7 @@ import { Drawer } from "akaza-ui";
 | `side` | `"left" \| "right" \| "top" \| "bottom"` | `"right"` | Edge the drawer slides from. |
 | `title` | `string` | — | Convenience title. Slot `#title` takes priority. |
 | `description` | `string` | — | Convenience description. Slot `#description` takes priority. |
+| `ariaLabel` | `string` | — | Fallback accessible name when no title is rendered. |
 | `inset` | `number \| string` | `0` | Space between the drawer and the viewport edge. |
 | `closeOnBackdropClick` | `boolean` | `true` | Close when clicking the overlay. |
 | `swipeToClose` | `boolean` | `true` | Allow swiping the drawer closed on touch devices. |
@@ -157,3 +158,17 @@ import { Drawer } from "akaza-ui";
 | `description` | The description element. |
 | `body` | The body region. |
 | `footer` | The footer region. |
+
+### Styling Hooks
+
+| UI key | CSS class | Data attrs |
+|--------|-----------|------------|
+| `overlay` | `akaza-drawer-overlay` | `data-akaza-state` |
+| `content` | `akaza-drawer` | `data-akaza-state`, `data-akaza-side`, `data-swiping` |
+| `header` | `akaza-drawer-header` | — |
+| `title` | `akaza-drawer-title` | — |
+| `description` | `akaza-drawer-description` | — |
+| `body` | `akaza-drawer-body` | — |
+| `footer` | `akaza-drawer-footer` | — |
+
+`Drawer` renders trigger slot content plus teleported overlay/content. Use `ui` keys instead of relying on plain `class` fallthrough. The `handle` slot is fully owned by your markup.

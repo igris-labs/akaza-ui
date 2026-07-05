@@ -142,4 +142,18 @@ Remove the content from the DOM when collapsed, instead of hiding it.
 |-----|-------------|
 | `root` | The outer wrapper element. |
 | `trigger` | The trigger element. |
-| `content` | The panel content element. |
+| `icon` | The default icon element. |
+| `contentWrapper` | Animated region wrapper. |
+| `contentInner` | Overflow-hiding inner wrapper. |
+| `content` | The panel body element. |
+
+### Styling Hooks
+
+| UI key | CSS class | Data attrs |
+|--------|-----------|------------|
+| `root` | `akaza-collapsible` | `data-akaza-state`, `data-akaza-disabled` |
+| `trigger` | `akaza-collapsible-trigger` | `data-akaza-state`, `data-akaza-disabled` |
+| `icon` | `akaza-collapsible-icon` | `data-akaza-state` |
+| `contentWrapper` | `akaza-collapsible-content` | `data-akaza-state` |
+| `contentInner` | `akaza-collapsible-content-inner` | — |
+| `content` | `akaza-collapsible-content-body` | — |

@@ -107,6 +107,7 @@ const dialog = ref();
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
 | `title` | `string` | — | Convenience title prop. Slot `#title` takes priority. |
+| `ariaLabel` | `string` | — | Fallback accessible name when no title is rendered. |
 | `description` | `string` | — | Convenience description prop. Slot `#description` takes priority. |
 | `teleport` | `string \| false` | `"body"` | Teleport target for the dialog. |
 | `transition` | `string \| false` | `"akaza-alert-dialog"` | Named Vue transition to apply. |
@@ -152,3 +153,17 @@ const dialog = ref();
 | `description` | The description element. |
 | `body` | The body region. |
 | `footer` | The footer region. |
+
+### Styling Hooks
+
+| UI key | CSS class | Data attrs |
+|--------|-----------|------------|
+| `overlay` | `akaza-alert-dialog-overlay` | `data-akaza-state` |
+| `content` | `akaza-alert-dialog-content` | `data-akaza-state` |
+| `header` | `akaza-alert-dialog-header` | — |
+| `title` | `akaza-alert-dialog-title` | — |
+| `description` | `akaza-alert-dialog-description` | — |
+| `body` | `akaza-alert-dialog-body` | — |
+| `footer` | `akaza-alert-dialog-footer` | — |
+
+`AlertDialog` renders trigger slot content plus teleported overlay/content. Use `ui` keys instead of relying on plain `class` fallthrough.

@@ -11,9 +11,12 @@ export interface AccordionItem {
 }
 
 export interface AccordionUi {
+  root?: string;
   item?: string;
   trigger?: string;
   icon?: string;
+  contentWrapper?: string;
+  contentInner?: string;
   content?: string;
 }
 

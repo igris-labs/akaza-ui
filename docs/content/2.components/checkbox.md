@@ -133,5 +133,19 @@ const permission = ref<"granted" | "denied">("denied");
 | `wrapper` | Outer wrapper element. |
 | `root` | The interactive button element. |
 | `indicator` | The indicator container. |
+| `input` | Hidden native input used for form submission. |
+| `text` | Wrapper around label and description. |
 | `label` | The label element. |
 | `description` | The description element. |
+
+### Styling Hooks
+
+| UI key | CSS class | Data attrs |
+|--------|-----------|------------|
+| `wrapper` | `akaza-checkbox-wrapper` | — |
+| `root` | `akaza-checkbox` | `data-akaza-state`, `data-akaza-disabled` |
+| `indicator` | `akaza-checkbox-indicator` | `data-akaza-state` |
+| `input` | `akaza-checkbox-input` | — |
+| `text` | `akaza-checkbox-text` | — |
+| `label` | `akaza-checkbox-label` | — |
+| `description` | `akaza-checkbox-description` | — |

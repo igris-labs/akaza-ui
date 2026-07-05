@@ -92,8 +92,20 @@ const bold = ref(false);
 |------|-------------|-------------|
 | `default` | `{ pressed, state }` | Button content. `state` is `"on"` or `"off"`. |
 
+### Emits
+
+| Event | Payload | Description |
+|-------|---------|-------------|
+| `pressed-change` | `[pressed: boolean, details]` | Fired when pressed state changes. |
+
 ### UI Options
 
 | Key | Description |
 |-----|-------------|
 | `root` | The button element. |
+
+### Styling Hooks
+
+| UI key | CSS class | Data attrs |
+|--------|-----------|------------|
+| `root` | `akaza-toggle` | `data-akaza-state`, `data-akaza-disabled` |

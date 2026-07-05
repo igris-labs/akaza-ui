@@ -64,3 +64,11 @@ import { Input } from "akaza-ui";
 ### State Attributes
 
 `Input` sets `data-valid`, `data-invalid`, `data-dirty`, `data-touched`, `data-filled`, `data-focused`, and `data-disabled`, plus matching `data-akaza-*` attributes.
+
+### Styling Hooks
+
+| UI key | CSS class | Data attrs |
+|--------|-----------|------------|
+| `root` | `akaza-input` | `data-valid`, `data-invalid`, `data-dirty`, `data-touched`, `data-filled`, `data-focused`, `data-disabled`, and matching `data-akaza-*` attrs |
+
+Plain `class` also applies to the native input root. `ui.root` is the structured equivalent.

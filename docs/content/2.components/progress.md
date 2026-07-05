@@ -116,3 +116,12 @@ const value = ref<number | null>(null);
 |-----|-------------|
 | `root` | The outer track element. |
 | `indicator` | The fill indicator element. |
+
+### Styling Hooks
+
+| UI key | CSS class | Data attrs |
+|--------|-----------|------------|
+| `root` | `akaza-progress` | `data-akaza-state`, `data-akaza-orientation` |
+| `indicator` | `akaza-progress-indicator` | `data-akaza-state` |
+
+When value is determinate, root also sets `--akaza-progress-percentage` to a clamped percentage.

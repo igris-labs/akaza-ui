@@ -132,5 +132,30 @@ Use `getItemDisabled` to disable individual options programmatically.
 
 | Key | Description |
 |-----|-------------|
+| `root` | Root radiogroup element. |
 | `item` | Each option item element. |
+| `indicator` | Default radio indicator. |
+| `input` | Hidden native radio input used for form submission. |
+| `text` | Wrapper around label and description. |
+| `label` | Option label element. |
+| `description` | Option description element. |
 | `legend` | The legend element. |
+
+### Emits
+
+| Event | Payload | Description |
+|-------|---------|-------------|
+| `value-change` | `[value: string, details]` | Fired when selected value changes. |
+
+### Styling Hooks
+
+| UI key | CSS class | Data attrs |
+|--------|-----------|------------|
+| `root` | `akaza-radio-group` | `data-akaza-orientation`, `data-akaza-disabled` |
+| `legend` | `akaza-radio-group-legend` | — |
+| `input` | `akaza-radio-group-input` | — |
+| `item` | `akaza-radio-group-item` | `data-akaza-state`, `data-akaza-disabled` |
+| `indicator` | `akaza-radio-group-indicator` | — |
+| `text` | `akaza-radio-group-text` | — |
+| `label` | `akaza-radio-group-label` | — |
+| `description` | `akaza-radio-group-description` | — |

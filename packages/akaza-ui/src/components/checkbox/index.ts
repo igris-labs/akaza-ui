@@ -8,6 +8,10 @@ export interface CheckboxUi {
   /** The button element (the interactive checkbox). */
   root?: string;
   indicator?: string;
+  /** Hidden native input used for form submission. */
+  input?: string;
+  /** Wrapper around label and description. */
+  text?: string;
   label?: string;
   description?: string;
 }

@@ -123,3 +123,13 @@ Keeps the button in the tab order while disabled — useful for showing tooltips
 | `root` | The button element or custom rendered root. |
 | `spinner` | The default loading spinner. |
 | `loadingText` | The visually hidden default loading text. |
+
+### Styling Hooks
+
+| UI key | CSS class | Data attrs |
+|--------|-----------|------------|
+| `root` | `akaza-button` | `data-akaza-state`, `data-akaza-disabled`, `data-akaza-loading` |
+| `spinner` | `akaza-button-spinner` | — |
+| `loadingText` | `akaza-button-loading-text` | — |
+
+Plain `class` also applies to the root button. Use `ui.root` when styling root together with `spinner` or `loadingText`.

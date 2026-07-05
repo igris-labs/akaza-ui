@@ -6,6 +6,10 @@ export interface SwitchUi {
   wrapper?: string;
   root?: string;
   thumb?: string;
+  /** Hidden native input used for form submission. */
+  input?: string;
+  /** Wrapper around label and description. */
+  text?: string;
   label?: string;
   description?: string;
 }

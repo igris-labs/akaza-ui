@@ -76,17 +76,17 @@ import { Popover } from "akaza-ui";
 </template>
 ```
 
-### Disable teleport
+### Enable teleport
 
-By default the popover is teleported to `<body>`. Disable this if you need it to stay in the DOM tree (e.g. for stacking contexts).
+By default the popover stays in the DOM tree next to its trigger. Pass `teleport="body"` to render the panel under `<body>`.
 
 ```vue
 <template>
-  <Popover :teleport="false">
+  <Popover teleport="body">
     <template #trigger="{ toggle }">
       <button @click="() => toggle()">Open</button>
     </template>
-    <template #content>Content in-tree.</template>
+    <template #content>Content in body.</template>
   </Popover>
 </template>
 ```
@@ -100,7 +100,7 @@ By default the popover is teleported to `<body>`. Disable this if you need it to
 | `side` | `"top" \| "bottom" \| "left" \| "right"` | `"bottom"` | Preferred side to position the popover. |
 | `align` | `"start" \| "center" \| "end"` | `"start"` | Alignment relative to the trigger. |
 | `sideOffset` | `number` | `6` | Gap in px between trigger and panel. |
-| `teleport` | `string \| false` | `"body"` | Teleport target. |
+| `teleport` | `string \| false` | `false` | Teleport target. |
 | `transition` | `string \| false` | `"akaza-popover"` | Named Vue transition. |
 | `ui` | `PopoverUi` | — | CSS class overrides. |
 
@@ -129,4 +129,12 @@ By default the popover is teleported to `<body>`. Disable this if you need it to
 
 | Key | Description |
 |-----|-------------|
+| `root` | Trigger wrapper/root. |
 | `content` | The floating panel element. |
+
+### Styling Hooks
+
+| UI key | CSS class | Data attrs |
+|--------|-----------|------------|
+| `root` | `akaza-popover-root` | `data-akaza-state` |
+| `content` | `akaza-popover-content` | `data-akaza-state`, `data-akaza-side`, `data-akaza-align` |

@@ -107,6 +107,7 @@ onKeyStroke(["ArrowDown", "ArrowUp", "ArrowRight", "ArrowLeft", "Home", "End"], 
     :is="as"
     ref="rootRef"
     :data-akaza-orientation="orientation"
+    :class="ui?.root"
     class="akaza-accordion"
   >
     <div
@@ -166,10 +167,11 @@ onKeyStroke(["ArrowDown", "ArrowUp", "ArrowRight", "ArrowLeft", "Home", "End"], 
         :aria-labelledby="triggerId(item)"
         :aria-hidden="!isOpen(item) || undefined"
         :inert="!isOpen(item) || undefined"
+        :class="ui?.contentWrapper"
         class="akaza-accordion-content"
         :data-akaza-state="isOpen(item) ? 'open' : 'closed'"
       >
-        <div class="akaza-accordion-content-inner">
+        <div :class="ui?.contentInner" class="akaza-accordion-content-inner">
           <div :class="ui?.content" class="akaza-accordion-content-body">
             <template v-if="!unmountOnHide || isOpen(item)">
               <slot

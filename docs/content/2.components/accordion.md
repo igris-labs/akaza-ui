@@ -158,7 +158,22 @@ const items = [
 
 | Key | Description |
 |-----|-------------|
+| `root` | Root accordion element. |
 | `item` | Wrapper element around each trigger + content pair. |
 | `trigger` | The trigger button element. |
 | `icon` | The icon container inside the trigger. |
-| `content` | The panel content element. |
+| `contentWrapper` | Animated region wrapper. |
+| `contentInner` | Overflow-hiding inner wrapper. |
+| `content` | Panel body element. |
+
+### Styling Hooks
+
+| UI key | CSS class | Data attrs |
+|--------|-----------|------------|
+| `root` | `akaza-accordion` | `data-akaza-orientation` |
+| `item` | `akaza-accordion-item` | `data-akaza-state`, `data-akaza-disabled` |
+| `trigger` | `akaza-accordion-trigger` | `data-akaza-state`, `data-akaza-disabled` |
+| `icon` | `akaza-accordion-icon` | `data-akaza-state` |
+| `contentWrapper` | `akaza-accordion-content` | `data-akaza-state` |
+| `contentInner` | `akaza-accordion-content-inner` | — |
+| `content` | `akaza-accordion-content-body` | — |

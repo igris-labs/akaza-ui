@@ -4,6 +4,7 @@ export type PopoverSide = "top" | "bottom" | "left" | "right";
 export type PopoverAlign = "start" | "center" | "end";
 
 export interface PopoverUi {
+  root?: string;
   content?: string;
 }
 

@@ -178,9 +178,32 @@ const items = [
 
 | Key | Description |
 |-----|-------------|
+| `root` | Trigger wrapper/root. |
 | `content` | The floating menu panel. |
-| `item` | Each menu item element. |
+| `panel` | Inner `role="menu"` panel. |
+| `item` | Shared menu item class for regular, checkbox, radio, and submenu trigger items. |
+| `checkboxItem` | Checkbox item element. |
+| `radioItem` | Radio item element. |
 | `separator` | Separator elements between groups. |
 | `label` | Label-type item elements. |
 | `group` | Group wrapper element. |
+| `submenu` | Submenu wrapper. |
+| `submenuTrigger` | Submenu trigger item. |
 | `submenuContent` | Submenu panel element. |
+
+### Styling Hooks
+
+| UI key | CSS class | Data attrs |
+|--------|-----------|------------|
+| `root` | `akaza-menu-root` | `data-akaza-state` |
+| `content` | `akaza-menu-content` | `data-akaza-state`, `data-akaza-side`, `data-akaza-align` |
+| `panel` | `akaza-menu-panel` | — |
+| `group` | `akaza-menu-group` | — |
+| `item` | `akaza-menu-item` | `data-akaza-disabled`, `data-akaza-highlighted` |
+| `checkboxItem` | `akaza-menu-checkbox-item` | `data-akaza-state`, `data-akaza-disabled`, `data-akaza-highlighted` |
+| `radioItem` | `akaza-menu-radio-item` | `data-akaza-state`, `data-akaza-disabled`, `data-akaza-highlighted` |
+| `separator` | `akaza-menu-separator` | — |
+| `label` | `akaza-menu-label` | — |
+| `submenu` | `akaza-menu-submenu` | `data-akaza-state` |
+| `submenuTrigger` | `akaza-menu-submenu-trigger` | `data-akaza-state`, `data-akaza-disabled`, `data-akaza-highlighted` |
+| `submenuContent` | `akaza-menu-submenu-content` | `data-akaza-submenu` |

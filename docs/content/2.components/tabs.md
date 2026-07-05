@@ -147,6 +147,12 @@ Remove inactive panels from the DOM instead of hiding them.
 | `tab` | `{ item, isActive, select }` | Each tab button. Defaults to rendering the item's label. |
 | `panel-{value}` | `{ item, isActive }` | Content panel for the tab with the matching `value`. |
 
+### Emits
+
+| Event | Payload | Description |
+|-------|---------|-------------|
+| `value-change` | `[value: string, details]` | Fired when selected tab changes. |
+
 ### UI Options
 
 | Key | Description |
@@ -157,3 +163,14 @@ Remove inactive panels from the DOM instead of hiding them.
 | `indicator` | The sliding indicator span. |
 | `panels` | The panels wrapper element. |
 | `panel` | Each panel element. |
+
+### Styling Hooks
+
+| UI key | CSS class | Data attrs |
+|--------|-----------|------------|
+| `root` | `akaza-tabs` | `data-akaza-orientation` |
+| `list` | `akaza-tab-list` | — |
+| `tab` | `akaza-tab` | `data-akaza-state`, `data-akaza-value`, `data-akaza-disabled` |
+| `indicator` | `akaza-tab-indicator` | — |
+| `panels` | `akaza-tab-panels` | — |
+| `panel` | `akaza-tab-panel` | `data-akaza-state` |

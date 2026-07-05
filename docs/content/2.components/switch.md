@@ -126,5 +126,19 @@ Use `aria-label` when there's no visible label text.
 | `wrapper` | The outer wrapper element. |
 | `root` | The interactive button (the switch track). |
 | `thumb` | The thumb indicator element. |
+| `input` | Hidden native input used for form submission. |
+| `text` | Wrapper around label and description. |
 | `label` | The label element. |
 | `description` | The description element. |
+
+### Styling Hooks
+
+| UI key | CSS class | Data attrs |
+|--------|-----------|------------|
+| `wrapper` | `akaza-switch-wrapper` | — |
+| `root` | `akaza-switch` | `data-akaza-state`, `data-akaza-disabled` |
+| `thumb` | `akaza-switch-thumb` | `data-akaza-state` |
+| `input` | `akaza-switch-input` | — |
+| `text` | `akaza-switch-text` | — |
+| `label` | `akaza-switch-label` | — |
+| `description` | `akaza-switch-description` | — |

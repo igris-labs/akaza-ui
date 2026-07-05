@@ -2,9 +2,11 @@
 import type { CSSProperties } from "vue";
 import type { PopoverProps, PopoverSide } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
-import { onClickOutside, onKeyStroke } from "@vueuse/core";
+import { onClickOutside } from "@vueuse/core";
 import { computed, nextTick, onUnmounted, ref, useId, useTemplateRef, watch } from "vue";
 import { usePopover } from "../../composables/popover";
+import { resolveAction } from "../../utils/changeEvent";
+import { useDismissableLayer } from "../../utils/dismissableLayer";
 
 const {
   side = "bottom",
@@ -35,14 +37,17 @@ function handleChange(nextOpen: boolean, reason: string, event?: Event) {
   nextOpen ? _open() : _close();
 }
 
-function open(reason = "programmatic", event?: Event) {
-  handleChange(true, reason, event);
+function open(reasonOrEvent?: string | Event, event?: Event) {
+  const details = resolveAction(reasonOrEvent, event);
+  handleChange(true, details.reason, details.event);
 }
-function close(reason = "programmatic", event?: Event) {
-  handleChange(false, reason, event);
+function close(reasonOrEvent?: string | Event, event?: Event) {
+  const details = resolveAction(reasonOrEvent, event);
+  handleChange(false, details.reason, details.event);
 }
-function toggle(reason = "programmatic", event?: Event) {
-  handleChange(!model.value, reason, event);
+function toggle(reasonOrEvent?: string | Event, event?: Event) {
+  const details = resolveAction(reasonOrEvent, event);
+  handleChange(!model.value, details.reason, details.event);
 }
 
 const popoverId = useId();
@@ -50,6 +55,7 @@ const rootRef = useTemplateRef<HTMLElement>("rootRef");
 const contentRef = useTemplateRef<HTMLElement>("contentRef");
 let positionFrame = 0;
 let resizeObserver: ResizeObserver | undefined;
+const { register, unregister } = useDismissableLayer((event?: KeyboardEvent) => close("escape", event));
 
 onClickOutside(
   rootRef,
@@ -58,13 +64,6 @@ onClickOutside(
   },
   { ignore: [contentRef] },
 );
-
-onKeyStroke("Escape", (e) => {
-  if (model.value) {
-    e.preventDefault();
-    close("escape", e);
-  }
-});
 
 // ── Positioning ───────────────────────────────────────────────────────────────
 
@@ -76,6 +75,7 @@ const contentStyle = computed<CSSProperties>(() => ({
 }));
 
 function schedulePosition() {
+  if (typeof requestAnimationFrame === "undefined") return;
   cancelAnimationFrame(positionFrame);
   positionFrame = requestAnimationFrame(() => {
     positionFrame = requestAnimationFrame(() => {
@@ -85,6 +85,7 @@ function schedulePosition() {
 }
 
 function computePosition() {
+  if (typeof window === "undefined") return;
   if (!rootRef.value || !contentRef.value) return;
 
   const t = rootRef.value.getBoundingClientRect();
@@ -152,6 +153,7 @@ function computePosition() {
 // ── Open/close with viewport tracking ────────────────────────────────────────
 
 function addListeners() {
+  if (typeof window === "undefined") return;
   if (teleport !== false) {
     window.addEventListener("scroll", computePosition, { passive: true, capture: true });
   }
@@ -166,6 +168,7 @@ function addListeners() {
 }
 
 function removeListeners() {
+  if (typeof window === "undefined") return;
   if (teleport !== false) {
     window.removeEventListener("scroll", computePosition, { capture: true });
   }
@@ -177,15 +180,18 @@ function removeListeners() {
 watch(model, async (val) => {
   if (val) {
     await nextTick();
+    register();
     addListeners();
     schedulePosition();
   } else {
+    unregister();
     removeListeners();
   }
-});
+}, { immediate: true });
 
 onUnmounted(() => {
-  cancelAnimationFrame(positionFrame);
+  if (typeof cancelAnimationFrame !== "undefined") cancelAnimationFrame(positionFrame);
+  unregister();
   removeListeners();
 });
 
@@ -242,7 +248,7 @@ defineExpose({ open, close, toggle });
 
 .akaza-popover-content {
   position: absolute;
-  z-index: 50;
+  z-index: var(--akaza-z-popover, 1000);
   isolation: isolate;
 }
 

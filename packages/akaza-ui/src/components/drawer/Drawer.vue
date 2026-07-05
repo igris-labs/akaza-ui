@@ -4,16 +4,15 @@ import type { AkazaChangeEventDetails } from "../../types";
 import { usePointerSwipe } from "@vueuse/core";
 import { computed, nextTick, useId, useTemplateRef, watch } from "vue";
 import { useDrawer } from "../../composables/drawer";
+import { resolveAction } from "../../utils/changeEvent";
 import { useDismissableLayer } from "../../utils/dismissableLayer";
 import { useFocusScope } from "../../utils/focusScope";
-
-const DISMISS_THRESHOLD = 100;
-const TRANSITION_DURATION = 300;
 
 const {
   as = "div",
   title,
   description,
+  ariaLabel,
   side = "right",
   inset = 0,
   closeOnBackdropClick = true,
@@ -26,6 +25,9 @@ const emit = defineEmits<{
   'open-change': [open: boolean, details: AkazaChangeEventDetails];
 }>();
 
+const DISMISS_THRESHOLD = 100;
+const TRANSITION_DURATION = 300;
+
 const model = defineModel<boolean>({ default: false });
 const { isOpen, open: _open, close: _close, toggle: _toggle } = useDrawer(model);
 
@@ -36,9 +38,18 @@ function handleChange(nextOpen: boolean, reason: string, event?: Event) {
   nextOpen ? _open() : _close();
 }
 
-function open(reason = 'programmatic', event?: Event) { handleChange(true, reason, event); }
-function close(reason = 'programmatic', event?: Event) { handleChange(false, reason, event); }
-function toggle(reason = 'programmatic', event?: Event) { handleChange(!isOpen.value, reason, event); }
+function open(reasonOrEvent?: string | Event, event?: Event) {
+  const details = resolveAction(reasonOrEvent, event);
+  handleChange(true, details.reason, details.event);
+}
+function close(reasonOrEvent?: string | Event, event?: Event) {
+  const details = resolveAction(reasonOrEvent, event);
+  handleChange(false, details.reason, details.event);
+}
+function toggle(reasonOrEvent?: string | Event, event?: Event) {
+  const details = resolveAction(reasonOrEvent, event);
+  handleChange(!isOpen.value, details.reason, details.event);
+}
 
 const contentRef = useTemplateRef<HTMLElement>("contentRef");
 const overlayRef = useTemplateRef<HTMLElement>("overlayRef");
@@ -56,7 +67,7 @@ watch(isOpen, async (val) => {
     deactivate();
     unregister();
   }
-});
+}, { immediate: true });
 
 function onOverlayClick(event: MouseEvent) {
   if (closeOnBackdropClick) close('backdrop-click', event);
@@ -231,6 +242,7 @@ defineExpose({ open, close, toggle, titleId, descriptionId });
         role="dialog"
         aria-modal="true"
         :aria-labelledby="($slots.title || title) ? titleId : undefined"
+        :aria-label="!($slots.title || title) ? ariaLabel : undefined"
         :aria-describedby="($slots.description || description) ? descriptionId : undefined"
         :class="ui?.content"
         :style="drawerStyle"
@@ -288,6 +300,13 @@ defineExpose({ open, close, toggle, titleId, descriptionId });
   position: fixed;
   display: flex;
   flex-direction: column;
+  z-index: var(--akaza-z-overlay-content, 1201);
+}
+
+.akaza-drawer-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: var(--akaza-z-overlay, 1200);
 }
 
 .akaza-drawer[data-akaza-side="right"] {

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import type { RadioGroupProps } from ".";
+import type { AkazaChangeEventDetails } from "../../types";
 
 const {
   options,
@@ -18,6 +19,10 @@ const {
   getItemDisabled,
   ui,
 } = defineProps<RadioGroupProps>();
+
+const emit = defineEmits<{
+  "value-change": [value: string, details: AkazaChangeEventDetails];
+}>();
 
 const model = defineModel<string>({ default: "" });
 
@@ -64,8 +69,16 @@ function getTabIndex(index: number): 0 | -1 {
   return index === getRovingIndex() ? 0 : -1;
 }
 
-function select(option: any) {
-  if (!isItemDisabled(option)) model.value = getValue(option);
+function select(option: any, event?: Event) {
+  if (isItemDisabled(option)) return;
+  const value = getValue(option);
+  let canceled = false;
+  emit("value-change", value, {
+    reason: event ? "select" : "programmatic",
+    ...(event && { event }),
+    cancel: () => { canceled = true; },
+  });
+  if (!canceled) model.value = value;
 }
 
 function handleKeyDown(event: KeyboardEvent, index: number) {
@@ -78,7 +91,7 @@ function handleKeyDown(event: KeyboardEvent, index: number) {
 
   if (isSpace) {
     event.preventDefault();
-    select(options[index]);
+    select(options[index], event);
     return;
   }
 
@@ -115,7 +128,7 @@ function handleKeyDown(event: KeyboardEvent, index: number) {
   }
 
   if (target !== index) {
-    model.value = getValue(options[target]);
+    select(options[target], event);
     focusItem(target);
   }
 }
@@ -133,38 +146,70 @@ function handleKeyDown(event: KeyboardEvent, index: number) {
     :data-akaza-disabled="disabled || undefined"
     class="akaza-radio-group"
   >
-    <input v-if="name" type="hidden" :name="name" :value="model" :required="required" />
-
     <slot name="legend" :legend="legend">
       <span v-if="legend" :class="ui?.legend" class="akaza-radio-group-legend">{{ legend }}</span>
     </slot>
 
-    <button
-      v-for="(option, index) in options"
-      :key="getValue(option)"
-      :ref="(el) => setItemRef(el as HTMLElement | null, index)"
-      type="button"
-      role="radio"
-      :aria-checked="model === getValue(option)"
-      :tabindex="getTabIndex(index)"
-      :class="ui?.item"
-      :data-akaza-state="model === getValue(option) ? 'checked' : 'unchecked'"
-      :data-akaza-disabled="isItemDisabled(option) || undefined"
-      :disabled="isItemDisabled(option)"
-      class="akaza-radio-group-item"
-      @click="select(option)"
-      @keydown="handleKeyDown($event, index)"
-    >
-      <slot
-        name="item"
-        :option="option"
+    <template v-for="(option, index) in options" :key="getValue(option)">
+      <input
+        v-if="name"
+        type="radio"
+        :name="name"
         :value="getValue(option)"
-        :label="getLabel(option)"
-        :description="getDescription(option)"
-        :is-checked="model === getValue(option)"
-        :is-disabled="isItemDisabled(option)"
-        :select="() => select(option)"
-      />
-    </button>
+        :checked="model === getValue(option)"
+        :required="required"
+        :disabled="isItemDisabled(option)"
+        aria-hidden="true"
+        tabindex="-1"
+        class="akaza-radio-group-input"
+      >
+
+      <button
+        :ref="(el) => setItemRef(el as HTMLElement | null, index)"
+        type="button"
+        role="radio"
+        :aria-checked="model === getValue(option)"
+        :tabindex="getTabIndex(index)"
+        :class="ui?.item"
+        :data-akaza-state="model === getValue(option) ? 'checked' : 'unchecked'"
+        :data-akaza-disabled="isItemDisabled(option) || undefined"
+        :disabled="isItemDisabled(option)"
+        class="akaza-radio-group-item"
+        @click="select(option, $event)"
+        @keydown="handleKeyDown($event, index)"
+      >
+        <slot
+          name="item"
+          :option="option"
+          :value="getValue(option)"
+          :label="getLabel(option)"
+          :description="getDescription(option)"
+          :is-checked="model === getValue(option)"
+          :is-disabled="isItemDisabled(option)"
+          :select="() => select(option)"
+        >
+          <span :class="ui?.indicator" class="akaza-radio-group-indicator" aria-hidden="true" />
+          <span class="akaza-radio-group-text">
+            <span v-if="getLabel(option)" :class="ui?.label" class="akaza-radio-group-label">
+              {{ getLabel(option) }}
+            </span>
+            <span v-if="getDescription(option)" :class="ui?.description" class="akaza-radio-group-description">
+              {{ getDescription(option) }}
+            </span>
+          </span>
+        </slot>
+      </button>
+    </template>
   </component>
 </template>
+
+<style>
+.akaza-radio-group-input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  pointer-events: none;
+  margin: 0;
+}
+</style>

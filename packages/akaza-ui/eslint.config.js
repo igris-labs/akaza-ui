@@ -28,6 +28,7 @@ export default antfu(
     rules: {
       "node/prefer-global/process": "off",
       "vue/multi-word-component-names": "off",
+      "vue/custom-event-name-casing": ["error", "kebab-case"],
       "vue/no-multiple-template-root": "off",
       "vue/singleline-html-element-content-newline": "off",
     },

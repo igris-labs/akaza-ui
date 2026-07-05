@@ -30,8 +30,12 @@ function getItems(container?: HTMLElement | null): HTMLElement[] {
 
 function highlightItem(el: HTMLElement) {
   const root = el.closest('[role="menu"]') as HTMLElement | null;
-  getItems(root).forEach((i) => i.removeAttribute("data-akaza-highlighted"));
+  getItems(root).forEach((i) => {
+    i.removeAttribute("data-akaza-highlighted");
+    i.tabIndex = -1;
+  });
   el.setAttribute("data-akaza-highlighted", "");
+  el.tabIndex = 0;
   el.focus();
 }
 
@@ -129,6 +133,17 @@ function openSubmenu(item: MenuItem) {
   activeSubmenu.value = ctx.getItemValue(item);
 }
 
+function openSubmenuAndFocus(item: MenuItem) {
+  openSubmenu(item);
+  nextTick(() => {
+    const sub = panelRef.value?.querySelector<HTMLElement>(
+      `.akaza-menu-submenu-content[data-akaza-submenu="${ctx.getItemValue(item)}"] > [role="menu"]`,
+    );
+    const first = getItems(sub)?.[0];
+    if (first) highlightItem(first);
+  });
+}
+
 function closeSubmenuDelayed() {
   submenuCloseTimer = setTimeout(() => {
     activeSubmenu.value = null;
@@ -210,7 +225,7 @@ defineExpose({ panelRef, getItems, highlightItem });
             :aria-disabled="item.disabled || undefined"
             :data-akaza-disabled="item.disabled || undefined"
             :data-akaza-state="item.checked ? 'checked' : 'unchecked'"
-            :tabindex="item.disabled ? -1 : 0"
+            :tabindex="-1"
             :class="ctx.ui?.item"
             class="akaza-menu-item akaza-menu-checkbox-item"
             @click="ctx.onCheckboxSelect(item, $event)"
@@ -240,7 +255,7 @@ defineExpose({ panelRef, getItems, highlightItem });
             :data-akaza-state="
               ctx.isRadioChecked(item) ? 'checked' : 'unchecked'
             "
-            :tabindex="item.disabled ? -1 : 0"
+            :tabindex="-1"
             :class="ctx.ui?.item"
             class="akaza-menu-item akaza-menu-radio-item"
             @click="ctx.onRadioSelect(item, $event)"
@@ -274,9 +289,12 @@ defineExpose({ panelRef, getItems, highlightItem });
               :aria-disabled="item.disabled || undefined"
               :data-akaza-disabled="item.disabled || undefined"
               :data-akaza-value="ctx.getItemValue(item)"
-              :tabindex="item.disabled ? -1 : 0"
+              :tabindex="-1"
               :class="ctx.ui?.item"
               class="akaza-menu-item akaza-menu-submenu-trigger"
+              @click="openSubmenuAndFocus(item)"
+              @keydown.enter.prevent="openSubmenuAndFocus(item)"
+              @keydown.space.prevent="openSubmenuAndFocus(item)"
             >
               <component
                 :is="
@@ -313,7 +331,7 @@ defineExpose({ panelRef, getItems, highlightItem });
             role="menuitem"
             :aria-disabled="item.disabled || undefined"
             :data-akaza-disabled="item.disabled || undefined"
-            :tabindex="item.disabled ? -1 : 0"
+            :tabindex="-1"
             :class="ctx.ui?.item"
             class="akaza-menu-item"
             @click="ctx.onItemSelect(item, $event)"

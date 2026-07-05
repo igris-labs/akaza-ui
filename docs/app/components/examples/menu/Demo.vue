@@ -47,7 +47,7 @@ const items = [
 @reference "tailwindcss";
 
 .menu-content {
-  @apply z-50 min-w-40 overflow-hidden rounded-xl border border-neutral-200 bg-white p-1 shadow-lg dark:border-neutral-800 dark:bg-neutral-900;
+  @apply min-w-40 overflow-hidden rounded-xl border border-neutral-200 bg-white p-1 shadow-lg dark:border-neutral-800 dark:bg-neutral-900;
 }
 
 .menu-item {

@@ -17,6 +17,8 @@ export interface DrawerProps {
   as?: string;
   title?: string;
   description?: string;
+  /** Fallback accessible name when no title prop or title slot is rendered. */
+  ariaLabel?: string;
   side?: DrawerSide;
   inset?: number | string;
   closeOnBackdropClick?: boolean;

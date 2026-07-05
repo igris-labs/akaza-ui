@@ -2,8 +2,10 @@
 import type { MenuItem, MenuProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
 import { onClickOutside } from "@vueuse/core";
-import { computed, nextTick, provide, useId, useSlots, useTemplateRef, watch } from "vue";
+import { computed, nextTick, onUnmounted, provide, ref, useId, useSlots, useTemplateRef, watch } from "vue";
 import { useMenu } from "../../composables/menu";
+import { resolveAction } from "../../utils/changeEvent";
+import { useDismissableLayer } from "../../utils/dismissableLayer";
 import { MENU_CONTEXT_KEY } from "./context";
 import MenuPanel from "./MenuPanel.vue";
 
@@ -43,19 +45,24 @@ function handleChange(nextOpen: boolean, reason: string, event?: Event) {
   nextOpen ? _open() : _close();
 }
 
-function open(reason = "programmatic", event?: Event) {
-  handleChange(true, reason, event);
+function open(reasonOrEvent?: string | Event, event?: Event) {
+  const details = resolveAction(reasonOrEvent, event);
+  handleChange(true, details.reason, details.event);
 }
-function close(reason = "programmatic", event?: Event) {
-  handleChange(false, reason, event);
+function close(reasonOrEvent?: string | Event, event?: Event) {
+  const details = resolveAction(reasonOrEvent, event);
+  handleChange(false, details.reason, details.event);
 }
-function toggle(reason = "programmatic", event?: Event) {
-  handleChange(!isOpen.value, reason, event);
+function toggle(reasonOrEvent?: string | Event, event?: Event) {
+  const details = resolveAction(reasonOrEvent, event);
+  handleChange(!isOpen.value, details.reason, details.event);
 }
 
 const menuId = useId();
 const rootRef = useTemplateRef<HTMLElement>("rootRef");
+const contentRef = useTemplateRef<HTMLElement>("contentRef");
 const panelRef = useTemplateRef<InstanceType<typeof MenuPanel>>("panelRef");
+const { register, unregister } = useDismissableLayer((event?: KeyboardEvent) => close("escape", event));
 
 // ── Normalize items to groups ────────────────────────────────────────────────
 
@@ -72,7 +79,7 @@ function getItemValue(item: MenuItem): string {
 
 // ── Positioning ──────────────────────────────────────────────────────────────
 
-const positionStyle = computed(() => {
+const localPositionStyle = computed(() => {
   const offset = `${sideOffset}px`;
   const s: Record<string, string> = {};
 
@@ -100,21 +107,78 @@ const positionStyle = computed(() => {
   return s;
 });
 
-// ── Auto-focus first item on open ────────────────────────────────────────────
+const fixedPositionStyle = ref<Record<string, string>>({ top: "-9999px", left: "-9999px" });
+const positionStyle = computed(() =>
+  teleport === false ? localPositionStyle.value : fixedPositionStyle.value,
+);
+
+function computePosition() {
+  if (typeof window === "undefined") return;
+  if (teleport === false || !rootRef.value || !contentRef.value) return;
+  const trigger = rootRef.value.getBoundingClientRect();
+  const content = contentRef.value.getBoundingClientRect();
+  const gap = sideOffset;
+  let top = 0;
+  let left = 0;
+
+  if (side === "top") top = trigger.top - content.height - gap;
+  else if (side === "bottom") top = trigger.bottom + gap;
+  else if (side === "left") left = trigger.left - content.width - gap;
+  else left = trigger.right + gap;
+
+  if (side === "top" || side === "bottom") {
+    if (align === "start") left = trigger.left;
+    else if (align === "end") left = trigger.right - content.width;
+    else left = trigger.left + trigger.width / 2 - content.width / 2;
+  } else {
+    if (align === "start") top = trigger.top;
+    else if (align === "end") top = trigger.bottom - content.height;
+    else top = trigger.top + trigger.height / 2 - content.height / 2;
+  }
+
+  top = Math.max(4, Math.min(top, window.innerHeight - content.height - 4));
+  left = Math.max(4, Math.min(left, window.innerWidth - content.width - 4));
+  fixedPositionStyle.value = { top: `${top}px`, left: `${left}px` };
+}
+
+function addPositionListeners() {
+  if (typeof window === "undefined") return;
+  if (teleport === false) return;
+  window.addEventListener("scroll", computePosition, { passive: true, capture: true });
+  window.addEventListener("resize", computePosition, { passive: true });
+}
+
+function removePositionListeners() {
+  if (typeof window === "undefined") return;
+  if (teleport === false) return;
+  window.removeEventListener("scroll", computePosition, { capture: true });
+  window.removeEventListener("resize", computePosition);
+}
 
 watch(isOpen, async (val) => {
   if (val) {
     await nextTick();
+    register();
+    computePosition();
+    addPositionListeners();
     const first = panelRef.value?.getItems()?.[0];
     if (first) panelRef.value?.highlightItem(first);
+  } else {
+    unregister();
+    removePositionListeners();
   }
+}, { immediate: true });
+
+onUnmounted(() => {
+  unregister();
+  removePositionListeners();
 });
 
 // ── Dismiss ──────────────────────────────────────────────────────────────────
 
 onClickOutside(rootRef, (e) => {
   if (isOpen.value) close("outside-click", e);
-});
+}, { ignore: [contentRef] });
 
 // Boundary keydown on the content wrapper — prevents menu keyboard events
 // from leaking to the rest of the page (e.g. scrolling, triggering other components).
@@ -239,6 +303,7 @@ defineExpose({ open, close, toggle });
           :is="as"
           v-if="isOpen"
           :id="menuId"
+          ref="contentRef"
           :class="ui?.content"
           :style="positionStyle"
           :data-akaza-side="side"
@@ -258,6 +323,7 @@ defineExpose({ open, close, toggle });
           :is="as"
           v-if="isOpen"
           :id="menuId"
+          ref="contentRef"
           :class="ui?.content"
           :style="positionStyle"
           :data-akaza-side="side"
@@ -282,7 +348,7 @@ defineExpose({ open, close, toggle });
 
 .akaza-menu-content {
   position: absolute;
-  z-index: 50;
+  z-index: var(--akaza-z-menu, 1000);
 }
 
 /* Submenu positioning */
@@ -294,7 +360,7 @@ defineExpose({ open, close, toggle });
   position: absolute;
   left: 100%;
   top: 0;
-  z-index: 50;
+  z-index: var(--akaza-z-menu, 1000);
 }
 
 /* Transition */

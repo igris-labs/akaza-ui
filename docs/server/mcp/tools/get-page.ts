@@ -1,5 +1,5 @@
-import { z } from 'zod'
 import { queryCollection } from '@nuxt/content/server'
+import { z } from 'zod'
 
 export default defineMcpTool({
   description: `Retrieves the full content and details of a specific documentation page.

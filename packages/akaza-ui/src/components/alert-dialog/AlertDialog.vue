@@ -3,6 +3,7 @@ import type { AlertDialogProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
 import { nextTick, useId, useTemplateRef, watch } from "vue";
 import { useAlertDialog } from "../../composables/alert-dialog";
+import { resolveAction } from "../../utils/changeEvent";
 import { useFocusScope } from "../../utils/focusScope";
 
 const {
@@ -11,6 +12,7 @@ const {
   transition = "akaza-alert-dialog",
   duration = 150,
   title,
+  ariaLabel,
   description,
   ui,
 } = defineProps<AlertDialogProps>();
@@ -34,7 +36,7 @@ watch(isOpen, async (val) => {
   } else {
     deactivate();
   }
-});
+}, { immediate: true });
 
 function handleChange(open: boolean, reason: string, event?: Event) {
   let canceled = false;
@@ -43,9 +45,18 @@ function handleChange(open: boolean, reason: string, event?: Event) {
   open ? _open() : _close();
 }
 
-function open(reason = 'programmatic', event?: Event) { handleChange(true, reason, event); }
-function close(reason = 'programmatic', event?: Event) { handleChange(false, reason, event); }
-function toggle(reason = 'programmatic', event?: Event) { handleChange(!isOpen.value, reason, event); }
+function open(reasonOrEvent?: string | Event, event?: Event) {
+  const details = resolveAction(reasonOrEvent, event);
+  handleChange(true, details.reason, details.event);
+}
+function close(reasonOrEvent?: string | Event, event?: Event) {
+  const details = resolveAction(reasonOrEvent, event);
+  handleChange(false, details.reason, details.event);
+}
+function toggle(reasonOrEvent?: string | Event, event?: Event) {
+  const details = resolveAction(reasonOrEvent, event);
+  handleChange(!isOpen.value, details.reason, details.event);
+}
 
 // Alert dialogs must NOT close on backdrop click or Escape — WAI-ARIA spec.
 
@@ -83,6 +94,7 @@ defineExpose({ open, close, toggle, titleId, descriptionId });
         role="alertdialog"
         aria-modal="true"
         :aria-labelledby="($slots.title || title) ? titleId : undefined"
+        :aria-label="!($slots.title || title) ? ariaLabel : undefined"
         :aria-describedby="($slots.description || description) ? descriptionId : undefined"
         :class="ui?.content"
         :style="{ '--akaza-dialog-duration': `${duration}ms` }"
@@ -145,7 +157,7 @@ defineExpose({ open, close, toggle, titleId, descriptionId });
 .akaza-alert-dialog-overlay {
   position: fixed;
   inset: 0;
-  z-index: 50;
+  z-index: var(--akaza-z-overlay, 1200);
 }
 
 .akaza-alert-dialog-content {
@@ -153,7 +165,7 @@ defineExpose({ open, close, toggle, titleId, descriptionId });
   top: 50%;
   left: 50%;
   translate: -50% -50%;
-  z-index: 50;
+  z-index: var(--akaza-z-overlay-content, 1201);
 }
 
 .akaza-alert-dialog-overlay-enter-active,

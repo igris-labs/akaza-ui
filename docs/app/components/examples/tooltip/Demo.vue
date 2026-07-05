@@ -79,6 +79,6 @@ import { Tooltip } from "akaza-ui";
 @reference "tailwindcss";
 
 .tooltip-content {
-  @apply z-50 rounded-lg bg-neutral-900 px-2.5 py-1.5 text-xs font-medium text-white shadow-md dark:bg-white dark:text-neutral-900;
+  @apply rounded-lg bg-neutral-900 px-2.5 py-1.5 text-xs font-medium text-white shadow-md dark:bg-white dark:text-neutral-900;
 }
 </style>

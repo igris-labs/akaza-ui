@@ -1,6 +1,6 @@
 export { default as Checkbox } from "./Checkbox.vue";
 
-export type CheckboxValue = boolean | "indeterminate";
+export type CheckboxValue = boolean | string | number | "indeterminate";
 
 export interface CheckboxUi {
   /** Outer wrapper element. */
@@ -21,9 +21,9 @@ export interface CheckboxProps {
   /** Marks the field as required for form validation. */
   required?: boolean;
   /** Value stored in the model when checked. Defaults to true. */
-  trueValue?: unknown;
+  trueValue?: CheckboxValue;
   /** Value stored in the model when unchecked. Defaults to false. */
-  falseValue?: unknown;
+  falseValue?: CheckboxValue;
   /** Convenience label text. Slot #label takes priority. */
   label?: string;
   /** Convenience description below the label. Slot #description takes priority. */

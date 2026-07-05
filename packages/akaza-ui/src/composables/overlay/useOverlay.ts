@@ -6,7 +6,6 @@ import { reactive } from "vue";
  * Extracts the props type from a Vue component.
  * Works with components defined via defineComponent / defineProps.
  */
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 type ComponentProps<T extends Component> = T extends DefineComponent<infer P, any, any, any, any, any, any, any>
   ? Omit<P, "modelValue" | "onUpdate:modelValue" | "onClose">
   : Record<string, unknown>;
@@ -76,6 +75,10 @@ function _useOverlay() {
     }
 
     function unmount() {
+      if (raw.resolve) {
+        raw.resolve(undefined);
+        raw.resolve = null;
+      }
       const idx = overlays.findIndex((o) => o.id === id);
       if (idx !== -1) overlays.splice(idx, 1);
     }
@@ -95,6 +98,10 @@ function _useOverlay() {
     raw._close = close;
 
     function open(props?: Partial<ComponentProps<T>>): OverlayOpenResult {
+      if (raw.resolve) {
+        raw.resolve(undefined);
+        raw.resolve = null;
+      }
       if (!overlays.find((o) => o.id === id)) overlays.push(raw);
       const entry = getEntry()!;
       if (props) Object.assign(entry.props, props);

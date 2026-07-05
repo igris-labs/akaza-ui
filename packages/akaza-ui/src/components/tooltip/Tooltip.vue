@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import type { TooltipDirection, TooltipProps } from ".";
-import { onKeyStroke } from "@vueuse/core";
-import { nextTick, onUnmounted, ref, useId, useTemplateRef, watch } from "vue";
+import { computed, nextTick, onUnmounted, ref, useId, useTemplateRef, watch } from "vue";
 import { useTooltip } from "../../composables/tooltip";
+import { useDismissableLayer } from "../../utils/dismissableLayer";
 
 const {
   direction = "top",
@@ -30,6 +30,7 @@ const posStyle = ref({ top: "-9999px", left: "-9999px" });
 const actualDirection = ref<TooltipDirection>(direction);
 
 function computePosition() {
+  if (typeof window === "undefined") return;
   if (!triggerRef.value || !contentRef.value) return;
 
   const t = triggerRef.value.getBoundingClientRect();
@@ -87,11 +88,17 @@ function computePosition() {
 
 const posReady = ref(false);
 let posCleanup: (() => void) | null = null;
+const { register, unregister } = useDismissableLayer((event?: KeyboardEvent) => {
+  event?.preventDefault();
+  close();
+  triggerRef.value?.focus();
+});
 
 watch(model, async (val) => {
   if (val) {
     posReady.value = false;
     await nextTick();
+    register();
     computePosition();
     posReady.value = true;
     const update = () => computePosition();
@@ -103,20 +110,21 @@ watch(model, async (val) => {
     };
   } else {
     posReady.value = false;
+    unregister();
     posCleanup?.();
     posCleanup = null;
   }
+}, { immediate: true });
+
+onUnmounted(() => {
+  unregister();
+  posCleanup?.();
 });
 
-onUnmounted(() => posCleanup?.());
-
-onKeyStroke("Escape", (e) => {
-  if (model.value) {
-    e.preventDefault();
-    close();
-    triggerRef.value?.focus();
-  }
-});
+const triggerProps = computed(() => ({
+  "aria-describedby": model.value ? tooltipId : undefined,
+  "data-akaza-state": model.value ? "open" : "closed",
+}));
 </script>
 
 <template>
@@ -129,12 +137,13 @@ onKeyStroke("Escape", (e) => {
       class="akaza-tooltip-trigger"
       @mouseenter="open"
       @mouseleave="close"
-      @focus="open"
-      @blur="close"
+      @focusin="open"
+      @focusout="close"
     >
       <slot
         name="trigger"
         :is-open="model"
+        :trigger-props="triggerProps"
       />
     </span>
     <Teleport
@@ -155,6 +164,8 @@ onKeyStroke("Escape", (e) => {
           :data-akaza-direction="actualDirection"
           :style="[posStyle, posReady ? {} : { visibility: 'hidden' }]"
           class="akaza-tooltip-content"
+          @mouseenter="open"
+          @mouseleave="close"
         >
           <slot name="content" :close="close" />
           <span v-if="arrow" class="akaza-tooltip-arrow" aria-hidden="true" />
@@ -171,7 +182,7 @@ onKeyStroke("Escape", (e) => {
 
 .akaza-tooltip-content {
   position: fixed;
-  z-index: 50;
+  z-index: var(--akaza-z-tooltip, 1100);
 }
 
 .akaza-tooltip-arrow {

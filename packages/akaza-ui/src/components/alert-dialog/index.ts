@@ -17,6 +17,8 @@ export interface AlertDialogProps {
   duration?: number;
   /** Convenience prop for the dialog title. Slot #title takes priority when provided. */
   title?: string;
+  /** Fallback accessible name when no title prop or title slot is rendered. */
+  ariaLabel?: string;
   /** Convenience prop for the dialog description. Slot #description takes priority when provided. */
   description?: string;
   ui?: AlertDialogUi;

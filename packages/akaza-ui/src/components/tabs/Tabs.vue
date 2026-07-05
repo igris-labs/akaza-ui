@@ -1,7 +1,9 @@
 <script setup lang="ts">
+import type { CSSProperties } from "vue";
 import type { TabsItem, TabsProps } from ".";
+import type { AkazaChangeEventDetails } from "../../types";
 import { onKeyStroke } from "@vueuse/core";
-import { computed, nextTick, onMounted, ref, watch } from "vue";
+import { computed, nextTick, onMounted, onUnmounted, ref, useId } from "vue";
 
 const {
   items,
@@ -13,7 +15,12 @@ const {
   ui,
 } = defineProps<TabsProps>();
 
+const emit = defineEmits<{
+  "value-change": [value: string, details: AkazaChangeEventDetails];
+}>();
+
 const model = defineModel<string>({ default: "" });
+const idBase = useId();
 
 function getLabel(item: TabsItem): string {
   if (labelKey && (item as any)[labelKey] !== undefined) return String((item as any)[labelKey]);
@@ -22,6 +29,14 @@ function getLabel(item: TabsItem): string {
 
 function isActive(item: TabsItem): boolean {
   return model.value === item.value;
+}
+
+function tabId(item: TabsItem): string {
+  return `${idBase}-tab-${item.value}`;
+}
+
+function panelId(item: TabsItem): string {
+  return `${idBase}-panel-${item.value}`;
 }
 
 // Roving tabindex: active tab, or first enabled if none active
@@ -38,24 +53,44 @@ function setTabRef(el: HTMLElement | null, index: number) {
 }
 
 const listRef = ref<HTMLElement | null>(null);
-const indicatorStyle = ref({ left: "0px", width: "0px", top: "0px", height: "0px" });
+const layoutVersion = ref(0);
 
-function updateIndicator() {
-  if (!listRef.value) return;
+const indicatorStyle = computed<CSSProperties>(() => {
+  layoutVersion.value;
+  if (!listRef.value) return { left: "0px", width: "0px", top: "0px", height: "0px" };
   const activeIdx = items.findIndex((i) => isActive(i));
   const activeEl = activeIdx >= 0 ? tabEls[activeIdx] : null;
-  if (!activeEl) return;
+  if (!activeEl) return { left: "0px", width: "0px", top: "0px", height: "0px" };
   const containerRect = listRef.value.getBoundingClientRect();
   const tabRect = activeEl.getBoundingClientRect();
   if (orientation === "horizontal") {
-    indicatorStyle.value = { left: `${tabRect.left - containerRect.left}px`, width: `${tabRect.width}px`, top: "", height: "" };
+    return { left: `${tabRect.left - containerRect.left}px`, width: `${tabRect.width}px`, top: "", height: "" };
   } else {
-    indicatorStyle.value = { top: `${tabRect.top - containerRect.top}px`, height: `${tabRect.height}px`, left: "", width: "" };
+    return { top: `${tabRect.top - containerRect.top}px`, height: `${tabRect.height}px`, left: "", width: "" };
   }
+});
+
+function refreshIndicator() {
+  layoutVersion.value += 1;
 }
 
-watch(() => model.value, async () => { await nextTick(); updateIndicator(); });
-onMounted(async () => { await nextTick(); updateIndicator(); });
+let resizeObserver: ResizeObserver | undefined;
+onMounted(async () => {
+  await nextTick();
+  refreshIndicator();
+  if (typeof ResizeObserver !== "undefined" && listRef.value) {
+    resizeObserver = new ResizeObserver(refreshIndicator);
+    resizeObserver.observe(listRef.value);
+    for (const el of tabEls) {
+      if (el) resizeObserver.observe(el);
+    }
+  }
+  window.addEventListener("resize", refreshIndicator, { passive: true });
+});
+onUnmounted(() => {
+  resizeObserver?.disconnect();
+  window.removeEventListener("resize", refreshIndicator);
+});
 
 // ── Keyboard navigation ────────────────────────────────────────
 
@@ -88,11 +123,18 @@ onKeyStroke(["ArrowRight", "ArrowLeft", "ArrowDown", "ArrowUp", "Home", "End"], 
   const nextOrigIdx = items.findIndex((i) => i.value === nextItem.value);
   tabEls[nextOrigIdx]?.focus();
 
-  if (activationMode === "automatic") model.value = nextItem.value;
+  if (activationMode === "automatic") activate(nextItem, e);
 });
 
-function activate(item: TabsItem) {
-  if (!item.disabled) model.value = item.value;
+function activate(item: TabsItem, event?: Event) {
+  if (item.disabled) return;
+  let canceled = false;
+  emit("value-change", item.value, {
+    reason: event ? "trigger" : "programmatic",
+    ...(event && { event }),
+    cancel: () => { canceled = true; },
+  });
+  if (!canceled) model.value = item.value;
 }
 </script>
 
@@ -113,13 +155,13 @@ function activate(item: TabsItem) {
     >
       <button
         v-for="(item, index) in items"
+        :id="tabId(item)"
         :key="item.value"
         :ref="(el) => setTabRef(el as HTMLElement | null, index)"
         type="button"
         role="tab"
-        :id="`akaza-tab-${item.value}`"
         :aria-selected="isActive(item)"
-        :aria-controls="`akaza-panel-${item.value}`"
+        :aria-controls="panelId(item)"
         :aria-disabled="item.disabled || undefined"
         :tabindex="rovingValue === item.value ? 0 : -1"
         :data-akaza-state="isActive(item) ? 'active' : 'inactive'"
@@ -128,9 +170,9 @@ function activate(item: TabsItem) {
         :disabled="item.disabled"
         :class="ui?.tab"
         class="akaza-tab"
-        @click="activate(item)"
-        @keydown.enter.prevent="activate(item)"
-        @keydown.space.prevent="activate(item)"
+        @click="activate(item, $event)"
+        @keydown.enter.prevent="activate(item, $event)"
+        @keydown.space.prevent="activate(item, $event)"
       >
         <slot name="tab" :item="item" :is-active="isActive(item)" :select="() => activate(item)">
           {{ getLabel(item) }}
@@ -151,9 +193,9 @@ function activate(item: TabsItem) {
         <div
           v-if="!unmountOnHide || isActive(item)"
           v-show="isActive(item)"
-          :id="`akaza-panel-${item.value}`"
+          :id="panelId(item)"
           role="tabpanel"
-          :aria-labelledby="`akaza-tab-${item.value}`"
+          :aria-labelledby="tabId(item)"
           :tabindex="0"
           :data-akaza-state="isActive(item) ? 'active' : 'inactive'"
           :class="ui?.panel"

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ProgressOrientation, ProgressProps } from ".";
+import type { ProgressProps } from ".";
 import { computed } from "vue";
 
 const {

@@ -17,14 +17,17 @@ const open8 = ref(false);
 const open9 = ref(false);
 const eventLog = ref<string[]>([]);
 function onDialogChange(open: boolean, details: AkazaChangeEventDetails) {
-  eventLog.value = [`${open ? 'open' : 'close'} — reason: ${details.reason}`, ...eventLog.value].slice(0, 5);
+  eventLog.value = [
+    `${open ? "open" : "close"} — reason: ${details.reason}`,
+    ...eventLog.value,
+  ].slice(0, 5);
 }
 
 // ── 10. Cancel close ────────────────────────────────────────────────────────
 const open10 = ref(false);
 const hasUnsaved = ref(true);
 function onGuardedChange(_open: boolean, details: AkazaChangeEventDetails) {
-  if (!_open && hasUnsaved.value && details.reason !== 'confirm') {
+  if (!_open && hasUnsaved.value && details.reason !== "confirm") {
     details.cancel();
   }
 }
@@ -33,7 +36,9 @@ function onGuardedChange(_open: boolean, details: AkazaChangeEventDetails) {
 <template>
   <section id="dialog">
     <h2 class="text-lg font-semibold mb-1">Dialog</h2>
-    <p class="text-sm mb-6 text-muted-foreground">A modal dialog with focus trap, backdrop, and teleport.</p>
+    <p class="text-sm mb-6 text-muted-foreground">
+      A modal dialog with focus trap, backdrop, and teleport.
+    </p>
 
     <!-- 1. Title + description props -->
     <div class="demo-block">
@@ -73,7 +78,10 @@ function onGuardedChange(_open: boolean, details: AkazaChangeEventDetails) {
             <span>🎉 Custom title slot</span>
           </template>
           <template #description>
-            <p>This description comes from the <code>#description</code> slot, giving full control over markup.</p>
+            <p>
+              This description comes from the <code>#description</code> slot, giving full control
+              over markup.
+            </p>
           </template>
           <template #footer="{ close }">
             <div class="dlg-footer-row">
@@ -88,10 +96,7 @@ function onGuardedChange(_open: boolean, details: AkazaChangeEventDetails) {
     <div class="demo-block">
       <span class="demo-label">Custom #header slot</span>
       <div class="demo-canvas">
-        <Dialog
-          v-model="open3"
-          :ui="{ overlay: 'dlg-overlay', content: 'dlg-content' }"
-        >
+        <Dialog v-model="open3" :ui="{ overlay: 'dlg-overlay', content: 'dlg-content' }">
           <template #trigger="{ toggle }">
             <button class="dlg-btn-primary" @click="toggle">Open</button>
           </template>
@@ -102,7 +107,9 @@ function onGuardedChange(_open: boolean, details: AkazaChangeEventDetails) {
             </div>
           </template>
           <template #body>
-            <p class="dlg-body-text">The header slot gives full control. The close button is rendered manually.</p>
+            <p class="dlg-body-text">
+              The header slot gives full control. The close button is rendered manually.
+            </p>
           </template>
           <template #footer="{ close }">
             <div class="dlg-footer-row">
@@ -199,15 +206,15 @@ function onGuardedChange(_open: boolean, details: AkazaChangeEventDetails) {
     <div class="demo-block">
       <span class="demo-label">Body only (no header / footer)</span>
       <div class="demo-canvas">
-        <Dialog
-          v-model="open7"
-          :ui="{ overlay: 'dlg-overlay', content: 'dlg-content' }"
-        >
+        <Dialog v-model="open7" :ui="{ overlay: 'dlg-overlay', content: 'dlg-content' }">
           <template #trigger="{ toggle }">
             <button class="dlg-btn-primary" @click="toggle">Open</button>
           </template>
           <template #body="{ close }">
-            <p class="dlg-body-text" style="margin-bottom: 16px;">No header or footer — just a body slot. Dismiss by pressing Escape or clicking the backdrop.</p>
+            <p class="dlg-body-text" style="margin-bottom: 16px">
+              No header or footer — just a body slot. Dismiss by pressing Escape or clicking the
+              backdrop.
+            </p>
             <button class="dlg-btn-ghost" @click="close">Close</button>
           </template>
         </Dialog>
@@ -240,7 +247,7 @@ function onGuardedChange(_open: boolean, details: AkazaChangeEventDetails) {
     <!-- 9. @open-change event details -->
     <div class="demo-block">
       <span class="demo-label">@open-change event details</span>
-      <div class="demo-canvas" style="flex-direction: column; align-items: flex-start; gap: 12px;">
+      <div class="demo-canvas" style="flex-direction: column; align-items: flex-start; gap: 12px">
         <Dialog
           v-model="open9"
           title="Event details demo"
@@ -266,7 +273,7 @@ function onGuardedChange(_open: boolean, details: AkazaChangeEventDetails) {
     <!-- 10. cancel() — unsaved changes guard -->
     <div class="demo-block">
       <span class="demo-label">cancel() — unsaved changes guard</span>
-      <div class="demo-canvas" style="flex-direction: column; align-items: flex-start; gap: 12px;">
+      <div class="demo-canvas" style="flex-direction: column; align-items: flex-start; gap: 12px">
         <label class="dlg-guard-label">
           <input type="checkbox" v-model="hasUnsaved" />
           Simulate unsaved changes
@@ -312,11 +319,6 @@ function onGuardedChange(_open: boolean, details: AkazaChangeEventDetails) {
 
 /* Base dialog content */
 .dlg-content {
-  position: fixed;
-  z-index: 200;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
   width: min(90vw, 480px);
   border-radius: 12px;
   border: 1px solid var(--border);
@@ -416,7 +418,9 @@ function onGuardedChange(_open: boolean, details: AkazaChangeEventDetails) {
   border: none;
   cursor: pointer;
 }
-.dlg-btn-primary:hover { opacity: 0.9; }
+.dlg-btn-primary:hover {
+  opacity: 0.9;
+}
 .dlg-btn-ghost {
   padding: 6px 16px;
   border-radius: 6px;
@@ -427,7 +431,9 @@ function onGuardedChange(_open: boolean, details: AkazaChangeEventDetails) {
   border: 1px solid var(--border);
   cursor: pointer;
 }
-.dlg-btn-ghost:hover { background: var(--muted); }
+.dlg-btn-ghost:hover {
+  background: var(--muted);
+}
 
 /* Event log */
 .dlg-event-log {

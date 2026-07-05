@@ -7,7 +7,9 @@
     "build": "pnpm build:projects && pnpm build:playground && pnpm build:docs",
     "build:projects": "pnpm -r --filter ./packages/** run build",
     "build:playground": "pnpm -r --filter ./playground run build",
+    "dev:playground": "pnpm -r --filter ./playground run dev",
     "build:docs": "pnpm -r --filter ./docs run build",
+    "dev:docs": "pnpm -r --filter ./docs run dev",
     "lint": "pnpm -r --filter ./packages/** run lint",
     "test": "pnpm -r --filter ./packages/** run test"
   },

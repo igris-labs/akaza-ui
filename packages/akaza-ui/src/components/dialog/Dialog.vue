@@ -3,6 +3,7 @@ import type { DialogProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
 import { nextTick, useId, useTemplateRef, watch } from "vue";
 import { useDialog } from "../../composables/dialog";
+import { resolveAction } from "../../utils/changeEvent";
 import { useDismissableLayer } from "../../utils/dismissableLayer";
 import { useFocusScope } from "../../utils/focusScope";
 
@@ -10,6 +11,7 @@ const {
   as = "div",
   title,
   description,
+  ariaLabel,
   closeOnBackdropClick = true,
   fullscreen = false,
   teleport = "body",
@@ -19,7 +21,7 @@ const {
 } = defineProps<DialogProps>();
 
 const emit = defineEmits<{
-  'open-change': [open: boolean, details: AkazaChangeEventDetails];
+  "open-change": [open: boolean, details: AkazaChangeEventDetails];
 }>();
 
 const model = defineModel<boolean>({ default: false });
@@ -29,50 +31,62 @@ const contentRef = useTemplateRef<HTMLElement>("contentRef");
 const titleId = useId();
 const descriptionId = useId();
 const { activate, deactivate } = useFocusScope(contentRef);
-const { register, unregister } = useDismissableLayer((event?: KeyboardEvent) => close('escape', event));
+const { register, unregister } = useDismissableLayer((event?: KeyboardEvent) =>
+  close("escape", event),
+);
 
 function handleChange(nextOpen: boolean, reason: string, event?: Event) {
   let canceled = false;
-  emit('open-change', nextOpen, { reason, ...(event && { event }), cancel: () => { canceled = true; } });
+  emit("open-change", nextOpen, {
+    reason,
+    ...(event && { event }),
+    cancel: () => {
+      canceled = true;
+    },
+  });
   if (canceled) return;
   nextOpen ? _open() : _close();
 }
 
-function open(reason = 'programmatic', event?: Event) { handleChange(true, reason, event); }
-function close(reason = 'programmatic', event?: Event) { handleChange(false, reason, event); }
-function toggle(reason = 'programmatic', event?: Event) { handleChange(!isOpen.value, reason, event); }
+function open(reasonOrEvent?: string | Event, event?: Event) {
+  const details = resolveAction(reasonOrEvent, event);
+  handleChange(true, details.reason, details.event);
+}
+function close(reasonOrEvent?: string | Event, event?: Event) {
+  const details = resolveAction(reasonOrEvent, event);
+  handleChange(false, details.reason, details.event);
+}
+function toggle(reasonOrEvent?: string | Event, event?: Event) {
+  const details = resolveAction(reasonOrEvent, event);
+  handleChange(!isOpen.value, details.reason, details.event);
+}
 
-watch(isOpen, async (val) => {
-  if (val) {
-    await nextTick();
-    activate();
-    register();
-  } else {
-    deactivate();
-    unregister();
-  }
-});
+watch(
+  isOpen,
+  async (val) => {
+    if (val) {
+      await nextTick();
+      activate();
+      register();
+    } else {
+      deactivate();
+      unregister();
+    }
+  },
+  { immediate: true },
+);
 
 function onBackdropClick(event: MouseEvent) {
-  if (closeOnBackdropClick) close('backdrop-click', event);
+  if (closeOnBackdropClick) close("backdrop-click", event);
 }
 
 defineExpose({ open, close, toggle, titleId, descriptionId });
 </script>
 
 <template>
-  <slot
-    name="trigger"
-    :is-open="isOpen"
-    :open="open"
-    :close="close"
-    :toggle="toggle"
-  />
+  <slot name="trigger" :is-open="isOpen" :open="open" :close="close" :toggle="toggle" />
 
-  <Teleport
-    :to="typeof teleport === 'string' ? teleport : 'body'"
-    :disabled="teleport === false"
-  >
+  <Teleport :to="typeof teleport === 'string' ? teleport : 'body'" :disabled="teleport === false">
     <Transition name="akaza-dialog-overlay">
       <div
         v-if="isOpen"
@@ -93,8 +107,9 @@ defineExpose({ open, close, toggle, titleId, descriptionId });
         ref="contentRef"
         role="dialog"
         aria-modal="true"
-        :aria-labelledby="($slots.title || title) ? titleId : undefined"
-        :aria-describedby="($slots.description || description) ? descriptionId : undefined"
+        :aria-labelledby="$slots.title || title ? titleId : undefined"
+        :aria-label="!($slots.title || title) ? ariaLabel : undefined"
+        :aria-describedby="$slots.description || description ? descriptionId : undefined"
         :class="ui?.content"
         :style="{ '--akaza-dialog-duration': `${duration}ms` }"
         :data-akaza-fullscreen="fullscreen || undefined"
@@ -114,10 +129,7 @@ defineExpose({ open, close, toggle, titleId, descriptionId });
           </slot>
         </div>
 
-        <div
-          :class="ui?.body"
-          class="akaza-dialog-body"
-        >
+        <div :class="ui?.body" class="akaza-dialog-body">
           <div
             v-if="$slots.description || description"
             :id="descriptionId"
@@ -126,22 +138,11 @@ defineExpose({ open, close, toggle, titleId, descriptionId });
           >
             <slot name="description">{{ description }}</slot>
           </div>
-          <slot
-            name="body"
-            :close="close"
-            :description-id="descriptionId"
-          />
+          <slot name="body" :close="close" :description-id="descriptionId" />
         </div>
 
-        <div
-          v-if="$slots.footer"
-          :class="ui?.footer"
-          class="akaza-dialog-footer"
-        >
-          <slot
-            name="footer"
-            :close="close"
-          />
+        <div v-if="$slots.footer" :class="ui?.footer" class="akaza-dialog-footer">
+          <slot name="footer" :close="close" />
         </div>
       </component>
     </Transition>
@@ -152,7 +153,7 @@ defineExpose({ open, close, toggle, titleId, descriptionId });
 .akaza-dialog-overlay {
   position: fixed;
   inset: 0;
-  z-index: 50;
+  z-index: var(--akaza-z-overlay, 1200);
 }
 
 .akaza-dialog-content {
@@ -160,7 +161,7 @@ defineExpose({ open, close, toggle, titleId, descriptionId });
   top: 50%;
   left: 50%;
   translate: -50% -50%;
-  z-index: 50;
+  z-index: var(--akaza-z-overlay-content, 1201);
 }
 
 .akaza-dialog-content[data-akaza-fullscreen] {

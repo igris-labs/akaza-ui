@@ -2,6 +2,9 @@ export { default as RadioGroup } from "./RadioGroup.vue";
 
 export interface RadioGroupUi {
   item?: string;
+  indicator?: string;
+  label?: string;
+  description?: string;
   legend?: string;
 }
 

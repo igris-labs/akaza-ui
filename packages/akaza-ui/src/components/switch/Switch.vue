@@ -49,9 +49,9 @@ function toggle(reason = "click", event?: Event) {
     class="akaza-switch-wrapper"
   >
     <button
+      :id="buttonId"
       type="button"
       role="switch"
-      :id="buttonId"
       :aria-checked="isChecked"
       :aria-label="!hasLabel ? ariaLabel : undefined"
       :aria-labelledby="hasLabel ? labelId : undefined"
@@ -82,15 +82,17 @@ function toggle(reason = "click", event?: Event) {
       :value="String(trueValue)"
       :checked="isChecked"
       :required="required"
+      :disabled="disabled"
       aria-hidden="true"
       tabindex="-1"
       class="akaza-switch-input"
-    />
+    >
 
     <!-- Label + description -->
     <span
       v-if="hasLabel || hasDescription"
       class="akaza-switch-text"
+      @click="toggle('label-click', $event)"
     >
       <span
         v-if="hasLabel"

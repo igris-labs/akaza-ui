@@ -20,15 +20,16 @@ const props = withDefaults(defineProps<{
   })
 })
 
-// Generate random star positions and sizes
 const generateStars = (count: number): Star[] => {
-  return Array.from({ length: count }, () => ({
-    x: Math.floor(Math.random() * 2000),
-    y: Math.floor(Math.random() * 2000),
-    size: typeof props.size === 'number'
-      ? props.size
-      : Math.random() * (props.size.max - props.size.min) + props.size.min
-  }))
+  const stars: Star[] = []
+  for (let i = 0; i < count; i++) {
+    stars.push({
+      x: Math.floor(Math.random() * 2000),
+      y: Math.floor(Math.random() * 2000),
+      size: Math.random() * (props.size.max - props.size.min) + props.size.min
+    })
+  }
+  return stars
 }
 
 // Define speed configurations once

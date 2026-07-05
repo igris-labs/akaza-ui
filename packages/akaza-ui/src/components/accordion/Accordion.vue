@@ -118,8 +118,8 @@ onKeyStroke(["ArrowDown", "ArrowUp", "ArrowRight", "ArrowLeft", "Home", "End"], 
       class="akaza-accordion-item"
     >
       <button
-        type="button"
         :id="triggerId(item)"
+        type="button"
         :aria-expanded="isOpen(item)"
         :aria-controls="panelId(item)"
         :disabled="isItemDisabled(item)"
@@ -164,6 +164,8 @@ onKeyStroke(["ArrowDown", "ArrowUp", "ArrowRight", "ArrowLeft", "Home", "End"], 
         :id="panelId(item)"
         role="region"
         :aria-labelledby="triggerId(item)"
+        :aria-hidden="!isOpen(item) || undefined"
+        :inert="!isOpen(item) || undefined"
         class="akaza-accordion-content"
         :data-akaza-state="isOpen(item) ? 'open' : 'closed'"
       >

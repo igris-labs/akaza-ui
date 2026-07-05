@@ -18,3 +18,8 @@ export interface AvatarProps {
   delayMs?: number;
   ui?: AvatarUi;
 }
+
+export interface AvatarEmits {
+  /** Fires when image loading status changes. */
+  "status-change": [status: AvatarImageStatus];
+}

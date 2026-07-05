@@ -53,6 +53,6 @@ import { Popover } from "akaza-ui";
 @reference "tailwindcss";
 
 .popover-panel {
-  @apply z-50 w-64 rounded-xl border border-neutral-200 bg-white p-4 shadow-lg dark:border-neutral-800 dark:bg-neutral-900;
+  @apply w-64 rounded-xl border border-neutral-200 bg-white p-4 shadow-lg dark:border-neutral-800 dark:bg-neutral-900;
 }
 </style>

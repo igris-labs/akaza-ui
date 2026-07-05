@@ -53,7 +53,7 @@ import { Dialog } from "akaza-ui";
             type="text"
             placeholder="Jane Doe"
             class="rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 placeholder-neutral-400 outline-none transition-colors focus:border-neutral-400 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:placeholder-neutral-500 dark:focus:border-neutral-500"
-          />
+          >
         </label>
         <label class="flex flex-col gap-1.5">
           <span class="text-xs font-medium text-neutral-700 dark:text-neutral-300">Email</span>
@@ -61,7 +61,7 @@ import { Dialog } from "akaza-ui";
             type="email"
             placeholder="jane@example.com"
             class="rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 placeholder-neutral-400 outline-none transition-colors focus:border-neutral-400 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:placeholder-neutral-500 dark:focus:border-neutral-500"
-          />
+          >
         </label>
       </div>
     </template>

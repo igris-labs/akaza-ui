@@ -17,6 +17,21 @@ interface FocusScopeAPI {
  */
 const useScopeStack = createGlobalState(() => {
   const stack: FocusScopeAPI[] = [];
+  let previousBodyOverflow = "";
+
+  function lockBody() {
+    if (typeof document === "undefined") return;
+    if (stack.length !== 1) return;
+    previousBodyOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+  }
+
+  function unlockBody() {
+    if (typeof document === "undefined") return;
+    if (stack.length !== 0) return;
+    document.body.style.overflow = previousBodyOverflow;
+    previousBodyOverflow = "";
+  }
 
   return {
     add(scope: FocusScopeAPI) {
@@ -26,10 +41,12 @@ const useScopeStack = createGlobalState(() => {
       const idx = stack.indexOf(scope);
       if (idx !== -1) stack.splice(idx, 1);
       stack.push(scope);
+      lockBody();
     },
     remove(scope: FocusScopeAPI) {
       const idx = stack.indexOf(scope);
       if (idx !== -1) stack.splice(idx, 1);
+      unlockBody();
       // resume the new top
       stack[stack.length - 1]?.resume();
     },
@@ -81,26 +98,39 @@ export function useFocusScope(containerRef: Ref<HTMLElement | null>, options: Fo
     }
   }
 
-  function activate() {
-    previouslyFocused = document.activeElement as HTMLElement;
-    if (containerRef.value) {
-      const initial = options.initialFocusSelector
-        ? containerRef.value.querySelector<HTMLElement>(options.initialFocusSelector)
-        : null;
-      if (initial) {
-        initial.focus();
-      } else {
-        const focusable = getFocusableElements(containerRef.value);
-        (focusable[0] ?? containerRef.value).focus();
-      }
+  function focusFirst() {
+    if (!containerRef.value) return;
+    const initial = options.initialFocusSelector
+      ? containerRef.value.querySelector<HTMLElement>(options.initialFocusSelector)
+      : null;
+    if (initial) {
+      initial.focus();
+    } else {
+      const focusable = getFocusableElements(containerRef.value);
+      (focusable[0] ?? containerRef.value).focus();
     }
+  }
+
+  function handleFocusIn(event: FocusEvent) {
+    if (scope.paused || !containerRef.value) return;
+    if (containerRef.value.contains(event.target as Node)) return;
+    focusFirst();
+  }
+
+  function activate() {
+    if (typeof document === "undefined") return;
+    previouslyFocused = document.activeElement as HTMLElement;
+    focusFirst();
     document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("focusin", handleFocusIn);
     add(scope);
   }
 
   function deactivate() {
+    if (typeof document === "undefined") return;
     remove(scope);
     document.removeEventListener("keydown", handleKeyDown);
+    document.removeEventListener("focusin", handleFocusIn);
     previouslyFocused?.focus();
     previouslyFocused = null;
   }

@@ -5,6 +5,11 @@ import { ref } from "vue";
 const notifications = ref(true);
 const marketing = ref(false);
 const updates = ref<boolean | "indeterminate">("indeterminate");
+
+const checkboxUi = {
+  root: "checkbox-box",
+  indicator: "checkbox-indicator",
+};
 </script>
 
 <template>
@@ -13,27 +18,19 @@ const updates = ref<boolean | "indeterminate">("indeterminate");
       v-model="notifications"
       label="Email notifications"
       description="Receive updates about your account activity."
+      :ui="checkboxUi"
     >
       <template #indicator="{ checked }">
-        <div
-          class="flex size-4 items-center justify-center rounded border transition-colors"
-          :class="
-            checked
-              ? 'border-neutral-900 bg-neutral-900 dark:border-white dark:bg-white'
-              : 'border-neutral-300 bg-white dark:border-neutral-600 dark:bg-neutral-800'
-          "
+        <svg
+          v-if="checked"
+          class="size-3 text-white dark:text-neutral-900"
+          viewBox="0 0 12 12"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
         >
-          <svg
-            v-if="checked"
-            class="size-3 text-white dark:text-neutral-900"
-            viewBox="0 0 12 12"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path d="M2 6l3 3 5-5" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
-        </div>
+          <path d="M2 6l3 3 5-5" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
       </template>
     </Checkbox>
 
@@ -41,27 +38,19 @@ const updates = ref<boolean | "indeterminate">("indeterminate");
       v-model="marketing"
       label="Marketing emails"
       description="Get notified about new features and promotions."
+      :ui="checkboxUi"
     >
       <template #indicator="{ checked }">
-        <div
-          class="flex size-4 items-center justify-center rounded border transition-colors"
-          :class="
-            checked
-              ? 'border-neutral-900 bg-neutral-900 dark:border-white dark:bg-white'
-              : 'border-neutral-300 bg-white dark:border-neutral-600 dark:bg-neutral-800'
-          "
+        <svg
+          v-if="checked"
+          class="size-3 text-white dark:text-neutral-900"
+          viewBox="0 0 12 12"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
         >
-          <svg
-            v-if="checked"
-            class="size-3 text-white dark:text-neutral-900"
-            viewBox="0 0 12 12"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path d="M2 6l3 3 5-5" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
-        </div>
+          <path d="M2 6l3 3 5-5" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
       </template>
     </Checkbox>
 
@@ -69,37 +58,29 @@ const updates = ref<boolean | "indeterminate">("indeterminate");
       v-model="updates"
       label="All updates"
       description="A mix of indeterminate, checked, and unchecked."
+      :ui="checkboxUi"
     >
       <template #indicator="{ checked }">
-        <div
-          class="flex size-4 items-center justify-center rounded border transition-colors"
-          :class="
-            checked
-              ? 'border-neutral-900 bg-neutral-900 dark:border-white dark:bg-white'
-              : 'border-neutral-300 bg-white dark:border-neutral-600 dark:bg-neutral-800'
-          "
+        <svg
+          v-if="checked === true"
+          class="size-3 text-white dark:text-neutral-900"
+          viewBox="0 0 12 12"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
         >
-          <svg
-            v-if="checked === true"
-            class="size-3 text-white dark:text-neutral-900"
-            viewBox="0 0 12 12"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path d="M2 6l3 3 5-5" stroke-linecap="round" stroke-linejoin="round" />
-          </svg>
-          <svg
-            v-else-if="checked === 'indeterminate'"
-            class="size-3 text-white dark:text-neutral-900"
-            viewBox="0 0 12 12"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-          >
-            <path d="M3 6h6" stroke-linecap="round" />
-          </svg>
-        </div>
+          <path d="M2 6l3 3 5-5" stroke-linecap="round" stroke-linejoin="round" />
+        </svg>
+        <svg
+          v-else-if="checked === 'indeterminate'"
+          class="size-3 text-white dark:text-neutral-900"
+          viewBox="0 0 12 12"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+        >
+          <path d="M3 6h6" stroke-linecap="round" />
+        </svg>
       </template>
     </Checkbox>
   </div>
@@ -110,6 +91,19 @@ const updates = ref<boolean | "indeterminate">("indeterminate");
 
 :deep(.akaza-checkbox-wrapper) {
   @apply flex cursor-pointer items-start gap-3;
+}
+
+:deep(.checkbox-box) {
+  @apply flex size-4 items-center justify-center rounded border border-neutral-300 bg-white text-transparent transition-colors dark:border-neutral-600 dark:bg-neutral-800;
+}
+
+:deep(.checkbox-box[data-akaza-state="checked"]),
+:deep(.checkbox-box[data-akaza-state="indeterminate"]) {
+  @apply border-neutral-900 bg-neutral-900 text-white dark:border-white dark:bg-white dark:text-neutral-900;
+}
+
+:deep(.checkbox-indicator) {
+  @apply flex items-center justify-center;
 }
 
 :deep(.akaza-checkbox-text) {

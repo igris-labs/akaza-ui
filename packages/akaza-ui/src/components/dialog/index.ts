@@ -14,6 +14,8 @@ export interface DialogProps {
   as?: string;
   title?: string;
   description?: string;
+  /** Fallback accessible name when no title prop or title slot is rendered. */
+  ariaLabel?: string;
   closeOnBackdropClick?: boolean;
   fullscreen?: boolean;
   teleport?: string | false;

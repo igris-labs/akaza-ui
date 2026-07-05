@@ -2,6 +2,7 @@
 import type { CollapsibleProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
 import { useId } from "vue";
+import { resolveAction } from "../../utils/changeEvent";
 
 const { as = "div", disabled = false, unmountOnHide = false, ui } = defineProps<CollapsibleProps>();
 
@@ -21,9 +22,18 @@ function handleChange(nextOpen: boolean, reason: string, event?: Event) {
   model.value = nextOpen;
 }
 
-function open(reason = 'programmatic', event?: Event) { handleChange(true, reason, event); }
-function close(reason = 'programmatic', event?: Event) { handleChange(false, reason, event); }
-function toggle(reason = 'programmatic', event?: Event) { handleChange(!model.value, reason, event); }
+function open(reasonOrEvent?: string | Event, event?: Event) {
+  const details = resolveAction(reasonOrEvent, event);
+  handleChange(true, details.reason, details.event);
+}
+function close(reasonOrEvent?: string | Event, event?: Event) {
+  const details = resolveAction(reasonOrEvent, event);
+  handleChange(false, details.reason, details.event);
+}
+function toggle(reasonOrEvent?: string | Event, event?: Event) {
+  const details = resolveAction(reasonOrEvent, event);
+  handleChange(!model.value, details.reason, details.event);
+}
 
 defineExpose({ open, close, toggle });
 </script>
@@ -77,6 +87,8 @@ defineExpose({ open, close, toggle });
     <div
       :id="panelId"
       role="region"
+      :aria-hidden="!model || undefined"
+      :inert="!model || undefined"
       class="akaza-collapsible-content"
       :data-akaza-state="model ? 'open' : 'closed'"
     >

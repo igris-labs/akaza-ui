@@ -18,6 +18,7 @@ export function useDismissableLayer(onDismiss: (event?: KeyboardEvent) => void) 
   const layers = useLayerStack();
 
   function register() {
+    if (layers.includes(onDismiss)) return;
     layers.push(onDismiss);
   }
 

@@ -41,21 +41,30 @@ async function handleClick(event: MouseEvent) {
 
   emit("click", event);
 }
+
+function handleKeydown(event: KeyboardEvent) {
+  if (as === "button") return;
+  if (event.key !== "Enter" && event.key !== " ") return;
+  event.preventDefault();
+  (event.currentTarget as HTMLElement).click();
+}
 </script>
 
 <template>
   <component
     :is="as"
     :type="as === 'button' ? type : undefined"
+    :role="as === 'button' ? undefined : 'button'"
     :disabled="as === 'button' && isDisabled && !focusableWhenDisabled ? true : undefined"
     :aria-disabled="isDisabled ? true : undefined"
     :aria-busy="isLoading ? true : undefined"
-    :tabindex="focusableWhenDisabled ? 0 : isDisabled ? -1 : undefined"
+    :tabindex="focusableWhenDisabled ? 0 : isDisabled ? -1 : as === 'button' ? undefined : 0"
     :data-akaza-disabled="disabled || undefined"
     :data-akaza-loading="isLoading || undefined"
     :data-akaza-state="isLoading ? 'loading' : disabled ? 'disabled' : 'enabled'"
     class="akaza-button"
     @click="handleClick"
+    @keydown="handleKeydown"
   >
     <slot v-if="!isLoading" />
     <slot
@@ -81,3 +90,17 @@ async function handleClick(event: MouseEvent) {
     </slot>
   </component>
 </template>
+
+<style>
+.akaza-button .sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+</style>

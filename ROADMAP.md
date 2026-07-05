@@ -2,40 +2,35 @@
 
 ### Shipped
 
-| Component    | Notes                                                                      |
-| ------------ | -------------------------------------------------------------------------- |
-| Button       | `disabled`, `loading`, `focusableWhenDisabled`, `aria-disabled`, `as` prop |
-| Separator    | Semantic `<hr>`, `role="separator"`, horizontal/vertical orientation       |
-| Avatar       | Image with fallback slot on load error, `aria-label`                       |
-| Tooltip      | trigger + content slots, `role="tooltip"`, auto-positioning, delay         |
-| Popover      | trigger + content slots, close on outside click / Escape                   |
-| Dialog       | `role="dialog"`, `aria-modal`, focus trap, Teleport to body                |
-| Alert Dialog | Extends Dialog; `role="alertdialog"`, requires explicit confirm/cancel     |
-| Drawer       | Side-anchored Dialog variant (top/right/bottom/left), focus trap           |
-| Menu         | trigger + content slots, items-based API, roving focus                     |
-| Tabs         | `role="tablist"`, arrow key nav, animated indicator, items-based API       |
-| Checkbox     | `aria-checked`, indeterminate state, `data-checked`                        |
-| Radio Group  | `role="radiogroup"`, roving tabindex, items-based API                      |
-| Switch       | `role="switch"`, `aria-checked`, `data-checked`                            |
-| Toggle       | Single on/off button, `aria-pressed`, `data-pressed`                       |
-| Progress     | `role="progressbar"`, determinate + indeterminate states                   |
-| Collapsible  | Single trigger/content toggle, `aria-expanded`, animated height            |
-| Accordion    | Single/multiple open items, `role="region"`, arrow key nav                 |
-| Field        | Label + input association, description/error wiring                        |
-| Fieldset     | Native fieldset/legend wrapper for related controls                        |
-| Form         | Submit details, `FormData`, native validity state                          |
-| Input        | Text input with Field integration and invalid state attrs                   |
-| Checkbox Group | Manages multiple checkboxes with items API and form submission           |
-
-### Planned — Forms & Controls
-
-| Component      | Notes                                                                  |
-| -------------- | ---------------------------------------------------------------------- |
-| Select         | `role="listbox"`, keyboard nav, `aria-selected`                        |
-| Number Field   | Increment/decrement, `role="spinbutton"`, min/max/step                 |
-| Slider         | `role="slider"`, `aria-valuenow/min/max`, keyboard step                |
-| Toggle Group   | Single or multiple selection, `role="group"`, roving focus             |
-| Meter          | `role="meter"`, `aria-valuenow/min/max`, read-only gauge               |
+| Component      | Notes                                                                      |
+| -------------- | -------------------------------------------------------------------------- |
+| Button         | `disabled`, `loading`, `focusableWhenDisabled`, `aria-disabled`, `as` prop |
+| Separator      | Semantic `<hr>`, `role="separator"`, horizontal/vertical orientation       |
+| Avatar         | Image with fallback slot on load error, `aria-label`                       |
+| Tooltip        | trigger + content slots, `role="tooltip"`, auto-positioning, delay         |
+| Popover        | trigger + content slots, close on outside click / Escape                   |
+| Dialog         | `role="dialog"`, `aria-modal`, focus trap, Teleport to body                |
+| Alert Dialog   | Extends Dialog; `role="alertdialog"`, requires explicit confirm/cancel     |
+| Drawer         | Side-anchored Dialog variant (top/right/bottom/left), focus trap           |
+| Menu           | trigger + content slots, items-based API, roving focus                     |
+| Tabs           | `role="tablist"`, arrow key nav, animated indicator, items-based API       |
+| Checkbox       | `aria-checked`, indeterminate state, `data-checked`                        |
+| Radio Group    | `role="radiogroup"`, roving tabindex, items-based API                      |
+| Switch         | `role="switch"`, `aria-checked`, `data-checked`                            |
+| Toggle         | Single on/off button, `aria-pressed`, `data-pressed`                       |
+| Progress       | `role="progressbar"`, determinate + indeterminate states                   |
+| Collapsible    | Single trigger/content toggle, `aria-expanded`, animated height            |
+| Accordion      | Single/multiple open items, `role="region"`, arrow key nav                 |
+| Field          | Label + input association, description/error wiring                        |
+| Fieldset       | Native fieldset/legend wrapper for related controls                        |
+| Form           | Submit details, `FormData`, native validity state                          |
+| Input          | Text input with Field integration and invalid state attrs                  |
+| Checkbox Group | Manages multiple checkboxes with items API and form submission             |
+| Select         | `role="listbox"`, keyboard nav, typeahead, `aria-selected`                 |
+| Number Field   | Increment/decrement, `role="spinbutton"`, min/max/step                     |
+| Slider         | `role="slider"`, `aria-valuenow/min/max`, pointer and keyboard step        |
+| Toggle Group   | Single or multiple selection, `role="group"`, roving focus                 |
+| Meter          | `role="meter"`, `aria-valuenow/min/max`, read-only gauge                   |
 
 ### Planned — Complex Patterns
 

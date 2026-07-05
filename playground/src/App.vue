@@ -11,8 +11,12 @@ import FieldSection from "./sections/field/FieldSection.vue";
 import FieldsetSection from "./sections/fieldset/FieldsetSection.vue";
 import FormSection from "./sections/form/FormSection.vue";
 import InputSection from "./sections/input/InputSection.vue";
+import SelectSection from "./sections/select/SelectSection.vue";
+import NumberFieldSection from "./sections/number-field/NumberFieldSection.vue";
+import SliderSection from "./sections/slider/SliderSection.vue";
 import AvatarSection from "./sections/avatar/AvatarSection.vue";
 import SeparatorSection from "./sections/separator/SeparatorSection.vue";
+import MeterSection from "./sections/meter/MeterSection.vue";
 import ProgressSection from "./sections/progress/ProgressSection.vue";
 import CollapsibleSection from "./sections/collapsible/CollapsibleSection.vue";
 import AccordionSection from "./sections/accordion/AccordionSection.vue";
@@ -23,6 +27,7 @@ import AlertDialogSection from "./sections/alert-dialog/AlertDialogSection.vue";
 import DrawerSection from "./sections/drawer/DrawerSection.vue";
 import MenuSection from "./sections/menu/MenuSection.vue";
 import TabsSection from "./sections/tabs/TabsSection.vue";
+import ToggleGroupSection from "./sections/toggle-group/ToggleGroupSection.vue";
 import OverlaySection from "./sections/overlay/OverlaySection.vue";
 
 const isDark = ref(false);
@@ -39,17 +44,21 @@ const sections = [
     items: [
       "button",
       "input",
+      "select",
+      "number-field",
+      "slider",
       "field",
       "fieldset",
       "form",
       "toggle",
+      "toggle-group",
       "switch",
       "checkbox",
       "checkbox-group",
       "radio-group",
     ],
   },
-  { id: "display", label: "Display", items: ["avatar", "separator", "progress"] },
+  { id: "display", label: "Display", items: ["avatar", "separator", "meter", "progress"] },
   { id: "disclosure", label: "Disclosure", items: ["collapsible", "accordion"] },
   {
     id: "overlay",
@@ -113,6 +122,12 @@ const sections = [
         <Separator class="border-t border-border" />
         <InputSection />
         <Separator class="border-t border-border" />
+        <SelectSection />
+        <Separator class="border-t border-border" />
+        <NumberFieldSection />
+        <Separator class="border-t border-border" />
+        <SliderSection />
+        <Separator class="border-t border-border" />
         <FieldSection />
         <Separator class="border-t border-border" />
         <FieldsetSection />
@@ -120,6 +135,8 @@ const sections = [
         <FormSection />
         <Separator class="border-t border-border" />
         <ToggleSection />
+        <Separator class="border-t border-border" />
+        <ToggleGroupSection />
         <Separator class="border-t border-border" />
         <SwitchSection />
         <Separator class="border-t border-border" />
@@ -132,6 +149,8 @@ const sections = [
         <AvatarSection />
         <Separator class="border-t border-border" />
         <SeparatorSection />
+        <Separator class="border-t border-border" />
+        <MeterSection />
         <Separator class="border-t border-border" />
         <ProgressSection />
         <Separator class="border-t border-border" />

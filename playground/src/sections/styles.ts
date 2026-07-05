@@ -32,6 +32,64 @@ export const footerActions = "flex flex-wrap justify-end gap-2";
 
 export const inputControl =
   "block h-9 w-full max-w-sm rounded-md border border-input bg-background px-3 text-sm text-foreground shadow-sm outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 data-[invalid]:border-destructive data-[akaza-invalid]:border-destructive";
+export const selectUi = {
+  root: "w-full max-w-sm",
+  trigger:
+    "group flex h-9 w-full items-center justify-between rounded-md border border-input bg-background px-3 text-left text-sm text-foreground shadow-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background data-[akaza-invalid]:border-destructive data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50",
+  placeholder: "text-muted-foreground",
+  icon: "ml-2 text-muted-foreground transition-transform group-data-[akaza-state=open]:rotate-180",
+  content:
+    "rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-lg",
+  option:
+    "flex cursor-pointer items-start gap-2 rounded-sm px-2.5 py-2 text-sm outline-none transition-colors data-[akaza-highlighted]:bg-accent data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50",
+  indicator: "mt-0.5 w-4 shrink-0 text-primary",
+  optionText: "grid gap-0.5",
+  optionLabel: "font-medium text-foreground",
+  optionDescription: "text-xs text-muted-foreground",
+};
+export const numberFieldUi = {
+  root: "h-9 overflow-hidden rounded-md border border-input bg-background shadow-sm data-[akaza-invalid]:border-destructive data-[akaza-disabled]:opacity-50",
+  decrement:
+    "flex h-full w-9 items-center justify-center border-r border-border text-sm text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-40",
+  input:
+    "h-full w-20 border-0 bg-transparent px-3 text-center text-sm text-foreground outline-none [appearance:textfield] placeholder:text-muted-foreground disabled:cursor-not-allowed [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none",
+  increment:
+    "flex h-full w-9 items-center justify-center border-l border-border text-sm text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-40",
+};
+export const sliderUi = {
+  root: "h-6 w-full max-w-sm",
+  track: "h-2 w-full overflow-hidden rounded-full bg-muted-foreground/20",
+  range: "h-full rounded-full bg-primary",
+  thumb:
+    "size-5 rounded-full border-2 border-primary bg-background shadow-sm outline-none transition-transform focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background data-[akaza-dragging]:scale-110 data-[akaza-disabled]:opacity-50",
+};
+export const sliderVerticalUi = {
+  root: "h-40 w-6",
+  track: "h-full w-2 overflow-hidden rounded-full bg-muted-foreground/20",
+  range: "w-full rounded-full bg-primary",
+  thumb:
+    "size-5 rounded-full border-2 border-primary bg-background shadow-sm outline-none transition-transform focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background data-[akaza-dragging]:scale-110",
+};
+export const toggleGroupUi = {
+  root: "gap-1 rounded-lg border border-border bg-muted p-1",
+  item:
+    "inline-flex h-8 items-center justify-center rounded-md px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-background hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-state=on]:bg-background data-[akaza-state=on]:text-foreground data-[akaza-state=on]:shadow-sm data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50",
+};
+export const toggleGroupCardUi = {
+  root: "grid max-w-md gap-2",
+  item:
+    "flex w-full items-start justify-between rounded-lg border border-border bg-background p-3 text-left text-sm transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-state=on]:border-primary data-[akaza-state=on]:bg-primary/5 data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50",
+  label: "font-medium text-foreground",
+  description: "mt-1 text-xs text-muted-foreground",
+};
+export const meterUi = {
+  root: "grid w-full max-w-sm grid-cols-2 gap-y-2",
+  label: "text-sm font-medium text-foreground",
+  value: "text-right text-sm text-muted-foreground",
+  track: "col-span-2 h-2 overflow-hidden rounded-full bg-muted-foreground/20",
+  indicator:
+    "rounded-full bg-primary transition-[width] duration-300 data-[akaza-state=low]:bg-destructive data-[akaza-state=high]:bg-destructive",
+};
 export const fieldLabel = "text-sm font-semibold text-foreground";
 export const fieldDescription = "text-xs text-muted-foreground";
 export const fieldError = "text-xs text-destructive";

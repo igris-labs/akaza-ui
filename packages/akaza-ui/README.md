@@ -33,7 +33,7 @@ Import component styles once in your app entry point:
 
 ```ts
 // main.ts
-import 'akaza-ui/dist/akaza-ui.css'
+import "akaza-ui/dist/akaza-ui.css";
 ```
 
 **If you use Tailwind CSS**, declare the `akaza-reset` layer before Tailwind to allow utility classes to override component base styles:
@@ -51,8 +51,8 @@ Add the Nuxt module — it auto-registers all components and injects CSS:
 ```ts
 // nuxt.config.ts
 export default defineNuxtConfig({
-  modules: ['akaza-ui/nuxt'],
-})
+  modules: ["akaza-ui/nuxt"],
+});
 ```
 
 No manual CSS import or component registration needed.
@@ -72,7 +72,8 @@ import { Dialog } from "akaza-ui";
   <Dialog
     :ui="{
       overlay: 'fixed inset-0 bg-black/50',
-      content: 'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl shadow-xl w-full max-w-md',
+      content:
+        'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl shadow-xl w-full max-w-md',
       header: 'flex items-center justify-between p-6 border-b',
       body: 'p-6',
       footer: 'flex justify-end gap-2 p-6 border-t',

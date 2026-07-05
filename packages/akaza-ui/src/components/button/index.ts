@@ -19,4 +19,11 @@ export interface ButtonProps {
    * Promise, the button enters loading state until the Promise settles.
    */
   onClick?: (event: MouseEvent) => void | Promise<void>;
+  ui?: ButtonUi;
+}
+
+export interface ButtonUi {
+  root?: string;
+  spinner?: string;
+  loadingText?: string;
 }

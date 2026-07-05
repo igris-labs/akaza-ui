@@ -10,6 +10,7 @@ const {
   loading = false,
   loadingAuto = false,
   onClick: onClickProp,
+  ui,
 } = defineProps<ButtonProps>();
 
 const emit = defineEmits<{ click: [event: MouseEvent] }>();
@@ -62,6 +63,7 @@ function handleKeydown(event: KeyboardEvent) {
     :data-akaza-disabled="disabled || undefined"
     :data-akaza-loading="isLoading || undefined"
     :data-akaza-state="isLoading ? 'loading' : disabled ? 'disabled' : 'enabled'"
+    :class="ui?.root"
     class="akaza-button"
     @click="handleClick"
     @keydown="handleKeydown"
@@ -72,6 +74,7 @@ function handleKeydown(event: KeyboardEvent) {
       name="loading"
     >
       <svg
+        :class="ui?.spinner"
         class="akaza-button-spinner"
         xmlns="http://www.w3.org/2000/svg"
         width="16"
@@ -86,7 +89,7 @@ function handleKeydown(event: KeyboardEvent) {
       >
         <path d="M21 12a9 9 0 1 1-6.219-8.56" />
       </svg>
-      <span class="sr-only">Loading…</span>
+      <span :class="ui?.loadingText" class="sr-only">Loading…</span>
     </slot>
   </component>
 </template>

@@ -59,6 +59,16 @@ import { Field, Input } from "akaza-ui";
 | `description` | — | Custom description content. |
 | `error` | — | Custom error content. |
 
+### UI Options
+
+| Key | Description |
+|-----|-------------|
+| `root` | The field wrapper. |
+| `label` | The label element. |
+| `control` | The control wrapper around the default slot. |
+| `description` | The description element. |
+| `error` | The error element. |
+
 ### State Attributes
 
 `Field` sets `data-valid`, `data-invalid`, `data-dirty`, `data-touched`, `data-filled`, `data-focused`, and `data-disabled` on its parts, plus matching `data-akaza-*` attributes.

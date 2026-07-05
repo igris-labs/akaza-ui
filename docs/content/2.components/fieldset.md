@@ -48,6 +48,15 @@ import { Fieldset } from "akaza-ui";
 | `legend` | Custom legend content. |
 | `description` | Custom description content. |
 
+### UI Options
+
+| Key | Description |
+|-----|-------------|
+| `root` | The native fieldset element. |
+| `legend` | The legend element. |
+| `description` | The description element. |
+| `content` | The content wrapper around grouped controls. |
+
 ### State Attributes
 
 `Fieldset` sets `data-disabled`, `data-invalid`, and matching `data-akaza-*` attributes.

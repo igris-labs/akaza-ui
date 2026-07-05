@@ -61,3 +61,10 @@ Use `decorative` when the separator is purely visual and carries no semantic mea
 | `orientation` | `"horizontal" \| "vertical"` | `"horizontal"` | Direction of the separator line. |
 | `decorative` | `boolean` | `false` | When true, renders as `role="none"` (purely visual). |
 | `as` | `string` | `"div"` | Root element tag. |
+| `ui` | `SeparatorUi` | — | Classes for the root element. |
+
+### UI Options
+
+| Key | Description |
+|-----|-------------|
+| `root` | The separator element. |

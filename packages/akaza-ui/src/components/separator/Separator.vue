@@ -5,6 +5,7 @@ const {
   as = "div",
   orientation = "horizontal",
   decorative = false,
+  ui,
 } = defineProps<SeparatorProps>();
 </script>
 
@@ -14,6 +15,7 @@ const {
     :role="decorative ? 'none' : 'separator'"
     :aria-orientation="!decorative ? orientation : undefined"
     :data-akaza-orientation="orientation"
+    :class="ui?.root"
     class="akaza-separator"
   />
 </template>

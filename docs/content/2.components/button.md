@@ -101,6 +101,7 @@ Keeps the button in the tab order while disabled — useful for showing tooltips
 | `loading` | `boolean` | `false` | Show the loading state manually. |
 | `loadingAuto` | `boolean` | `false` | Automatically show loading while `onClick`'s Promise resolves. |
 | `onClick` | `(event: MouseEvent) => void \| Promise<void>` | — | Async-aware click handler for `loadingAuto`. |
+| `ui` | `ButtonUi` | — | Classes for root and default loading parts. |
 
 ### Slots
 
@@ -114,3 +115,11 @@ Keeps the button in the tab order while disabled — useful for showing tooltips
 | Event | Payload | Description |
 |-------|---------|-------------|
 | `click` | `MouseEvent` | Fired on click (in addition to native click). |
+
+### UI Options
+
+| Key | Description |
+|-----|-------------|
+| `root` | The button element or custom rendered root. |
+| `spinner` | The default loading spinner. |
+| `loadingText` | The visually hidden default loading text. |

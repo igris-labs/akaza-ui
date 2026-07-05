@@ -50,7 +50,7 @@ function onFormSubmit(values: FormValues) {
 | `novalidate` | `boolean` | `false` | Disables native browser validation. |
 | `preventDefault` | `boolean` | `true` | Prevent native navigation on submit. |
 | `errors` | `FormErrors` | — | Server-side errors read by child fields using matching names. |
-| `ui.root` | `string` | — | Class for the form element. |
+| `ui` | `FormUi` | — | Classes for the form element. |
 
 ### Emits
 
@@ -58,3 +58,19 @@ function onFormSubmit(values: FormValues) {
 |-------|---------|-------------|
 | `submit` | `FormSubmitDetails` | Fired on native submit. Includes `formData`, `valid`, and `cancel()`. |
 | `form-submit` | `(values, details)` | Fired with a values object converted from `FormData`, plus submit details. |
+
+### Slots
+
+| Slot | Scoped props | Description |
+|------|--------------|-------------|
+| `default` | `state`, `submitted`, `valid` | Form contents and current submit state. |
+
+### UI Options
+
+| Key | Description |
+|-----|-------------|
+| `root` | The native form element. |
+
+### State Attributes
+
+`Form` sets `data-akaza-state` to `idle`, `submitted`, or `invalid`, and `data-akaza-invalid` after an invalid submit.

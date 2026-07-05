@@ -47,13 +47,19 @@ import { Input } from "akaza-ui";
 | `invalid` | `boolean` | `false` | Sets `aria-invalid` and `data-akaza-invalid`. |
 | `ariaLabel` | `string` | — | Accessible label when no visible label exists. |
 | `ariaDescribedby` | `string` | field description/error | Accessible description ids. |
-| `ui.root` | `string` | — | Class for the input element. |
+| `ui` | `InputUi` | — | Classes for the input element. |
 
 ### Emits
 
 | Event | Payload | Description |
 |-------|---------|-------------|
 | `value-change` | `(value, details)` | Fired before model updates. `details.cancel()` prevents the update. |
+
+### UI Options
+
+| Key | Description |
+|-----|-------------|
+| `root` | The native input element. |
 
 ### State Attributes
 

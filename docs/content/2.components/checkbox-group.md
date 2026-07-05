@@ -53,6 +53,8 @@ const options = [
 | `orientation` | `"horizontal" \| "vertical"` | `"vertical"` | Layout orientation data attribute. |
 | `legend` | `string` | — | Group label used as accessible name fallback. |
 | `name` | `string` | — | Name used by child checkbox form inputs. |
+| `ariaLabel` | `string` | — | Accessible label when no visible legend exists. |
+| `ariaLabelledby` | `string` | — | External accessible label id. |
 | `ui` | `CheckboxGroupUi` | — | Classes for root, legend, item, and nested checkbox parts. |
 
 ### Emits
@@ -68,3 +70,17 @@ const options = [
 | `item` | `option`, `value`, `checked`, `disabled` | Custom item rendering. |
 | `indicator` | `option`, `checked` | Child checkbox indicator. |
 | `parent-indicator` | `checked` | Parent checkbox indicator. |
+
+### UI Options
+
+| Key | Description |
+|-----|-------------|
+| `root` | The group wrapper. |
+| `legend` | The visible legend element. |
+| `parentItem` | The parent select-all item wrapper. |
+| `item` | Each option item wrapper. |
+| `checkbox` | Nested [Checkbox](/components/checkbox) UI options passed to each checkbox. |
+
+### State Attributes
+
+`CheckboxGroup` sets `data-akaza-orientation` and `data-akaza-disabled` on the root. Parent and item wrappers set `data-akaza-state` to `checked`, `unchecked`, or `indeterminate`, plus disabled attributes when disabled.

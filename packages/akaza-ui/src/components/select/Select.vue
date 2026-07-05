@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { SelectOption, SelectProps } from ".";
+import type { SelectModelValue, SelectOption, SelectProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
 import { computed, inject, onBeforeUnmount, onMounted, onUpdated, ref, useId, useTemplateRef } from "vue";
 import { fieldContextKey } from "../field/context";
@@ -11,6 +11,8 @@ const {
   descriptionKey = "description",
   disabledKey = "disabled",
   placeholder = "Select option",
+  multiple = false,
+  nullableValue = "",
   id,
   name,
   required = false,
@@ -28,10 +30,10 @@ const {
 
 const emit = defineEmits<{
   "open-change": [open: boolean, details: AkazaChangeEventDetails];
-  "value-change": [value: string, details: AkazaChangeEventDetails];
+  "value-change": [value: SelectModelValue, details: AkazaChangeEventDetails];
 }>();
 
-const model = defineModel<string>({ default: "" });
+const model = defineModel<SelectModelValue>({ default: "" });
 const openModel = defineModel<boolean>("open", { default: false });
 
 const autoId = useId();
@@ -55,14 +57,19 @@ const isDisabled = computed(() => disabled || field?.disabled.value || false);
 const isRequired = computed(() => required || field?.required.value || false);
 const isInvalid = computed(() => invalid || field?.invalid.value || nativeInvalid.value || false);
 const describedBy = computed(() => ariaDescribedby ?? field?.describedBy.value);
-const selectedOption = computed(() =>
-  options.find((option) => getValue(option) === model.value),
+const selectedValues = computed(() => {
+  if (Array.isArray(model.value)) return model.value;
+  return model.value === "" ? [] : [model.value];
+});
+const selectedOptions = computed(() =>
+  options.filter((option) => isSelectableOption(option) && selectedValues.value.includes(getValue(option))),
 );
+const selectedOption = computed(() => selectedOptions.value[0]);
 const selectedLabel = computed(() =>
-  selectedOption.value ? getLabel(selectedOption.value) : "",
+  selectedOptions.value.map((option) => getLabel(option)).join(", "),
 );
-const isFilled = computed(() => model.value !== "");
-const isDirty = computed(() => model.value !== "");
+const isFilled = computed(() => selectedValues.value.length > 0);
+const isDirty = computed(() => selectedValues.value.length > 0);
 const activeIndex = ref(-1);
 const activeOptionId = computed(() =>
   openModel.value && activeIndex.value >= 0 ? `${contentId}-option-${activeIndex.value}` : undefined,
@@ -109,6 +116,10 @@ function getValue(option: SelectOption): string {
   return String(option.value ?? option.label ?? "");
 }
 
+function getOptionKey(option: SelectOption, index: number): string {
+  return `${option.type ?? "item"}:${getValue(option) || getLabel(option) || index}`;
+}
+
 function getLabel(option: SelectOption): string {
   if (labelKey && option[labelKey] !== undefined) return String(option[labelKey]);
   return String(option.label ?? getValue(option));
@@ -120,7 +131,15 @@ function getDescription(option: SelectOption): string | undefined {
 }
 
 function isItemDisabled(option: SelectOption): boolean {
-  return isDisabled.value || Boolean(option[disabledKey]);
+  return isDisabled.value || !isSelectableOption(option) || Boolean(option[disabledKey]);
+}
+
+function isSelectableOption(option: SelectOption): boolean {
+  return option.type !== "label" && option.type !== "separator";
+}
+
+function isOptionSelected(option: SelectOption): boolean {
+  return selectedValues.value.includes(getValue(option));
 }
 
 function updateValidity() {
@@ -159,16 +178,24 @@ function setOpen(next: boolean, reason: string, event?: Event) {
   if (canceled) return;
   openModel.value = next;
   if (next) {
-    const selectedIndex = options.findIndex((option) => getValue(option) === model.value && !isItemDisabled(option));
+    const selectedIndex = options.findIndex((option) => isOptionSelected(option) && !isItemDisabled(option));
     activeIndex.value = selectedIndex >= 0 ? selectedIndex : findEnabledIndex();
   } else {
     activeIndex.value = -1;
   }
 }
 
+function getNextValue(option: SelectOption): SelectModelValue {
+  const value = getValue(option);
+  if (!multiple) return value;
+  return isOptionSelected(option)
+    ? selectedValues.value.filter((item) => item !== value)
+    : [...selectedValues.value, value];
+}
+
 function selectOption(option: SelectOption, event?: Event) {
   if (isItemDisabled(option)) return;
-  const value = getValue(option);
+  const value = getNextValue(option);
   let canceled = false;
   emit("value-change", value, {
     reason: event ? "select" : "programmatic",
@@ -179,9 +206,9 @@ function selectOption(option: SelectOption, event?: Event) {
   });
   if (canceled) return;
   model.value = value;
-  setOpen(false, "select", event);
+  if (!multiple) setOpen(false, "select", event);
   updateValidity();
-  triggerRef.value?.focus();
+  if (!multiple) triggerRef.value?.focus();
 }
 
 function move(delta: number) {
@@ -250,7 +277,36 @@ function onTriggerKeydown(event: KeyboardEvent) {
 }
 
 function onNativeChange(event: Event) {
-  selectOption(options.find((option) => getValue(option) === (event.target as HTMLSelectElement).value)!, event);
+  const select = event.target as HTMLSelectElement;
+  if (multiple) {
+    const next = Array.from(select.selectedOptions).map((option) => option.value);
+    let canceled = false;
+    emit("value-change", next, {
+      reason: "native",
+      event,
+      cancel: () => {
+        canceled = true;
+      },
+    });
+    if (!canceled) model.value = next;
+    updateValidity();
+    return;
+  }
+
+  const option = options.find((item) => isSelectableOption(item) && getValue(item) === select.value);
+  if (option) selectOption(option, event);
+  else {
+    let canceled = false;
+    emit("value-change", nullableValue, {
+      reason: "native",
+      event,
+      cancel: () => {
+        canceled = true;
+      },
+    });
+    if (!canceled) model.value = nullableValue;
+    updateValidity();
+  }
 }
 
 function onDocumentPointerDown(event: PointerEvent) {
@@ -290,7 +346,8 @@ onBeforeUnmount(() => {
       :id="`${resolvedId}-native`"
       ref="nativeRef"
       :name="resolvedName"
-      :value="model"
+      :value="multiple ? undefined : model"
+      :multiple="multiple"
       :required="isRequired"
       :disabled="isDisabled"
       :aria-hidden="true"
@@ -300,11 +357,12 @@ onBeforeUnmount(() => {
       @change="onNativeChange"
       @invalid="updateValidity"
     >
-      <option value="" />
+      <option v-if="!multiple" :value="nullableValue" />
       <option
-        v-for="option in options"
-        :key="getValue(option)"
+        v-for="(option, index) in options.filter(isSelectableOption)"
+        :key="getOptionKey(option, index)"
         :value="getValue(option)"
+        :selected="selectedValues.includes(getValue(option))"
         :disabled="isItemDisabled(option)"
       >
         {{ getLabel(option) }}
@@ -328,7 +386,9 @@ onBeforeUnmount(() => {
         name="trigger"
         :is-open="openModel"
         :selected-option="selectedOption"
+        :selected-options="selectedOptions"
         :selected-value="model"
+        :selected-values="selectedValues"
         :selected-label="selectedLabel"
         :placeholder="placeholder"
         :trigger-props="triggerProps"
@@ -341,7 +401,7 @@ onBeforeUnmount(() => {
           :class="ui?.value"
           class="akaza-select-value"
         >
-          <slot name="value" :option="selectedOption" :value="model" :label="selectedLabel">
+          <slot name="value" :option="selectedOption" :options="selectedOptions" :value="model" :values="selectedValues" :label="selectedLabel">
             {{ selectedLabel }}
           </slot>
         </span>
@@ -361,6 +421,7 @@ onBeforeUnmount(() => {
       :id="contentId"
       role="listbox"
       :aria-labelledby="resolvedId"
+      :aria-multiselectable="multiple || undefined"
       :data-akaza-state="openModel ? 'open' : 'closed'"
       :data-akaza-side="side"
       :data-akaza-align="align"
@@ -368,48 +429,72 @@ onBeforeUnmount(() => {
       :style="contentStyle"
       class="akaza-select-content"
     >
-      <div
-        v-for="(option, index) in options"
-        :id="`${contentId}-option-${index}`"
-        :key="getValue(option)"
-        :ref="(el) => setOptionRef(el as HTMLElement | null, index)"
-        role="option"
-        :aria-selected="model === getValue(option)"
-        :data-akaza-state="model === getValue(option) ? 'checked' : 'unchecked'"
-        :data-akaza-highlighted="activeIndex === index || undefined"
-        :data-akaza-disabled="isItemDisabled(option) || undefined"
-        :class="ui?.option"
-        class="akaza-select-option"
-        @click="selectOption(option, $event)"
-        @mouseenter="!isItemDisabled(option) && focusOption(index)"
-      >
-        <slot
-          name="option"
-          :option="option"
-          :value="getValue(option)"
-          :label="getLabel(option)"
-          :description="getDescription(option)"
-          :is-selected="model === getValue(option)"
-          :is-highlighted="activeIndex === index"
-          :is-disabled="isItemDisabled(option)"
-          :select="() => selectOption(option)"
+      <div :class="ui?.viewport" class="akaza-select-viewport">
+        <template
+          v-for="(option, index) in options"
+          :key="getOptionKey(option, index)"
         >
-          <span :class="ui?.indicator" class="akaza-select-indicator" aria-hidden="true">
-            {{ model === getValue(option) ? "✓" : "" }}
-          </span>
-          <span :class="ui?.optionText" class="akaza-select-option-text">
-            <span :class="ui?.optionLabel" class="akaza-select-option-label">
+          <div
+            v-if="option.type === 'label'"
+            role="presentation"
+            :class="ui?.groupLabel"
+            class="akaza-select-group-label"
+          >
+            <slot name="group-label" :option="option" :label="getLabel(option)">
               {{ getLabel(option) }}
-            </span>
-            <span
-              v-if="getDescription(option)"
-              :class="ui?.optionDescription"
-              class="akaza-select-option-description"
+            </slot>
+          </div>
+
+          <div
+            v-else-if="option.type === 'separator'"
+            role="separator"
+            :class="ui?.separator"
+            class="akaza-select-separator"
+          />
+
+          <div
+            v-else
+            :id="`${contentId}-option-${index}`"
+            :ref="(el) => setOptionRef(el as HTMLElement | null, index)"
+            role="option"
+            :aria-selected="isOptionSelected(option)"
+            :data-akaza-state="isOptionSelected(option) ? 'checked' : 'unchecked'"
+            :data-akaza-highlighted="activeIndex === index || undefined"
+            :data-akaza-disabled="isItemDisabled(option) || undefined"
+            :class="ui?.option"
+            class="akaza-select-option"
+            @click="selectOption(option, $event)"
+            @mouseenter="!isItemDisabled(option) && focusOption(index)"
+          >
+            <slot
+              name="option"
+              :option="option"
+              :value="getValue(option)"
+              :label="getLabel(option)"
+              :description="getDescription(option)"
+              :is-selected="isOptionSelected(option)"
+              :is-highlighted="activeIndex === index"
+              :is-disabled="isItemDisabled(option)"
+              :select="() => selectOption(option)"
             >
-              {{ getDescription(option) }}
-            </span>
-          </span>
-        </slot>
+              <span :class="ui?.indicator" class="akaza-select-indicator" aria-hidden="true">
+                {{ isOptionSelected(option) ? "✓" : "" }}
+              </span>
+              <span :class="ui?.optionText" class="akaza-select-option-text">
+                <span :class="ui?.optionLabel" class="akaza-select-option-label">
+                  {{ getLabel(option) }}
+                </span>
+                <span
+                  v-if="getDescription(option)"
+                  :class="ui?.optionDescription"
+                  class="akaza-select-option-description"
+                >
+                  {{ getDescription(option) }}
+                </span>
+              </span>
+            </slot>
+          </div>
+        </template>
       </div>
     </div>
   </div>
@@ -433,6 +518,9 @@ onBeforeUnmount(() => {
   position: absolute;
   z-index: 1000;
   min-width: 100%;
+}
+
+.akaza-select-viewport {
   max-height: min(16rem, 60vh);
   overflow: auto;
 }

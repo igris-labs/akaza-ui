@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { AkazaChangeEventDetails, SelectOption } from "akaza-ui";
+import type { AkazaChangeEventDetails, SelectModelValue, SelectOption } from "akaza-ui";
 import { ref } from "vue";
 import { Field, Select } from "akaza-ui";
 import {
@@ -21,6 +21,7 @@ import {
 const plan = ref("pro");
 const server = ref("");
 const region = ref("iad");
+const permissions = ref<string[]>(["read", "deploy"]);
 const guarded = ref("viewer");
 const lastEvent = ref("No event yet.");
 
@@ -42,17 +43,31 @@ const roles: SelectOption[] = [
   { value: "owner", label: "Owner", description: "Blocked by cancelable event." },
 ];
 
-function log(value: string, details: AkazaChangeEventDetails) {
+const permissionOptions: SelectOption[] = [
+  { type: "label", label: "Project" },
+  { value: "read", label: "Read", description: "View project data." },
+  { value: "write", label: "Write", description: "Create and update records." },
+  { type: "separator" },
+  { type: "label", label: "Operations" },
+  { value: "deploy", label: "Deploy", description: "Ship production releases." },
+  { value: "billing", label: "Billing", description: "Manage invoices.", disabled: true },
+];
+
+function formatValue(value: SelectModelValue): string {
+  return Array.isArray(value) ? value.join(", ") : value;
+}
+
+function log(value: SelectModelValue, details: AkazaChangeEventDetails) {
   lastEvent.value = `value-change: ${value}, reason: ${details.reason}`;
 }
 
-function blockOwner(value: string, details: AkazaChangeEventDetails) {
+function blockOwner(value: SelectModelValue, details: AkazaChangeEventDetails) {
   if (value === "owner") {
     details.cancel();
     lastEvent.value = "Canceled owner selection.";
     return;
   }
-  lastEvent.value = `Accepted ${value}.`;
+  lastEvent.value = `Accepted ${formatValue(value)}.`;
 }
 </script>
 
@@ -100,6 +115,21 @@ function blockOwner(value: string, details: AkazaChangeEventDetails) {
             />
           </Field>
           <code :class="codePill">server: {{ server || "(empty)" }}</code>
+        </div>
+      </div>
+
+      <div>
+        <h3 :class="exampleTitle">Multiple + grouped options</h3>
+        <div :class="canvasCol">
+          <Select
+            v-model="permissions"
+            multiple
+            :options="permissionOptions"
+            placeholder="Choose permissions"
+            :ui="selectUi"
+            @value-change="log"
+          />
+          <code :class="codePill">permissions: {{ permissions.join(", ") }}</code>
         </div>
       </div>
 

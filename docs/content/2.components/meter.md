@@ -44,6 +44,7 @@ import { Meter } from "akaza-ui";
 | `ariaValueText` | `string` | — | Custom `aria-valuetext`. |
 | `locale` | `Intl.LocalesArgument` | runtime locale | Locale for formatted value. |
 | `formatOptions` | `Intl.NumberFormatOptions` | — | Number formatting options. |
+| `getAriaValueText` | `(value, max, min) => string \| undefined` | — | Base-style function for `aria-valuetext`. |
 | `getValueLabel` | `(formattedValue, value) => string \| undefined` | — | Function for `aria-valuetext`. |
 | `ui` | `MeterUi` | — | Classes for structural parts. |
 

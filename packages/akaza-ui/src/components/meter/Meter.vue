@@ -15,6 +15,7 @@ const {
   ariaValueText,
   locale,
   formatOptions,
+  getAriaValueText,
   getValueLabel,
   ui,
 } = defineProps<MeterProps>();
@@ -30,7 +31,9 @@ const percentage = computed(() => {
 const formatter = computed(() => new Intl.NumberFormat(locale, formatOptions));
 const formattedValue = computed(() => formatter.value.format(clampedValue.value));
 const computedValueText = computed(() =>
-  ariaValueText ?? getValueLabel?.(formattedValue.value, clampedValue.value),
+  ariaValueText
+  ?? getAriaValueText?.(clampedValue.value, max, min)
+  ?? getValueLabel?.(formattedValue.value, clampedValue.value),
 );
 const state = computed(() => {
   if (low !== undefined && clampedValue.value < low) return "low";

@@ -16,6 +16,13 @@ const {
   readonly = false,
   invalid = false,
   stepSnapping = true,
+  disableWheelChange = false,
+  invertWheelChange = false,
+  focusOnChange = true,
+  scrubLabel,
+  scrubStep,
+  disableScrub = false,
+  getValueLabel,
   ariaLabel,
   ariaDescribedby,
   ui,
@@ -23,6 +30,7 @@ const {
 
 const emit = defineEmits<{
   "value-change": [value: number | null, details: AkazaChangeEventDetails];
+  "value-commit": [value: number | null, details: AkazaChangeEventDetails];
 }>();
 
 const model = defineModel<number | null>({ default: null });
@@ -35,6 +43,10 @@ const touched = ref(false);
 const nativeInvalid = ref(false);
 const validationMessage = ref("");
 const validity = ref<ValidityState | null>(null);
+const scrubbing = ref(false);
+let scrubStartX = 0;
+let scrubStartValue = 0;
+let pendingCommitValue: number | null | undefined;
 
 const resolvedId = computed(() => id ?? field?.inputId.value ?? `akaza-number-field-${autoId}`);
 const resolvedName = computed(() => name ?? field?.name.value);
@@ -51,6 +63,7 @@ const canIncrement = computed(() =>
   !isDisabled.value && !readonly && (max === undefined || (model.value ?? max) < max),
 );
 const textValue = computed(() => model.value === null ? "" : String(model.value));
+const ariaValueText = computed(() => getValueLabel?.(model.value));
 
 const stateAttrs = computed(() => ({
   "data-akaza-disabled": isDisabled.value || undefined,
@@ -60,6 +73,7 @@ const stateAttrs = computed(() => ({
   "data-akaza-touched": touched.value || undefined,
   "data-akaza-filled": isFilled.value || undefined,
   "data-akaza-focused": focused.value || undefined,
+  "data-akaza-scrubbing": scrubbing.value || undefined,
 }));
 
 const unregister = field?.registerControl({
@@ -102,8 +116,8 @@ function updateValidity() {
   validationMessage.value = input.validationMessage;
 }
 
-function setValue(value: number | null, reason: string, event?: Event) {
-  if (isDisabled.value || readonly) return;
+function setValue(value: number | null, reason: string, event?: Event): boolean {
+  if (isDisabled.value || readonly) return false;
   const next = value === null ? null : normalize(value);
   let canceled = false;
   emit("value-change", next, {
@@ -113,13 +127,31 @@ function setValue(value: number | null, reason: string, event?: Event) {
       canceled = true;
     },
   });
-  if (!canceled) model.value = next;
+  if (canceled) {
+    pendingCommitValue = undefined;
+    return false;
+  }
+  model.value = next;
+  pendingCommitValue = next;
   updateValidity();
+  return true;
 }
 
-function stepBy(multiplier: number, reason: string, event?: Event) {
+function commitValue(reason: string, event?: Event) {
+  const value = pendingCommitValue ?? model.value;
+  pendingCommitValue = undefined;
+  emit("value-commit", value, {
+    reason,
+    ...(event && { event }),
+    cancel: () => {},
+  });
+}
+
+function stepBy(multiplier: number, reason: string, event?: Event): boolean {
   const current = model.value ?? min ?? 0;
-  setValue(current + step * multiplier, reason, event);
+  const changed = setValue(current + step * multiplier, reason, event);
+  if (focusOnChange) inputRef.value?.focus();
+  return changed;
 }
 
 function onInput(event: Event) {
@@ -131,23 +163,52 @@ function onInput(event: Event) {
 function onKeydown(event: KeyboardEvent) {
   if (event.key === "ArrowUp") {
     event.preventDefault();
-    stepBy(1, "keyboard", event);
+    if (stepBy(1, "keyboard", event)) commitValue("keyboard", event);
   } else if (event.key === "ArrowDown") {
     event.preventDefault();
-    stepBy(-1, "keyboard", event);
+    if (stepBy(-1, "keyboard", event)) commitValue("keyboard", event);
   } else if (event.key === "PageUp") {
     event.preventDefault();
-    stepBy(10, "keyboard", event);
+    if (stepBy(10, "keyboard", event)) commitValue("keyboard", event);
   } else if (event.key === "PageDown") {
     event.preventDefault();
-    stepBy(-10, "keyboard", event);
+    if (stepBy(-10, "keyboard", event)) commitValue("keyboard", event);
   } else if (event.key === "Home" && min !== undefined) {
     event.preventDefault();
-    setValue(min, "keyboard", event);
+    if (setValue(min, "keyboard", event)) commitValue("keyboard", event);
   } else if (event.key === "End" && max !== undefined) {
     event.preventDefault();
-    setValue(max, "keyboard", event);
+    if (setValue(max, "keyboard", event)) commitValue("keyboard", event);
   }
+}
+
+function onWheel(event: WheelEvent) {
+  if (disableWheelChange || !focused.value || isDisabled.value || readonly) return;
+  event.preventDefault();
+  const direction = event.deltaY < 0 ? 1 : -1;
+  if (stepBy(invertWheelChange ? -direction : direction, "wheel", event)) commitValue("wheel", event);
+}
+
+function onScrubPointerDown(event: PointerEvent) {
+  if (disableScrub || isDisabled.value || readonly) return;
+  scrubbing.value = true;
+  scrubStartX = event.clientX;
+  scrubStartValue = model.value ?? min ?? 0;
+  (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
+}
+
+function onScrubPointerMove(event: PointerEvent) {
+  if (!scrubbing.value) return;
+  const nextStep = scrubStep ?? step;
+  const steps = Math.trunc((event.clientX - scrubStartX) / 8);
+  setValue(scrubStartValue + steps * nextStep, "scrub", event);
+}
+
+function onScrubPointerUp(event: PointerEvent) {
+  if (!scrubbing.value) return;
+  scrubbing.value = false;
+  (event.currentTarget as HTMLElement).releasePointerCapture(event.pointerId);
+  commitValue("scrub", event);
 }
 
 function onFocus() {
@@ -158,6 +219,7 @@ function onBlur() {
   touched.value = true;
   focused.value = false;
   updateValidity();
+  commitValue("blur");
 }
 
 onMounted(updateValidity);
@@ -171,6 +233,22 @@ onBeforeUnmount(() => unregister?.());
     v-bind="stateAttrs"
     class="akaza-number-field"
   >
+    <div
+      v-if="scrubLabel || $slots.scrub"
+      aria-hidden="true"
+      :class="ui?.scrubArea"
+      v-bind="stateAttrs"
+      class="akaza-number-field-scrub-area"
+      @pointercancel="scrubbing = false"
+      @pointerdown="onScrubPointerDown"
+      @pointermove="onScrubPointerMove"
+      @pointerup="onScrubPointerUp"
+    >
+      <slot name="scrub" :value="model" :is-scrubbing="scrubbing">
+        {{ scrubLabel }}
+      </slot>
+    </div>
+
     <button
       type="button"
       :disabled="!canDecrement"
@@ -178,7 +256,7 @@ onBeforeUnmount(() => unregister?.());
       v-bind="stateAttrs"
       class="akaza-number-field-decrement"
       aria-label="Decrement"
-      @click="stepBy(-1, 'decrement', $event)"
+      @click="stepBy(-1, 'decrement', $event) && commitValue('decrement', $event)"
     >
       <slot name="decrement" :value="model" :decrement="() => stepBy(-1, 'programmatic')">−</slot>
     </button>
@@ -203,6 +281,7 @@ onBeforeUnmount(() => unregister?.());
       :aria-valuemin="min"
       :aria-valuemax="max"
       :aria-valuenow="model ?? undefined"
+      :aria-valuetext="ariaValueText"
       :class="ui?.input"
       v-bind="stateAttrs"
       class="akaza-number-field-input"
@@ -211,6 +290,7 @@ onBeforeUnmount(() => unregister?.());
       @input="onInput"
       @invalid="updateValidity"
       @keydown="onKeydown"
+      @wheel="onWheel"
     >
 
     <button
@@ -220,7 +300,7 @@ onBeforeUnmount(() => unregister?.());
       v-bind="stateAttrs"
       class="akaza-number-field-increment"
       aria-label="Increment"
-      @click="stepBy(1, 'increment', $event)"
+      @click="stepBy(1, 'increment', $event) && commitValue('increment', $event)"
     >
       <slot name="increment" :value="model" :increment="() => stepBy(1, 'programmatic')">+</slot>
     </button>
@@ -231,5 +311,10 @@ onBeforeUnmount(() => unregister?.());
 .akaza-number-field {
   display: inline-flex;
   align-items: center;
+}
+
+.akaza-number-field-scrub-area {
+  touch-action: none;
+  user-select: none;
 }
 </style>

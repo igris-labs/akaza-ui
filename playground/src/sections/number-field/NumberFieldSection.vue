@@ -19,8 +19,10 @@ import {
 const seats = ref<number | null>(3);
 const cpu = ref<number | null>(2);
 const percent = ref<number | null>(0.25);
+const scrubbed = ref<number | null>(24);
 const guarded = ref<number | null>(5);
 const lastEvent = ref("No event yet.");
+const commitEvent = ref("No commit yet.");
 
 function log(value: number | null, details: AkazaChangeEventDetails) {
   lastEvent.value = `value-change: ${value ?? "(empty)"}, reason: ${details.reason}`;
@@ -33,6 +35,10 @@ function blockOdd(value: number | null, details: AkazaChangeEventDetails) {
     return;
   }
   lastEvent.value = `Accepted ${value ?? "(empty)"}.`;
+}
+
+function logCommit(value: number | null, details: AkazaChangeEventDetails) {
+  commitEvent.value = `value-commit: ${value ?? "(empty)"}, reason: ${details.reason}`;
 }
 </script>
 
@@ -73,6 +79,23 @@ function blockOdd(value: number | null, details: AkazaChangeEventDetails) {
         <div :class="canvasCol">
           <NumberField v-model="percent" :min="0" :max="1" :step="0.05" :ui="numberFieldUi" />
           <code :class="codePill">ratio: {{ percent ?? "(empty)" }}</code>
+        </div>
+      </div>
+
+      <div>
+        <h3 :class="exampleTitle">Scrub + wheel + commit</h3>
+        <div :class="canvasCol">
+          <NumberField
+            v-model="scrubbed"
+            scrub-label="Drag"
+            :min="0"
+            :max="100"
+            :step="1"
+            :ui="numberFieldUi"
+            @value-commit="logCommit"
+          />
+          <code :class="codePill">capacity: {{ scrubbed ?? "(empty)" }}</code>
+          <p :class="eventEntry">{{ commitEvent }}</p>
         </div>
       </div>
 

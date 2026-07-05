@@ -21,6 +21,7 @@ export interface MeterProps {
   ariaValueText?: string;
   locale?: Intl.LocalesArgument;
   formatOptions?: Intl.NumberFormatOptions;
+  getAriaValueText?: (value: number, max: number, min: number) => string | undefined;
   getValueLabel?: (formattedValue: string, value: number) => string | undefined;
   ui?: MeterUi;
 }

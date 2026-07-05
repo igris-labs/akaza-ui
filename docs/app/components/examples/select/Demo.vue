@@ -23,8 +23,9 @@ const options = [
         placeholder: 'text-neutral-500',
         content:
           'rounded-lg border border-neutral-200 bg-white p-1 shadow-lg dark:border-neutral-800 dark:bg-neutral-950',
+        viewport: 'max-h-64 overflow-auto',
         option:
-          'flex cursor-pointer items-start gap-2 rounded-md px-2 py-1.5 text-sm text-neutral-900 data-akaza-highlighted:bg-neutral-100 data-[akaza-disabled]:opacity-40 dark:text-neutral-100 dark:data-[akaza-highlighted]:bg-neutral-800',
+          'flex cursor-pointer items-start gap-2 rounded-md px-2 py-1.5 text-sm text-neutral-900 data-[akaza-highlighted]:bg-neutral-100 data-[akaza-disabled]:opacity-40 dark:text-neutral-100 dark:data-[akaza-highlighted]:bg-neutral-800',
         indicator: 'w-4 text-neutral-900 dark:text-neutral-100',
         optionText: 'grid gap-0.5',
         optionDescription: 'text-xs text-neutral-500',

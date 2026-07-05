@@ -40,6 +40,10 @@ export const selectUi = {
   icon: "ml-2 text-muted-foreground transition-transform group-data-[akaza-state=open]:rotate-180",
   content:
     "rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-lg",
+  viewport: "max-h-64 overflow-auto",
+  groupLabel:
+    "px-2.5 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground",
+  separator: "my-1 h-px bg-border",
   option:
     "flex cursor-pointer items-start gap-2 rounded-sm px-2.5 py-2 text-sm outline-none transition-colors data-[akaza-highlighted]:bg-accent data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50",
   indicator: "mt-0.5 w-4 shrink-0 text-primary",
@@ -49,6 +53,8 @@ export const selectUi = {
 };
 export const numberFieldUi = {
   root: "h-9 overflow-hidden rounded-md border border-input bg-background shadow-sm data-[akaza-invalid]:border-destructive data-[akaza-disabled]:opacity-50",
+  scrubArea:
+    "flex h-full cursor-ew-resize select-none items-center border-r border-border px-3 text-xs font-medium text-muted-foreground transition-colors data-[akaza-scrubbing]:text-foreground",
   decrement:
     "flex h-full w-9 items-center justify-center border-r border-border text-sm text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-40",
   input:

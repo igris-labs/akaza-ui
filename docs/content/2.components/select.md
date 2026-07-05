@@ -1,11 +1,11 @@
 ---
 title: Select
-description: Listbox select with keyboard navigation, typeahead, and form submission.
+description: Single or multiple listbox select with keyboard navigation, typeahead, and form submission.
 navigation:
   icon: i-lucide-list-filter
 ---
 
-`Select` renders a trigger and a `role="listbox"` popup. It is unstyled, items-based, keyboard accessible, and can integrate with [Field](/components/field) for label, description, required, disabled, invalid, and form metadata.
+`Select` renders a trigger and a `role="listbox"` popup. It supports single or multiple values, labels, separators, typeahead, cancelable changes, and [Field](/components/field) metadata without a nested subcomponent tree.
 
 ## Usage
 
@@ -46,6 +46,8 @@ const options = [
 | `descriptionKey` | `string` | `"description"` | Object key used as option description. |
 | `disabledKey` | `string` | `"disabled"` | Object key used as option disabled state. |
 | `placeholder` | `string` | `"Select option"` | Text shown when no value is selected. |
+| `multiple` | `boolean` | `false` | Enables multi-select. `v-model` should be `string[]`. |
+| `nullableValue` | `string` | `""` | Native empty option value for single select. |
 | `id` | `string` | field id | Trigger id. |
 | `name` | `string` | field name | Form field name. Renders a hidden native select. |
 | `required` | `boolean` | `false` | Required state. |
@@ -65,15 +67,26 @@ const options = [
 | Event | Payload | Description |
 |-------|---------|-------------|
 | `open-change` | `(open, details)` | Fired before popup opens/closes. `details.cancel()` prevents the change. |
-| `value-change` | `(value, details)` | Fired before selected value updates. `details.cancel()` prevents the update. |
+| `value-change` | `(value: string \| string[], details)` | Fired before selected value updates. `details.cancel()` prevents the update. |
 
 ### Slots
 
 | Slot | Props | Description |
 |------|-------|-------------|
-| `trigger` | `isOpen`, `selectedOption`, `selectedValue`, `selectedLabel`, `placeholder`, `triggerProps`, `open`, `close`, `toggle` | Custom trigger content. |
-| `value` | `option`, `value`, `label` | Custom selected value. |
+| `trigger` | `isOpen`, `selectedOption`, `selectedOptions`, `selectedValue`, `selectedValues`, `selectedLabel`, `placeholder`, `triggerProps`, `open`, `close`, `toggle` | Custom trigger content. |
+| `value` | `option`, `options`, `value`, `values`, `label` | Custom selected value. |
 | `option` | `option`, `value`, `label`, `description`, `isSelected`, `isHighlighted`, `isDisabled`, `select` | Custom option row. |
+| `group-label` | `option`, `label` | Custom label row for `type: "label"` options. |
+
+### Option Shape
+
+| Key | Type | Description |
+|-----|------|-------------|
+| `type` | `"item" \| "label" \| "separator"` | Row type. Omit for selectable items. |
+| `value` | `string \| number` | Submitted value for selectable items. |
+| `label` | `string` | Visible label. |
+| `description` | `string` | Optional description. |
+| `disabled` | `boolean` | Disables a selectable item. |
 
 ### UI Options
 
@@ -86,6 +99,9 @@ const options = [
 | `placeholder` | Placeholder text. |
 | `icon` | Default chevron icon. |
 | `content` | Listbox popup. |
+| `viewport` | Scrollable viewport inside popup. |
+| `groupLabel` | Non-selectable label row. |
+| `separator` | Separator row. |
 | `option` | Option row. |
 | `indicator` | Selected indicator inside an option. |
 | `optionText` | Option text wrapper. |
@@ -103,6 +119,9 @@ const options = [
 | `placeholder` | `akaza-select-placeholder` | — |
 | `icon` | `akaza-select-icon` | — |
 | `content` | `akaza-select-content` | `data-akaza-state`, `data-akaza-side`, `data-akaza-align` |
+| `viewport` | `akaza-select-viewport` | — |
+| `groupLabel` | `akaza-select-group-label` | — |
+| `separator` | `akaza-select-separator` | — |
 | `option` | `akaza-select-option` | `data-akaza-state`, `data-akaza-highlighted`, `data-akaza-disabled` |
 | `indicator` | `akaza-select-indicator` | — |
 | `optionText` | `akaza-select-option-text` | — |
@@ -115,7 +134,7 @@ Plain `class` applies to the root wrapper. Use `ui.trigger`, `ui.content`, and `
 
 | Key | Behavior |
 |-----|----------|
-| `Enter` / `Space` | Open select, or select highlighted option. |
+| `Enter` / `Space` | Open select, or select/toggle highlighted option. |
 | `ArrowDown` / `ArrowUp` | Open select and move highlight. |
 | `Home` / `End` | Move highlight to first/last enabled option. |
 | `Escape` | Close popup. |

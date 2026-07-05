@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { AkazaChangeEventDetails } from "akaza-ui";
+import type { AkazaChangeEventDetails, SliderValue } from "akaza-ui";
 import { ref } from "vue";
 import { Field, Slider } from "akaza-ui";
 import {
@@ -20,10 +20,16 @@ import {
 const volume = ref(55);
 const brightness = ref(40);
 const stepValue = ref(30);
+const priceRange = ref([20, 80]);
+const inverted = ref(30);
 const commitLog = ref("No commit yet.");
 
-function onCommit(value: number, details: AkazaChangeEventDetails) {
-  commitLog.value = `value-commit: ${value}, reason: ${details.reason}`;
+function formatValue(value: SliderValue): string {
+  return Array.isArray(value) ? value.join(" - ") : String(value);
+}
+
+function onCommit(value: SliderValue, details: AkazaChangeEventDetails) {
+  commitLog.value = `value-commit: ${formatValue(value)}, reason: ${details.reason}`;
 }
 </script>
 
@@ -60,6 +66,23 @@ function onCommit(value: number, details: AkazaChangeEventDetails) {
       </div>
 
       <div>
+        <h3 :class="exampleTitle">Range thumbs</h3>
+        <div :class="canvasCol">
+          <Slider
+            v-model="priceRange"
+            :min="0"
+            :max="100"
+            :step="5"
+            :min-steps-between-thumbs="2"
+            :aria-labels="['Minimum price', 'Maximum price']"
+            :ui="sliderUi"
+            @value-commit="onCommit"
+          />
+          <code :class="codePill">range: {{ priceRange.join(" - ") }}</code>
+        </div>
+      </div>
+
+      <div>
         <h3 :class="exampleTitle">Step + vertical orientation</h3>
         <div :class="[canvasGrid, 'grid-cols-[1fr_auto] items-center']">
           <div class="space-y-4">
@@ -67,6 +90,14 @@ function onCommit(value: number, details: AkazaChangeEventDetails) {
             <code :class="codePill">step: {{ stepValue }}</code>
           </div>
           <Slider v-model="stepValue" orientation="vertical" :step="10" :ui="sliderVerticalUi" aria-label="Vertical slider" />
+        </div>
+      </div>
+
+      <div>
+        <h3 :class="exampleTitle">Inverted</h3>
+        <div :class="canvasCol">
+          <Slider v-model="inverted" inverted :ui="sliderUi" aria-label="Inverted slider" />
+          <code :class="codePill">inverted: {{ inverted }}</code>
         </div>
       </div>
 

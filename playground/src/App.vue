@@ -5,7 +5,12 @@ import ButtonSection from "./sections/button/ButtonSection.vue";
 import ToggleSection from "./sections/toggle/ToggleSection.vue";
 import SwitchSection from "./sections/switch/SwitchSection.vue";
 import CheckboxSection from "./sections/checkbox/CheckboxSection.vue";
+import CheckboxGroupSection from "./sections/checkbox-group/CheckboxGroupSection.vue";
 import RadioGroupSection from "./sections/radio-group/RadioGroupSection.vue";
+import FieldSection from "./sections/field/FieldSection.vue";
+import FieldsetSection from "./sections/fieldset/FieldsetSection.vue";
+import FormSection from "./sections/form/FormSection.vue";
+import InputSection from "./sections/input/InputSection.vue";
 import AvatarSection from "./sections/avatar/AvatarSection.vue";
 import SeparatorSection from "./sections/separator/SeparatorSection.vue";
 import ProgressSection from "./sections/progress/ProgressSection.vue";
@@ -31,7 +36,18 @@ const sections = [
   {
     id: "inputs",
     label: "Inputs",
-    items: ["button", "toggle", "switch", "checkbox", "radio-group"],
+    items: [
+      "button",
+      "input",
+      "field",
+      "fieldset",
+      "form",
+      "toggle",
+      "switch",
+      "checkbox",
+      "checkbox-group",
+      "radio-group",
+    ],
   },
   { id: "display", label: "Display", items: ["avatar", "separator", "progress"] },
   { id: "disclosure", label: "Disclosure", items: ["collapsible", "accordion"] },
@@ -95,11 +111,21 @@ const sections = [
       <main class="flex-1 px-6 lg:px-12 py-10 max-w-3xl space-y-16">
         <ButtonSection />
         <Separator class="border-t border-border" />
+        <InputSection />
+        <Separator class="border-t border-border" />
+        <FieldSection />
+        <Separator class="border-t border-border" />
+        <FieldsetSection />
+        <Separator class="border-t border-border" />
+        <FormSection />
+        <Separator class="border-t border-border" />
         <ToggleSection />
         <Separator class="border-t border-border" />
         <SwitchSection />
         <Separator class="border-t border-border" />
         <CheckboxSection />
+        <Separator class="border-t border-border" />
+        <CheckboxGroupSection />
         <Separator class="border-t border-border" />
         <RadioGroupSection />
         <Separator class="border-t border-border" />

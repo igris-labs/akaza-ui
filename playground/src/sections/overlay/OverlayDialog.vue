@@ -1,5 +1,13 @@
 <script setup lang="ts">
 import { nextTick, useTemplateRef, watch } from "vue";
+import {
+  buttonGhost,
+  buttonPrimary,
+  dialogBodyText,
+  dialogContent,
+  dialogOverlay,
+  footerActions,
+} from "../styles";
 
 const { title = "Overlay Dialog", message = "" } = defineProps<{
   title?: string;
@@ -21,30 +29,35 @@ watch(model, async (val) => {
 
 <template>
   <Teleport to="body">
-    <Transition name="ov-dialog">
+    <Transition
+      enter-active-class="transition-opacity duration-150 ease-out"
+      leave-active-class="transition-opacity duration-150 ease-out"
+      enter-from-class="opacity-0"
+      leave-to-class="opacity-0"
+    >
       <div
         v-if="model"
-        class="ov-dlg-overlay"
+        :class="[dialogOverlay, 'grid place-items-center']"
         @click.self="model = false"
       >
         <div
           ref="contentRef"
           role="dialog"
           aria-modal="true"
-          class="ov-dlg-content"
+          :class="[dialogContent, 'outline-none']"
           tabindex="-1"
           @keydown.escape.prevent="model = false"
         >
-          <div v-if="title" class="ov-dlg-header">
-            <div class="ov-dlg-title">{{ title }}</div>
+          <div v-if="title" class="border-b border-border p-4">
+            <div class="text-base font-semibold text-foreground">{{ title }}</div>
           </div>
-          <div v-if="message" class="ov-dlg-body">
-            <p class="ov-dlg-message">{{ message }}</p>
+          <div v-if="message" class="p-5">
+            <p :class="dialogBodyText">{{ message }}</p>
           </div>
-          <div class="ov-dlg-footer-section">
-            <div class="ov-dlg-footer">
-              <button class="ov-btn-ghost" @click="emit('close', false)">Cancel</button>
-              <button class="ov-btn-primary" @click="emit('close', true)">Confirm</button>
+          <div class="border-t border-border p-4">
+            <div :class="footerActions">
+              <button :class="buttonGhost" @click="emit('close', false)">Cancel</button>
+              <button :class="buttonPrimary" @click="emit('close', true)">Confirm</button>
             </div>
           </div>
         </div>

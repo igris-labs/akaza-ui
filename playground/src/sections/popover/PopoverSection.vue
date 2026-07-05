@@ -2,6 +2,20 @@
 import { ref } from "vue";
 import { Popover } from "akaza-ui";
 import type { AkazaChangeEventDetails } from "akaza-ui";
+import {
+  buttonGhost,
+  buttonLink,
+  buttonPrimary,
+  canvasCol,
+  canvasRow,
+  codePill,
+  eventEntry,
+  eventLog as eventLogClass,
+  inlineCode,
+  popoverContent,
+  sectionDescription,
+  sectionTitle,
+} from "../styles";
 
 // ── 1. Basic ─────────────────────────────────────────────────────────────────
 // (uncontrolled — no v-model needed)
@@ -44,29 +58,29 @@ function onOpenChangeCancelEscape(open: boolean, details: AkazaChangeEventDetail
 
 <template>
   <section id="popover">
-    <h2 class="text-lg font-semibold mb-1">Popover</h2>
-    <p class="text-sm mb-8 text-muted-foreground">
+    <h2 :class="sectionTitle">Popover</h2>
+    <p :class="sectionDescription">
       A floating panel anchored to a trigger. Supports auto-flip, alignment, and programmatic control.
     </p>
 
     <!-- ── 1. Basic ────────────────────────────────────────────────────────── -->
-    <div class="po-demo-block">
-      <div class="po-demo-label">
-        <span class="po-demo-label-title">Basic</span>
-        <span class="po-demo-label-desc">
+    <div class="mb-8">
+      <div class="mb-3">
+        <span class="block text-sm font-medium text-foreground">Basic</span>
+        <span class="text-xs text-muted-foreground">
           Click the trigger. Close via Escape, clicking outside, or the close button inside.
         </span>
       </div>
-      <div class="po-demo-canvas">
-        <Popover :ui="{ content: 'po-content' }">
+      <div :class="canvasRow">
+        <Popover :ui="{ content: popoverContent }">
           <template #trigger="{ toggle, triggerProps }">
-            <button class="po-btn" v-bind="triggerProps" @click="toggle()">Open popover</button>
+            <button :class="buttonPrimary" v-bind="triggerProps" @click="toggle()">Open popover</button>
           </template>
           <template #content="{ close }">
-            <div class="po-body">
-              <p class="po-body-title">Popover content</p>
-              <p class="po-body-desc">Click outside or press Escape to close.</p>
-              <button class="po-close-btn" @click="close()">Close</button>
+            <div class="grid gap-1.5">
+              <p class="m-0 text-sm font-semibold text-foreground">Popover content</p>
+              <p class="m-0 text-xs text-muted-foreground">Click outside or press Escape to close.</p>
+              <button :class="buttonLink" @click="close()">Close</button>
             </div>
           </template>
         </Popover>
@@ -74,50 +88,50 @@ function onOpenChangeCancelEscape(open: boolean, details: AkazaChangeEventDetail
     </div>
 
     <!-- ── 2. Controlled (v-model) ────────────────────────────────────────── -->
-    <div class="po-demo-block">
-      <div class="po-demo-label">
-        <span class="po-demo-label-title">Controlled (v-model)</span>
-        <span class="po-demo-label-desc">
-          Bind <code>v-model</code> to read and control open state externally.
+    <div class="mb-8">
+      <div class="mb-3">
+        <span class="block text-sm font-medium text-foreground">Controlled (v-model)</span>
+        <span class="text-xs text-muted-foreground">
+          Bind <code :class="inlineCode">v-model</code> to read and control open state externally.
         </span>
       </div>
-      <div class="po-demo-canvas" style="flex-direction: column; align-items: flex-start; gap: 12px;">
-        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-          <Popover v-model="isOpen" :ui="{ content: 'po-content' }">
+      <div :class="canvasCol">
+        <div class="flex flex-wrap items-center gap-2">
+          <Popover v-model="isOpen" :ui="{ content: popoverContent }">
             <template #trigger="{ triggerProps, toggle }">
-              <button class="po-btn" v-bind="triggerProps" @click="toggle()">Toggle</button>
+              <button :class="buttonPrimary" v-bind="triggerProps" @click="toggle()">Toggle</button>
             </template>
             <template #content>
-              <div class="po-body">
-                <p class="po-body-title">Controlled popover</p>
-                <p class="po-body-desc">State is held externally via <code>v-model</code>.</p>
+              <div class="grid gap-1.5">
+                <p class="m-0 text-sm font-semibold text-foreground">Controlled popover</p>
+                <p class="m-0 text-xs text-muted-foreground">State is held externally via <code :class="inlineCode">v-model</code>.</p>
               </div>
             </template>
           </Popover>
-          <button class="po-btn-ghost" @click="isOpen = true">Force open</button>
-          <button class="po-btn-ghost" @click="isOpen = false">Force close</button>
+          <button :class="buttonGhost" @click="isOpen = true">Force open</button>
+          <button :class="buttonGhost" @click="isOpen = false">Force close</button>
         </div>
-        <code class="po-state">isOpen: {{ isOpen }}</code>
+        <code :class="codePill">isOpen: {{ isOpen }}</code>
       </div>
     </div>
 
     <!-- ── 3. Alignment ───────────────────────────────────────────────────── -->
-    <div class="po-demo-block">
-      <div class="po-demo-label">
-        <span class="po-demo-label-title">Alignment — <code>align</code></span>
-        <span class="po-demo-label-desc">
-          <code>align</code> controls cross-axis placement: <code>start</code>, <code>center</code>, <code>end</code>.
+    <div class="mb-8">
+      <div class="mb-3">
+        <span class="block text-sm font-medium text-foreground">Alignment — <code :class="inlineCode">align</code></span>
+        <span class="text-xs text-muted-foreground">
+          <code :class="inlineCode">align</code> controls cross-axis placement: <code :class="inlineCode">start</code>, <code :class="inlineCode">center</code>, <code :class="inlineCode">end</code>.
         </span>
       </div>
-      <div class="po-demo-canvas" style="justify-content: center; gap: 16px;">
-        <Popover v-for="a in ['start', 'center', 'end']" :key="a" :align="(a as any)" :ui="{ content: 'po-content' }">
+      <div :class="[canvasRow, 'justify-center gap-4']">
+        <Popover v-for="a in ['start', 'center', 'end']" :key="a" :align="(a as any)" :ui="{ content: popoverContent }">
           <template #trigger="{ toggle, triggerProps }">
-            <button class="po-btn" v-bind="triggerProps" @click="toggle()">{{ a }}</button>
+            <button :class="buttonPrimary" v-bind="triggerProps" @click="toggle()">{{ a }}</button>
           </template>
           <template #content>
-            <div class="po-body">
-              <p class="po-body-title">align="{{ a }}"</p>
-              <p class="po-body-desc">Content aligns to the {{ a }} of the trigger.</p>
+            <div class="grid gap-1.5">
+              <p class="m-0 text-sm font-semibold text-foreground">align="{{ a }}"</p>
+              <p class="m-0 text-xs text-muted-foreground">Content aligns to the {{ a }} of the trigger.</p>
             </div>
           </template>
         </Popover>
@@ -125,70 +139,66 @@ function onOpenChangeCancelEscape(open: boolean, details: AkazaChangeEventDetail
     </div>
 
     <!-- ── 4. Side ────────────────────────────────────────────────────────── -->
-    <div class="po-demo-block">
-      <div class="po-demo-label">
-        <span class="po-demo-label-title">Side — <code>side</code></span>
-        <span class="po-demo-label-desc">
-          Preferred side: <code>top</code>, <code>bottom</code>, <code>left</code>, <code>right</code>.
+    <div class="mb-8">
+      <div class="mb-3">
+        <span class="block text-sm font-medium text-foreground">Side — <code :class="inlineCode">side</code></span>
+        <span class="text-xs text-muted-foreground">
+          Preferred side: <code :class="inlineCode">top</code>, <code :class="inlineCode">bottom</code>, <code :class="inlineCode">left</code>, <code :class="inlineCode">right</code>.
           Auto-flips if there's not enough room.
         </span>
       </div>
-      <div class="po-demo-canvas" style="justify-content: center; gap: 16px;">
-        <Popover v-for="s in ['top', 'bottom', 'left', 'right']" :key="s" :side="(s as any)" :ui="{ content: 'po-content' }">
+      <div :class="[canvasRow, 'justify-center gap-4']">
+        <Popover v-for="s in ['top', 'bottom', 'left', 'right']" :key="s" :side="(s as any)" :ui="{ content: popoverContent }">
           <template #trigger="{ toggle, triggerProps }">
-            <button class="po-btn" v-bind="triggerProps" @click="toggle()">{{ s }}</button>
+            <button :class="buttonPrimary" v-bind="triggerProps" @click="toggle()">{{ s }}</button>
           </template>
           <template #content>
-            <div class="po-body">
-              <p class="po-body-title">side="{{ s }}"</p>
-            </div>
+            <p class="m-0 text-sm font-semibold text-foreground">side="{{ s }}"</p>
           </template>
         </Popover>
       </div>
     </div>
 
     <!-- ── 5. sideOffset ──────────────────────────────────────────────────── -->
-    <div class="po-demo-block">
-      <div class="po-demo-label">
-        <span class="po-demo-label-title">Gap — <code>sideOffset</code></span>
-        <span class="po-demo-label-desc">
-          <code>sideOffset</code> controls the px gap between trigger and content (default: 6).
+    <div class="mb-8">
+      <div class="mb-3">
+        <span class="block text-sm font-medium text-foreground">Gap — <code :class="inlineCode">sideOffset</code></span>
+        <span class="text-xs text-muted-foreground">
+          <code :class="inlineCode">sideOffset</code> controls the px gap between trigger and content (default: 6).
         </span>
       </div>
-      <div class="po-demo-canvas" style="justify-content: center; gap: 16px;">
-        <Popover v-for="offset in [0, 6, 16]" :key="offset" :side-offset="offset" :ui="{ content: 'po-content' }">
+      <div :class="[canvasRow, 'justify-center gap-4']">
+        <Popover v-for="offset in [0, 6, 16]" :key="offset" :side-offset="offset" :ui="{ content: popoverContent }">
           <template #trigger="{ toggle, triggerProps }">
-            <button class="po-btn" v-bind="triggerProps" @click="toggle()">offset={{ offset }}</button>
+            <button :class="buttonPrimary" v-bind="triggerProps" @click="toggle()">offset={{ offset }}</button>
           </template>
           <template #content>
-            <div class="po-body">
-              <p class="po-body-title">sideOffset={{ offset }}</p>
-            </div>
+            <p class="m-0 text-sm font-semibold text-foreground">sideOffset={{ offset }}</p>
           </template>
         </Popover>
       </div>
     </div>
 
     <!-- ── 6. triggerProps (ARIA) ─────────────────────────────────────────── -->
-    <div class="po-demo-block">
-      <div class="po-demo-label">
-        <span class="po-demo-label-title">triggerProps (ARIA)</span>
-        <span class="po-demo-label-desc">
-          Spread <code>triggerProps</code> onto the trigger element to get
-          <code>aria-haspopup</code>, <code>aria-expanded</code>, and <code>aria-controls</code> automatically.
+    <div class="mb-8">
+      <div class="mb-3">
+        <span class="block text-sm font-medium text-foreground">triggerProps (ARIA)</span>
+        <span class="text-xs text-muted-foreground">
+          Spread <code :class="inlineCode">triggerProps</code> onto the trigger element to get
+          <code :class="inlineCode">aria-haspopup</code>, <code :class="inlineCode">aria-expanded</code>, and <code :class="inlineCode">aria-controls</code> automatically.
         </span>
       </div>
-      <div class="po-demo-canvas">
-        <Popover :ui="{ content: 'po-content' }">
+      <div :class="canvasRow">
+        <Popover :ui="{ content: popoverContent }">
           <template #trigger="{ toggle, triggerProps, isOpen }">
-            <button class="po-btn" v-bind="triggerProps" @click="toggle()">
+            <button :class="buttonPrimary" v-bind="triggerProps" @click="toggle()">
               {{ isOpen ? "Close" : "Open" }} (inspect ARIA attrs)
             </button>
           </template>
           <template #content>
-            <div class="po-body">
-              <p class="po-body-title">ARIA attributes applied</p>
-              <p class="po-body-desc">Inspect the trigger button in DevTools to see the attributes.</p>
+            <div class="grid gap-1.5">
+              <p class="m-0 text-sm font-semibold text-foreground">ARIA attributes applied</p>
+              <p class="m-0 text-xs text-muted-foreground">Inspect the trigger button in DevTools to see the attributes.</p>
             </div>
           </template>
         </Popover>
@@ -196,89 +206,85 @@ function onOpenChangeCancelEscape(open: boolean, details: AkazaChangeEventDetail
     </div>
 
     <!-- ── 7. @open-change ────────────────────────────────────────────────── -->
-    <div class="po-demo-block">
-      <div class="po-demo-label">
-        <span class="po-demo-label-title">@open-change event</span>
-        <span class="po-demo-label-desc">
-          Emits <code>(open, details)</code> with <code>details.reason</code>:
-          <code>outside-click</code>, <code>escape</code>, <code>programmatic</code>.
+    <div class="mb-8">
+      <div class="mb-3">
+        <span class="block text-sm font-medium text-foreground">@open-change event</span>
+        <span class="text-xs text-muted-foreground">
+          Emits <code :class="inlineCode">(open, details)</code> with <code :class="inlineCode">details.reason</code>:
+          <code :class="inlineCode">outside-click</code>, <code :class="inlineCode">escape</code>, <code :class="inlineCode">programmatic</code>.
         </span>
       </div>
-      <div class="po-demo-canvas" style="flex-direction: column; align-items: flex-start; gap: 12px;">
-        <Popover :ui="{ content: 'po-content' }" @open-change="onOpenChange">
+      <div :class="canvasCol">
+        <Popover :ui="{ content: popoverContent }" @open-change="onOpenChange">
           <template #trigger="{ toggle, triggerProps }">
-            <button class="po-btn" v-bind="triggerProps" @click="toggle()">Open &amp; watch events</button>
+            <button :class="buttonPrimary" v-bind="triggerProps" @click="toggle()">Open &amp; watch events</button>
           </template>
           <template #content="{ close }">
-            <div class="po-body">
-              <p class="po-body-title">Trigger a close</p>
-              <p class="po-body-desc">Press Escape, click outside, or use the button.</p>
-              <button class="po-close-btn" @click="close()">Close (programmatic)</button>
+            <div class="grid gap-1.5">
+              <p class="m-0 text-sm font-semibold text-foreground">Trigger a close</p>
+              <p class="m-0 text-xs text-muted-foreground">Press Escape, click outside, or use the button.</p>
+              <button :class="buttonLink" @click="close()">Close (programmatic)</button>
             </div>
           </template>
         </Popover>
-        <div v-if="eventLog.length" class="po-event-log">
-          <code v-for="(entry, i) in eventLog" :key="i" class="po-event-entry">{{ entry }}</code>
+        <div v-if="eventLog.length" :class="eventLogClass">
+          <code v-for="(entry, i) in eventLog" :key="i" :class="eventEntry">{{ entry }}</code>
         </div>
       </div>
     </div>
 
     <!-- ── 8. Cancelable close ────────────────────────────────────────────── -->
-    <div class="po-demo-block">
-      <div class="po-demo-label">
-        <span class="po-demo-label-title">Cancelable close</span>
-        <span class="po-demo-label-desc">
-          Call <code>details.cancel()</code> inside <code>@open-change</code> to prevent the state change.
+    <div class="mb-8">
+      <div class="mb-3">
+        <span class="block text-sm font-medium text-foreground">Cancelable close</span>
+        <span class="text-xs text-muted-foreground">
+          Call <code :class="inlineCode">details.cancel()</code> inside <code :class="inlineCode">@open-change</code> to prevent the state change.
           This example blocks Escape — only clicking outside or the button closes it.
         </span>
       </div>
-      <div class="po-demo-canvas" style="flex-direction: column; align-items: flex-start; gap: 12px;">
-        <Popover :ui="{ content: 'po-content' }" @open-change="onOpenChangeCancelEscape">
+      <div :class="canvasCol">
+        <Popover :ui="{ content: popoverContent }" @open-change="onOpenChangeCancelEscape">
           <template #trigger="{ toggle, triggerProps }">
-            <button class="po-btn" v-bind="triggerProps" @click="toggle()">Open (Escape blocked)</button>
+            <button :class="buttonPrimary" v-bind="triggerProps" @click="toggle()">Open (Escape blocked)</button>
           </template>
           <template #content="{ close }">
-            <div class="po-body">
-              <p class="po-body-title">Escape is blocked</p>
-              <p class="po-body-desc">Click outside or use the button to close.</p>
-              <button class="po-close-btn" @click="close()">Close</button>
+            <div class="grid gap-1.5">
+              <p class="m-0 text-sm font-semibold text-foreground">Escape is blocked</p>
+              <p class="m-0 text-xs text-muted-foreground">Click outside or use the button to close.</p>
+              <button :class="buttonLink" @click="close()">Close</button>
             </div>
           </template>
         </Popover>
-        <div v-if="cancelLog.length" class="po-event-log">
-          <code v-for="(entry, i) in cancelLog" :key="i" class="po-event-entry">{{ entry }}</code>
+        <div v-if="cancelLog.length" :class="eventLogClass">
+          <code v-for="(entry, i) in cancelLog" :key="i" :class="eventEntry">{{ entry }}</code>
         </div>
       </div>
     </div>
 
     <!-- ── 9. Custom transition ───────────────────────────────────────────── -->
-    <div class="po-demo-block">
-      <div class="po-demo-label">
-        <span class="po-demo-label-title">Custom transition / no transition</span>
-        <span class="po-demo-label-desc">
-          Pass a custom <code>transition</code> name or <code>:transition="false"</code> to disable animation.
+    <div class="mb-8">
+      <div class="mb-3">
+        <span class="block text-sm font-medium text-foreground">Custom transition / no transition</span>
+        <span class="text-xs text-muted-foreground">
+          Pass a custom <code :class="inlineCode">transition</code> name or <code :class="inlineCode">:transition="false"</code> to disable animation.
         </span>
       </div>
-      <div class="po-demo-canvas" style="gap: 16px;">
-        <Popover transition="po-slide" :ui="{ content: 'po-content' }">
+      <div :class="[canvasRow, 'gap-4']">
+        <Popover transition="po-slide" :ui="{ content: popoverContent }">
           <template #trigger="{ toggle, triggerProps }">
-            <button class="po-btn" v-bind="triggerProps" @click="toggle()">Slide transition</button>
+            <button :class="buttonPrimary" v-bind="triggerProps" @click="toggle()">Slide transition</button>
           </template>
           <template #content>
-            <div class="po-body">
-              <p class="po-body-title">Custom slide</p>
-            </div>
+            <p class="m-0 text-sm font-semibold text-foreground">Custom slide</p>
           </template>
         </Popover>
 
-        <Popover :transition="false" :ui="{ content: 'po-content' }">
+        <Popover :transition="false" :ui="{ content: popoverContent }">
           <template #trigger="{ toggle, triggerProps }">
-            <button class="po-btn" v-bind="triggerProps" @click="toggle()">No transition</button>
+            <button :class="buttonPrimary" v-bind="triggerProps" @click="toggle()">No transition</button>
           </template>
           <template #content>
-            <div class="po-body">
-              <p class="po-body-title">No animation</p>
-            </div>
+            <p class="m-0 text-sm font-semibold text-foreground">No animation</p>
           </template>
         </Popover>
       </div>
@@ -287,133 +293,6 @@ function onOpenChangeCancelEscape(open: boolean, details: AkazaChangeEventDetail
 </template>
 
 <style>
-/* ── Content ────────────────────────────────────────────────────────────────── */
-.po-content {
-  position: fixed;
-  z-index: 50;
-  min-width: 200px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: var(--popover);
-  color: var(--popover-foreground);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-}
-
-.po-body {
-  padding: 14px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.po-body-title {
-  font-size: 0.875rem;
-  font-weight: 600;
-  color: var(--foreground);
-  margin: 0;
-}
-
-.po-body-desc {
-  font-size: 0.75rem;
-  color: var(--muted-foreground);
-  margin: 0;
-}
-
-.po-close-btn {
-  margin-top: 4px;
-  font-size: 0.75rem;
-  color: var(--primary);
-  background: none;
-  border: none;
-  padding: 0;
-  cursor: pointer;
-  text-decoration: underline;
-  text-align: left;
-}
-
-/* ── Buttons ─────────────────────────────────────────────────────────────── */
-.po-btn {
-  padding: 6px 14px;
-  border-radius: 6px;
-  background: var(--primary);
-  color: var(--primary-foreground);
-  font-size: 0.875rem;
-  font-weight: 500;
-  border: none;
-  cursor: pointer;
-}
-.po-btn:hover { opacity: 0.9; }
-
-.po-btn-ghost {
-  padding: 6px 14px;
-  border-radius: 6px;
-  background: transparent;
-  color: var(--foreground);
-  font-size: 0.875rem;
-  font-weight: 500;
-  border: 1px solid var(--border);
-  cursor: pointer;
-}
-.po-btn-ghost:hover { background: color-mix(in oklch, var(--muted-foreground) 15%, transparent); }
-
-/* ── State / log ────────────────────────────────────────────────────────── */
-.po-state {
-  font-family: monospace;
-  font-size: 11px;
-  color: var(--muted-foreground);
-  background: var(--muted);
-  padding: 2px 8px;
-  border-radius: 4px;
-}
-
-.po-event-log { display: flex; flex-direction: column; gap: 4px; }
-.po-event-entry {
-  font-family: monospace;
-  font-size: 11px;
-  color: var(--muted-foreground);
-  background: var(--muted);
-  padding: 2px 8px;
-  border-radius: 4px;
-}
-
-/* ── Demo layout ────────────────────────────────────────────────────────── */
-.po-demo-block { margin-bottom: 32px; }
-.po-demo-label { margin-bottom: 12px; }
-
-.po-demo-label-title {
-  display: block;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--foreground);
-  margin-bottom: 2px;
-}
-
-.po-demo-label-desc {
-  font-size: 12px;
-  color: var(--muted-foreground);
-}
-
-.po-demo-label-desc code {
-  font-family: monospace;
-  font-size: 11px;
-  background: var(--muted);
-  color: var(--foreground);
-  padding: 1px 4px;
-  border-radius: 3px;
-}
-
-.po-demo-canvas {
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 24px;
-  background: var(--accent);
-  display: flex;
-  align-items: flex-start;
-  flex-wrap: wrap;
-  gap: 12px;
-}
-
-/* ── Custom transition ──────────────────────────────────────────────────── */
 .po-slide-enter-active,
 .po-slide-leave-active {
   transition: opacity 0.15s ease, transform 0.15s ease;

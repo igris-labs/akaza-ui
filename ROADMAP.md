@@ -21,16 +21,16 @@
 | Progress     | `role="progressbar"`, determinate + indeterminate states                   |
 | Collapsible  | Single trigger/content toggle, `aria-expanded`, animated height            |
 | Accordion    | Single/multiple open items, `role="region"`, arrow key nav                 |
+| Field        | Label + input association, description/error wiring                        |
+| Fieldset     | Native fieldset/legend wrapper for related controls                        |
+| Form         | Submit details, `FormData`, native validity state                          |
+| Input        | Text input with Field integration and invalid state attrs                   |
+| Checkbox Group | Manages multiple checkboxes with items API and form submission           |
 
 ### Planned — Forms & Controls
 
 | Component      | Notes                                                                  |
 | -------------- | ---------------------------------------------------------------------- |
-| Field          | Label + input association, error/description slots, `aria-describedby` |
-| Fieldset       | Groups related fields with `<fieldset>` + `<legend>`                   |
-| Form           | Validation state container, submit handling                            |
-| Input          | Text input, `aria-invalid`, `data-invalid`, integrates with Field      |
-| Checkbox Group | Manages multiple checkboxes, `role="group"`                            |
 | Select         | `role="listbox"`, keyboard nav, `aria-selected`                        |
 | Number Field   | Increment/decrement, `role="spinbutton"`, min/max/step                 |
 | Slider         | `role="slider"`, `aria-valuenow/min/max`, keyboard step                |

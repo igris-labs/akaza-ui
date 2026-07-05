@@ -86,6 +86,11 @@ No manual CSS import or component registration needed.
 | `Toggle`      | On/off button with `aria-pressed`                                               |
 | `Switch`      | Binary toggle with WAI-ARIA switch role                                         |
 | `Checkbox`    | Tri-state checkbox (`true`, `false`, `'indeterminate'`)                         |
+| `CheckboxGroup` | Multi-select checkbox list with an items-based API                            |
+| `Field`       | Label, description, and error wiring for controls                               |
+| `Fieldset`    | Native fieldset and legend wrapper for related controls                         |
+| `Form`        | Submit wrapper exposing `FormData` and native validity state                    |
+| `Input`       | Text input with Field integration and invalid state attrs                       |
 | `RadioGroup`  | Accessible radio group with roving tabindex and custom item rendering           |
 | `Progress`    | Progressbar with indeterminate support                                          |
 | `Avatar`      | Image with fallback slot on load error                                          |

@@ -1,6 +1,17 @@
 <script setup lang="ts">
 import { ref } from "vue";
 import { Tabs } from "akaza-ui";
+import {
+  canvas,
+  exampleStack,
+  exampleTitle,
+  inlineCode,
+  sectionDescriptionTight,
+  sectionTitle,
+  tabsPillUi,
+  tabsUi,
+  tabsVerticalUi,
+} from "../styles";
 
 // 1. Basic
 const basic = ref("overview");
@@ -56,16 +67,16 @@ function onPanelBMount() { mountCount.value++; }
 
 <template>
   <section id="tabs">
-    <h2 class="text-lg font-semibold mb-1">Tabs</h2>
-    <p class="text-sm mb-6 text-muted-foreground">Tabbed navigation with keyboard support.</p>
+    <h2 :class="sectionTitle">Tabs</h2>
+    <p :class="sectionDescriptionTight">Tabbed navigation with keyboard support.</p>
 
-    <div class="space-y-10">
+    <div :class="exampleStack">
 
       <!-- 1. Basic (underline indicator) -->
       <div>
-        <h3 class="text-sm font-medium mb-3">Basic</h3>
-        <div class="rounded-lg border p-6 bg-accent">
-          <Tabs v-model="basic" :items="basicItems" aria-label="Main navigation" :ui="{ list: 'tabs-underline-list', tab: 'tabs-underline-tab', panel: 'tabs-panel' }">
+        <h3 :class="exampleTitle">Basic</h3>
+        <div :class="canvas">
+          <Tabs v-model="basic" :items="basicItems" aria-label="Main navigation" :ui="tabsUi">
             <template #panel-overview>
               <p class="text-sm text-muted-foreground">Overview — a summary of your project's key metrics and recent activity.</p>
             </template>
@@ -81,11 +92,14 @@ function onPanelBMount() { mountCount.value++; }
 
       <!-- 2. Custom #tab slot (pill style, no indicator) -->
       <div>
-        <h3 class="text-sm font-medium mb-3">Custom #tab slot — pill style</h3>
-        <div class="rounded-lg border p-6 bg-accent">
-          <Tabs v-model="pill" :items="pillItems" aria-label="Account settings" :ui="{ list: 'tabs-pill-list', tab: 'tabs-pill-btn', panel: 'tabs-panel' }">
+        <h3 :class="exampleTitle">Custom #tab slot — pill style</h3>
+        <div :class="canvas">
+          <Tabs v-model="pill" :items="pillItems" aria-label="Account settings" :ui="tabsPillUi">
             <template #tab="{ item, isActive }">
-              <span class="tabs-pill" :class="isActive ? 'tabs-pill--active' : ''">
+              <span
+                class="inline-flex rounded-md px-3 py-1.5 text-sm font-medium transition-colors"
+                :class="isActive ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground'"
+              >
                 {{ item.label }}
               </span>
             </template>
@@ -99,14 +113,14 @@ function onPanelBMount() { mountCount.value++; }
 
       <!-- 3. Vertical orientation -->
       <div>
-        <h3 class="text-sm font-medium mb-3">Vertical orientation</h3>
-        <div class="rounded-lg border p-6 bg-accent">
+        <h3 :class="exampleTitle">Vertical orientation</h3>
+        <div :class="canvas">
           <Tabs
             v-model="vertical"
             :items="verticalItems"
             orientation="vertical"
             aria-label="Settings sections"
-            :ui="{ root: 'tabs-vertical-root', list: 'tabs-vertical-list', tab: 'tabs-vertical-tab', panel: 'tabs-panel tabs-panel--vertical' }"
+            :ui="tabsVerticalUi"
           >
             <template #panel-profile><p class="text-sm text-muted-foreground">Update your display name, avatar, and bio.</p></template>
             <template #panel-notifications><p class="text-sm text-muted-foreground">Choose which events trigger email or push notifications.</p></template>
@@ -118,9 +132,9 @@ function onPanelBMount() { mountCount.value++; }
 
       <!-- 4. Disabled tab -->
       <div>
-        <h3 class="text-sm font-medium mb-3">Disabled tab</h3>
-        <div class="rounded-lg border p-6 bg-accent">
-          <Tabs v-model="withDisabled" :items="disabledItems" aria-label="Status filter" :ui="{ list: 'tabs-underline-list', tab: 'tabs-underline-tab', panel: 'tabs-panel' }">
+        <h3 :class="exampleTitle">Disabled tab</h3>
+        <div :class="canvas">
+          <Tabs v-model="withDisabled" :items="disabledItems" aria-label="Status filter" :ui="tabsUi">
             <template #panel-active><p class="text-sm text-muted-foreground">Showing active items.</p></template>
             <template #panel-paused><p class="text-sm text-muted-foreground">Showing paused items.</p></template>
             <template #panel-archived><p class="text-sm text-muted-foreground">Archived items.</p></template>
@@ -133,14 +147,14 @@ function onPanelBMount() { mountCount.value++; }
 
       <!-- 5. Manual activation -->
       <div>
-        <h3 class="text-sm font-medium mb-3">Manual activation mode</h3>
-        <div class="rounded-lg border p-6 bg-accent">
+        <h3 :class="exampleTitle">Manual activation mode</h3>
+        <div :class="canvas">
           <Tabs
             v-model="manual"
             :items="manualItems"
             activation-mode="manual"
             aria-label="Code language"
-            :ui="{ list: 'tabs-underline-list', tab: 'tabs-underline-tab', panel: 'tabs-panel' }"
+            :ui="tabsUi"
           >
             <template #panel-html><p class="text-sm text-muted-foreground font-mono">Arrow keys move focus without switching tabs. Press Space or Enter to activate.</p></template>
             <template #panel-css><p class="text-sm text-muted-foreground font-mono">CSS panel content.</p></template>
@@ -152,9 +166,9 @@ function onPanelBMount() { mountCount.value++; }
 
       <!-- 6. unmountOnHide -->
       <div>
-        <h3 class="text-sm font-medium mb-3">unmountOnHide</h3>
-        <div class="rounded-lg border p-6 bg-accent">
-          <Tabs v-model="unmountTab" :items="unmountItems" :unmount-on-hide="true" aria-label="Mount demo" :ui="{ list: 'tabs-underline-list', tab: 'tabs-underline-tab', panel: 'tabs-panel' }">
+        <h3 :class="exampleTitle">unmountOnHide</h3>
+        <div :class="canvas">
+          <Tabs v-model="unmountTab" :items="unmountItems" :unmount-on-hide="true" aria-label="Mount demo" :ui="tabsUi">
             <template #panel-a>
               <p class="text-sm text-muted-foreground">Tab A — always here.</p>
             </template>
@@ -165,7 +179,7 @@ function onPanelBMount() { mountCount.value++; }
             </template>
           </Tabs>
           <p class="text-xs text-muted-foreground mt-3">
-            With <code>unmountOnHide</code>, Tab B is removed from the DOM when inactive. Switch away and back to see the mount counter increment.
+            With <code :class="inlineCode">unmountOnHide</code>, Tab B is removed from the DOM when inactive. Switch away and back to see the mount counter increment.
           </p>
         </div>
       </div>
@@ -173,154 +187,3 @@ function onPanelBMount() { mountCount.value++; }
     </div>
   </section>
 </template>
-
-<style>
-/* ── Underline style ───────────────────────────────────────────── */
-.tabs-underline-list {
-  display: flex;
-  border-bottom: 1px solid var(--border);
-  margin-bottom: 16px;
-  --akaza-tab-indicator-color: var(--primary);
-}
-
-.tabs-underline-tab {
-  padding: 8px 14px;
-  font-size: 0.8125rem;
-  font-weight: 500;
-  color: var(--muted-foreground);
-  background: none;
-  border: none;
-  border-radius: 0;
-  cursor: pointer;
-  transition: color 0.15s;
-  font-family: inherit;
-  line-height: inherit;
-}
-.tabs-underline-tab:hover:not([disabled]) {
-  color: var(--foreground);
-}
-.tabs-underline-tab[data-akaza-state="active"] {
-  color: var(--foreground);
-}
-.tabs-underline-tab[disabled] {
-  opacity: 0.4;
-  cursor: not-allowed;
-}
-.tabs-underline-tab:focus-visible {
-  outline: 2px solid var(--ring, oklch(0.6 0.15 250));
-  outline-offset: -2px;
-  border-radius: 4px;
-}
-
-/* ── Pill style ────────────────────────────────────────────────── */
-.tabs-pill-list {
-  display: flex;
-  gap: 4px;
-  padding: 4px;
-  background: var(--muted);
-  border-radius: 8px;
-  margin-bottom: 16px;
-}
-
-/* Pill indicator becomes the sliding background pill */
-.tabs-pill-list .akaza-tab-indicator {
-  display: block;
-  top: 4px !important;
-  bottom: 4px !important;
-  height: auto !important;
-  border-radius: 6px;
-  background: var(--background);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  z-index: 0;
-}
-
-/* Dark mode: --muted == canvas color, so the pill bar vanishes.
-   Use a clearly distinct tone for the tray and a lighter shade for the indicator. */
-.dark .tabs-pill-list {
-  background: color-mix(in oklch, var(--muted-foreground) 35%, var(--background));
-}
-.dark .tabs-pill-list .akaza-tab-indicator {
-  background: color-mix(in oklch, var(--muted-foreground) 55%, var(--background));
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
-}
-
-/* Button reset for pill tabs — rendered above indicator */
-.tabs-pill-btn {
-  all: unset;
-  cursor: pointer;
-  position: relative;
-  z-index: 1;
-}
-.tabs-pill-btn:focus-visible .tabs-pill {
-  outline: 2px solid var(--ring, oklch(0.6 0.15 250));
-  outline-offset: 2px;
-  border-radius: 6px;
-}
-
-.tabs-pill {
-  display: inline-flex;
-  align-items: center;
-  padding: 5px 12px;
-  border-radius: 6px;
-  font-size: 0.8125rem;
-  font-weight: 500;
-  color: var(--muted-foreground);
-  transition: color 0.15s;
-}
-.tabs-pill:hover {
-  color: var(--foreground);
-}
-.tabs-pill--active {
-  color: var(--foreground);
-}
-
-/* ── Vertical ──────────────────────────────────────────────────── */
-.tabs-vertical-root {
-  display: flex;
-  gap: 24px;
-}
-
-.tabs-vertical-list {
-  display: flex;
-  flex-direction: column;
-  width: 148px;
-  flex-shrink: 0;
-  border-right: 1px solid var(--border);
-  --akaza-tab-indicator-color: var(--primary);
-}
-
-.tabs-vertical-tab {
-  padding: 8px 12px;
-  font-size: 0.8125rem;
-  font-weight: 500;
-  text-align: left;
-  color: var(--muted-foreground);
-  background: none;
-  border: none;
-  cursor: pointer;
-  transition: color 0.15s;
-  font-family: inherit;
-  line-height: inherit;
-}
-.tabs-vertical-tab:hover:not([disabled]) {
-  color: var(--foreground);
-}
-.tabs-vertical-tab[data-akaza-state="active"] {
-  color: var(--foreground);
-}
-.tabs-vertical-tab:focus-visible {
-  outline: 2px solid var(--ring, oklch(0.6 0.15 250));
-  outline-offset: -2px;
-  border-radius: 4px;
-}
-
-/* ── Panels ────────────────────────────────────────────────────── */
-.tabs-panel {
-  display: block;
-}
-
-.tabs-panel--vertical {
-  flex: 1;
-  padding-top: 4px;
-}
-</style>

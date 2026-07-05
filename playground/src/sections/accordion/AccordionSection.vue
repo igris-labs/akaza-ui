@@ -2,6 +2,20 @@
 import { ref } from "vue";
 import type { AccordionItem, AkazaChangeEventDetails } from "akaza-ui";
 import { Accordion } from "akaza-ui";
+import {
+  accordionCustomUi,
+  accordionRoot,
+  accordionUi,
+  buttonGhost,
+  canvas,
+  canvasCol,
+  codePill,
+  eventEntry,
+  eventLog,
+  inlineCode,
+  sectionDescription,
+  sectionTitle,
+} from "../styles";
 
 // ── 1. Zero-config ───────────────────────────────────────────────────────────
 const autoItems: AccordionItem[] = [
@@ -103,65 +117,65 @@ function onAccordionChange(value: string | string[], details: AkazaChangeEventDe
 
 <template>
   <section id="accordion">
-    <h2 class="text-lg font-semibold mb-1">Accordion</h2>
-    <p class="text-sm mb-8 text-muted-foreground">
+    <h2 :class="sectionTitle">Accordion</h2>
+    <p :class="sectionDescription">
       Collapsible sections with full keyboard navigation, per-item disabled state, named slots, and optional DOM unmounting.
     </p>
 
     <!-- ── 1. Zero-config ─────────────────────────────────────────────────── -->
-    <div class="demo-block">
-      <div class="demo-label">
-        <span class="demo-label-title">Zero-config</span>
-        <span class="demo-label-desc">Items with <code>label</code> + <code>content</code> fields render without any slots.</span>
+    <div class="mb-8">
+      <div class="mb-3">
+        <span class="block text-sm font-medium text-foreground">Zero-config</span>
+        <span class="text-xs text-muted-foreground">Items with <code :class="inlineCode">label</code> + <code :class="inlineCode">content</code> fields render without any slots.</span>
       </div>
-      <div class="demo-canvas">
+      <div :class="canvas">
         <Accordion
           :items="autoItems"
           collapsible
-          :ui="{ trigger: 'acc-trigger', content: 'acc-content-inner' }"
-          class="acc-root"
+          :ui="accordionUi"
+          :class="accordionRoot"
         />
       </div>
     </div>
 
     <!-- ── 2. Collapsible ─────────────────────────────────────────────────── -->
-    <div class="demo-block">
-      <div class="demo-label">
-        <span class="demo-label-title">Collapsible (single)</span>
-        <span class="demo-label-desc">Click an open item's trigger again to collapse it. Uses <code>collapsible</code> prop.</span>
+    <div class="mb-8">
+      <div class="mb-3">
+        <span class="block text-sm font-medium text-foreground">Collapsible (single)</span>
+        <span class="text-xs text-muted-foreground">Click an open item's trigger again to collapse it. Uses <code :class="inlineCode">collapsible</code> prop.</span>
       </div>
-      <div class="demo-canvas">
+      <div :class="canvas">
         <Accordion
           v-model="collapsibleOpen"
           :items="collapsibleItems"
           collapsible
-          :ui="{ trigger: 'acc-trigger', content: 'acc-content-inner' }"
-          class="acc-root"
+          :ui="accordionUi"
+          :class="accordionRoot"
         />
       </div>
     </div>
 
     <!-- ── 3. Multiple ────────────────────────────────────────────────────── -->
-    <div class="demo-block">
-      <div class="demo-label">
-        <span class="demo-label-title">Multiple open</span>
-        <span class="demo-label-desc">
-          <code>type="multiple"</code> lets any number of items be open simultaneously. Bind <code>v-model</code> as a <code>string[]</code>.
+    <div class="mb-8">
+      <div class="mb-3">
+        <span class="block text-sm font-medium text-foreground">Multiple open</span>
+        <span class="text-xs text-muted-foreground">
+          <code :class="inlineCode">type="multiple"</code> lets any number of items be open simultaneously. Bind <code :class="inlineCode">v-model</code> as a <code :class="inlineCode">string[]</code>.
         </span>
       </div>
-      <div class="demo-canvas">
+      <div :class="canvas">
         <Accordion
           v-model="multipleOpen"
           :items="multipleItems"
           type="multiple"
-          :ui="{ trigger: 'acc-trigger' }"
-          class="acc-root"
+          :ui="accordionUi"
+          :class="accordionRoot"
         >
           <template #trigger="{ item, isOpen }">
             <div class="flex items-center gap-2">
               <span
-                class="acc-step-badge"
-                :class="isOpen ? 'acc-step-badge--active' : ''"
+                class="inline-flex items-center rounded-full bg-muted px-2 py-0.5 text-[10px] font-bold text-muted-foreground transition-colors"
+                :class="isOpen ? 'bg-primary text-primary-foreground' : ''"
               >
                 {{ item.label?.split(' ')[0] }}
               </span>
@@ -169,105 +183,97 @@ function onAccordionChange(value: string | string[], details: AkazaChangeEventDe
             </div>
           </template>
           <template #content="{ item }">
-            <div class="acc-content-inner">
-              <code class="text-xs font-mono text-foreground bg-muted px-2 py-1 rounded">{{ item.content }}</code>
-            </div>
+            <code :class="codePill">{{ item.content }}</code>
           </template>
         </Accordion>
       </div>
     </div>
 
     <!-- ── 4. Custom trigger + content slots ─────────────────────────────── -->
-    <div class="demo-block">
-      <div class="demo-label">
-        <span class="demo-label-title">Custom trigger + content slots</span>
-        <span class="demo-label-desc">
-          Use <code>#trigger</code> and <code>#content</code> slots for full customisation. Both receive <code>{ item, value, isOpen }</code>.
+    <div class="mb-8">
+      <div class="mb-3">
+        <span class="block text-sm font-medium text-foreground">Custom trigger + content slots</span>
+        <span class="text-xs text-muted-foreground">
+          Use <code :class="inlineCode">#trigger</code> and <code :class="inlineCode">#content</code> slots for full customisation. Both receive <code :class="inlineCode">{ item, value, isOpen }</code>.
         </span>
       </div>
-      <div class="demo-canvas">
+      <div :class="canvas">
         <Accordion
           :items="customItems"
           collapsible
-          :ui="{ trigger: 'acc-trigger acc-trigger--settings' }"
-          class="acc-root"
+          :ui="accordionUi"
+          :class="accordionRoot"
         >
           <template #trigger="{ item, isOpen }">
             <div class="flex items-center gap-3">
-              <span class="acc-settings-dot" :class="isOpen ? 'acc-settings-dot--active' : ''" />
+              <span class="size-2 shrink-0 rounded-full bg-muted-foreground transition-colors" :class="isOpen ? 'bg-primary' : ''" />
               <span class="text-sm font-medium text-foreground">{{ item.label }}</span>
             </div>
           </template>
           <template #content="{ item }">
-            <div class="acc-content-inner">
-              <p class="text-sm text-muted-foreground mb-3">{{ item.content }}</p>
-              <button class="acc-cta-btn">Configure →</button>
-            </div>
+            <p class="mb-3 text-sm text-muted-foreground">{{ item.content }}</p>
+            <button :class="buttonGhost">Configure →</button>
           </template>
         </Accordion>
       </div>
     </div>
 
     <!-- ── 5. Per-item named slots ────────────────────────────────────────── -->
-    <div class="demo-block">
-      <div class="demo-label">
-        <span class="demo-label-title">Per-item named slots</span>
-        <span class="demo-label-desc">
-          Set <code>slot: 'name'</code> on an item to use a dedicated slot for that item's body. Falls back to <code>#content</code>.
+    <div class="mb-8">
+      <div class="mb-3">
+        <span class="block text-sm font-medium text-foreground">Per-item named slots</span>
+        <span class="text-xs text-muted-foreground">
+          Set <code :class="inlineCode">slot: 'name'</code> on an item to use a dedicated slot for that item's body. Falls back to <code :class="inlineCode">#content</code>.
         </span>
       </div>
-      <div class="demo-canvas">
+      <div :class="canvas">
         <Accordion
           :items="slottedItems"
           collapsible
-          :ui="{ trigger: 'acc-trigger' }"
-          class="acc-root"
+          :ui="accordionUi"
+          :class="accordionRoot"
         >
           <!-- only the "colors" item gets this slot -->
           <template #colors="{ item }">
-            <div class="acc-content-inner flex gap-2 flex-wrap">
-              <span
-                v-for="color in ['#6366f1', '#ec4899', '#f59e0b', '#10b981', '#3b82f6']"
-                :key="color"
-                class="acc-swatch"
-                :style="{ background: color }"
-                :title="color"
-              />
+            <div class="flex flex-wrap gap-2">
+              <span class="block size-7 rounded-md border border-border bg-primary" title="primary" />
+              <span class="block size-7 rounded-md border border-border bg-destructive" title="destructive" />
+              <span class="block size-7 rounded-md border border-border bg-muted" title="muted" />
+              <span class="block size-7 rounded-md border border-border bg-background" title="background" />
+              <span class="block size-7 rounded-md border border-border bg-accent" title="accent" />
               <p class="w-full text-xs text-muted-foreground mt-1">{{ item.content }}</p>
             </div>
           </template>
 
           <!-- only the "stats" item gets this slot -->
           <template #stats="{ item }">
-            <div class="acc-content-inner">
-              <p class="text-xs text-muted-foreground mb-2">{{ item.content }}</p>
+            <div>
+              <p class="mb-2 text-xs text-muted-foreground">{{ item.content }}</p>
               <div class="flex gap-4">
-                <div class="acc-stat"><span class="acc-stat-value">1.2k</span><span class="acc-stat-label">Requests</span></div>
-                <div class="acc-stat"><span class="acc-stat-value">98%</span><span class="acc-stat-label">Uptime</span></div>
-                <div class="acc-stat"><span class="acc-stat-value">42ms</span><span class="acc-stat-label">Avg latency</span></div>
+                <div class="flex flex-col gap-px"><span class="text-base font-bold text-foreground">1.2k</span><span class="text-[10px] uppercase tracking-wide text-muted-foreground">Requests</span></div>
+                <div class="flex flex-col gap-px"><span class="text-base font-bold text-foreground">98%</span><span class="text-[10px] uppercase tracking-wide text-muted-foreground">Uptime</span></div>
+                <div class="flex flex-col gap-px"><span class="text-base font-bold text-foreground">42ms</span><span class="text-[10px] uppercase tracking-wide text-muted-foreground">Avg latency</span></div>
               </div>
             </div>
           </template>
 
           <!-- fallback for items with no slot property -->
           <template #content="{ item }">
-            <div class="acc-content-inner">
-              <p class="text-sm text-muted-foreground">{{ item.content }}</p>
-            </div>
+            <p class="text-sm text-muted-foreground">{{ item.content }}</p>
           </template>
         </Accordion>
       </div>
     </div>
 
     <!-- ── 6. Disabled ────────────────────────────────────────────────────── -->
-    <div class="demo-block">
-      <div class="demo-label">
-        <span class="demo-label-title">Disabled</span>
-        <span class="demo-label-desc">
-          Set <code>disabled: true</code> on individual items, or pass the <code>disabled</code> prop to the root to disable all at once.
+    <div class="mb-8">
+      <div class="mb-3">
+        <span class="block text-sm font-medium text-foreground">Disabled</span>
+        <span class="text-xs text-muted-foreground">
+          Set <code :class="inlineCode">disabled: true</code> on individual items, or pass the <code :class="inlineCode">disabled</code> prop to the root to disable all at once.
         </span>
       </div>
-      <div class="demo-canvas flex-col gap-4">
+      <div :class="canvasCol">
         <div class="flex items-center gap-2">
           <label class="flex items-center gap-2 text-sm text-foreground cursor-pointer select-none">
             <input
@@ -282,61 +288,54 @@ function onAccordionChange(value: string | string[], details: AkazaChangeEventDe
           :items="disabledItems"
           :disabled="rootDisabled"
           collapsible
-          :ui="{ trigger: 'acc-trigger' }"
-          class="acc-root"
+          :ui="accordionUi"
+          :class="accordionRoot"
         >
           <template #content="{ item }">
-            <div class="acc-content-inner">
-              <p class="text-sm text-muted-foreground">{{ item.content }}</p>
-            </div>
+            <p class="text-sm text-muted-foreground">{{ item.content }}</p>
           </template>
         </Accordion>
       </div>
     </div>
 
     <!-- ── 7. ui prop ─────────────────────────────────────────────────────── -->
-    <div class="demo-block">
-      <div class="demo-label">
-        <span class="demo-label-title">ui prop</span>
-        <span class="demo-label-desc">
-          Pass extra classes to <code>item</code>, <code>trigger</code>, <code>icon</code>, and <code>content</code> parts without slots.
+    <div class="mb-8">
+      <div class="mb-3">
+        <span class="block text-sm font-medium text-foreground">ui prop</span>
+        <span class="text-xs text-muted-foreground">
+          Pass extra classes to <code :class="inlineCode">item</code>, <code :class="inlineCode">trigger</code>, <code :class="inlineCode">icon</code>, and <code :class="inlineCode">content</code> parts without slots.
         </span>
       </div>
-      <div class="demo-canvas">
+      <div :class="canvas">
         <Accordion
           :items="uiItems"
           collapsible
-          :ui="{
-            item: 'acc-ui-item',
-            trigger: 'acc-trigger acc-ui-trigger',
-            icon: 'acc-ui-icon',
-            content: 'acc-ui-content',
-          }"
+          :ui="accordionCustomUi"
           class="w-full max-w-sm"
         />
       </div>
     </div>
 
     <!-- ── 8. unmountOnHide ───────────────────────────────────────────────── -->
-    <div class="demo-block">
-      <div class="demo-label">
-        <span class="demo-label-title">unmountOnHide</span>
-        <span class="demo-label-desc">
-          When <code>unmount-on-hide</code> is set, closed panel content is removed from the DOM — useful for lazy-loading or resetting state on close.
+    <div class="mb-8">
+      <div class="mb-3">
+        <span class="block text-sm font-medium text-foreground">unmountOnHide</span>
+        <span class="text-xs text-muted-foreground">
+          When <code :class="inlineCode">unmount-on-hide</code> is set, closed panel content is removed from the DOM — useful for lazy-loading or resetting state on close.
         </span>
       </div>
-      <div class="demo-canvas">
+      <div :class="canvas">
         <Accordion
           v-model="unmountOpen"
           :items="unmountItems"
           collapsible
           unmount-on-hide
-          :ui="{ trigger: 'acc-trigger' }"
-          class="acc-root"
+          :ui="accordionUi"
+          :class="accordionRoot"
         >
           <template #content="{ item, value }">
-            <div class="acc-content-inner">
-                  <p class="text-sm text-muted-foreground">{{ item.content }}</p>
+            <div>
+              <p class="text-sm text-muted-foreground">{{ item.content }}</p>
               <p v-if="value === 'lazy'" class="text-xs text-muted-foreground mt-2 font-mono">
                 Inspect the DOM — this node disappears when you close the panel.
               </p>
@@ -347,260 +346,27 @@ function onAccordionChange(value: string | string[], details: AkazaChangeEventDe
     </div>
 
     <!-- ── 9. @value-change event details ─────────────────────────────────── -->
-    <div class="demo-block">
-      <div class="demo-label">
-        <span class="demo-label-title">@value-change event details</span>
-        <span class="demo-label-desc">
-          Listen to <code>@value-change</code> to inspect <code>reason</code> and optionally
-          call <code>details.cancel()</code> to prevent the change.
+    <div class="mb-8">
+      <div class="mb-3">
+        <span class="block text-sm font-medium text-foreground">@value-change event details</span>
+        <span class="text-xs text-muted-foreground">
+          Listen to <code :class="inlineCode">@value-change</code> to inspect <code :class="inlineCode">reason</code> and optionally
+          call <code :class="inlineCode">details.cancel()</code> to prevent the change.
         </span>
       </div>
-      <div class="demo-canvas" style="flex-direction: column; align-items: stretch; gap: 12px;">
+      <div :class="canvasCol">
         <Accordion
           v-model="eventOpen"
           :items="eventItems"
           collapsible
-          :ui="{ trigger: 'acc-trigger', content: 'acc-content-inner' }"
-          class="acc-root"
+          :ui="accordionUi"
+          :class="accordionRoot"
           @value-change="onAccordionChange"
         />
-        <div v-if="accLog.length" class="acc-event-log">
-          <code v-for="(entry, i) in accLog" :key="i" class="acc-event-entry">{{ entry }}</code>
+        <div v-if="accLog.length" :class="eventLog">
+          <code v-for="(entry, i) in accLog" :key="i" :class="eventEntry">{{ entry }}</code>
         </div>
       </div>
     </div>
   </section>
 </template>
-
-<style>
-/* ── Shared accordion chrome ─────────────────────────────────────────────── */
-.acc-root {
-  width: 100%;
-  max-width: 28rem;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  overflow: hidden;
-  background: var(--background);
-}
-
-.acc-root .akaza-accordion-item {
-  border-bottom: 1px solid var(--border);
-}
-
-.acc-root .akaza-accordion-item:last-child {
-  border-bottom: none;
-}
-
-.acc-trigger {
-  padding: 12px 16px;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--foreground);
-  transition: background 0.1s;
-}
-
-.acc-trigger:hover:not(:disabled):not([data-akaza-disabled]) {
-  /* var(--muted) == canvas color in dark mode; use a lighter blend instead */
-  background: color-mix(in oklch, var(--muted-foreground) 12%, var(--background));
-}
-
-.acc-trigger[data-akaza-state="open"] {
-  background: color-mix(in oklch, var(--muted-foreground) 8%, var(--background));
-}
-
-.acc-trigger:focus-visible {
-  outline: 2px solid var(--primary);
-  outline-offset: -2px;
-}
-
-.acc-trigger:focus:not(:focus-visible) {
-  outline: none;
-}
-
-.acc-root .akaza-accordion-icon {
-  color: var(--muted-foreground);
-}
-
-.acc-content-inner {
-  padding: 4px 16px 16px;
-}
-
-/* ── Demo layout ─────────────────────────────────────────────────────────── */
-.demo-block {
-  margin-bottom: 32px;
-}
-
-.demo-label {
-  margin-bottom: 12px;
-}
-
-.demo-label-title {
-  display: block;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--foreground);
-  margin-bottom: 2px;
-}
-
-.demo-label-desc {
-  font-size: 12px;
-  color: var(--muted-foreground);
-}
-
-.demo-label-desc code {
-  font-family: monospace;
-  font-size: 11px;
-  background: var(--muted);
-  color: var(--foreground);
-  padding: 1px 4px;
-  border-radius: 3px;
-}
-
-.demo-canvas {
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  padding: 24px;
-  background: var(--accent);
-  display: flex;
-  align-items: flex-start;
-}
-
-.demo-canvas.flex-col {
-  flex-direction: column;
-}
-
-/* ── Example: multiple — step badges ─────────────────────────────────────── */
-.acc-step-badge {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 10px;
-  font-weight: 700;
-  padding: 2px 7px;
-  border-radius: 99px;
-  background: var(--muted);
-  color: var(--muted-foreground);
-  transition: background 0.15s, color 0.15s;
-  white-space: nowrap;
-}
-
-.acc-step-badge--active {
-  background: var(--primary);
-  color: var(--primary-foreground);
-}
-
-/* ── Example: custom settings ────────────────────────────────────────────── */
-.acc-trigger--settings {
-  padding: 14px 16px;
-}
-
-.acc-settings-dot {
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: var(--muted-foreground);
-  flex-shrink: 0;
-  transition: background 0.15s;
-}
-
-.acc-settings-dot--active {
-  background: var(--primary);
-}
-
-.acc-cta-btn {
-  font-size: 12px;
-  font-weight: 500;
-  color: var(--primary);
-  background: none;
-  border: 1px solid var(--primary);
-  border-radius: 6px;
-  padding: 4px 10px;
-  cursor: pointer;
-  transition: background 0.1s, color 0.1s;
-}
-
-.acc-cta-btn:hover {
-  background: var(--primary);
-  color: var(--primary-foreground);
-}
-
-/* ── Example: per-item slots — swatches ──────────────────────────────────── */
-.acc-swatch {
-  display: block;
-  width: 28px;
-  height: 28px;
-  border-radius: 6px;
-  border: 1px solid color-mix(in srgb, currentColor 15%, transparent);
-}
-
-.acc-stat {
-  display: flex;
-  flex-direction: column;
-  gap: 1px;
-}
-
-.acc-stat-value {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--foreground);
-}
-
-.acc-stat-label {
-  font-size: 10px;
-  color: var(--muted-foreground);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-/* ── Example: ui prop ────────────────────────────────────────────────────── */
-.acc-ui-item {
-  border-radius: 6px;
-  border: 1px solid var(--border);
-  margin-bottom: 6px;
-  overflow: hidden;
-}
-
-.acc-ui-trigger {
-  padding: 10px 14px;
-  font-size: 13px;
-  color: var(--foreground);
-}
-
-.acc-ui-trigger:hover:not(:disabled) {
-  background: color-mix(in oklch, var(--muted-foreground) 12%, var(--background));
-}
-
-.acc-ui-trigger:focus-visible {
-  outline: 2px solid var(--primary);
-  outline-offset: -2px;
-}
-
-.acc-ui-trigger:focus:not(:focus-visible) {
-  outline: none;
-}
-
-.acc-ui-icon {
-  color: var(--primary);
-}
-
-.acc-ui-content {
-  padding: 4px 14px 12px;
-  font-size: 13px;
-  color: var(--muted-foreground);
-}
-
-/* Event log */
-.acc-event-log {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-.acc-event-entry {
-  font-family: monospace;
-  font-size: 11px;
-  color: var(--muted-foreground);
-  background: var(--muted);
-  padding: 2px 8px;
-  border-radius: 4px;
-}
-</style>

@@ -59,7 +59,7 @@ No manual CSS import or component registration needed.
 
 ## Components
 
-`Button` · `Toggle` · `Switch` · `Checkbox` · `RadioGroup` · `Progress` · `Avatar` · `Separator` · `Collapsible` · `Accordion` · `Tooltip` · `Popover` · `Dialog` · `AlertDialog` · `Drawer` · `Menu` · `Tabs`
+`Button` · `Toggle` · `Switch` · `Checkbox` · `CheckboxGroup` · `Field` · `Fieldset` · `Form` · `Input` · `RadioGroup` · `Progress` · `Avatar` · `Separator` · `Collapsible` · `Accordion` · `Tooltip` · `Popover` · `Dialog` · `AlertDialog` · `Drawer` · `Menu` · `Tabs`
 
 ## Usage
 

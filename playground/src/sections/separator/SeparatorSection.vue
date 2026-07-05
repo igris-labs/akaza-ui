@@ -1,12 +1,17 @@
 <script setup lang="ts">
 import { Separator } from "akaza-ui";
+import {
+  canvasCol,
+  sectionDescriptionTight,
+  sectionTitle,
+} from "../styles";
 </script>
 
 <template>
   <section id="separator">
-    <h2 class="text-lg font-semibold mb-1">Separator</h2>
-    <p class="text-sm mb-6 text-muted-foreground">A visual divider, decorative or semantic.</p>
-    <div class="rounded-lg border p-6 space-y-4 bg-accent">
+    <h2 :class="sectionTitle">Separator</h2>
+    <p :class="sectionDescriptionTight">A visual divider, decorative or semantic.</p>
+    <div :class="canvasCol">
       <div>
         <p class="text-xs text-muted-foreground mb-2">Horizontal</p>
         <Separator class="border-t border-border w-full" />

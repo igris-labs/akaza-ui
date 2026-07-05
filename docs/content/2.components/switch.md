@@ -9,9 +9,9 @@ An accessible on/off toggle. Renders as a `role="switch"` button and supports cu
 
 ## Anatomy
 
-- **`#thumb`** — the sliding indicator inside the track
-- **`#label`** — the label beside the switch
-- **`#description`** — supplementary text below the label
+- **`#thumb`**: Sliding indicator inside the track.
+- **`#label`**: Label beside the switch.
+- **`#description`**: Supplementary text below the label.
 
 ## Usage
 
@@ -39,6 +39,8 @@ const enabled = ref(false);
 
 ### Custom thumb
 
+Use `#thumb` to replace the sliding indicator while keeping switch behavior.
+
 ```vue
 <template>
   <Switch v-model="enabled" class="my-switch">
@@ -51,6 +53,8 @@ const enabled = ref(false);
 
 ### With description
 
+Use `description` when the switch label needs more context.
+
 ```vue
 <template>
   <Switch
@@ -62,6 +66,8 @@ const enabled = ref(false);
 ```
 
 ### Custom true/false values
+
+Use custom values when the model stores domain values instead of booleans.
 
 ```vue
 <script setup lang="ts">

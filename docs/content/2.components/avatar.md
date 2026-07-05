@@ -9,8 +9,8 @@ Displays a user or entity image with graceful fallback to initials or an icon wh
 
 ## Anatomy
 
-- **`#image`** — the `<img>` element (or replacement)
-- **`#fallback`** — shown when the image fails to load or hasn't loaded yet
+- **`#image`**: The `<img>` element or full image replacement.
+- **`#fallback`**: Content shown while the image is delayed, loading, or failed.
 
 ## Usage
 

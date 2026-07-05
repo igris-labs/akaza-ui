@@ -9,7 +9,8 @@ A dropdown menu positioned relative to a trigger. Supports plain items, checkbox
 
 ## Anatomy
 
-- **`#trigger`** — element that opens the menu
+- **`#trigger`**: Element that opens the menu.
+- **`#[item.slot]`**: Per-item render override when an item has a `slot` key.
 
 Items are rendered internally from the `items` prop. Individual items can be overridden via named slots using `item.slot`.
 
@@ -72,6 +73,8 @@ const items = [
 
 ### Checkbox items
 
+Use checkbox item types for toggles inside a menu.
+
 ```vue
 <script setup lang="ts">
 const items = [
@@ -84,6 +87,8 @@ const items = [
 ```
 
 ### Radio group
+
+Use radio items when only one value in a named group can be selected.
 
 ```vue
 <script setup lang="ts">
@@ -106,6 +111,8 @@ const items = [
 ```
 
 ### Submenu
+
+Use `children` for nested actions that should open as a submenu.
 
 ```vue
 <script setup lang="ts">

@@ -9,8 +9,8 @@ A non-modal floating panel positioned relative to a trigger. Use it for tooltips
 
 ## Anatomy
 
-- **`#trigger`** — element that opens the popover
-- **`#content`** — the floating panel content
+- **`#trigger`**: Element that opens the popover.
+- **`#content`**: Floating panel content.
 
 ## Usage
 
@@ -43,6 +43,8 @@ import { Popover } from "akaza-ui";
 
 ### Positioned to the top
 
+Use `side` and `align` to control where the panel appears relative to the trigger.
+
 ```vue
 <template>
   <Popover side="top" align="center">
@@ -57,6 +59,8 @@ import { Popover } from "akaza-ui";
 ```
 
 ### With a close button inside
+
+Use the content slot's `close` function for actions inside the panel.
 
 ```vue
 <template>

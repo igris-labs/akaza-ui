@@ -9,8 +9,8 @@ A set of mutually exclusive options. Keyboard navigation follows the roving tabi
 
 ## Anatomy
 
-- **`#legend`** — accessible group label rendered above the options
-- **`#item`** — content rendered inside each radio button element
+- **`#legend`**: Accessible group label rendered above the options.
+- **`#item`**: Content rendered inside each radio button element.
 
 The radio button element itself is rendered by the component. Use the `ui.item` prop to add classes to it.
 
@@ -40,6 +40,8 @@ const options = ["email", "sms", "push"];
 ## Examples
 
 ### Object options with labels
+
+Use object options when values need labels, descriptions, or disabled state.
 
 ```vue
 <script setup lang="ts">
@@ -78,6 +80,8 @@ The `#item` slot is rendered inside each radio button — provide the visual con
 ```
 
 ### Horizontal layout
+
+Use horizontal orientation for compact sets like sizes or segmented choices.
 
 ```vue
 <template>

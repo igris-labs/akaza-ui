@@ -9,8 +9,8 @@ A tab list with associated panels. Follows the WAI-ARIA Tabs pattern with roving
 
 ## Anatomy
 
-- **`#tab`** — content rendered inside each tab button (defaults to the item's label)
-- **`#panel-{value}`** — the content panel for each tab (named by the item's `value`)
+- **`#tab`**: Content rendered inside each tab button. Defaults to the item label.
+- **`#panel-{value}`**: Content panel for each tab, named by the item `value`.
 
 The tab button itself is rendered by the component; use the `ui.tab` prop to add classes to it. The tab list also renders an `akaza-tab-indicator` span that you can style for a sliding underline or pill effect.
 
@@ -96,6 +96,8 @@ Arrow keys only move focus; the user must press Space or Enter to activate a tab
 ```
 
 ### Vertical orientation
+
+Use vertical orientation when tab labels should sit beside the active panel.
 
 ```vue
 <template>

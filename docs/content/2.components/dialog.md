@@ -11,13 +11,13 @@ For confirmations requiring a required response, use [Alert Dialog](/components/
 
 ## Anatomy
 
-- **`#trigger`** — element that opens the dialog
-- **`#overlay`** — the backdrop behind the dialog (optional)
-- **`#header`** — region containing the title and close control
-- **`#title`** — the dialog's accessible title
-- **`#description`** — supplementary description text
-- **`#body`** — main content area
-- **`#footer`** — action buttons
+- **`#trigger`**: Element that opens the dialog.
+- **`#overlay`**: Optional backdrop content behind the dialog.
+- **`#header`**: Region containing the title and close control.
+- **`#title`**: Dialog accessible title.
+- **`#description`**: Supplementary description text.
+- **`#body`**: Main content area.
+- **`#footer`**: Action buttons.
 
 ## Usage
 
@@ -55,6 +55,8 @@ import { Dialog } from "akaza-ui";
 
 ### Custom header with close button
 
+Use `#header` when the close control belongs beside the title.
+
 ```vue
 <template>
   <Dialog>
@@ -76,6 +78,8 @@ import { Dialog } from "akaza-ui";
 
 ### Fullscreen dialog
 
+Use `fullscreen` for flows that should take over the viewport.
+
 ```vue
 <template>
   <Dialog :fullscreen="true" title="Full view">
@@ -91,6 +95,8 @@ import { Dialog } from "akaza-ui";
 
 ### Prevent close on backdrop click
 
+Disable backdrop dismissal when the user must make an explicit choice.
+
 ```vue
 <template>
   <Dialog :close-on-backdrop-click="false" title="Required step">
@@ -105,6 +111,8 @@ import { Dialog } from "akaza-ui";
 ```
 
 ### Programmatic control
+
+Use the exposed API when opening is driven outside the trigger slot.
 
 ```vue
 <script setup lang="ts">

@@ -9,13 +9,13 @@ A slide-in panel anchored to a viewport edge. Supports swipe-to-close on touch d
 
 ## Anatomy
 
-- **`#trigger`** — element that opens the drawer
-- **`#handle`** — optional drag handle (shown at the top for bottom drawers)
-- **`#header`** — region with title and close control
-- **`#title`** — the drawer's accessible title
-- **`#description`** — supplementary text
-- **`#body`** — main content area
-- **`#footer`** — action buttons
+- **`#trigger`**: Element that opens the drawer.
+- **`#handle`**: Optional drag handle. Usually shown at the top for bottom drawers.
+- **`#header`**: Region with title and close control.
+- **`#title`**: Drawer accessible title.
+- **`#description`**: Supplementary description text.
+- **`#body`**: Main content area.
+- **`#footer`**: Action buttons.
 
 ## Usage
 
@@ -53,6 +53,8 @@ import { Drawer } from "akaza-ui";
 
 ### Bottom drawer
 
+Use `side="bottom"` for mobile-style sheets and short task flows.
+
 ```vue
 <template>
   <Drawer side="bottom" title="Options">
@@ -68,6 +70,8 @@ import { Drawer } from "akaza-ui";
 
 ### Disable swipe to close
 
+Disable swipe dismissal when accidental close would be costly.
+
 ```vue
 <template>
   <Drawer :swipe-to-close="false" title="Required">
@@ -82,6 +86,8 @@ import { Drawer } from "akaza-ui";
 ```
 
 ### Custom header
+
+Use `#header` when the drawer needs custom title actions.
 
 ```vue
 <template>

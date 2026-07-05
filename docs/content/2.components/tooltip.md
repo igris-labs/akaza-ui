@@ -9,8 +9,8 @@ A small informational popup that appears on hover and focus. Does not trap focus
 
 ## Anatomy
 
-- **`#trigger`** — the element the tooltip is anchored to
-- **`#content`** — the tooltip popup text or content
+- **`#trigger`**: Element the tooltip anchors to.
+- **`#content`**: Tooltip popup text or content.
 
 ## Usage
 
@@ -41,6 +41,8 @@ import { Tooltip } from "akaza-ui";
 
 ### Custom delay
 
+Use delay props to tune how quickly the tooltip appears and disappears.
+
 ```vue
 <template>
   <Tooltip :delay-duration="500">
@@ -53,6 +55,8 @@ import { Tooltip } from "akaza-ui";
 ```
 
 ### Positioned to the right
+
+Use `direction` to choose the preferred side for the tooltip.
 
 ```vue
 <template>
@@ -67,6 +71,8 @@ import { Tooltip } from "akaza-ui";
 
 ### With arrow
 
+Use `arrow` when the tooltip needs a visual pointer back to the trigger.
+
 ```vue
 <template>
   <Tooltip :arrow="true">
@@ -80,6 +86,8 @@ import { Tooltip } from "akaza-ui";
 
 ### Disabled tooltip
 
+Use `disabled` when the trigger should render but the tooltip should not open.
+
 ```vue
 <template>
   <Tooltip :disabled="true">
@@ -92,6 +100,8 @@ import { Tooltip } from "akaza-ui";
 ```
 
 ### Controlled open state
+
+Use `v-model` when external state should control tooltip visibility.
 
 ```vue
 <script setup lang="ts">

@@ -9,8 +9,8 @@ An accessible button element with built-in support for disabled, loading, and as
 
 ## Anatomy
 
-- **`#default`** — the button's label or content
-- **`#loading`** — content shown while loading (defaults to a spinner)
+- **`#default`**: Button label or content.
+- **`#loading`**: Content shown while loading. Defaults to the built-in spinner.
 
 ## Usage
 
@@ -34,6 +34,8 @@ import { Button } from "akaza-ui";
 ## Examples
 
 ### Disabled state
+
+Use `disabled` for actions that cannot currently run.
 
 ```vue
 <template>
@@ -59,6 +61,8 @@ async function save() {
 
 ### Custom loading content
 
+Use `#loading` when the default spinner does not match your UI.
+
 ```vue
 <template>
   <Button :loading="isSaving">
@@ -71,6 +75,8 @@ async function save() {
 ```
 
 ### Render as a link
+
+Use `as` to render a different root while keeping Akaza button state hooks.
 
 ```vue
 <template>

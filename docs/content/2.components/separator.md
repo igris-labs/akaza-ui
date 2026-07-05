@@ -7,6 +7,14 @@ navigation:
 
 A horizontal or vertical dividing line. When `decorative` is false (default), it renders as `role="separator"` with an appropriate `aria-orientation` attribute.
 
+Use it when a break is part of the page structure. Use `decorative` when the line is visual only and should be ignored by assistive tech.
+
+## Anatomy
+
+- **`ui.root`**: Single separator element rendered by `as`. Direct `class` also applies here.
+
+`Separator` has no internal parts. The only styling target is the root element.
+
 ## Usage
 
 ::component-preview
@@ -32,6 +40,8 @@ import { Separator } from "akaza-ui";
 
 ### Vertical separator
 
+Use vertical orientation between inline or flex items.
+
 ```vue
 <template>
   <div class="flex items-center gap-4">
@@ -39,6 +49,26 @@ import { Separator } from "akaza-ui";
     <Separator orientation="vertical" class="h-4" />
     <span>About</span>
   </div>
+</template>
+```
+
+### Semantic section divider
+
+Use the default semantic separator when the line marks a meaningful content break.
+
+```vue
+<template>
+  <section>
+    <h2>Account</h2>
+    <p>Profile and authentication settings.</p>
+  </section>
+
+  <Separator class="my-8 border-t border-neutral-200" />
+
+  <section>
+    <h2>Billing</h2>
+    <p>Plan, invoices, and payment method.</p>
+  </section>
 </template>
 ```
 

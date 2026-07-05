@@ -11,10 +11,10 @@ A vertically stacked list of items that can be expanded or collapsed. Supports s
 
 Accordion is a single component. You shape every part through named slots:
 
-- **`#trigger`** — content rendered inside the trigger button (defaults to the item label)
-- **`#icon`** — optional chevron/indicator rendered after the trigger content
-- **`#content`** — the panel body revealed when the item is open
-- **`#[item.slot]`** — per-item override when an item has a `slot` key
+- **`#trigger`**: Content rendered inside the trigger button. Defaults to the item label.
+- **`#icon`**: Optional chevron or indicator rendered after the trigger content.
+- **`#content`**: Panel body revealed when the item is open.
+- **`#[item.slot]`**: Per-item override when an item has a `slot` key.
 
 The trigger button itself is rendered by the component; use the `ui.trigger` prop to add classes to it.
 
@@ -80,6 +80,8 @@ The `#trigger` slot is rendered inside the trigger button — use it to customis
 ```
 
 ### Multiple open items
+
+Use `type="multiple"` when more than one accordion panel should stay open at the same time.
 
 ```vue
 <template>

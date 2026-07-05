@@ -9,7 +9,7 @@ An accessible progress bar with ARIA role `progressbar`. Supports determinate va
 
 ## Anatomy
 
-- **`#indicator`** — the filled portion of the track
+- **`#indicator`**: Filled portion of the track.
 
 ## Usage
 
@@ -65,6 +65,8 @@ const value = ref<number | null>(null);
 
 ### Custom range
 
+Use `min` and `max` when progress is measured on a scale other than 0 to 100.
+
 ```vue
 <template>
   <Progress v-model="score" :min="0" :max="10" />
@@ -72,6 +74,8 @@ const value = ref<number | null>(null);
 ```
 
 ### Custom value label
+
+Use `get-value-label` to provide a clearer screen reader value.
 
 ```vue
 <template>
@@ -83,6 +87,8 @@ const value = ref<number | null>(null);
 ```
 
 ### Vertical orientation
+
+Use vertical orientation when progress should match a vertical layout.
 
 ```vue
 <template>

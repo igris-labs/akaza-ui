@@ -9,9 +9,9 @@ An accessible checkbox with support for custom checked indicators, labels, descr
 
 ## Anatomy
 
-- **`#indicator`** — the visual check mark or icon inside the checkbox button
-- **`#label`** — the label text beside the checkbox
-- **`#description`** — supplementary text below the label
+- **`#indicator`**: Visual check mark or icon inside the checkbox button.
+- **`#label`**: Label text beside the checkbox.
+- **`#description`**: Supplementary text below the label.
 
 ## Usage
 
@@ -39,6 +39,8 @@ const checked = ref(false);
 
 ### Custom indicator
 
+Use `#indicator` to render your own checkmark or icon.
+
 ```vue
 <template>
   <Checkbox v-model="checked">
@@ -51,6 +53,8 @@ const checked = ref(false);
 
 ### With description
 
+Use `description` when the label needs supporting context.
+
 ```vue
 <template>
   <Checkbox
@@ -62,6 +66,8 @@ const checked = ref(false);
 ```
 
 ### Indeterminate state
+
+Use `"indeterminate"` for parent or mixed-selection states.
 
 ```vue
 <script setup lang="ts">
@@ -80,6 +86,8 @@ const value = ref<boolean | "indeterminate">("indeterminate");
 ```
 
 ### Custom true/false values
+
+Use custom values when the model should store domain values instead of booleans.
 
 ```vue
 <script setup lang="ts">

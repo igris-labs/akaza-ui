@@ -11,9 +11,9 @@ For a list of collapsible items with headings, see [Accordion](/components/accor
 
 ## Anatomy
 
-- **`#trigger`** — content rendered inside the trigger button
-- **`#icon`** — optional indicator rendered after the trigger content
-- **`#content`** — the panel that reveals when open
+- **`#trigger`**: Content rendered inside the trigger button.
+- **`#icon`**: Optional indicator rendered after the trigger content.
+- **`#content`**: Panel revealed when open.
 
 The trigger button is rendered by the component. Use the `ui.trigger` prop to add classes to it.
 
@@ -69,6 +69,8 @@ The `#trigger` slot is rendered inside the trigger button — use `ui.trigger` t
 ```
 
 ### Programmatic control
+
+Use exposed methods when another control needs to open or close the panel.
 
 ```vue
 <script setup lang="ts">

@@ -9,7 +9,7 @@ A single button that toggles between pressed and unpressed states. Use it for to
 
 ## Anatomy
 
-- **`#default`** — the button content, receives `{ pressed, state }` scoped props
+- **`#default`**: Button content. Receives `{ pressed, state }` scoped props.
 
 ## Usage
 
@@ -40,6 +40,8 @@ const bold = ref(false);
 ## Examples
 
 ### Toolbar group
+
+Use `Toggle` inside toolbars for independent on/off controls.
 
 ```vue
 <template>

@@ -11,12 +11,12 @@ Use this for destructive or irreversible actions. For non-critical dialogs, use 
 
 ## Anatomy
 
-- **`#trigger`** — element that opens the dialog
-- **`#header`** — area containing the title and optional close control
-- **`#title`** — the dialog's accessible title
-- **`#description`** — supplementary description text
-- **`#body`** — main content area
-- **`#footer`** — action buttons (confirm / cancel)
+- **`#trigger`**: Element that opens the dialog.
+- **`#header`**: Area containing the title and optional close control.
+- **`#title`**: Dialog accessible title.
+- **`#description`**: Supplementary description text.
+- **`#body`**: Main content area.
+- **`#footer`**: Action buttons for confirm and cancel flows.
 
 ## Usage
 
@@ -52,6 +52,8 @@ import { AlertDialog } from "akaza-ui";
 ## Examples
 
 ### Custom header
+
+Use header, body, and footer slots when the default alert layout needs custom controls.
 
 ```vue
 <template>

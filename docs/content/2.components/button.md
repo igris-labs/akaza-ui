@@ -45,7 +45,7 @@ Use `disabled` for actions that cannot currently run.
 
 ### Async loading
 
-Use `loading-auto` to automatically show a spinner while the click handler's Promise is pending.
+Use `loading-auto` to automatically show a spinner while the `@click` handler's Promise is pending.
 
 ```vue
 <script setup lang="ts">
@@ -55,7 +55,7 @@ async function save() {
 </script>
 
 <template>
-  <Button loading-auto :on-click="save">Save</Button>
+  <Button loading-auto @click="save">Save</Button>
 </template>
 ```
 
@@ -105,8 +105,7 @@ Keeps the button in the tab order while disabled — useful for showing tooltips
 | `disabled` | `boolean` | `false` | Disables the button. |
 | `focusableWhenDisabled` | `boolean` | `false` | Keep button focusable while disabled. |
 | `loading` | `boolean` | `false` | Show the loading state manually. |
-| `loadingAuto` | `boolean` | `false` | Automatically show loading while `onClick`'s Promise resolves. |
-| `onClick` | `(event: MouseEvent) => void \| Promise<void>` | — | Async-aware click handler for `loadingAuto`. |
+| `loadingAuto` | `boolean` | `false` | Automatically show loading while the `@click` handler's Promise resolves. |
 | `ui` | `ButtonUi` | — | Classes for root and default loading parts. |
 
 ### Slots
@@ -116,11 +115,9 @@ Keeps the button in the tab order while disabled — useful for showing tooltips
 | `default` | — | Button label / content. |
 | `loading` | — | Content shown during the loading state. Defaults to a spinner icon. |
 
-### Emits
+### Native Events
 
-| Event | Payload | Description |
-|-------|---------|-------------|
-| `click` | `MouseEvent` | Fired on click (in addition to native click). |
+`Button` forwards native button events to the root element. Use `@click` directly; when `loading-auto` is set and the handler returns a Promise, the button enters loading state until it settles.
 
 ### UI Options
 

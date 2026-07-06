@@ -1,13 +1,8 @@
 <script setup lang="ts">
 import { Button } from "akaza-ui";
-import { ref } from "vue";
-
-const isLoading = ref(false);
 
 async function handleSave() {
-  isLoading.value = true;
   await new Promise((resolve) => setTimeout(resolve, 1500));
-  isLoading.value = false;
 }
 </script>
 
@@ -43,10 +38,9 @@ async function handleSave() {
 
     <!-- Loading -->
     <Button
-      :loading="isLoading"
-      :on-click="handleSave"
       loading-auto
       class="rounded-lg bg-neutral-900 px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-neutral-700 disabled:cursor-not-allowed disabled:opacity-60 dark:bg-white dark:text-neutral-900 dark:hover:bg-neutral-100"
+      @click="handleSave"
     >
       Save
       <template #loading>

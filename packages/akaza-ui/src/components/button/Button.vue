@@ -1,6 +1,9 @@
 <script setup lang="ts">
+import type { StyleValue } from "vue";
 import type { ButtonProps } from ".";
-import { computed, ref } from "vue";
+import { computed, ref, useAttrs } from "vue";
+
+defineOptions({ inheritAttrs: false });
 
 const {
   as = "button",
@@ -9,16 +12,44 @@ const {
   focusableWhenDisabled = false,
   loading = false,
   loadingAuto = false,
-  onClick: onClickProp,
   ui,
 } = defineProps<ButtonProps>();
 
-const emit = defineEmits<{ click: [event: MouseEvent] }>();
-
+const attrs = useAttrs();
 const autoLoading = ref(false);
 
 const isLoading = computed(() => loading || autoLoading.value);
 const isDisabled = computed(() => disabled || isLoading.value);
+const rootStyle = computed(() => attrs.style as StyleValue);
+const rootAttrs = computed(() => {
+  const {
+    class: _class,
+    style: _style,
+    onClick,
+    ...rest
+  } = attrs;
+
+  if (!loadingAuto && !isDisabled.value && onClick) {
+    return { ...rest, onClick };
+  }
+
+  return rest;
+});
+
+type ClickHandler = (event: MouseEvent) => unknown;
+
+function callClickHandlers(handler: unknown, event: MouseEvent): unknown[] {
+  if (!handler) return [];
+  const handlers = Array.isArray(handler) ? handler : [handler];
+  return handlers.map((item) => (typeof item === "function" ? (item as ClickHandler)(event) : undefined));
+}
+
+function isPromiseLike(value: unknown): value is PromiseLike<unknown> {
+  return typeof value === "object"
+    && value !== null
+    && "then" in value
+    && typeof (value as PromiseLike<unknown>).then === "function";
+}
 
 async function handleClick(event: MouseEvent) {
   if (isDisabled.value) {
@@ -27,20 +58,17 @@ async function handleClick(event: MouseEvent) {
     return;
   }
 
-  if (loadingAuto && onClickProp) {
-    const result = onClickProp(event);
-    if (result instanceof Promise) {
-      autoLoading.value = true;
-      try {
-        await result;
-      } finally {
-        autoLoading.value = false;
-      }
-    }
-    return;
-  }
+  if (!loadingAuto) return;
 
-  emit("click", event);
+  const promises = callClickHandlers(attrs.onClick, event).filter(isPromiseLike);
+  if (promises.length === 0) return;
+
+  autoLoading.value = true;
+  try {
+    await Promise.all(promises);
+  } finally {
+    autoLoading.value = false;
+  }
 }
 
 function handleKeydown(event: KeyboardEvent) {
@@ -54,6 +82,7 @@ function handleKeydown(event: KeyboardEvent) {
 <template>
   <component
     :is="as"
+    v-bind="rootAttrs"
     :type="as === 'button' ? type : undefined"
     :role="as === 'button' ? undefined : 'button'"
     :disabled="as === 'button' && isDisabled && !focusableWhenDisabled ? true : undefined"
@@ -63,9 +92,10 @@ function handleKeydown(event: KeyboardEvent) {
     :data-akaza-disabled="disabled || undefined"
     :data-akaza-loading="isLoading || undefined"
     :data-akaza-state="isLoading ? 'loading' : disabled ? 'disabled' : 'enabled'"
-    :class="ui?.root"
+    :class="[ui?.root, attrs.class]"
+    :style="rootStyle"
     class="akaza-button"
-    @click="handleClick"
+    @click.capture="handleClick"
     @keydown="handleKeydown"
   >
     <slot v-if="!isLoading" />
@@ -105,5 +135,15 @@ function handleKeydown(event: KeyboardEvent) {
   clip: rect(0, 0, 0, 0);
   white-space: nowrap;
   border: 0;
+}
+
+.akaza-button-spinner {
+  animation: akaza-button-spin 1s linear infinite;
+}
+
+@keyframes akaza-button-spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>

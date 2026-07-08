@@ -173,6 +173,8 @@ Use `#thumb` when the thumb needs visible value text or custom markup.
 
 `Slider` sets `--akaza-slider-percentage`, `--akaza-slider-start-percentage`, and `--akaza-slider-end-percentage` on the root. Plain `class` applies to the root wrapper.
 
+Native invalid state from the hidden form input is revealed after interaction or invalid submit. Controlled invalid state from the `invalid` prop or parent `Field` appears immediately.
+
 ### Keyboard
 
 | Key | Behavior |

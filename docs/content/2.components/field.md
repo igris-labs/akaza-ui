@@ -60,7 +60,7 @@ Use `required` on `Field` so the child Akaza input inherits native required stat
 
 ### Error message
 
-Pass `error` when you want the field to show a controlled validation message.
+Pass `error` when you want the field to show a controlled validation message. Explicit `error` props and matching `Form` errors render immediately and mark the field invalid, so pass them only when your UI should show the error.
 
 ```vue
 <template>
@@ -76,7 +76,7 @@ Pass `error` when you want the field to show a controlled validation message.
 
 ### Native validation errors
 
-Use `error-match` to show the browser validation message only for a matching validity state.
+Use `error-match` to show the browser validation message only for a matching validity state. Akaza inputs reveal native invalid state after the user changes/blurs the control or the browser fires an invalid event; required empty fields do not show errors on first render.
 
 ```vue
 <template>

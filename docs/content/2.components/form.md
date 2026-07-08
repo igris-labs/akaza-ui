@@ -88,7 +88,7 @@ function submit(details: FormSubmitDetails) {
 
 ### Server errors
 
-Pass errors keyed by field name. Matching `Field` components display them automatically.
+Pass errors keyed by field name. Matching `Field` components display them automatically and mark themselves invalid. Clear or withhold the error entry when the message should no longer be visible.
 
 ```vue
 <script setup lang="ts">
@@ -173,7 +173,7 @@ Use the default slot state to show submitted, invalid, or success feedback.
 
 ### State Attributes
 
-`Form` sets `data-akaza-state` to `idle`, `submitted`, or `invalid`, and `data-akaza-invalid` after an invalid submit.
+`Form` sets `data-akaza-state` to `idle`, `submitted`, or `invalid`, and `data-akaza-invalid` after an invalid submit. Native browser validation can block the submit event; `Form` still listens for captured invalid events and moves to the invalid state so styling and scoped state can react.
 
 ### Styling Hooks
 

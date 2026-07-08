@@ -94,7 +94,7 @@ Add `scrub-label` or `#scrub` to let pointer users drag horizontally to change t
 
 ### Field integration
 
-`NumberField` inherits metadata from [Field](/components/field), including `name`, `required`, invalid state, and described-by ids.
+`NumberField` inherits metadata from [Field](/components/field), including `name`, `required`, invalid state, and described-by ids. Native invalid state from required/min/max/step constraints is revealed after input, blur, or invalid submit; it is not shown on initial render.
 
 ```vue
 <template>
@@ -168,6 +168,8 @@ Add `scrub-label` or `#scrub` to let pointer users drag horizontally to change t
 | `increment` | `akaza-number-field-increment` | same state attrs |
 
 Plain `class` applies to the root wrapper. Use `ui.input` for the actual input.
+
+Native `data-akaza-invalid` appears after interaction or invalid submit. Controlled invalid state from the `invalid` prop or parent `Field` appears immediately.
 
 ### Keyboard
 

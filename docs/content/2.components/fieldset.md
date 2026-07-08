@@ -76,7 +76,7 @@ Native fieldset behavior disables the controls inside it.
 
 ### Invalid group
 
-Use `invalid` to mark the whole group when the group-level choice has an error.
+Use `invalid` to mark the whole group when the group-level choice has an error. `Fieldset` does not render a built-in error region; render group error text in the default slot or use child `Field` errors for individual controls.
 
 ```vue
 <template>
@@ -86,6 +86,7 @@ Use `invalid` to mark the whole group when the group-level choice has an error.
     invalid
   >
     <RadioGroup v-model="payment" :options="paymentOptions" />
+    <p class="text-sm text-red-600">Choose one active payment method.</p>
   </Fieldset>
 </template>
 ```
@@ -143,6 +144,8 @@ Use `#legend` when the group label needs badges, hints, or richer markup.
 ### State Attributes
 
 `Fieldset` sets `data-disabled`, `data-invalid`, and matching `data-akaza-*` attributes.
+
+`invalid` is a group state only. It does not create an error element or add an error id to `aria-describedby`; use the `description` prop for persistent group help text and render transient error text inside the default slot when needed.
 
 ### Styling Hooks
 

@@ -50,7 +50,7 @@ Inside `Field`, the input inherits `id`, `name`, `required`, `disabled`, invalid
 
 ### Native validation
 
-Use native input attributes when browser validation already covers the rule.
+Use native input attributes when browser validation already covers the rule. Native invalid attributes are revealed after user input, blur, or a browser invalid event, so a required empty input does not render as invalid on page load. The explicit `invalid` prop still marks the input invalid immediately.
 
 ```vue
 <template>
@@ -156,6 +156,8 @@ Use data attributes in `ui.root` for focused, invalid, dirty, and filled states.
 ### State Attributes
 
 `Input` sets `data-valid`, `data-invalid`, `data-dirty`, `data-touched`, `data-filled`, `data-focused`, and `data-disabled`, plus matching `data-akaza-*` attributes.
+
+Native `data-akaza-invalid` appears after interaction or invalid submit. Controlled invalid state from the `invalid` prop or parent `Field` appears immediately.
 
 ### Styling Hooks
 

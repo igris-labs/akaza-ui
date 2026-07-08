@@ -91,7 +91,7 @@ Use `type: "label"` and `type: "separator"` for non-selectable rows. They are sk
 
 ### Field integration
 
-Place `Select` inside [Field](/components/field) to inherit `id`, `name`, `required`, disabled state, invalid state, and `aria-describedby`.
+Place `Select` inside [Field](/components/field) to inherit `id`, `name`, `required`, disabled state, invalid state, and `aria-describedby`. Required/native invalid state is revealed after selection, blur, or invalid submit; it is not shown on initial render.
 
 ```vue
 <template>
@@ -228,6 +228,8 @@ Use `#option` to render richer option content. The component still owns `role="o
 | `optionDescription` | `akaza-select-option-description` | — |
 
 Plain `class` applies to the root wrapper. Use `ui.trigger`, `ui.content`, and `ui.option` for internal parts.
+
+Native `data-akaza-invalid` appears after interaction or invalid submit. Controlled invalid state from the `invalid` prop or parent `Field` appears immediately.
 
 ### Keyboard
 

@@ -41,6 +41,7 @@ function getValues(formData: FormData): FormValues {
 }
 
 function onInvalid() {
+  submitted.value = true;
   lastValid.value = false;
 }
 

@@ -40,6 +40,7 @@ const inputRef = useTemplateRef<HTMLInputElement>("inputRef");
 const initialValue = model.value;
 const focused = ref(false);
 const touched = ref(false);
+const validationActive = ref(false);
 const nativeInvalid = ref(false);
 const validationMessage = ref("");
 const validity = ref<ValidityState | null>(null);
@@ -108,16 +109,17 @@ function normalize(value: number): number {
   return clamp(snap(value));
 }
 
-function updateValidity() {
+function updateValidity(reveal = validationActive.value) {
   const input = inputRef.value;
   if (!input) return;
   validity.value = input.validity;
-  nativeInvalid.value = !input.validity.valid;
+  nativeInvalid.value = reveal && !input.validity.valid;
   validationMessage.value = input.validationMessage;
 }
 
 function setValue(value: number | null, reason: string, event?: Event): boolean {
   if (isDisabled.value || readonly) return false;
+  validationActive.value = true;
   const next = value === null ? null : normalize(value);
   let canceled = false;
   emit("value-change", next, {
@@ -216,13 +218,19 @@ function onFocus() {
 }
 
 function onBlur() {
+  validationActive.value = true;
   touched.value = true;
   focused.value = false;
   updateValidity();
   commitValue("blur");
 }
 
-onMounted(updateValidity);
+function onInvalid() {
+  validationActive.value = true;
+  updateValidity();
+}
+
+onMounted(() => updateValidity(false));
 onUpdated(updateValidity);
 onBeforeUnmount(() => unregister?.());
 </script>
@@ -288,7 +296,7 @@ onBeforeUnmount(() => unregister?.());
       @blur="onBlur"
       @focus="onFocus"
       @input="onInput"
-      @invalid="updateValidity"
+      @invalid="onInvalid"
       @keydown="onKeydown"
       @wheel="onWheel"
     >

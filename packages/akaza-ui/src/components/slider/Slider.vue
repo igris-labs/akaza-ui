@@ -38,6 +38,7 @@ const inputRef = useTemplateRef<HTMLInputElement>("inputRef");
 const thumbRefs = ref<Array<HTMLElement | null>>([]);
 const touched = ref(false);
 const focused = ref(false);
+const validationActive = ref(false);
 const dragging = ref(false);
 const activeThumbIndex = ref(0);
 const nativeInvalid = ref(false);
@@ -128,11 +129,11 @@ function toValues(value: SliderValue): number[] {
   return next.length ? next : [min];
 }
 
-function updateValidity() {
+function updateValidity(reveal = validationActive.value) {
   const input = inputRef.value;
   if (!input) return;
   validity.value = input.validity;
-  nativeInvalid.value = !input.validity.valid;
+  nativeInvalid.value = reveal && !input.validity.valid;
   validationMessage.value = input.validationMessage;
 }
 
@@ -172,6 +173,7 @@ function getThumbAriaLabel(index: number): string | undefined {
 
 function setValueAt(index: number, value: number, reason: string, event?: Event) {
   if (isDisabled.value) return;
+  validationActive.value = true;
   const nextValues = [...values.value];
   const gap = Math.max(0, minStepsBetweenThumbs) * step;
   let nextThumbValue = normalize(value);
@@ -262,7 +264,12 @@ function onKeydown(event: KeyboardEvent, index: number) {
   commitValue("keyboard", event);
 }
 
-onMounted(updateValidity);
+function onInvalid() {
+  validationActive.value = true;
+  updateValidity();
+}
+
+onMounted(() => updateValidity(false));
 onBeforeUnmount(() => unregister?.());
 </script>
 
@@ -293,7 +300,7 @@ onBeforeUnmount(() => unregister?.());
       class="akaza-slider-input"
       tabindex="-1"
       aria-hidden="true"
-      @invalid="updateValidity"
+      @invalid="onInvalid"
     >
     <template v-if="resolvedName && values.length > 1">
       <input

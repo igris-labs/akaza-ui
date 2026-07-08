@@ -34,6 +34,7 @@ const inputRef = useTemplateRef<HTMLInputElement>("inputRef");
 const initialValue = model.value;
 const focused = ref(false);
 const touched = ref(false);
+const validationActive = ref(false);
 const nativeInvalid = ref(false);
 const validationMessage = ref("");
 const validity = ref<ValidityState | null>(null);
@@ -75,15 +76,16 @@ const stateAttrs = computed(() => ({
   "data-akaza-focused": focused.value || undefined,
 }));
 
-function updateValidity() {
+function updateValidity(reveal = validationActive.value) {
   const input = inputRef.value;
   if (!input) return;
   validity.value = input.validity;
-  nativeInvalid.value = !input.validity.valid;
+  nativeInvalid.value = reveal && !input.validity.valid;
   validationMessage.value = input.validationMessage;
 }
 
 function onInput(event: Event) {
+  validationActive.value = true;
   const value = (event.target as HTMLInputElement).value;
   let canceled = false;
   emit("value-change", value, {
@@ -102,16 +104,18 @@ function onFocus() {
 }
 
 function onBlur() {
+  validationActive.value = true;
   touched.value = true;
   focused.value = false;
   updateValidity();
 }
 
 function onInvalid() {
+  validationActive.value = true;
   updateValidity();
 }
 
-onMounted(updateValidity);
+onMounted(() => updateValidity(false));
 onUpdated(updateValidity);
 onBeforeUnmount(() => unregister?.());
 </script>

@@ -2,8 +2,52 @@ import { mount } from "@vue/test-utils";
 import { describe, expect, it } from "vitest";
 import { defineComponent, ref } from "vue";
 import { Select } from ".";
+import { Field } from "../field";
 
 describe("select", () => {
+  it("does not expose native invalid state before interaction", async () => {
+    const wrapper = mount(Select, {
+      props: {
+        modelValue: "",
+        name: "plan",
+        required: true,
+        options: [{ value: "startup", label: "Startup" }],
+      },
+    });
+
+    const trigger = wrapper.find(".akaza-select-trigger");
+
+    expect(trigger.attributes("data-akaza-invalid")).toBeUndefined();
+
+    await trigger.trigger("blur");
+
+    expect(trigger.attributes("data-akaza-invalid")).toBe("true");
+  });
+
+  it("exposes invalid state when required inside a field after blur", async () => {
+    const wrapper = mount(defineComponent({
+      components: { Field, Select },
+      setup() {
+        const value = ref("");
+        const options = [{ value: "startup", label: "Startup" }];
+        return { options, value };
+      },
+      template: `
+        <Field name="plan" required>
+          <Select v-model="value" :options="options" />
+        </Field>
+      `,
+    }));
+
+    const trigger = wrapper.find(".akaza-select-trigger");
+
+    expect(trigger.attributes("data-akaza-invalid")).toBeUndefined();
+
+    await trigger.trigger("blur");
+
+    expect(trigger.attributes("data-akaza-invalid")).toBe("true");
+  });
+
   it("supports multiple values with label and separator rows", async () => {
     const wrapper = mount(defineComponent({
       components: { Select },

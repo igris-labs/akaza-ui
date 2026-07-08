@@ -22,8 +22,10 @@ import { computed, ref } from "vue";
 
 const errors = ref<FormErrors>({});
 const result = ref("No submit yet. Live values update on the left.");
+const submitAttempted = ref(false);
+const interactedFields = ref<Record<string, boolean>>({});
 
-const ownerName = ref("Riya Shah");
+const ownerName = ref("");
 const ownerEmail = ref("ops@example.com");
 const workspaceSlug = ref("support");
 const plan = ref("");
@@ -40,14 +42,36 @@ const planOptions: SelectOption[] = [
   { value: "business", label: "Business", description: "SAML, audit logs, priority support." },
   { value: "enterprise", label: "Enterprise", description: "Custom contract and legal review." },
   { type: "separator" },
-  { value: "legacy", label: "Legacy contract", description: "Visible, but blocked for new requests.", disabled: true },
+  {
+    value: "legacy",
+    label: "Legacy contract",
+    description: "Visible, but blocked for new requests.",
+    disabled: true,
+  },
 ];
 
 const permissionOptions: CheckboxGroupOption[] = [
-  { value: "read", label: "Read customer records", description: "Needed by support and operations." },
-  { value: "export", label: "Export reports", description: "Downloads CSV files with customer data." },
-  { value: "admin", label: "Admin changes", description: "Can invite users and edit billing settings." },
-  { value: "billing", label: "Billing write access", description: "Requires finance approval.", disabled: true },
+  {
+    value: "read",
+    label: "Read customer records",
+    description: "Needed by support and operations.",
+  },
+  {
+    value: "export",
+    label: "Export reports",
+    description: "Downloads CSV files with customer data.",
+  },
+  {
+    value: "admin",
+    label: "Admin changes",
+    description: "Can invite users and edit billing settings.",
+  },
+  {
+    value: "billing",
+    label: "Billing write access",
+    description: "Requires finance approval.",
+    disabled: true,
+  },
 ];
 
 const fieldUi = {
@@ -58,20 +82,19 @@ const fieldUi = {
 };
 
 const fieldsetUi = {
-  root:
-    "rounded-xl border border-neutral-200 p-4 data-[akaza-disabled]:bg-neutral-50 data-[akaza-disabled]:opacity-80 dark:border-neutral-800 dark:data-[akaza-disabled]:bg-neutral-900/40",
+  root: "rounded-xl border border-neutral-200 p-4 data-[akaza-disabled]:bg-neutral-50 data-[akaza-disabled]:opacity-80 dark:border-neutral-800 dark:data-[akaza-disabled]:bg-neutral-900/40",
   legend: "px-1 text-sm font-semibold text-neutral-950 dark:text-neutral-50",
   description: "mt-1 text-xs leading-5 text-neutral-500 dark:text-neutral-400",
   content: "mt-4 grid gap-4",
 };
 
 const inputClass =
-  "h-10 w-full rounded-lg border border-neutral-200 bg-white px-3 text-sm text-neutral-950 outline-none transition placeholder:text-neutral-400 focus:border-neutral-900 disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-500 data-[akaza-invalid]:border-red-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-50 dark:focus:border-neutral-100 dark:disabled:bg-neutral-900 dark:data-[akaza-invalid]:border-red-400";
+  "h-10 w-full rounded-lg border border-neutral-200 bg-white px-3 text-sm text-neutral-950 outline-none transition placeholder:text-neutral-400 focus:border-neutral-900 focus:ring-2 focus:ring-neutral-900/10 disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-500 data-[akaza-invalid]:border-red-500 data-[akaza-invalid]:ring-2 data-[akaza-invalid]:ring-red-500/20 data-[akaza-invalid]:focus:border-red-500 data-[akaza-invalid]:focus:ring-red-500/30 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-50 dark:focus:border-neutral-100 dark:focus:ring-white/10 dark:disabled:bg-neutral-900 dark:data-[akaza-invalid]:border-red-400 dark:data-[akaza-invalid]:ring-red-400/20 dark:data-[akaza-invalid]:focus:border-red-400 dark:data-[akaza-invalid]:focus:ring-red-400/30";
 
 const selectUi = {
   root: "w-full",
   trigger:
-    "flex h-10 w-full items-center justify-between rounded-lg border border-neutral-200 bg-white px-3 text-left text-sm text-neutral-950 outline-none transition focus:border-neutral-900 disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-500 data-[akaza-invalid]:border-red-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-50 dark:focus:border-neutral-100 dark:disabled:bg-neutral-900 dark:data-[akaza-invalid]:border-red-400",
+    "flex h-10 w-full items-center justify-between rounded-lg border border-neutral-200 bg-white px-3 text-left text-sm text-neutral-950 outline-none transition focus:border-neutral-900 focus:ring-2 focus:ring-neutral-900/10 disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-500 data-[akaza-invalid]:border-red-500 data-[akaza-invalid]:ring-2 data-[akaza-invalid]:ring-red-500/20 data-[akaza-invalid]:focus:border-red-500 data-[akaza-invalid]:focus:ring-red-500/30 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-50 dark:focus:border-neutral-100 dark:focus:ring-white/10 dark:disabled:bg-neutral-900 dark:data-[akaza-invalid]:border-red-400 dark:data-[akaza-invalid]:ring-red-400/20 dark:data-[akaza-invalid]:focus:border-red-400 dark:data-[akaza-invalid]:focus:ring-red-400/30",
   placeholder: "text-neutral-400",
   content:
     "z-20 rounded-lg border border-neutral-200 bg-white p-1 shadow-lg dark:border-neutral-800 dark:bg-neutral-950",
@@ -84,8 +107,7 @@ const selectUi = {
 };
 
 const numberUi = {
-  root:
-    "h-10 w-full overflow-hidden rounded-lg border border-neutral-200 bg-white data-[akaza-invalid]:border-red-500 dark:border-neutral-800 dark:bg-neutral-950 dark:data-[akaza-invalid]:border-red-400",
+  root: "h-10 w-full overflow-hidden rounded-lg border border-neutral-200 bg-white focus-within:border-neutral-900 focus-within:ring-2 focus-within:ring-neutral-900/10 data-[akaza-invalid]:border-red-500 data-[akaza-invalid]:ring-2 data-[akaza-invalid]:ring-red-500/20 data-[akaza-invalid]:focus-within:border-red-500 data-[akaza-invalid]:focus-within:ring-red-500/30 dark:border-neutral-800 dark:bg-neutral-950 dark:focus-within:border-neutral-100 dark:focus-within:ring-white/10 dark:data-[akaza-invalid]:border-red-400 dark:data-[akaza-invalid]:ring-red-400/20 dark:data-[akaza-invalid]:focus-within:border-red-400 dark:data-[akaza-invalid]:focus-within:ring-red-400/30",
   decrement:
     "grid h-full w-10 place-items-center border-r border-neutral-200 text-sm text-neutral-700 disabled:cursor-not-allowed disabled:opacity-40 dark:border-neutral-800 dark:text-neutral-300",
   input:
@@ -102,8 +124,7 @@ const checkboxUi = {
 
 const checkboxGroupUi = {
   root: "grid gap-2",
-  item:
-    "rounded-lg border border-neutral-200 p-3 data-[akaza-state=checked]:border-neutral-900 dark:border-neutral-800 dark:data-[akaza-state=checked]:border-neutral-100",
+  item: "rounded-lg border border-neutral-200 p-3 data-[akaza-state=checked]:border-neutral-900 dark:border-neutral-800 dark:data-[akaza-state=checked]:border-neutral-100",
   checkbox: checkboxUi,
 };
 
@@ -117,15 +138,85 @@ const sliderUi = {
 
 const switchUi = {
   wrapper: "items-start",
-  root:
-    "relative h-5 w-9 rounded-full bg-neutral-200 transition data-[akaza-state=checked]:bg-neutral-900 dark:bg-neutral-800 dark:data-[akaza-state=checked]:bg-white",
+  root: "relative h-5 w-9 rounded-full bg-neutral-200 transition data-[akaza-state=checked]:bg-neutral-900 dark:bg-neutral-800 dark:data-[akaza-state=checked]:bg-white",
   thumb:
     "absolute left-0.5 top-0.5 size-4 rounded-full bg-white transition-transform data-[akaza-state=checked]:translate-x-4 dark:bg-neutral-950",
   label: "text-sm font-medium text-neutral-950 dark:text-neutral-50",
   description: "text-xs leading-5 text-neutral-500 dark:text-neutral-400",
 };
 
+const workspaceSlugPattern = /^[a-z0-9-]+$/;
 const riskLabel = computed(() => `${riskScore.value}/100`);
+const hasOwnerNameIssue = computed(() => !ownerName.value.trim());
+const hasOwnerEmailIssue = computed(
+  () =>
+    Boolean(errors.value.ownerEmail) || ownerEmail.value.toLowerCase() === "blocked@company.test",
+);
+const hasWorkspaceSlugIssue = computed(
+  () =>
+    Boolean(errors.value.workspaceSlug) ||
+    ["admin", "root", "billing"].includes(workspaceSlug.value.toLowerCase()),
+);
+const hasPlanIssue = computed(() => Boolean(errors.value.plan) || !plan.value);
+const hasSeatsIssue = computed(
+  () => Boolean(errors.value.seats) || seats.value === null || seats.value < 5,
+);
+const hasPermissionsIssue = computed(
+  () => Boolean(errors.value.permissions) || !permissions.value.length,
+);
+const showOwnerNameIssue = computed(() => hasOwnerNameIssue.value && shouldShowIssue("ownerName"));
+const showOwnerEmailIssue = computed(
+  () => hasOwnerEmailIssue.value && shouldShowIssue("ownerEmail"),
+);
+const showWorkspaceSlugIssue = computed(
+  () => hasWorkspaceSlugIssue.value && shouldShowIssue("workspaceSlug"),
+);
+const showPlanIssue = computed(() => hasPlanIssue.value && shouldShowIssue("plan"));
+const showSeatsIssue = computed(() => hasSeatsIssue.value && shouldShowIssue("seats"));
+const showPermissionsIssue = computed(
+  () => hasPermissionsIssue.value && shouldShowIssue("permissions"),
+);
+const ownerNameError = computed(() =>
+  showOwnerNameIssue.value ? "Requester is required." : undefined,
+);
+const ownerEmailError = computed(() => {
+  if (!shouldShowIssue("ownerEmail")) return undefined;
+  const serverError = getFieldError("ownerEmail");
+  if (serverError) return serverError;
+  if (!ownerEmail.value.trim()) return "Work email is required.";
+  if (ownerEmail.value.toLowerCase() === "blocked@company.test") {
+    return "blocked@company.test is blocked by server-side validation.";
+  }
+  return undefined;
+});
+const workspaceSlugError = computed(() => {
+  if (!shouldShowIssue("workspaceSlug")) return undefined;
+  const serverError = getFieldError("workspaceSlug");
+  if (serverError) return serverError;
+  const slug = workspaceSlug.value.toLowerCase();
+  if (!slug.trim()) return "Workspace slug is required.";
+  if (!workspaceSlugPattern.test(slug)) return "Use lowercase letters, numbers, and hyphens only.";
+  if (["admin", "root", "billing"].includes(slug)) {
+    return `${slug} is reserved. Pick a team-specific slug.`;
+  }
+  return undefined;
+});
+const planError = computed(() => {
+  if (!showPlanIssue.value) return undefined;
+  return getFieldError("plan") || "Select a plan.";
+});
+const seatsError = computed(() => {
+  if (!showSeatsIssue.value) return undefined;
+  const serverError = getFieldError("seats");
+  if (serverError) return serverError;
+  if (seats.value === null) return "Seats are required.";
+  if (seats.value < 5) return "Seats must be at least 5.";
+  return undefined;
+});
+const permissionsError = computed(() => {
+  if (!showPermissionsIssue.value) return undefined;
+  return getFieldError("permissions") || "Pick at least one permission bundle.";
+});
 const serverErrorItems = computed(() =>
   Object.entries(errors.value).flatMap(([field, value]) => {
     if (!value) return [];
@@ -147,22 +238,26 @@ const liveIssues = computed(() => {
   return issues;
 });
 const liveData = computed(() =>
-  JSON.stringify({
-    ownerName: ownerName.value,
-    ownerEmail: ownerEmail.value,
-    workspaceSlug: workspaceSlug.value,
-    plan: plan.value || "(missing)",
-    seats: seats.value,
-    riskScore: riskScore.value,
-    permissions: permissions.value,
-    billingLocked: billingLocked.value,
-    submittedBillingFields: billingLocked.value
-      ? "(disabled fieldset omitted from FormData)"
-      : {
-          billingName: billingName.value,
-          billingEmail: billingEmail.value,
-        },
-  }, null, 2),
+  JSON.stringify(
+    {
+      ownerName: ownerName.value,
+      ownerEmail: ownerEmail.value,
+      workspaceSlug: workspaceSlug.value,
+      plan: plan.value || "(missing)",
+      seats: seats.value,
+      riskScore: riskScore.value,
+      permissions: permissions.value,
+      billingLocked: billingLocked.value,
+      submittedBillingFields: billingLocked.value
+        ? "(disabled fieldset omitted from FormData)"
+        : {
+            billingName: billingName.value,
+            billingEmail: billingEmail.value,
+          },
+    },
+    null,
+    2,
+  ),
 );
 
 function clearError(name: string) {
@@ -171,7 +266,32 @@ function clearError(name: string) {
   errors.value = rest;
 }
 
+function getFieldError(name: string) {
+  const value = errors.value[name];
+  if (!value) return "";
+  if (Array.isArray(value)) return String(value[0] ?? "");
+  return String(value);
+}
+
+function markInteracted(name: string) {
+  interactedFields.value = { ...interactedFields.value, [name]: true };
+}
+
+function onFieldValueChange(name: string) {
+  markInteracted(name);
+  clearError(name);
+}
+
+function shouldShowIssue(name: string) {
+  return submitAttempted.value || Boolean(interactedFields.value[name]);
+}
+
+function onFormInvalid() {
+  submitAttempted.value = true;
+}
+
 function onFormSubmit(values: FormValues, details: FormSubmitDetails) {
+  submitAttempted.value = true;
   result.value = "";
 
   if (!details.valid) {
@@ -205,35 +325,43 @@ function onFormSubmit(values: FormValues, details: FormSubmitDetails) {
 </script>
 
 <template>
-  <section class="border-y border-neutral-200 bg-neutral-50/70 py-14 dark:border-neutral-800 dark:bg-neutral-950">
+  <section
+    class="border-y border-neutral-200 bg-neutral-50/70 py-14 dark:border-neutral-800 dark:bg-neutral-950"
+  >
     <div class="mx-auto grid max-w-7xl gap-8 px-4 sm:px-6 lg:grid-cols-[0.8fr_1.2fr] lg:px-8">
       <div class="max-w-xl">
-        <p class="text-sm font-medium text-neutral-500 dark:text-neutral-400">
-          Real form, early
-        </p>
-        <h2 class="mt-3 text-3xl font-semibold tracking-tight text-neutral-950 dark:text-neutral-50 sm:text-4xl">
+        <p class="text-sm font-medium text-neutral-500 dark:text-neutral-400">Real form, early</p>
+        <h2
+          class="mt-3 text-3xl font-semibold tracking-tight text-neutral-950 dark:text-neutral-50 sm:text-4xl"
+        >
           Not a toy email field.
         </h2>
         <p class="mt-4 text-base leading-7 text-neutral-600 dark:text-neutral-300">
-          This is the messy shape teams ship: native validation, server errors, hint text,
-          disabled billing data, grouped controls, and nested fields in one form.
+          This is the messy shape teams ship: native validation, server errors, hint text, disabled
+          billing data, grouped controls, and nested fields in one form.
         </p>
-        <div class="mt-6 rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950">
-          <h3 class="text-sm font-semibold text-neutral-950 dark:text-neutral-50">
-            What to try
-          </h3>
+        <div
+          class="mt-6 rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950"
+        >
+          <h3 class="text-sm font-semibold text-neutral-950 dark:text-neutral-50">What to try</h3>
           <ul class="mt-3 grid gap-2 text-sm leading-6 text-neutral-600 dark:text-neutral-300">
             <li>Select a plan and raise seats to 5 or more to clear native validation.</li>
-            <li>Use slug <code class="font-mono">admin</code>, <code class="font-mono">root</code>, or <code class="font-mono">billing</code> to see server errors.</li>
-            <li>Use <code class="font-mono">blocked@company.test</code> to see an email server error. <code class="font-mono">ops@example.com</code> is valid.</li>
+            <li>
+              Use slug <code class="font-mono">admin</code>, <code class="font-mono">root</code>, or
+              <code class="font-mono">billing</code> to see server errors.
+            </li>
+            <li>
+              Use <code class="font-mono">blocked@company.test</code> to see an email server error.
+              <code class="font-mono">ops@example.com</code> is valid.
+            </li>
             <li>Unlock billing profile to see nested disabled controls enter FormData.</li>
           </ul>
         </div>
 
-        <div class="mt-4 rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950">
-          <h3 class="text-sm font-semibold text-neutral-950 dark:text-neutral-50">
-            Live checks
-          </h3>
+        <div
+          class="mt-4 rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950"
+        >
+          <h3 class="text-sm font-semibold text-neutral-950 dark:text-neutral-50">Live checks</h3>
           <ul
             v-if="liveIssues.length"
             class="mt-3 grid gap-2 text-sm leading-6 text-amber-700 dark:text-amber-300"
@@ -247,10 +375,10 @@ function onFormSubmit(values: FormValues, details: FormSubmitDetails) {
           </p>
         </div>
 
-        <div class="mt-4 rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950">
-          <h3 class="text-sm font-semibold text-neutral-950 dark:text-neutral-50">
-            Server errors
-          </h3>
+        <div
+          class="mt-4 rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950"
+        >
+          <h3 class="text-sm font-semibold text-neutral-950 dark:text-neutral-50">Server errors</h3>
           <ul
             v-if="serverErrorItems.length"
             class="mt-3 grid gap-2 text-sm leading-6 text-red-700 dark:text-red-300"
@@ -264,11 +392,13 @@ function onFormSubmit(values: FormValues, details: FormSubmitDetails) {
           </p>
         </div>
 
-        <div class="mt-4 rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950">
-          <h3 class="text-sm font-semibold text-neutral-950 dark:text-neutral-50">
-            Realtime data
-          </h3>
-          <pre class="mt-3 max-h-80 overflow-auto rounded-lg bg-neutral-100 p-3 text-xs leading-5 text-neutral-700 dark:bg-neutral-900 dark:text-neutral-300">{{ liveData }}</pre>
+        <div
+          class="mt-4 rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950"
+        >
+          <h3 class="text-sm font-semibold text-neutral-950 dark:text-neutral-50">Realtime data</h3>
+          <pre
+            class="mt-3 max-h-80 overflow-auto rounded-lg bg-neutral-100 p-3 text-xs leading-5 text-neutral-700 dark:bg-neutral-900 dark:text-neutral-300"
+          >{{ liveData }}</pre>
         </div>
       </div>
 
@@ -276,6 +406,7 @@ function onFormSubmit(values: FormValues, details: FormSubmitDetails) {
         :errors="errors"
         class="grid gap-5 rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-950 sm:p-6"
         @form-submit="onFormSubmit"
+        @invalid.capture="onFormInvalid"
       >
         <Fieldset
           legend="Workspace request"
@@ -288,6 +419,8 @@ function onFormSubmit(values: FormValues, details: FormSubmitDetails) {
               label="Requester"
               description="Shown on the internal approval ticket."
               required
+              :error="ownerNameError"
+              :invalid="showOwnerNameIssue"
               :ui="fieldUi"
             >
               <Input
@@ -295,6 +428,8 @@ function onFormSubmit(values: FormValues, details: FormSubmitDetails) {
                 :class="inputClass"
                 autocomplete="name"
                 placeholder="Riya Shah"
+                @blur="markInteracted('ownerName')"
+                @value-change="onFieldValueChange('ownerName')"
               />
             </Field>
 
@@ -303,6 +438,8 @@ function onFormSubmit(values: FormValues, details: FormSubmitDetails) {
               label="Work email"
               description="ops@example.com is valid. Use blocked@company.test for a server error."
               required
+              :error="ownerEmailError"
+              :invalid="showOwnerEmailIssue"
               :ui="fieldUi"
             >
               <Input
@@ -311,7 +448,8 @@ function onFormSubmit(values: FormValues, details: FormSubmitDetails) {
                 :class="inputClass"
                 autocomplete="email"
                 placeholder="you@company.com"
-                @value-change="clearError('ownerEmail')"
+                @blur="markInteracted('ownerEmail')"
+                @value-change="onFieldValueChange('ownerEmail')"
               />
             </Field>
           </div>
@@ -322,6 +460,8 @@ function onFormSubmit(values: FormValues, details: FormSubmitDetails) {
               label="Workspace slug"
               description="Lowercase URL key. Server owns reserved words."
               required
+              :error="workspaceSlugError"
+              :invalid="showWorkspaceSlugIssue"
               :ui="fieldUi"
             >
               <Input
@@ -329,7 +469,8 @@ function onFormSubmit(values: FormValues, details: FormSubmitDetails) {
                 :class="inputClass"
                 pattern="[a-z0-9-]+"
                 placeholder="acme-support"
-                @value-change="clearError('workspaceSlug')"
+                @blur="markInteracted('workspaceSlug')"
+                @value-change="onFieldValueChange('workspaceSlug')"
               />
             </Field>
 
@@ -338,6 +479,8 @@ function onFormSubmit(values: FormValues, details: FormSubmitDetails) {
               label="Plan"
               description="Required custom select with disabled option."
               required
+              :error="planError"
+              :invalid="showPlanIssue"
               :ui="fieldUi"
             >
               <Select
@@ -345,6 +488,8 @@ function onFormSubmit(values: FormValues, details: FormSubmitDetails) {
                 :options="planOptions"
                 placeholder="Select plan"
                 :ui="selectUi"
+                @focusout="markInteracted('plan')"
+                @value-change="onFieldValueChange('plan')"
               />
             </Field>
 
@@ -353,6 +498,8 @@ function onFormSubmit(values: FormValues, details: FormSubmitDetails) {
               label="Seats"
               description="Minimum 5. Initial value is intentionally invalid."
               required
+              :error="seatsError"
+              :invalid="showSeatsIssue"
               :ui="fieldUi"
             >
               <NumberField
@@ -360,7 +507,8 @@ function onFormSubmit(values: FormValues, details: FormSubmitDetails) {
                 :min="5"
                 :max="250"
                 :ui="numberUi"
-                @value-change="clearError('seats')"
+                @focusout="markInteracted('seats')"
+                @value-change="onFieldValueChange('seats')"
               />
             </Field>
           </div>
@@ -392,6 +540,8 @@ function onFormSubmit(values: FormValues, details: FormSubmitDetails) {
             label="Permission bundle"
             description="One disabled option is visible because real policy often leaks into forms."
             required
+            :error="permissionsError"
+            :invalid="showPermissionsIssue"
             :ui="fieldUi"
           >
             <CheckboxGroup
@@ -402,7 +552,7 @@ function onFormSubmit(values: FormValues, details: FormSubmitDetails) {
               parent-label="Select all allowed permissions"
               :options="permissionOptions"
               :ui="checkboxGroupUi"
-              @value-change="clearError('permissions')"
+              @value-change="onFieldValueChange('permissions')"
             />
           </Field>
 
@@ -442,7 +592,9 @@ function onFormSubmit(values: FormValues, details: FormSubmitDetails) {
           </Fieldset>
         </Fieldset>
 
-        <div class="grid gap-3 border-t border-neutral-200 pt-5 dark:border-neutral-800 sm:grid-cols-[auto_1fr] sm:items-start">
+        <div
+          class="grid gap-3 border-t border-neutral-200 pt-5 dark:border-neutral-800 sm:grid-cols-[auto_1fr] sm:items-start"
+        >
           <Button
             type="submit"
             class="h-10 rounded-lg bg-neutral-950 px-4 text-sm font-medium text-white outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 dark:bg-white dark:text-neutral-950 dark:focus-visible:ring-white"
@@ -450,7 +602,9 @@ function onFormSubmit(values: FormValues, details: FormSubmitDetails) {
             Submit ugly form
           </Button>
 
-          <pre class="max-h-44 overflow-auto rounded-lg bg-neutral-100 p-3 text-xs leading-5 text-neutral-700 dark:bg-neutral-900 dark:text-neutral-300">{{ result }}</pre>
+          <pre
+            class="max-h-44 overflow-auto rounded-lg bg-neutral-100 p-3 text-xs leading-5 text-neutral-700 dark:bg-neutral-900 dark:text-neutral-300"
+          >{{ result }}</pre>
         </div>
       </Form>
     </div>

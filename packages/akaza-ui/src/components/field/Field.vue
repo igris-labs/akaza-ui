@@ -49,6 +49,7 @@ const isInvalid = computed<boolean>(() =>
   invalid || Boolean(error || formError.value || control.value?.invalid.value),
 );
 const isValid = computed(() => !isInvalid.value);
+const explicitError = computed(() => error ?? formError.value);
 
 function matchesError(match: FieldErrorMatch | undefined): boolean {
   if (match === undefined) return isInvalid.value;
@@ -58,8 +59,9 @@ function matchesError(match: FieldErrorMatch | undefined): boolean {
 }
 
 const shownError = computed(() => {
+  if (explicitError.value) return explicitError.value;
   if (!matchesError(errorMatch)) return "";
-  return error ?? formError.value ?? validationMessage.value;
+  return validationMessage.value;
 });
 const hasError = computed<boolean>(() => Boolean(slots.error || shownError.value));
 const describedBy = computed<string | undefined>(() =>

@@ -44,6 +44,7 @@ const triggerRef = useTemplateRef<HTMLButtonElement>("triggerRef");
 const optionRefs = ref<Array<HTMLElement | null>>([]);
 const focused = ref(false);
 const touched = ref(false);
+const validationActive = ref(false);
 const nativeInvalid = ref(false);
 const validationMessage = ref("");
 const validity = ref<ValidityState | null>(null);
@@ -96,6 +97,10 @@ const stateAttrs = computed(() => ({
   "data-akaza-filled": isFilled.value || undefined,
   "data-akaza-focused": focused.value || undefined,
 }));
+const triggerAttrs = computed(() => ({
+  ...stateAttrs.value,
+  ...triggerProps.value,
+}));
 
 const contentStyle = computed(() => ({
   "--akaza-select-side-offset": `${sideOffset}px`,
@@ -142,11 +147,11 @@ function isOptionSelected(option: SelectOption): boolean {
   return selectedValues.value.includes(getValue(option));
 }
 
-function updateValidity() {
+function updateValidity(reveal = validationActive.value) {
   const select = nativeRef.value;
   if (!select) return;
   validity.value = select.validity;
-  nativeInvalid.value = !select.validity.valid;
+  nativeInvalid.value = reveal && !select.validity.valid;
   validationMessage.value = select.validationMessage;
 }
 
@@ -195,6 +200,7 @@ function getNextValue(option: SelectOption): SelectModelValue {
 
 function selectOption(option: SelectOption, event?: Event) {
   if (isItemDisabled(option)) return;
+  validationActive.value = true;
   const value = getNextValue(option);
   let canceled = false;
   emit("value-change", value, {
@@ -277,6 +283,7 @@ function onTriggerKeydown(event: KeyboardEvent) {
 }
 
 function onNativeChange(event: Event) {
+  validationActive.value = true;
   const select = event.target as HTMLSelectElement;
   if (multiple) {
     const next = Array.from(select.selectedOptions).map((option) => option.value);
@@ -317,14 +324,20 @@ function onDocumentPointerDown(event: PointerEvent) {
 }
 
 function onBlur() {
+  validationActive.value = true;
   touched.value = true;
   focused.value = false;
   updateValidity();
 }
 
+function onInvalid() {
+  validationActive.value = true;
+  updateValidity();
+}
+
 onMounted(() => {
   document.addEventListener("pointerdown", onDocumentPointerDown);
-  updateValidity();
+  updateValidity(false);
 });
 onUpdated(updateValidity);
 onBeforeUnmount(() => {
@@ -355,7 +368,7 @@ onBeforeUnmount(() => {
       :class="ui?.nativeSelect"
       class="akaza-select-native"
       @change="onNativeChange"
-      @invalid="updateValidity"
+      @invalid="onInvalid"
     >
       <option v-if="!multiple" :value="nullableValue" />
       <option
@@ -376,7 +389,7 @@ onBeforeUnmount(() => {
       :disabled="isDisabled"
       :class="ui?.trigger"
       class="akaza-select-trigger"
-      v-bind="triggerProps"
+      v-bind="triggerAttrs"
       @blur="onBlur"
       @click="setOpen(!openModel, 'trigger', $event)"
       @focus="focused = true"

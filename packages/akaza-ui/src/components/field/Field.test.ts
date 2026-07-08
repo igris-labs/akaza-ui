@@ -21,4 +21,17 @@ describe("field", () => {
     expect(wrapper.find(".test-input").attributes("name")).toBe("username");
     expect(wrapper.find(".test-field-name").text()).toBe("username");
   });
+
+  it("renders explicit error text in the field error element", () => {
+    const wrapper = mount(defineComponent({
+      components: { Field },
+      template: `
+        <Field name="workspaceSlug" label="Workspace slug" error="admin is reserved.">
+          <input>
+        </Field>
+      `,
+    }));
+
+    expect(wrapper.find(".akaza-field-error").text()).toBe("admin is reserved.");
+  });
 });

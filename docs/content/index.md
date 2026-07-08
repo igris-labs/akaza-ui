@@ -63,6 +63,9 @@ Headless UI primitives with a Vue-native slots API. Bring your own styles — ke
   :::
 ::
 
+::examples-form-detailed-form
+::
+
 ::u-page-section{class="dark:bg-neutral-950"}
 #title
 Everything you need, nothing you don't

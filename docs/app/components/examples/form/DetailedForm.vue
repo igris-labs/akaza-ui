@@ -1,0 +1,458 @@
+<script setup lang="ts">
+import type {
+  CheckboxGroupOption,
+  FormErrors,
+  FormSubmitDetails,
+  FormValues,
+  SelectOption,
+} from "akaza-ui";
+import {
+  Button,
+  CheckboxGroup,
+  Field,
+  Fieldset,
+  Form,
+  Input,
+  NumberField,
+  Select,
+  Slider,
+  Switch,
+} from "akaza-ui";
+import { computed, ref } from "vue";
+
+const errors = ref<FormErrors>({});
+const result = ref("No submit yet. Live values update on the left.");
+
+const ownerName = ref("Riya Shah");
+const ownerEmail = ref("ops@example.com");
+const workspaceSlug = ref("support");
+const plan = ref("");
+const seats = ref<number | null>(3);
+const riskScore = ref(72);
+const permissions = ref(["read", "export"]);
+const billingLocked = ref(true);
+const billingName = ref("Igris Labs Finance");
+const billingEmail = ref("ap@igris.test");
+
+const planOptions: SelectOption[] = [
+  { type: "label", label: "Production" },
+  { value: "startup", label: "Startup", description: "Small team with manual review." },
+  { value: "business", label: "Business", description: "SAML, audit logs, priority support." },
+  { value: "enterprise", label: "Enterprise", description: "Custom contract and legal review." },
+  { type: "separator" },
+  { value: "legacy", label: "Legacy contract", description: "Visible, but blocked for new requests.", disabled: true },
+];
+
+const permissionOptions: CheckboxGroupOption[] = [
+  { value: "read", label: "Read customer records", description: "Needed by support and operations." },
+  { value: "export", label: "Export reports", description: "Downloads CSV files with customer data." },
+  { value: "admin", label: "Admin changes", description: "Can invite users and edit billing settings." },
+  { value: "billing", label: "Billing write access", description: "Requires finance approval.", disabled: true },
+];
+
+const fieldUi = {
+  label: "text-sm font-medium text-neutral-950 dark:text-neutral-50",
+  required: "ml-0.5 text-red-600 dark:text-red-400",
+  description: "text-xs leading-5 text-neutral-500 dark:text-neutral-400",
+  error: "text-xs font-medium text-red-600 dark:text-red-400",
+};
+
+const fieldsetUi = {
+  root:
+    "rounded-xl border border-neutral-200 p-4 data-[akaza-disabled]:bg-neutral-50 data-[akaza-disabled]:opacity-80 dark:border-neutral-800 dark:data-[akaza-disabled]:bg-neutral-900/40",
+  legend: "px-1 text-sm font-semibold text-neutral-950 dark:text-neutral-50",
+  description: "mt-1 text-xs leading-5 text-neutral-500 dark:text-neutral-400",
+  content: "mt-4 grid gap-4",
+};
+
+const inputClass =
+  "h-10 w-full rounded-lg border border-neutral-200 bg-white px-3 text-sm text-neutral-950 outline-none transition placeholder:text-neutral-400 focus:border-neutral-900 disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-500 data-[akaza-invalid]:border-red-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-50 dark:focus:border-neutral-100 dark:disabled:bg-neutral-900 dark:data-[akaza-invalid]:border-red-400";
+
+const selectUi = {
+  root: "w-full",
+  trigger:
+    "flex h-10 w-full items-center justify-between rounded-lg border border-neutral-200 bg-white px-3 text-left text-sm text-neutral-950 outline-none transition focus:border-neutral-900 disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-500 data-[akaza-invalid]:border-red-500 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-50 dark:focus:border-neutral-100 dark:disabled:bg-neutral-900 dark:data-[akaza-invalid]:border-red-400",
+  placeholder: "text-neutral-400",
+  content:
+    "z-20 rounded-lg border border-neutral-200 bg-white p-1 shadow-lg dark:border-neutral-800 dark:bg-neutral-950",
+  viewport: "max-h-64 overflow-auto",
+  option:
+    "flex cursor-pointer items-start gap-2 rounded-md px-2 py-1.5 text-sm text-neutral-950 data-[akaza-highlighted]:bg-neutral-100 data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-40 dark:text-neutral-50 dark:data-[akaza-highlighted]:bg-neutral-800",
+  indicator: "w-4 text-neutral-900 dark:text-neutral-100",
+  optionText: "grid gap-0.5",
+  optionDescription: "text-xs text-neutral-500",
+};
+
+const numberUi = {
+  root:
+    "h-10 w-full overflow-hidden rounded-lg border border-neutral-200 bg-white data-[akaza-invalid]:border-red-500 dark:border-neutral-800 dark:bg-neutral-950 dark:data-[akaza-invalid]:border-red-400",
+  decrement:
+    "grid h-full w-10 place-items-center border-r border-neutral-200 text-sm text-neutral-700 disabled:cursor-not-allowed disabled:opacity-40 dark:border-neutral-800 dark:text-neutral-300",
+  input:
+    "h-full min-w-0 flex-1 bg-transparent px-3 text-center text-sm text-neutral-950 outline-none disabled:cursor-not-allowed disabled:text-neutral-500 dark:text-neutral-50",
+  increment:
+    "grid h-full w-10 place-items-center border-l border-neutral-200 text-sm text-neutral-700 disabled:cursor-not-allowed disabled:opacity-40 dark:border-neutral-800 dark:text-neutral-300",
+};
+
+const checkboxUi = {
+  root: "border-neutral-300 text-neutral-900 data-[akaza-state=checked]:bg-neutral-900 data-[akaza-state=checked]:text-white dark:border-neutral-700 dark:text-neutral-100 dark:data-[akaza-state=checked]:bg-white dark:data-[akaza-state=checked]:text-neutral-950",
+  label: "text-sm font-medium text-neutral-950 dark:text-neutral-50",
+  description: "text-xs leading-5 text-neutral-500 dark:text-neutral-400",
+};
+
+const checkboxGroupUi = {
+  root: "grid gap-2",
+  item:
+    "rounded-lg border border-neutral-200 p-3 data-[akaza-state=checked]:border-neutral-900 dark:border-neutral-800 dark:data-[akaza-state=checked]:border-neutral-100",
+  checkbox: checkboxUi,
+};
+
+const sliderUi = {
+  root: "h-6 w-full",
+  track: "h-2 w-full rounded-full bg-neutral-200 dark:bg-neutral-800",
+  range: "h-full rounded-full bg-neutral-900 dark:bg-white",
+  thumb:
+    "size-5 rounded-full border-2 border-neutral-900 bg-white outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 dark:border-white dark:bg-neutral-950 dark:focus-visible:ring-white",
+};
+
+const switchUi = {
+  wrapper: "items-start",
+  root:
+    "relative h-5 w-9 rounded-full bg-neutral-200 transition data-[akaza-state=checked]:bg-neutral-900 dark:bg-neutral-800 dark:data-[akaza-state=checked]:bg-white",
+  thumb:
+    "absolute left-0.5 top-0.5 size-4 rounded-full bg-white transition-transform data-[akaza-state=checked]:translate-x-4 dark:bg-neutral-950",
+  label: "text-sm font-medium text-neutral-950 dark:text-neutral-50",
+  description: "text-xs leading-5 text-neutral-500 dark:text-neutral-400",
+};
+
+const riskLabel = computed(() => `${riskScore.value}/100`);
+const serverErrorItems = computed(() =>
+  Object.entries(errors.value).flatMap(([field, value]) => {
+    if (!value) return [];
+    const messages = Array.isArray(value) ? value : [value];
+    return messages.map((message) => ({ field, message }));
+  }),
+);
+const liveIssues = computed(() => {
+  const issues: string[] = [];
+  if (!plan.value) issues.push("Plan is required.");
+  if (seats.value === null || seats.value < 5) issues.push("Seats must be at least 5.");
+  if (["admin", "root", "billing"].includes(workspaceSlug.value.toLowerCase())) {
+    issues.push("Workspace slug is reserved.");
+  }
+  if (ownerEmail.value.toLowerCase() === "blocked@company.test") {
+    issues.push("Email is blocked by the server rule.");
+  }
+  if (!permissions.value.length) issues.push("Pick at least one permission.");
+  return issues;
+});
+const liveData = computed(() =>
+  JSON.stringify({
+    ownerName: ownerName.value,
+    ownerEmail: ownerEmail.value,
+    workspaceSlug: workspaceSlug.value,
+    plan: plan.value || "(missing)",
+    seats: seats.value,
+    riskScore: riskScore.value,
+    permissions: permissions.value,
+    billingLocked: billingLocked.value,
+    submittedBillingFields: billingLocked.value
+      ? "(disabled fieldset omitted from FormData)"
+      : {
+          billingName: billingName.value,
+          billingEmail: billingEmail.value,
+        },
+  }, null, 2),
+);
+
+function clearError(name: string) {
+  if (!errors.value[name]) return;
+  const { [name]: _removed, ...rest } = errors.value;
+  errors.value = rest;
+}
+
+function onFormSubmit(values: FormValues, details: FormSubmitDetails) {
+  result.value = "";
+
+  if (!details.valid) {
+    result.value = "Native validation failed. Fix the highlighted fields and submit again.";
+    return;
+  }
+
+  const nextErrors: FormErrors = {};
+  const email = String(values.ownerEmail ?? "");
+  const slug = String(values.workspaceSlug ?? "").toLowerCase();
+
+  if (email.toLowerCase() === "blocked@company.test") {
+    nextErrors.ownerEmail = "blocked@company.test is blocked by server-side validation.";
+  }
+  if (["admin", "root", "billing"].includes(slug)) {
+    nextErrors.workspaceSlug = `${slug} is reserved. Pick a team-specific slug.`;
+  }
+  if (!values.permissions) {
+    nextErrors.permissions = "Pick at least one permission bundle.";
+  }
+
+  errors.value = nextErrors;
+
+  if (Object.keys(nextErrors).length) {
+    result.value = "Server validation returned field errors.";
+    return;
+  }
+
+  result.value = JSON.stringify(values, null, 2);
+}
+</script>
+
+<template>
+  <section class="border-y border-neutral-200 bg-neutral-50/70 py-14 dark:border-neutral-800 dark:bg-neutral-950">
+    <div class="mx-auto grid max-w-7xl gap-8 px-4 sm:px-6 lg:grid-cols-[0.8fr_1.2fr] lg:px-8">
+      <div class="max-w-xl">
+        <p class="text-sm font-medium text-neutral-500 dark:text-neutral-400">
+          Real form, early
+        </p>
+        <h2 class="mt-3 text-3xl font-semibold tracking-tight text-neutral-950 dark:text-neutral-50 sm:text-4xl">
+          Not a toy email field.
+        </h2>
+        <p class="mt-4 text-base leading-7 text-neutral-600 dark:text-neutral-300">
+          This is the messy shape teams ship: native validation, server errors, hint text,
+          disabled billing data, grouped controls, and nested fields in one form.
+        </p>
+        <div class="mt-6 rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950">
+          <h3 class="text-sm font-semibold text-neutral-950 dark:text-neutral-50">
+            What to try
+          </h3>
+          <ul class="mt-3 grid gap-2 text-sm leading-6 text-neutral-600 dark:text-neutral-300">
+            <li>Select a plan and raise seats to 5 or more to clear native validation.</li>
+            <li>Use slug <code class="font-mono">admin</code>, <code class="font-mono">root</code>, or <code class="font-mono">billing</code> to see server errors.</li>
+            <li>Use <code class="font-mono">blocked@company.test</code> to see an email server error. <code class="font-mono">ops@example.com</code> is valid.</li>
+            <li>Unlock billing profile to see nested disabled controls enter FormData.</li>
+          </ul>
+        </div>
+
+        <div class="mt-4 rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950">
+          <h3 class="text-sm font-semibold text-neutral-950 dark:text-neutral-50">
+            Live checks
+          </h3>
+          <ul
+            v-if="liveIssues.length"
+            class="mt-3 grid gap-2 text-sm leading-6 text-amber-700 dark:text-amber-300"
+          >
+            <li v-for="issue in liveIssues" :key="issue">
+              {{ issue }}
+            </li>
+          </ul>
+          <p v-else class="mt-3 text-sm text-emerald-700 dark:text-emerald-300">
+            No known client-side or demo server issues.
+          </p>
+        </div>
+
+        <div class="mt-4 rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950">
+          <h3 class="text-sm font-semibold text-neutral-950 dark:text-neutral-50">
+            Server errors
+          </h3>
+          <ul
+            v-if="serverErrorItems.length"
+            class="mt-3 grid gap-2 text-sm leading-6 text-red-700 dark:text-red-300"
+          >
+            <li v-for="item in serverErrorItems" :key="`${item.field}-${item.message}`">
+              <span class="font-mono">{{ item.field }}</span>: {{ item.message }}
+            </li>
+          </ul>
+          <p v-else class="mt-3 text-sm text-neutral-500 dark:text-neutral-400">
+            None yet. Submit with reserved slug or blocked email to populate this.
+          </p>
+        </div>
+
+        <div class="mt-4 rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950">
+          <h3 class="text-sm font-semibold text-neutral-950 dark:text-neutral-50">
+            Realtime data
+          </h3>
+          <pre class="mt-3 max-h-80 overflow-auto rounded-lg bg-neutral-100 p-3 text-xs leading-5 text-neutral-700 dark:bg-neutral-900 dark:text-neutral-300">{{ liveData }}</pre>
+        </div>
+      </div>
+
+      <Form
+        :errors="errors"
+        class="grid gap-5 rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-950 sm:p-6"
+        @form-submit="onFormSubmit"
+      >
+        <Fieldset
+          legend="Workspace request"
+          description="Nested fields share one semantic group, but each control keeps its own label, hint, and error."
+          :ui="fieldsetUi"
+        >
+          <div class="grid gap-4 md:grid-cols-2">
+            <Field
+              name="ownerName"
+              label="Requester"
+              description="Shown on the internal approval ticket."
+              required
+              :ui="fieldUi"
+            >
+              <Input
+                v-model="ownerName"
+                :class="inputClass"
+                autocomplete="name"
+                placeholder="Riya Shah"
+              />
+            </Field>
+
+            <Field
+              name="ownerEmail"
+              label="Work email"
+              description="ops@example.com is valid. Use blocked@company.test for a server error."
+              required
+              :ui="fieldUi"
+            >
+              <Input
+                v-model="ownerEmail"
+                type="email"
+                :class="inputClass"
+                autocomplete="email"
+                placeholder="you@company.com"
+                @value-change="clearError('ownerEmail')"
+              />
+            </Field>
+          </div>
+
+          <div class="grid gap-4 md:grid-cols-3">
+            <Field
+              name="workspaceSlug"
+              label="Workspace slug"
+              description="Lowercase URL key. Server owns reserved words."
+              required
+              :ui="fieldUi"
+            >
+              <Input
+                v-model="workspaceSlug"
+                :class="inputClass"
+                pattern="[a-z0-9-]+"
+                placeholder="acme-support"
+                @value-change="clearError('workspaceSlug')"
+              />
+            </Field>
+
+            <Field
+              name="plan"
+              label="Plan"
+              description="Required custom select with disabled option."
+              required
+              :ui="fieldUi"
+            >
+              <Select
+                v-model="plan"
+                :options="planOptions"
+                placeholder="Select plan"
+                :ui="selectUi"
+              />
+            </Field>
+
+            <Field
+              name="seats"
+              label="Seats"
+              description="Minimum 5. Initial value is intentionally invalid."
+              required
+              :ui="fieldUi"
+            >
+              <NumberField
+                v-model="seats"
+                :min="5"
+                :max="250"
+                :ui="numberUi"
+                @value-change="clearError('seats')"
+              />
+            </Field>
+          </div>
+
+          <Field
+            name="riskScore"
+            :label="`Risk score: ${riskLabel}`"
+            description="Slider still submits a native value with the form."
+            :ui="fieldUi"
+          >
+            <Slider
+              v-model="riskScore"
+              :min="0"
+              :max="100"
+              name="riskScore"
+              aria-label="Risk score"
+              :ui="sliderUi"
+            />
+          </Field>
+        </Fieldset>
+
+        <Fieldset
+          legend="Nested controls"
+          description="Checkboxes, switch, and disabled fieldset live inside the same submit flow."
+          :ui="fieldsetUi"
+        >
+          <Field
+            name="permissions"
+            label="Permission bundle"
+            description="One disabled option is visible because real policy often leaks into forms."
+            required
+            :ui="fieldUi"
+          >
+            <CheckboxGroup
+              v-model="permissions"
+              name="permissions"
+              required
+              parent
+              parent-label="Select all allowed permissions"
+              :options="permissionOptions"
+              :ui="checkboxGroupUi"
+              @value-change="clearError('permissions')"
+            />
+          </Field>
+
+          <Switch
+            v-model="billingLocked"
+            name="billingLocked"
+            label="Use locked billing profile"
+            description="Turn this off to edit the nested billing fieldset. Disabled fields are omitted from FormData."
+            :ui="switchUi"
+          />
+
+          <Fieldset
+            legend="Billing profile"
+            description="Disabled fieldset with nested Akaza fields and native inputs."
+            :disabled="billingLocked"
+            :ui="fieldsetUi"
+          >
+            <div class="grid gap-4 md:grid-cols-2">
+              <Field
+                name="billingName"
+                label="Billing name"
+                :disabled="billingLocked"
+                :ui="fieldUi"
+              >
+                <Input v-model="billingName" :class="inputClass" />
+              </Field>
+
+              <Field
+                name="billingEmail"
+                label="Billing email"
+                :disabled="billingLocked"
+                :ui="fieldUi"
+              >
+                <Input v-model="billingEmail" type="email" :class="inputClass" />
+              </Field>
+            </div>
+          </Fieldset>
+        </Fieldset>
+
+        <div class="grid gap-3 border-t border-neutral-200 pt-5 dark:border-neutral-800 sm:grid-cols-[auto_1fr] sm:items-start">
+          <Button
+            type="submit"
+            class="h-10 rounded-lg bg-neutral-950 px-4 text-sm font-medium text-white outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 dark:bg-white dark:text-neutral-950 dark:focus-visible:ring-white"
+          >
+            Submit ugly form
+          </Button>
+
+          <pre class="max-h-44 overflow-auto rounded-lg bg-neutral-100 p-3 text-xs leading-5 text-neutral-700 dark:bg-neutral-900 dark:text-neutral-300">{{ result }}</pre>
+        </div>
+      </Form>
+    </div>
+  </section>
+</template>

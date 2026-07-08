@@ -7,7 +7,7 @@
   Akaza UI
 </h1>
 <p align="center">
-  <b>Vue-native headless UI primitives — accessible, unstyled, and built for Vue.</b>
+  <b>Vue-native headless UI primitives - accessible, unstyled, and built for Vue.</b>
   <br>
 </p>
 
@@ -22,7 +22,7 @@
 
 # Akaza UI
 
-Unlike libraries ported from React (Radix, Reka), Akaza UI is designed from scratch for Vue 3. It uses `v-model`, named scoped slots, and the `ui` prop as first-class primitives — no sub-component trees, no `asChild`, no fighting the framework.
+Unlike libraries ported from React (Radix, Reka), Akaza UI is designed from scratch for Vue 3. It uses `v-model`, named scoped slots, and the `ui` prop as first-class primitives - no sub-component trees, no `asChild`, no fighting the framework.
 
 ## Why Akaza UI?
 
@@ -30,15 +30,15 @@ Unlike libraries ported from React (Radix, Reka), Akaza UI is designed from scra
 | ------------------------------------------------------------------------- | --------------------------------------------------------------- |
 | `<DialogRoot><DialogTrigger><DialogPortal><DialogOverlay><DialogContent>` | `<Dialog v-model="isOpen">` with named slots                    |
 | React-adapted DX                                                          | Vue-native: `v-model`, scoped slots, `inject/provide`           |
-| Styled or opinionated defaults                                            | Fully unstyled — `data-akaza-*` attributes and class hooks only |
+| Styled or opinionated defaults                                            | Fully unstyled - `data-akaza-*` attributes and class hooks only |
 
 ## Core Philosophy
 
-- **Slot-based, not sub-component-based** — named scoped slots (`#trigger`, `#header`, `#body`, `#footer`) keep templates flat and readable
-- **`v-model`-native** — all stateful components bind via standard `v-model`
-- **`ui` prop for structural styling** — pass class strings per part (`ui.overlay`, `ui.content`, `ui.header`…) instead of wrapping sub-components
-- **Items-based API for lists** — `RadioGroup`, `Menu`, `Tabs` accept an `items` array; per-item rendering uses named slots, not sub-components
-- **Accessible by default** — WAI-ARIA roles, keyboard navigation, and focus management built in
+- **Slot-based, not sub-component-based** - named scoped slots (`#trigger`, `#header`, `#body`, `#footer`) keep templates flat and readable
+- **`v-model`-native** - all stateful components bind via standard `v-model`
+- **`ui` prop for structural styling** - pass class strings per part (`ui.overlay`, `ui.content`, `ui.header`) instead of wrapping sub-components
+- **Items-based API for lists** - `RadioGroup`, `Menu`, `Tabs`, `Select`, `CheckboxGroup`, and `ToggleGroup` accept data arrays; per-item rendering uses named slots
+- **Accessible by default** - WAI-ARIA roles, keyboard navigation, and focus management built in
 
 ## Installation
 
@@ -80,30 +80,36 @@ No manual CSS import or component registration needed.
 
 ## Components
 
-| Component     | Description                                                                     |
-| ------------- | ------------------------------------------------------------------------------- |
-| `Button`      | Accessible button with `disabled`, `loading`, `focusableWhenDisabled`, and `as` |
-| `Toggle`      | On/off button with `aria-pressed`                                               |
-| `Switch`      | Binary toggle with WAI-ARIA switch role                                         |
-| `Checkbox`    | Tri-state checkbox (`true`, `false`, `'indeterminate'`)                         |
-| `CheckboxGroup` | Multi-select checkbox list with an items-based API                            |
-| `Field`       | Label, description, and error wiring for controls                               |
-| `Fieldset`    | Native fieldset and legend wrapper for related controls                         |
-| `Form`        | Submit wrapper exposing `FormData` and native validity state                    |
-| `Input`       | Text input with Field integration and invalid state attrs                       |
-| `RadioGroup`  | Accessible radio group with roving tabindex and custom item rendering           |
-| `Progress`    | Progressbar with indeterminate support                                          |
-| `Avatar`      | Image with fallback slot on load error                                          |
-| `Separator`   | Horizontal or vertical divider, decorative or semantic                          |
-| `Collapsible` | Single show/hide region with animated height                                    |
-| `Accordion`   | Single or multi-open collapsible item list                                      |
-| `Tooltip`     | Hover tooltip with auto-positioning and delay                                   |
-| `Popover`     | Click-triggered floating panel with auto-positioning                            |
-| `Dialog`      | Modal dialog with focus trap, Escape, backdrop                                  |
-| `AlertDialog` | Confirmation dialog (no Escape/backdrop close per WAI-ARIA)                     |
-| `Drawer`      | Side panel with slide-in animation (`top`, `right`, `bottom`, `left`)           |
-| `Menu`        | Dropdown menu with items-based API, submenus, checkbox/radio items              |
-| `Tabs`        | Accessible tab set with animated indicator, items-based API                     |
+| Component        | Description                                                                     |
+| ---------------- | ------------------------------------------------------------------------------- |
+| `Accordion`      | Single or multi-open collapsible item list                                      |
+| `AlertDialog`    | Confirmation dialog with alertdialog semantics                                  |
+| `Avatar`         | Image with fallback slot on load error                                          |
+| `Button`         | Accessible button with disabled, loading, async click, and `as` support         |
+| `Checkbox`       | Tri-state checkbox (`true`, `false`, `'indeterminate'`)                         |
+| `CheckboxGroup`  | Multi-select checkbox list with an items-based API                              |
+| `Collapsible`    | Single show/hide region with animated height                                    |
+| `Dialog`         | Modal dialog with focus trap, Escape, backdrop                                  |
+| `Drawer`         | Side panel with slide-in animation (`top`, `right`, `bottom`, `left`)           |
+| `Field`          | Label, description, and error wiring for controls                               |
+| `Fieldset`       | Native fieldset and legend wrapper for related controls                         |
+| `Form`           | Submit wrapper exposing `FormData` and native validity state                    |
+| `Input`          | Text input with Field integration and invalid state attrs                       |
+| `Menu`           | Dropdown menu with items-based API, submenus, checkbox/radio items              |
+| `Meter`          | Read-only gauge for bounded numeric values                                      |
+| `NumberField`    | Spinbutton number input with increment/decrement and scrub support              |
+| `OverlayProvider` | Programmatic overlay mounting with `useOverlay`                                |
+| `Popover`        | Click-triggered floating panel with auto-positioning                            |
+| `Progress`       | Progressbar with determinate and indeterminate support                          |
+| `RadioGroup`     | Accessible radio group with roving tabindex and custom item rendering           |
+| `Select`         | Listbox select with keyboard navigation, typeahead, and form submission         |
+| `Separator`      | Horizontal or vertical divider, decorative or semantic                          |
+| `Slider`         | Slider with pointer drag, keyboard step, and ARIA value metadata                |
+| `Switch`         | Binary toggle with WAI-ARIA switch role                                         |
+| `Tabs`           | Accessible tab set with animated indicator, items-based API                     |
+| `Toggle`         | On/off button with `aria-pressed`                                               |
+| `ToggleGroup`    | Single or multiple pressed values with roving focus                             |
+| `Tooltip`        | Hover/focus tooltip with auto-positioning and delay                             |
 
 ## Usage
 
@@ -196,11 +202,12 @@ const items = [
 
 ## Styling
 
-Akaza UI is fully unstyled. Every structural element carries:
+Akaza UI is fully unstyled. Relevant structural elements expose:
 
-- **`data-akaza-state`** — current state (`open`, `closed`, `checked`, `disabled`, `loading`…)
-- **`data-akaza-side`** — positioning side for floating elements (`top`, `bottom`, `left`, `right`)
-- **`class="akaza-[component]-[part]"`** — semantic class for CSS targeting
+- **`data-akaza-state`** - primary state (`open`, `closed`, `checked`, `disabled`, `loading`)
+- **granular `data-akaza-*` attrs** - orthogonal state (`invalid`, `focused`, `dirty`, `filled`)
+- **`data-akaza-side`** - positioning side for floating elements (`top`, `bottom`, `left`, `right`)
+- **semantic `akaza-*` classes** - stable CSS selectors for each documented part
 
 Style via the `ui` prop (inject classes per structural part):
 
@@ -225,7 +232,6 @@ Or target via CSS:
 ## Requirements
 
 - Vue `>=3.5.0`
-- `@vueuse/core` (peer dependency)
 
 ## Repo Structure
 

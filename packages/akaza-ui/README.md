@@ -6,12 +6,12 @@ Vue-native headless UI primitives — accessible, unstyled, composable.
 
 ## Philosophy
 
-Built for Vue 3, not adapted from React. Every primitive uses `v-model`, named scoped slots, and `useX` composables as first-class APIs — no sub-component trees, no `asChild`.
+Built for Vue 3, not adapted from React. Every primitive uses `v-model`, named scoped slots, and `useX` composables as first-class APIs - no sub-component trees, no `asChild`.
 
-- **Slot-based** — `#trigger`, `#header`, `#body`, `#footer` slots keep templates flat
-- **`ui` prop** — inject CSS classes per structural part (`ui.overlay`, `ui.content`, …)
-- **Accessible** — WAI-ARIA roles, keyboard navigation, focus management
-- **Unstyled** — `data-akaza-*` attributes and semantic class hooks; no style opinion
+- **Slot-based** - `#trigger`, `#header`, `#body`, `#footer` slots keep templates flat
+- **`ui` prop** - inject CSS classes per structural part (`ui.overlay`, `ui.content`)
+- **Accessible** - WAI-ARIA roles, keyboard navigation, focus management
+- **Unstyled** - `data-akaza-*` attributes and semantic class hooks; no style opinion
 
 ## Requirements
 
@@ -59,7 +59,7 @@ No manual CSS import or component registration needed.
 
 ## Components
 
-`Button` · `Toggle` · `Switch` · `Checkbox` · `CheckboxGroup` · `Field` · `Fieldset` · `Form` · `Input` · `RadioGroup` · `Progress` · `Avatar` · `Separator` · `Collapsible` · `Accordion` · `Tooltip` · `Popover` · `Dialog` · `AlertDialog` · `Drawer` · `Menu` · `Tabs`
+`Accordion` · `AlertDialog` · `Avatar` · `Button` · `Checkbox` · `CheckboxGroup` · `Collapsible` · `Dialog` · `Drawer` · `Field` · `Fieldset` · `Form` · `Input` · `Menu` · `Meter` · `NumberField` · `OverlayProvider` · `Popover` · `Progress` · `RadioGroup` · `Select` · `Separator` · `Slider` · `Switch` · `Tabs` · `Toggle` · `ToggleGroup` · `Tooltip`
 
 ## Usage
 
@@ -108,6 +108,7 @@ Style via the `ui` prop or target semantic classes and data attributes:
 .akaza-dialog-overlay { … }
 .akaza-dialog-content { … }
 [data-akaza-state="open"] { … }
+[data-akaza-invalid] { … }
 [data-akaza-side="bottom"] { … }
 ```
 

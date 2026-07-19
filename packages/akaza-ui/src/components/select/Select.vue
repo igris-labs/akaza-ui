@@ -2,6 +2,7 @@
 import type { SelectModelValue, SelectOption, SelectProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
 import { computed, inject, nextTick, onBeforeUnmount, onMounted, onUpdated, ref, useId, useTemplateRef, watch } from "vue";
+import { useDismissableLayer } from "../../utils/dismissableLayer";
 import { useFloatingPosition } from "../../utils/floatingPosition";
 import { fieldContextKey } from "../field/context";
 
@@ -45,6 +46,7 @@ const emit = defineEmits<{
 const model = defineModel<SelectModelValue>({ default: "" });
 const openModel = defineModel<boolean>("open", { default: false });
 const searchModel = defineModel<string>("search", { default: "" });
+const initialValue: SelectModelValue = Array.isArray(model.value) ? [...model.value] : model.value;
 
 const autoId = useId();
 const field = inject(fieldContextKey, null);
@@ -73,7 +75,7 @@ const isInvalid = computed(() => invalid || field?.invalid.value || nativeInvali
 const describedBy = computed(() => ariaDescribedby ?? field?.describedBy.value);
 const selectedValues = computed(() => {
   if (Array.isArray(model.value)) return model.value;
-  return model.value === "" ? [] : [model.value];
+  return model.value === nullableValue ? [] : [model.value];
 });
 const selectedOptions = computed(() =>
   options.filter((option) => isSelectableOption(option) && selectedValues.value.includes(getValue(option))),
@@ -83,10 +85,10 @@ const selectedLabel = computed(() =>
   selectedOptions.value.map((option) => getLabel(option)).join(", "),
 );
 const isFilled = computed(() => selectedValues.value.length > 0);
-const isDirty = computed(() => selectedValues.value.length > 0);
+const isDirty = computed(() => !modelValuesEqual(model.value, initialValue));
 const activeIndex = ref(-1);
 const activeOptionId = computed(() =>
-  openModel.value && activeIndex.value >= 0 ? `${contentId}-option-${activeIndex.value}` : undefined,
+  openModel.value && !loading && activeIndex.value >= 0 ? `${contentId}-option-${activeIndex.value}` : undefined,
 );
 const visibleOptions = computed(() => {
   const query = searchModel.value.trim().toLowerCase();
@@ -136,6 +138,12 @@ const { actualAlign, actualSide, style: contentStyle } = useFloatingPosition({
   matchWidth: true,
   cssVarPrefix: "akaza-select",
 });
+const { register: registerDismissable, unregister: unregisterDismissable } = useDismissableLayer(
+  (event?: KeyboardEvent) => {
+    setOpen(false, "escape", event);
+    triggerRef.value?.focus();
+  },
+);
 
 const unregister = field?.registerControl({
   dirty: isDirty,
@@ -178,15 +186,24 @@ function isOptionSelected(option: SelectOption): boolean {
   return selectedValues.value.includes(getValue(option));
 }
 
+function modelValuesEqual(left: SelectModelValue, right: SelectModelValue) {
+  const leftValues = Array.isArray(left) ? left : left === nullableValue ? [] : [left];
+  const rightValues = Array.isArray(right) ? right : right === nullableValue ? [] : [right];
+  return leftValues.length === rightValues.length
+    && leftValues.every((value, index) => value === rightValues[index]);
+}
+
 function updateValidity(reveal = validationActive.value) {
   const select = nativeRef.value;
   if (!select) return;
+  select.setCustomValidity(isRequired.value && !isFilled.value ? "Please select an option." : "");
   validity.value = select.validity;
   nativeInvalid.value = reveal && !select.validity.valid;
   validationMessage.value = select.validationMessage;
 }
 
 function findEnabledIndex(start = 0): number {
+  if (loading) return -1;
   const index = visibleOptions.value.findIndex((option, i) => i >= start && !isItemDisabled(option));
   if (index >= 0) return index;
   return visibleOptions.value.findIndex((option) => !isItemDisabled(option));
@@ -224,7 +241,7 @@ function getNextValue(option: SelectOption): SelectModelValue {
 }
 
 function selectOption(option: SelectOption, event?: Event) {
-  if (isItemDisabled(option)) return;
+  if (loading || isItemDisabled(option)) return;
   validationActive.value = true;
   const value = getNextValue(option);
   let canceled = false;
@@ -244,7 +261,7 @@ function selectOption(option: SelectOption, event?: Event) {
 }
 
 function move(delta: number) {
-  if (!visibleOptions.value.length) return;
+  if (loading || !visibleOptions.value.length) return;
   const count = visibleOptions.value.length;
   let next = activeIndex.value < 0 ? findEnabledIndex() : activeIndex.value;
   for (let step = 0; step < count; step++) {
@@ -272,6 +289,8 @@ function onTriggerKeydown(event: KeyboardEvent) {
     return;
   }
   if (event.key === "Escape") {
+    if (!openModel.value) return;
+    event.preventDefault();
     setOpen(false, "escape", event);
     return;
   }
@@ -317,14 +336,15 @@ function setSearch(value: string, reason: string, event?: Event) {
       canceled = true;
     },
   });
-  if (!canceled) {
-    searchModel.value = value;
-    activeIndex.value = findEnabledIndex();
-  }
+  if (canceled) return false;
+  searchModel.value = value;
+  activeIndex.value = findEnabledIndex();
+  return true;
 }
 
 function onSearchInput(event: Event) {
-  setSearch((event.target as HTMLInputElement).value, "input", event);
+  const target = event.target as HTMLInputElement;
+  if (!setSearch(target.value, "input", event)) target.value = searchModel.value;
 }
 
 function onSearchKeydown(event: KeyboardEvent) {
@@ -406,9 +426,11 @@ function onFocusOut(event: FocusEvent) {
   updateValidity();
 }
 
-function onInvalid() {
+function onInvalid(event: Event) {
+  event.preventDefault();
   validationActive.value = true;
   updateValidity();
+  nextTick(() => triggerRef.value?.focus());
 }
 
 onMounted(() => {
@@ -418,22 +440,26 @@ onMounted(() => {
 onUpdated(updateValidity);
 watch(openModel, async (open) => {
   if (!open) {
+    unregisterDismissable();
     activeIndex.value = -1;
     return;
   }
+  registerDismissable();
   const selectedIndex = visibleOptions.value.findIndex((option) => isOptionSelected(option) && !isItemDisabled(option));
   activeIndex.value = selectedIndex >= 0 ? selectedIndex : findEnabledIndex();
   if (autocomplete) {
     await nextTick();
+    if (!openModel.value) return;
     searchRef.value?.focus();
   }
 }, { immediate: true });
 watch(isDisabled, (value) => {
   if (value && openModel.value) setOpen(false, "disabled");
-});
+}, { immediate: true });
 onBeforeUnmount(() => {
   document.removeEventListener("pointerdown", onDocumentPointerDown);
   window.clearTimeout(typeaheadTimer);
+  unregisterDismissable();
   unregister?.();
 });
 </script>
@@ -606,6 +632,7 @@ onBeforeUnmount(() => {
               :data-akaza-disabled="isItemDisabled(option) || undefined"
               :class="ui?.option"
               class="akaza-select-option"
+              @mousedown.prevent
               @click="selectOption(option, $event)"
               @mouseenter="highlightOnHover && !isItemDisabled(option) && focusOption(index)"
             >
@@ -618,7 +645,7 @@ onBeforeUnmount(() => {
                 :is-selected="isOptionSelected(option)"
                 :is-highlighted="activeIndex === index"
                 :is-disabled="isItemDisabled(option)"
-                :select="() => selectOption(option)"
+                :select="(event?: Event) => selectOption(option, event)"
               >
                 <span :class="ui?.indicator" class="akaza-select-indicator" aria-hidden="true">
                   {{ isOptionSelected(option) ? "✓" : "" }}
@@ -660,7 +687,7 @@ onBeforeUnmount(() => {
 
 .akaza-select-content {
   position: absolute;
-  z-index: 1000;
+  z-index: var(--akaza-z-select, 1000);
   min-width: 100%;
 }
 

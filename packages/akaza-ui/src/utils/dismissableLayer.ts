@@ -29,6 +29,7 @@ export function useDismissableLayer(onDismiss: (event?: KeyboardEvent) => void) 
 
   // Each layer listens independently — only the topmost one acts.
   onKeyStroke("Escape", (event) => {
+    if (event.defaultPrevented) return;
     const isTop = layers[layers.length - 1] === onDismiss;
     if (!isTop) return;
     event.preventDefault();

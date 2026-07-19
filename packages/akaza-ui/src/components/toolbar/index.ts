@@ -2,6 +2,18 @@ export { default as Toolbar } from "./Toolbar.vue";
 
 export type ToolbarOrientation = "horizontal" | "vertical";
 
+export interface ToolbarGroupItem {
+  type?: "button";
+  value?: string;
+  label?: string;
+  disabled?: boolean;
+  pressed?: boolean;
+  focusableWhenDisabled?: boolean;
+  slot?: string;
+  onSelect?: () => void;
+  [key: string]: unknown;
+}
+
 export interface ToolbarItem {
   type?: "button" | "link" | "separator" | "group" | "input";
   value?: string;
@@ -17,7 +29,7 @@ export interface ToolbarItem {
   disabled?: boolean;
   pressed?: boolean;
   focusableWhenDisabled?: boolean;
-  children?: ToolbarItem[];
+  children?: ToolbarGroupItem[];
   slot?: string;
   onSelect?: () => void;
   onUpdateValue?: (value: string) => void;

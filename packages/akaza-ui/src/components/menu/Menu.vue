@@ -262,6 +262,7 @@ function onRadioSelect(item: MenuItem, event: Event) {
 const slots = useSlots();
 
 provide(MENU_CONTEXT_KEY, {
+  dir: "ltr",
   ui,
   radioValues,
   closeOnSelect,
@@ -366,6 +367,11 @@ defineExpose({ open, close, toggle });
   left: 100%;
   top: 0;
   z-index: var(--akaza-z-menu, 1000);
+}
+
+.akaza-menu-submenu-content[data-akaza-side="left"] {
+  right: 100%;
+  left: auto;
 }
 
 /* Transition */

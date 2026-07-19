@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { ToolbarItem, ToolbarProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
-import { ref, useSlots } from "vue";
+import { computed, ref, useSlots } from "vue";
 
 const {
   items = [],
@@ -21,7 +21,16 @@ const emit = defineEmits<{
 type ToolbarSlot = (props: { item: ToolbarItem; isDisabled: boolean }) => unknown;
 
 const slots = useSlots() as Record<string, ToolbarSlot | undefined>;
-const activeKey = ref(findFirstKey(items));
+const requestedActiveKey = ref(findFirstKey(items));
+const rovingKeys = computed(() => getRovingKeys(items));
+const activeKey = computed({
+  get: () => rovingKeys.value.includes(requestedActiveKey.value)
+    ? requestedActiveKey.value
+    : rovingKeys.value[0] ?? "",
+  set: (value: string) => {
+    requestedActiveKey.value = value;
+  },
+});
 
 function getValue(item: ToolbarItem, index: number): string {
   return item.value ?? item.href ?? item.label ?? String(index);
@@ -40,16 +49,20 @@ function getItemKey(item: ToolbarItem, index: number, parent = "root") {
 }
 
 function findFirstKey(source: ToolbarItem[]): string {
+  return getRovingKeys(source)[0] ?? "";
+}
+
+function getRovingKeys(source: ToolbarItem[]): string[] {
+  const keys: string[] = [];
   for (let index = 0; index < source.length; index++) {
     const item = source[index]!;
     if (item.type === "group") {
-      const nested: string = findFirstKey(item.children ?? []);
-      if (nested) return `group-${index}/${nested}`;
+      keys.push(...getRovingKeys(item.children ?? []).map((key) => `group-${index}/${key}`));
     } else if (isRovingItem(item) && (!isDisabled(item) || item.focusableWhenDisabled)) {
-      return getItemKey(item, index);
+      keys.push(getItemKey(item, index));
     }
   }
-  return "";
+  return keys;
 }
 
 function getTabindex(item: ToolbarItem, key: string) {
@@ -121,7 +134,8 @@ function onItemFocus(event: FocusEvent) {
 }
 
 function onInput(item: ToolbarItem, event: Event) {
-  const value = (event.target as HTMLInputElement).value;
+  const target = event.target as HTMLInputElement;
+  const value = target.value;
   let canceled = false;
   emit("input-change", item, value, {
     reason: "input",
@@ -129,6 +143,7 @@ function onInput(item: ToolbarItem, event: Event) {
     cancel: () => { canceled = true; },
   });
   if (!canceled) item.onUpdateValue?.(value);
+  else target.value = String(item.inputValue ?? "");
 }
 
 function hasSlot(item: ToolbarItem): boolean {
@@ -215,6 +230,7 @@ function hasSlot(item: ToolbarItem): boolean {
         :href="item.href"
         data-akaza-toolbar-item
         :data-akaza-toolbar-key="getItemKey(item, index)"
+        :data-akaza-focusable="item.focusableWhenDisabled || undefined"
         :aria-disabled="isDisabled(item) || undefined"
         :data-akaza-disabled="isDisabled(item) || undefined"
         :tabindex="getTabindex(item, getItemKey(item, index))"

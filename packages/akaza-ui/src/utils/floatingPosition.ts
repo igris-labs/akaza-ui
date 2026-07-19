@@ -145,6 +145,7 @@ export function useFloatingPosition(options: FloatingPositionOptions): FloatingP
       return;
     }
     await nextTick();
+    if (!toValue(options.active)) return;
     update();
     addListeners();
   }, { immediate: true });
@@ -163,6 +164,7 @@ export function useFloatingPosition(options: FloatingPositionOptions): FloatingP
   watch([() => options.reference.value, () => options.floating.value], async () => {
     if (!toValue(options.active)) return;
     await nextTick();
+    if (!toValue(options.active)) return;
     removeListeners();
     update();
     addListeners();

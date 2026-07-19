@@ -117,7 +117,7 @@ Use `slot` on an item and render it with the matching named slot.
 | `disabled` | `boolean` | Disables item. |
 | `pressed` | `boolean` | Sets `aria-pressed` and on/off state. |
 | `focusableWhenDisabled` | `boolean` | Keeps disabled item focusable. |
-| `children` | `ToolbarItem[]` | Group children. |
+| `children` | `ToolbarGroupItem[]` | Button commands inside a group. Nested groups and inputs are not supported. |
 | `slot` | `string` | Named slot override. |
 | `onSelect` | `() => void` | Runs after uncanceled select event. |
 | `onUpdateValue` | `(value: string) => void` | Runs after uncanceled input change. |

@@ -33,14 +33,20 @@ const contentRef = useTemplateRef<HTMLElement>("contentRef");
 const posStyle = ref<Record<string, string>>({ top: "-9999px", left: "-9999px" });
 const arrowStyle = ref<Record<string, string>>({});
 const actualSide = ref<HoverPreviewCardSide>(side);
-const { register, unregister } = useDismissableLayer((event?: KeyboardEvent) => {
-  event?.preventDefault();
-  close("escape", event);
-  triggerRef.value?.focus();
-});
 let openTimer: number | undefined;
 let closeTimer: number | undefined;
 let lastPointerType = "mouse";
+let restoringFocus = false;
+const { register, unregister } = useDismissableLayer((event?: KeyboardEvent) => {
+  event?.preventDefault();
+  closeImmediately("escape", event);
+  nextTick(() => {
+    const target = getTriggerFocusTarget();
+    restoringFocus = document.activeElement !== target;
+    target?.focus();
+    queueMicrotask(() => { restoringFocus = false; });
+  });
+});
 
 const contentStyle = computed<CSSProperties>(() => ({
   ...posStyle.value,
@@ -77,6 +83,14 @@ function close(reason = "programmatic", event?: Event) {
   window.clearTimeout(openTimer);
   window.clearTimeout(closeTimer);
   closeTimer = window.setTimeout(() => setOpen(false, reason, event), closeDelay);
+}
+
+function closeImmediately(reason = "programmatic", event?: Event) {
+  if (typeof window !== "undefined") {
+    window.clearTimeout(openTimer);
+    window.clearTimeout(closeTimer);
+  }
+  setOpen(false, reason, event);
 }
 
 function computePosition() {
@@ -151,9 +165,24 @@ function containsTarget(target: EventTarget | null) {
     && (Boolean(rootRef.value?.contains(target)) || Boolean(contentRef.value?.contains(target)));
 }
 
+function getTriggerFocusTarget() {
+  const trigger = triggerRef.value;
+  if (!trigger) return null;
+  const selector = "button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex='-1'])";
+  return trigger.matches(selector) ? trigger : trigger.querySelector<HTMLElement>(selector);
+}
+
 function onFocusOut(event: FocusEvent) {
   if (containsTarget(event.relatedTarget)) return;
   close("focus", event);
+}
+
+function onTriggerFocusIn(event: FocusEvent) {
+  if (restoringFocus) {
+    restoringFocus = false;
+    return;
+  }
+  open("focus", event);
 }
 
 function onPointerDown(event: PointerEvent) {
@@ -231,7 +260,7 @@ const triggerProps = computed(() => ({
       @click="onTriggerClick"
       @mouseenter="open('hover', $event)"
       @mouseleave="close('hover', $event)"
-      @focusin="open('focus', $event)"
+      @focusin="onTriggerFocusIn"
       @focusout="onFocusOut"
     >
       <slot name="trigger" :is-open="model" :trigger-props="triggerProps" />
@@ -259,7 +288,7 @@ const triggerProps = computed(() => ({
           @focusin="open('focus', $event)"
           @focusout="onFocusOut"
         >
-          <slot name="content" :close="() => close('programmatic')" />
+          <slot name="content" :close="() => closeImmediately('programmatic')" />
           <span
             v-if="arrow"
             :class="ui?.arrow"

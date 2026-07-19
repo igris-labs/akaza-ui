@@ -57,4 +57,54 @@ describe("combobox", () => {
 
     expect(wrapper.emitted("create")?.[0]?.[0]).toBe("Svelte");
   });
+
+  it("uses the custom comparator when toggling a multiple value off", async () => {
+    const selected = { id: 1, name: "Selected Vue" };
+    const optionValue = { id: 1, name: "Vue" };
+    const wrapper = mount(defineComponent({
+      components: { Combobox },
+      setup() {
+        const value = ref([selected]);
+        const options = [{ value: optionValue, label: "Vue" }];
+        return { options, value };
+      },
+      template: `<Combobox v-model="value" multiple :options="options" :is-equal="(a, b) => a.id === b.id" />`,
+    }));
+
+    await wrapper.find(".akaza-combobox-input").trigger("focus");
+    await wrapper.find(".akaza-combobox-option").trigger("click");
+
+    expect((wrapper.vm as unknown as { value: unknown[] }).value).toEqual([]);
+  });
+
+  it("does not select hidden options while loading", async () => {
+    const wrapper = mount(Combobox, {
+      props: {
+        open: true,
+        loading: true,
+        options: [{ value: "vue", label: "Vue" }],
+      },
+    });
+    const input = wrapper.find(".akaza-combobox-input");
+
+    expect(input.attributes("aria-activedescendant")).toBeUndefined();
+    await input.trigger("keydown", { key: "ArrowDown" });
+    await input.trigger("keydown", { key: "Enter" });
+
+    expect(wrapper.emitted("value-change")).toBeUndefined();
+  });
+
+  it("treats a custom nullable sentinel as empty for required validation", async () => {
+    const wrapper = mount(Combobox, {
+      props: {
+        modelValue: "none",
+        nullableValue: "none",
+        required: true,
+        options: [{ value: "vue", label: "Vue" }],
+      },
+    });
+
+    await wrapper.find(".akaza-combobox").trigger("focusout", { relatedTarget: document.body });
+    expect(wrapper.find(".akaza-combobox-input").attributes("data-akaza-invalid")).toBe("true");
+  });
 });

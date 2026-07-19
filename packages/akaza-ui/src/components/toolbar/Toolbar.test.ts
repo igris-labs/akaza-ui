@@ -58,4 +58,19 @@ describe("toolbar", () => {
     expect(onSelect).not.toHaveBeenCalled();
     expect(wrapper.emitted("select")).toBeUndefined();
   });
+
+  it("restores a valid roving tab stop when active items change", async () => {
+    const wrapper = mount(Toolbar, {
+      props: {
+        items: [
+          { value: "bold", label: "Bold" },
+          { value: "italic", label: "Italic" },
+        ],
+      },
+    });
+    await wrapper.findAll("[data-akaza-toolbar-item]")[1]!.trigger("focus");
+    await wrapper.setProps({ items: [{ value: "bold", label: "Bold" }] });
+
+    expect(wrapper.find("[data-akaza-toolbar-item]").attributes("tabindex")).toBe("0");
+  });
 });

@@ -175,12 +175,15 @@ export function createToastManager(options: ToastManagerOptions = {}): ToastMana
     clearTimer(id);
     timers.delete(id);
     toast.state = "closing";
-    toast.onClose?.(reason);
-    if (typeof window === "undefined" || removeDelay <= 0) {
-      remove(id);
-      return;
+    try {
+      toast.onClose?.(reason);
+    } finally {
+      if (typeof window === "undefined" || removeDelay <= 0) {
+        remove(id);
+      } else {
+        removalTimers.set(id, window.setTimeout(() => remove(id), removeDelay));
+      }
     }
-    removalTimers.set(id, window.setTimeout(() => remove(id), removeDelay));
   }
 
   function clear(reason: ToastCloseReason = "programmatic") {
@@ -215,13 +218,13 @@ export function createToastManager(options: ToastManagerOptions = {}): ToastMana
       const next = typeof promiseOptions.success === "function"
         ? promiseOptions.success(value)
         : promiseOptions.success;
-      update({ id, type: "success", ...next });
+      update({ type: "success", ...next, id });
       return value;
     } catch (error) {
       const next = typeof promiseOptions.error === "function"
         ? promiseOptions.error(error)
         : promiseOptions.error;
-      update({ id, type: "error", ...next });
+      update({ type: "error", ...next, id });
       throw error;
     }
   }

@@ -3,7 +3,7 @@ import type { ContextMenuProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
 import type { MenuItem } from "../menu";
 import { onClickOutside } from "@vueuse/core";
-import { computed, nextTick, onUnmounted, provide, ref, useSlots, useTemplateRef, watch } from "vue";
+import { computed, nextTick, onUnmounted, provide, ref, useId, useSlots, useTemplateRef, watch } from "vue";
 import { useDismissableLayer } from "../../utils/dismissableLayer";
 import { MENU_CONTEXT_KEY } from "../menu/context";
 import MenuPanel from "../menu/MenuPanel.vue";
@@ -32,7 +32,7 @@ const model = defineModel<boolean>({ default: false });
 const rootRef = useTemplateRef<HTMLElement>("rootRef");
 const contentRef = useTemplateRef<HTMLElement>("contentRef");
 const panelRef = useTemplateRef<InstanceType<typeof MenuPanel>>("panelRef");
-const menuId = `akaza-context-menu-${Math.random().toString(36).slice(2)}`;
+const menuId = `akaza-context-menu-${useId()}`;
 const point = ref({ x: 0, y: 0 });
 const positionStyle = ref<Record<string, string>>({ top: "-9999px", left: "-9999px" });
 const actualSide = ref<"left" | "right">("right");
@@ -206,6 +206,7 @@ function onRadioSelect(item: MenuItem, event: Event) {
 const slots = useSlots();
 
 provide(MENU_CONTEXT_KEY, {
+  dir: "ltr",
   ui,
   radioValues,
   closeOnSelect,

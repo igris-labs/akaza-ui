@@ -5,6 +5,7 @@ import type { AkazaChangeEventDetails } from "../../types";
 import type { MenuItem } from "../menu";
 import { onClickOutside } from "@vueuse/core";
 import { computed, nextTick, onUnmounted, provide, ref, useId, useSlots, useTemplateRef, watch } from "vue";
+import { useDismissableLayer } from "../../utils/dismissableLayer";
 import { useFloatingPosition } from "../../utils/floatingPosition";
 import { MENU_CONTEXT_KEY } from "../menu/context";
 import MenuPanel from "../menu/MenuPanel.vue";
@@ -39,6 +40,11 @@ const id = useId();
 const slots = useSlots() as Record<string, Slot | undefined>;
 let typeahead = "";
 let typeaheadTimer: number | undefined;
+const { register, unregister } = useDismissableLayer((event?: KeyboardEvent) => {
+  const index = items.findIndex((item) => getItemValue(item) === openValue.value);
+  close("escape", event);
+  if (index >= 0) focusTrigger(index);
+});
 
 const activeItem = computed(() => items.find((item) => getItemValue(item) === openValue.value));
 const activeGroups = computed(() => normalizeItems(activeItem.value?.children));
@@ -78,8 +84,8 @@ function setTriggerRef(el: HTMLElement | null, index: number) {
 }
 
 function setOpen(value: string | null, reason: string, event?: Event) {
-  if (disabled && value) return;
-  if (openValue.value === value) return;
+  if (disabled && value) return false;
+  if (openValue.value === value) return true;
   let canceled = false;
   emit("open-change", value, {
     reason,
@@ -88,12 +94,14 @@ function setOpen(value: string | null, reason: string, event?: Event) {
       canceled = true;
     },
   });
-  if (!canceled) openValue.value = value;
+  if (canceled) return false;
+  openValue.value = value;
+  return true;
 }
 
 async function openItem(item: MenubarItem, reason: string, event?: Event, focus: "first" | "last" | false = false) {
   if (item.disabled || !item.children) return;
-  setOpen(getItemValue(item), reason, event);
+  if (!setOpen(getItemValue(item), reason, event)) return;
   if (!focus) return;
   await nextTick();
   const panelItems = panelRef.value?.getItems() ?? [];
@@ -173,6 +181,8 @@ function onTriggerKeydown(event: KeyboardEvent, item: MenubarItem, index: number
       }
     }
   } else if (event.key === "Escape") {
+    if (!openValue.value) return;
+    event.preventDefault();
     close("escape", event);
   } else if (event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey) {
     typeahead += event.key.toLowerCase();
@@ -198,10 +208,12 @@ async function onContentKeydown(event: KeyboardEvent) {
   if (event.key !== forward && event.key !== backward) return;
   const index = items.findIndex((item) => getItemValue(item) === openValue.value);
   const next = getNextIndex(index, event.key === forward ? 1 : -1);
-  if (next < 0 || !items[next]?.children) return;
+  if (next < 0) return;
   event.preventDefault();
-  activeTriggerIndex.value = next;
-  await openItem(items[next]!, "keyboard", event, "first");
+  const nextItem = items[next]!;
+  focusTrigger(next);
+  if (nextItem.children) await openItem(nextItem, "keyboard", event, "first");
+  else close("keyboard", event);
 }
 
 function onTriggerFocus(index: number) {
@@ -285,6 +297,7 @@ function onRadioSelect(item: MenuItem, event: Event) {
 }
 
 provide(MENU_CONTEXT_KEY, {
+  dir,
   ui,
   radioValues,
   closeOnSelect,
@@ -302,7 +315,15 @@ onClickOutside(rootRef, (event) => {
   if (openValue.value) close("outside-click", event);
 }, { ignore: [contentRef] });
 
-onUnmounted(() => window.clearTimeout(typeaheadTimer));
+watch(openValue, (open) => {
+  if (open) register();
+  else unregister();
+}, { immediate: true });
+
+onUnmounted(() => {
+  window.clearTimeout(typeaheadTimer);
+  unregister();
+});
 </script>
 
 <template>
@@ -349,7 +370,6 @@ onUnmounted(() => window.clearTimeout(typeaheadTimer));
         v-if="openValue && activeItem?.children"
         :id="getContentId(items.indexOf(activeItem))"
         ref="contentRef"
-        :aria-labelledby="getTriggerId(items.indexOf(activeItem))"
         :style="contentStyle"
         :class="ui?.content"
         data-akaza-state="open"
@@ -358,7 +378,11 @@ onUnmounted(() => window.clearTimeout(typeaheadTimer));
         class="akaza-menubar-content akaza-menu-content"
         @keydown="onContentKeydown"
       >
-        <MenuPanel ref="panelRef" :items="activeGroups" />
+        <MenuPanel
+          ref="panelRef"
+          :items="activeGroups"
+          :aria-labelledby="getTriggerId(items.indexOf(activeItem))"
+        />
       </div>
     </Transition>
   </div>

@@ -40,4 +40,23 @@ describe("menubar", () => {
 
     wrapper.unmount();
   });
+
+  it("moves from an open menu to a top-level command", async () => {
+    const wrapper = mount(Menubar, {
+      attachTo: document.body,
+      props: {
+        items: [
+          { value: "file", label: "File", children: [{ label: "Open" }] },
+          { value: "save", label: "Save" },
+        ],
+      },
+    });
+    const triggers = wrapper.findAll(".akaza-menubar-trigger");
+    await triggers[0]!.trigger("click");
+    await wrapper.find(".akaza-menubar-content").trigger("keydown", { key: "ArrowRight" });
+
+    expect(wrapper.find(".akaza-menubar-content").exists()).toBe(false);
+    expect(document.activeElement).toBe(triggers[1]!.element);
+    wrapper.unmount();
+  });
 });

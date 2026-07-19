@@ -5,8 +5,9 @@ import { MENU_CONTEXT_KEY } from "./context";
 
 defineOptions({ name: "MenuPanel" });
 
-const { items } = defineProps<{
+const { items, ariaLabelledby } = defineProps<{
   items: MenuItem[][];
+  ariaLabelledby?: string;
 }>();
 
 const ctx = inject(MENU_CONTEXT_KEY)!;
@@ -63,6 +64,32 @@ function onPanelKeydown(e: KeyboardEvent) {
   const itemEls = getItems();
   if (!itemEls.length) return;
   const current = itemEls.indexOf(document.activeElement as HTMLElement);
+  const openSubmenuKey = ctx.dir === "rtl" ? "ArrowLeft" : "ArrowRight";
+  const closeSubmenuKey = ctx.dir === "rtl" ? "ArrowRight" : "ArrowLeft";
+
+  if (e.key === openSubmenuKey) {
+    e.preventDefault();
+    const target = document.activeElement as HTMLElement;
+    if (target?.getAttribute("aria-haspopup") === "menu") {
+      const value = target.getAttribute("data-akaza-value");
+      if (value) {
+        activeSubmenu.value = value;
+        nextTick(() => {
+          const submenu = panelRef.value?.querySelector<HTMLElement>(
+            `.akaza-menu-submenu-content[data-akaza-submenu="${value}"] > [role="menu"]`,
+          );
+          const first = getItems(submenu)?.[0];
+          if (first) highlightItem(first);
+        });
+      }
+    }
+    return;
+  }
+
+  if (e.key === closeSubmenuKey || e.key === "Escape") {
+    e.preventDefault();
+    return;
+  }
 
   switch (e.key) {
     case "ArrowDown": {
@@ -87,31 +114,6 @@ function onPanelKeydown(e: KeyboardEvent) {
       e.preventDefault();
       const last = itemEls[itemEls.length - 1];
       if (last) highlightItem(last);
-      break;
-    }
-    case "ArrowRight": {
-      e.preventDefault();
-      const target = document.activeElement as HTMLElement;
-      if (target?.getAttribute("aria-haspopup") === "menu") {
-        const val = target.getAttribute("data-akaza-value");
-        if (val) {
-          activeSubmenu.value = val;
-          nextTick(() => {
-            // Find the nested MenuPanel's [role="menu"] div inside the submenu content wrapper
-            const sub = panelRef.value?.querySelector<HTMLElement>(
-              `.akaza-menu-submenu-content[data-akaza-submenu="${val}"] > [role="menu"]`,
-            );
-            const first = getItems(sub)?.[0];
-            if (first) highlightItem(first);
-          });
-        }
-      }
-      break;
-    }
-    case "ArrowLeft":
-    case "Escape": {
-      e.preventDefault();
-      // Let event propagate to parent for submenu close handling
       break;
     }
     default: {
@@ -155,7 +157,8 @@ function cancelSubmenuClose() {
 }
 
 function onSubmenuKeydown(e: KeyboardEvent, item: MenuItem) {
-  if (e.key === "ArrowLeft" || e.key === "Escape") {
+  const closeSubmenuKey = ctx.dir === "rtl" ? "ArrowRight" : "ArrowLeft";
+  if (e.key === closeSubmenuKey || e.key === "Escape") {
     e.preventDefault();
     e.stopPropagation();
     activeSubmenu.value = null;
@@ -186,6 +189,8 @@ defineExpose({ panelRef, getItems, highlightItem });
     ref="panelRef"
     role="menu"
     aria-orientation="vertical"
+    :aria-labelledby="ariaLabelledby"
+    :dir="ctx.dir"
     :class="ctx.ui?.panel"
     class="akaza-menu-panel"
     @keydown="onPanelKeydown"
@@ -323,6 +328,7 @@ defineExpose({ panelRef, getItems, highlightItem });
               <div
                 v-if="activeSubmenu === ctx.getItemValue(item)"
                 :data-akaza-submenu="ctx.getItemValue(item)"
+                :data-akaza-side="ctx.dir === 'rtl' ? 'left' : 'right'"
                 :class="ctx.ui?.submenuContent"
                 class="akaza-menu-content akaza-menu-submenu-content"
                 @keydown.stop="onSubmenuKeydown($event, item)"

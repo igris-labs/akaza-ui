@@ -173,4 +173,30 @@ describe("toast", () => {
     expect((items[1]!.element as HTMLElement).style.getPropertyValue("--akaza-toast-index")).toBe("0");
     wrapper.unmount();
   });
+
+  it("keeps the loading toast id when promise phase options include another id", async () => {
+    const manager = createToastManager();
+    await manager.promise(Promise.resolve("done"), {
+      loading: { id: "request", title: "Loading", duration: 0 },
+      success: { id: "wrong", title: "Done", duration: 0 },
+      error: { title: "Failed", duration: 0 },
+    });
+
+    expect(manager.toasts.value).toHaveLength(1);
+    expect(manager.toasts.value[0]?.id).toBe("request");
+    expect(manager.toasts.value[0]?.title).toBe("Done");
+  });
+
+  it("removes a toast even when its close callback throws", () => {
+    const manager = createToastManager({ removeDelay: 0 });
+    manager.add({
+      id: "throwing",
+      title: "Throwing",
+      duration: 0,
+      onClose: () => { throw new Error("close failed"); },
+    });
+
+    expect(() => manager.close("throwing")).toThrow("close failed");
+    expect(manager.toasts.value).toHaveLength(0);
+  });
 });

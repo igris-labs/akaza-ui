@@ -3,6 +3,7 @@ import type { Slot } from "vue";
 import type { ComboboxModelValue, ComboboxOption, ComboboxProps, ComboboxValue } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
 import { computed, inject, onBeforeUnmount, onMounted, onUpdated, ref, useId, useSlots, useTemplateRef, watch } from "vue";
+import { useDismissableLayer } from "../../utils/dismissableLayer";
 import { useFloatingPosition } from "../../utils/floatingPosition";
 import { fieldContextKey } from "../field/context";
 
@@ -72,7 +73,7 @@ const nativeInvalid = ref(false);
 const validationMessage = ref("");
 const validity = ref<ValidityState | null>(null);
 const activeIndex = ref(-1);
-const initialValue = model.value;
+const initialValue: ComboboxModelValue = Array.isArray(model.value) ? [...model.value] : model.value;
 
 const resolvedId = computed(() => id ?? field?.inputId.value ?? `akaza-combobox-${autoId}`);
 const contentId = `akaza-combobox-content-${autoId}`;
@@ -90,7 +91,7 @@ const selectedOptions = computed(() =>
 const isFilled = computed(() => selectedValues.value.length > 0);
 const isDirty = computed(() => !modelValuesEqual(model.value, initialValue));
 const activeOptionId = computed(() =>
-  openModel.value && activeIndex.value >= 0 ? `${contentId}-option-${activeIndex.value}` : undefined,
+  openModel.value && !loading && activeIndex.value >= 0 ? `${contentId}-option-${activeIndex.value}` : undefined,
 );
 const filteredOptions = computed(() => {
   const query = searchModel.value.trim().toLowerCase();
@@ -104,7 +105,7 @@ const filteredOptions = computed(() => {
 const hasVisibleOption = computed(() => filteredOptions.value.some(isSelectableOption));
 const canCreate = computed(() => {
   const query = searchModel.value.trim();
-  return creatable && Boolean(query) && !options.some((option) =>
+  return !loading && creatable && Boolean(query) && !options.some((option) =>
     isSelectableOption(option) && getLabel(option).toLowerCase() === query.toLowerCase(),
   );
 });
@@ -123,6 +124,12 @@ const { actualAlign, actualSide, style: contentStyle } = useFloatingPosition({
   matchWidth: true,
   cssVarPrefix: "akaza-combobox",
 });
+const { register: registerDismissable, unregister: unregisterDismissable } = useDismissableLayer(
+  (event?: KeyboardEvent) => {
+    setOpen(false, "escape", event);
+    inputRef.value?.focus();
+  },
+);
 const stateAttrs = computed(() => ({
   "data-akaza-state": openModel.value ? "open" : "closed",
   "data-akaza-disabled": isDisabled.value || undefined,
@@ -191,6 +198,7 @@ function isOptionSelected(option: ComboboxOption): boolean {
 function updateValidity(reveal = validationActive.value) {
   const input = hiddenRef.value;
   if (!input) return;
+  input.setCustomValidity(isRequired.value && !isFilled.value ? "Please select an option." : "");
   validity.value = input.validity;
   nativeInvalid.value = reveal && !input.validity.valid;
   validationMessage.value = input.validationMessage;
@@ -214,7 +222,7 @@ function setOpen(next: boolean, reason: string, event?: Event) {
 }
 
 function setSearch(value: string, reason: string, event?: Event) {
-  if (readOnly) return;
+  if (readOnly) return false;
   let canceled = false;
   emit("search-change", value, {
     reason,
@@ -223,10 +231,13 @@ function setSearch(value: string, reason: string, event?: Event) {
       canceled = true;
     },
   });
-  if (!canceled) searchModel.value = value;
+  if (canceled) return false;
+  searchModel.value = value;
+  return true;
 }
 
 function findEnabledIndex(start = 0): number {
+  if (loading) return -1;
   const index = filteredOptions.value.findIndex((option, i) => i >= start && !isItemDisabled(option));
   if (index >= 0) return index;
   return filteredOptions.value.findIndex((option) => !isItemDisabled(option));
@@ -245,12 +256,12 @@ function getNextValue(option: ComboboxOption): ComboboxModelValue {
   const value = getValue(option);
   if (!multiple) return value;
   return isOptionSelected(option)
-    ? selectedValues.value.filter((item) => item !== value)
+    ? selectedValues.value.filter((item) => !valuesEqual(item, value))
     : [...selectedValues.value, value];
 }
 
 function selectOption(option: ComboboxOption, event?: Event) {
-  if (readOnly || isItemDisabled(option)) return;
+  if (loading || readOnly || isItemDisabled(option)) return;
   validationActive.value = true;
   const value = getNextValue(option);
   let canceled = false;
@@ -309,7 +320,7 @@ function createOption(event?: Event) {
 }
 
 function move(delta: number) {
-  if (!filteredOptions.value.length) return;
+  if (loading || !filteredOptions.value.length) return;
   const count = filteredOptions.value.length;
   let next = activeIndex.value < 0 ? findEnabledIndex() : activeIndex.value;
   for (let step = 0; step < count; step++) {
@@ -325,7 +336,11 @@ function move(delta: number) {
 
 function onInput(event: Event) {
   validationActive.value = true;
-  setSearch((event.target as HTMLInputElement).value, "input", event);
+  const target = event.target as HTMLInputElement;
+  if (!setSearch(target.value, "input", event)) {
+    target.value = inputValue.value;
+    return;
+  }
   if (openOnInput) setOpen(true, "input", event);
   activeIndex.value = findEnabledIndex();
   updateValidity();
@@ -345,6 +360,8 @@ function onKeydown(event: KeyboardEvent) {
       createOption(event);
     }
   } else if (event.key === "Escape") {
+    if (!openModel.value) return;
+    event.preventDefault();
     setOpen(false, "escape", event);
   } else if (event.key === "Home") {
     if (openModel.value) {
@@ -382,9 +399,11 @@ function onBlur(event: FocusEvent) {
   updateValidity();
 }
 
-function onInvalid() {
+function onInvalid(event: Event) {
+  event.preventDefault();
   validationActive.value = true;
   updateValidity();
+  inputRef.value?.focus();
 }
 
 function onDocumentPointerDown(event: PointerEvent) {
@@ -400,9 +419,19 @@ onMounted(() => {
 onUpdated(updateValidity);
 watch(isDisabled, (value) => {
   if (value && openModel.value) setOpen(false, "disabled");
-});
+}, { immediate: true });
+watch(openModel, (open) => {
+  if (open) {
+    registerDismissable();
+    activeIndex.value = findEnabledIndex();
+  } else {
+    unregisterDismissable();
+    activeIndex.value = -1;
+  }
+}, { immediate: true });
 onBeforeUnmount(() => {
   document.removeEventListener("pointerdown", onDocumentPointerDown);
+  unregisterDismissable();
   unregister?.();
 });
 
@@ -452,7 +481,7 @@ function hasOptionSlot(option: ComboboxOption) {
         :class="ui?.tag"
         class="akaza-combobox-tag"
       >
-        <slot name="tag" :option="option" :value="getValue(option)" :remove="() => removeValue(getValue(option))">
+        <slot name="tag" :option="option" :value="getValue(option)" :remove="(event?: Event) => removeValue(getValue(option), event)">
           <span :class="ui?.tagLabel" class="akaza-combobox-tag-label">{{ getLabel(option) }}</span>
           <button
             type="button"
@@ -583,7 +612,7 @@ function hasOptionSlot(option: ComboboxOption) {
                   isSelected: isOptionSelected(option),
                   isHighlighted: activeIndex === index,
                   isDisabled: isItemDisabled(option),
-                  select: () => selectOption(option),
+                  select: (event?: Event) => selectOption(option, event),
                 })"
                 v-if="hasOptionSlot(option)"
               />
@@ -614,7 +643,7 @@ function hasOptionSlot(option: ComboboxOption) {
             @mousedown.prevent
             @click="createOption($event)"
           >
-            <slot name="create" :search="searchModel" :create="() => createOption()">
+            <slot name="create" :search="searchModel" :create="(event?: Event) => createOption(event)">
               {{ createLabel(searchModel.trim()) }}
             </slot>
           </div>

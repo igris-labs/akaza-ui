@@ -2,6 +2,7 @@ import type { InjectionKey, Slots } from "vue";
 import type { MenuItem, MenuUi } from ".";
 
 export interface MenuContext {
+  dir?: "ltr" | "rtl";
   ui: MenuUi | undefined;
   radioValues: Record<string, string> | undefined;
   closeMenu: (reason: string, event?: Event) => void;

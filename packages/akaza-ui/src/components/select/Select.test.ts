@@ -126,4 +126,36 @@ describe("select", () => {
     await wrapper.find(".akaza-select-trigger").trigger("blur");
     expect(wrapper.find(".akaza-select-trigger").attributes("data-akaza-invalid")).toBe("true");
   });
+
+  it("does not expose or select hidden options while loading", async () => {
+    const wrapper = mount(Select, {
+      props: {
+        open: true,
+        loading: true,
+        options: [{ value: "vue", label: "Vue" }],
+      },
+    });
+    const trigger = wrapper.find(".akaza-select-trigger");
+
+    expect(trigger.attributes("aria-activedescendant")).toBeUndefined();
+    await trigger.trigger("keydown", { key: "ArrowDown" });
+    await trigger.trigger("keydown", { key: "Enter" });
+
+    expect(wrapper.emitted("value-change")).toBeUndefined();
+  });
+
+  it("treats a custom nullable sentinel as empty for required validation", async () => {
+    const wrapper = mount(Select, {
+      props: {
+        modelValue: "none",
+        nullableValue: "none",
+        required: true,
+        options: [{ value: "vue", label: "Vue" }],
+      },
+    });
+    const trigger = wrapper.find(".akaza-select-trigger");
+
+    await trigger.trigger("blur");
+    expect(trigger.attributes("data-akaza-invalid")).toBe("true");
+  });
 });

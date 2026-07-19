@@ -28,4 +28,27 @@ describe("hover preview card", () => {
 
     expect(wrapper.find(".akaza-hover-preview-card-content").isVisible()).toBe(true);
   });
+
+  it("closes immediately on Escape without reopening from restored focus", async () => {
+    vi.useFakeTimers();
+    const wrapper = mount(HoverPreviewCard, {
+      attachTo: document.body,
+      props: { modelValue: true, openDelay: 50, closeDelay: 1000, teleport: false },
+      slots: {
+        trigger: '<button class="trigger">Profile</button>',
+        content: "Preview",
+      },
+    });
+    await wrapper.vm.$nextTick();
+    await wrapper.vm.$nextTick();
+
+    window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true }));
+    await wrapper.vm.$nextTick();
+    expect(document.activeElement).toBe(wrapper.find(".trigger").element);
+    vi.runAllTimers();
+    await wrapper.vm.$nextTick();
+
+    expect(wrapper.find(".akaza-hover-preview-card-content").exists()).toBe(false);
+    wrapper.unmount();
+  });
 });

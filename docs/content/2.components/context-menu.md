@@ -152,6 +152,8 @@ const menu = ref<InstanceType<typeof ContextMenu>>();
 | `content` | `akaza-context-menu-content`, `akaza-menu-content` | `data-akaza-state`, `data-akaza-side`, `data-akaza-align`, `--akaza-context-menu-duration` |
 | menu parts | `akaza-menu-*` | Same as Menu. |
 
+The generated root uses `display: contents`, so it does not change trigger-surface layout. Use `ui.content` for the visible popup; override `ui.root` display only when a real wrapper box is intentional.
+
 Popup entry and exit use a subtle side-aware structural transition. Override `--akaza-context-menu-duration` to change its `120ms` duration. Reduced-motion preference shortens it automatically.
 
 ### Keyboard

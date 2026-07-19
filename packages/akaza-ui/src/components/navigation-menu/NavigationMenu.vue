@@ -2,8 +2,9 @@
 import type { Slot } from "vue";
 import type { NavigationMenuItem, NavigationMenuProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
-import { onClickOutside } from "@vueuse/core";
+import { onClickOutside, useResizeObserver } from "@vueuse/core";
 import { computed, onUnmounted, ref, useId, useSlots, useTemplateRef, watch } from "vue";
+import { useDismissableLayer } from "../../utils/dismissableLayer";
 import { useFloatingPosition } from "../../utils/floatingPosition";
 
 const {
@@ -33,6 +34,11 @@ let openTimer: number | undefined;
 let closeTimer: number | undefined;
 let typeahead = "";
 let typeaheadTimer: number | undefined;
+const { register, unregister } = useDismissableLayer((event?: KeyboardEvent) => {
+  const triggerIndex = items.findIndex((item) => getValue(item) === openValue.value);
+  setOpen(null, "escape", event);
+  if (triggerIndex >= 0) focusTrigger(triggerIndex);
+});
 
 const activeItem = computed(() => items.find((item) => getValue(item) === openValue.value));
 const activeTriggerRef = computed(() => {
@@ -48,7 +54,11 @@ const { actualAlign, actualSide, style: contentStyle } = useFloatingPosition({
   sideOffset: 8,
   cssVarPrefix: "akaza-navigation-menu",
 });
+const indicatorRevision = ref(0);
+useResizeObserver(rootRef, () => { indicatorRevision.value += 1; });
+useResizeObserver(activeTriggerRef, () => { indicatorRevision.value += 1; });
 const indicatorStyle = computed(() => {
+  void indicatorRevision.value;
   const index = items.findIndex((item) => getValue(item) === openValue.value);
   const trigger = triggerRefs.value[index];
   const root = rootRef.value;
@@ -148,6 +158,8 @@ function onTriggerKeydown(event: KeyboardEvent, item: NavigationMenuItem, index:
     event.preventDefault();
     setOpen(getValue(item), "keyboard", event);
   } else if (event.key === "Escape") {
+    if (!openValue.value) return;
+    event.preventDefault();
     setOpen(null, "escape", event);
   } else if (event.key === "Home") {
     event.preventDefault();
@@ -239,11 +251,16 @@ onClickOutside(rootRef, (event) => {
 watch(() => disabled, (value) => {
   if (value && openValue.value) setOpen(null, "disabled");
 });
+watch(() => Boolean(activeItem.value?.children), (open) => {
+  if (open) register();
+  else unregister();
+}, { immediate: true });
 
 onUnmounted(() => {
   window.clearTimeout(openTimer);
   window.clearTimeout(closeTimer);
   window.clearTimeout(typeaheadTimer);
+  unregister();
 });
 </script>
 
@@ -279,7 +296,6 @@ onUnmounted(() => {
           :aria-disabled="!item.children && (item.href || item.as) && (disabled || item.disabled) ? true : undefined"
           :aria-current="!item.children && item.active ? (item.ariaCurrent ?? 'page') : undefined"
           :aria-expanded="item.children ? openValue === getValue(item) : undefined"
-          :aria-haspopup="item.children ? 'true' : undefined"
           :aria-controls="item.children ? getContentId(index) : undefined"
           :tabindex="getTriggerTabindex(item, index)"
           :class="[item.children ? ui?.trigger : ui?.link, item.children ? 'akaza-navigation-menu-trigger' : 'akaza-navigation-menu-link']"

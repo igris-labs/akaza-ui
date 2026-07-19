@@ -7,11 +7,12 @@ definePageMeta({
 });
 
 const route = useRoute();
+const path = route.path.replace(/\/$/, "") || "/";
 const { toc } = useAppConfig();
 const navigation = inject<Ref<ContentNavigationItem[]>>("navigation");
 
-const { data: page } = await useAsyncData(route.path, () =>
-  queryCollection("docs").path(route.path).first(),
+const { data: page } = await useAsyncData(`page:${path}`, () =>
+  queryCollection("docs").path(path).first(),
 );
 if (!page.value) {
   throw createError({
@@ -21,8 +22,8 @@ if (!page.value) {
   });
 }
 
-const { data: surround } = await useAsyncData(`${route.path}-surround`, () => {
-  return queryCollectionItemSurroundings("docs", route.path, {
+const { data: surround } = await useAsyncData(`${path}-surround`, () => {
+  return queryCollectionItemSurroundings("docs", path, {
     fields: ["description"],
   });
 });

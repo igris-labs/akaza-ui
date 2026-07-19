@@ -74,4 +74,56 @@ describe("select", () => {
     expect((wrapper.vm as unknown as { value: string[] }).value).toEqual(["read", "write"]);
     expect(wrapper.find(".akaza-select-content").exists()).toBe(true);
   });
+
+  it("moves autocomplete focus and keyboard ownership to the search input", async () => {
+    const wrapper = mount(defineComponent({
+      components: { Select },
+      setup() {
+        const value = ref("");
+        const options = [
+          { value: "vue", label: "Vue" },
+          { value: "nuxt", label: "Nuxt" },
+        ];
+        return { options, value };
+      },
+      template: `<Select v-model="value" autocomplete :options="options" />`,
+    }), { attachTo: document.body });
+
+    await wrapper.find(".akaza-select-trigger").trigger("click");
+    const search = wrapper.find(".akaza-select-search-input");
+    expect(document.activeElement).toBe(search.element);
+
+    await search.trigger("keydown", { key: "ArrowDown" });
+    await search.trigger("keydown", { key: "Enter" });
+    expect((wrapper.vm as unknown as { value: string }).value).toBe("nuxt");
+
+    wrapper.unmount();
+  });
+
+  it("closes an open popup when disabled", async () => {
+    const wrapper = mount(Select, {
+      props: {
+        open: true,
+        options: [{ value: "vue", label: "Vue" }],
+      },
+    });
+
+    expect(wrapper.find(".akaza-select-content").exists()).toBe(true);
+    await wrapper.setProps({ disabled: true });
+    expect(wrapper.find(".akaza-select-content").exists()).toBe(false);
+  });
+
+  it("supports native required validity without a name", async () => {
+    const wrapper = mount(Select, {
+      props: {
+        modelValue: "",
+        required: true,
+        options: [{ value: "vue", label: "Vue" }],
+      },
+    });
+
+    await wrapper.find(".akaza-select-trigger").trigger("focus");
+    await wrapper.find(".akaza-select-trigger").trigger("blur");
+    expect(wrapper.find(".akaza-select-trigger").attributes("data-akaza-invalid")).toBe("true");
+  });
 });

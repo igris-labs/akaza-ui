@@ -34,8 +34,8 @@ export default defineAppConfig({
   },
   footer: {
     credits: `© ${new Date().getFullYear()} Akaza UI`,
-    description: "Open-source headless components for accessible Vue interfaces.",
-    tagline: "Open source. Vue first.",
+    description: "A Vue-native headless UI library built from scratch for Vue 3. Accessible, unstyled, and slot-based.",
+    tagline: "Built for Vue. Not ported to it.",
     colorMode: true,
     columns: [
       {
@@ -56,6 +56,11 @@ export default defineAppConfig({
           {
             label: "Usage",
             to: "/getting-started/usage",
+          },
+          {
+            label: "Playground",
+            to: "https://playground.akaza-ui.com/",
+            target: "_blank",
           },
         ],
       },

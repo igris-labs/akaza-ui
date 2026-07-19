@@ -23,6 +23,8 @@ const server = ref("");
 const region = ref("iad");
 const permissions = ref<string[]>(["read", "deploy"]);
 const guarded = ref("viewer");
+const searchable = ref("");
+const selectSearch = ref("");
 const lastEvent = ref("No event yet.");
 
 const plans: SelectOption[] = [
@@ -146,6 +148,23 @@ function blockOwner(value: SelectModelValue, details: AkazaChangeEventDetails) {
             </template>
           </Select>
           <code :class="codePill">region: {{ region }}</code>
+        </div>
+      </div>
+
+      <div>
+        <h3 :class="exampleTitle">Autocomplete filtering</h3>
+        <div :class="canvasCol">
+          <Select
+            v-model="searchable"
+            v-model:search="selectSearch"
+            autocomplete
+            :options="permissionOptions"
+            placeholder="Choose permission"
+            search-placeholder="Filter permissions"
+            :ui="selectUi"
+            @value-change="log"
+          />
+          <code :class="codePill">value: {{ searchable || "(empty)" }}, search: {{ selectSearch || "(empty)" }}</code>
         </div>
       </div>
 

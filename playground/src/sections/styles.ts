@@ -216,6 +216,105 @@ export const menuUi = {
     "px-2.5 pb-1 pt-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground",
 };
 
+export const contextMenuUi = {
+  ...menuUi,
+  content:
+    "min-w-48 rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-lg",
+};
+
+export const menubarUi = {
+  root: "gap-1 rounded-lg border border-border bg-muted p-1",
+  trigger:
+    "rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-background hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-state=open]:bg-background data-[akaza-state=open]:text-foreground data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50",
+  content:
+    "min-w-48 rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-lg",
+  submenuContent:
+    "min-w-40 rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-lg",
+  item: menuUi.item,
+  separator: menuUi.separator,
+  label: menuUi.label,
+};
+
+export const navigationMenuUi = {
+  root: "w-full max-w-2xl",
+  list: "gap-1 rounded-lg border border-border bg-muted p-1",
+  item: "relative",
+  trigger:
+    "rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-background hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-state=open]:bg-background data-[akaza-state=open]:text-foreground",
+  link:
+    "inline-flex rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground no-underline transition-colors hover:bg-background hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50",
+  indicator: "bottom-0 h-0.5 rounded-full bg-primary transition-[left,width]",
+  content:
+    "w-full rounded-lg border border-border bg-popover p-2 text-popover-foreground shadow-lg",
+  viewport: "w-full",
+  contentList: "grid gap-1 sm:grid-cols-2",
+  contentItem: "min-w-0",
+  contentLink:
+    "grid gap-1 rounded-md p-3 text-sm no-underline transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-disabled]:pointer-events-none data-[akaza-disabled]:opacity-50",
+  label: "font-medium text-foreground",
+  description: "text-xs leading-relaxed text-muted-foreground",
+};
+
+export const toolbarUi = {
+  root: "gap-1 rounded-lg border border-border bg-muted p-1",
+  group: "gap-1",
+  button:
+    "inline-flex h-8 min-w-8 items-center justify-center rounded-md px-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-background hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-state=on]:bg-background data-[akaza-state=on]:text-foreground data-[akaza-state=on]:shadow-sm data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50",
+  link:
+    "inline-flex h-8 items-center justify-center rounded-md px-2.5 text-sm font-medium text-muted-foreground no-underline transition-colors hover:bg-background hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+  input:
+    "h-8 w-28 rounded-md border border-input bg-background px-2 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring",
+  separator: "mx-1 h-5 w-px bg-border data-[akaza-orientation=horizontal]:h-px data-[akaza-orientation=horizontal]:w-5",
+  label: "leading-none",
+};
+
+export const comboboxUi = {
+  root: "flex w-full max-w-sm flex-wrap items-center gap-1",
+  input:
+    "block h-9 min-w-36 flex-1 rounded-md border border-input bg-background px-3 text-sm text-foreground shadow-sm outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background data-[akaza-invalid]:border-destructive data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50",
+  tags: "flex flex-wrap gap-1",
+  tag: "inline-flex h-8 items-center gap-1 rounded-md bg-muted px-2 text-xs font-medium text-foreground",
+  tagLabel: "leading-none",
+  remove: "inline-flex size-5 items-center justify-center rounded text-muted-foreground hover:bg-background hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+  clear: "inline-flex size-9 items-center justify-center rounded-md border border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+  hiddenInput: "sr-only",
+  content:
+    "rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-lg",
+  viewport: "max-h-64 overflow-auto",
+  empty: "px-2.5 py-2 text-sm text-muted-foreground",
+  loading: "px-2.5 py-2 text-sm text-muted-foreground",
+  groupLabel:
+    "px-2.5 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground",
+  separator: "my-1 h-px bg-border",
+  option:
+    "flex cursor-pointer items-start gap-2 rounded-sm px-2.5 py-2 text-sm outline-none transition-colors data-[akaza-highlighted]:bg-accent data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50",
+  indicator: "mt-0.5 w-4 shrink-0 text-primary",
+  optionText: "grid gap-0.5",
+  optionLabel: "font-medium text-foreground",
+  optionDescription: "text-xs text-muted-foreground",
+  create: "cursor-pointer rounded-sm px-2.5 py-2 text-sm font-medium text-primary transition-colors hover:bg-accent",
+};
+
+export const toastUi = {
+  viewport: "w-[min(100vw,24rem)]",
+  toast:
+    "relative grid gap-1 rounded-lg border border-border bg-popover p-4 pr-10 text-popover-foreground shadow-lg data-[akaza-type=error]:border-destructive/60 data-[akaza-type=warning]:border-primary/60",
+  title: "text-sm font-semibold text-foreground",
+  description: "text-sm text-muted-foreground",
+  close:
+    "absolute right-2 top-2 inline-flex size-6 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+  action:
+    "mt-2 inline-flex h-8 w-max items-center rounded-md border border-border bg-background px-2.5 text-xs font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+};
+
+export const hoverPreviewCardUi = {
+  trigger:
+    "inline-flex rounded-md text-sm font-medium text-primary underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+  content:
+    "w-72 rounded-lg border border-border bg-popover p-4 text-popover-foreground shadow-lg [&_.akaza-hover-preview-card-arrow]:bg-popover",
+  arrow: "border-border",
+};
+
 export const dialogOverlay = "fixed inset-0 bg-black/50 backdrop-blur-[2px]";
 export const dialogOverlayInner = "fixed inset-0 bg-black/40 backdrop-blur-[1px]";
 export const dialogContent =

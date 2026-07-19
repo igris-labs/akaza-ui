@@ -13,6 +13,10 @@
 | Alert Dialog                 | Extends Dialog; `role="alertdialog"`, requires explicit confirm/cancel     |
 | Drawer                       | Side-anchored Dialog variant (top/right/bottom/left), focus trap           |
 | Menu                         | trigger + content slots, items-based API, roving focus                     |
+| Context Menu                 | Right-click triggered Menu, positions at pointer                           |
+| Menubar                      | Horizontal menu strip, `role="menubar"`, arrow key nav across menus        |
+| Navigation Menu              | Top-level nav with flyout submenus, semantic `nav` root                    |
+| Toolbar                      | `role="toolbar"`, roving focus across buttons and controls                 |
 | Tabs                         | `role="tablist"`, arrow key nav, animated indicator, items-based API       |
 | Checkbox                     | `aria-checked`, indeterminate state, `data-akaza-state`                    |
 | Radio Group                  | `role="radiogroup"`, roving tabindex, items-based API                      |
@@ -26,25 +30,15 @@
 | Form                         | Submit details, `FormData`, native validity state                          |
 | Input                        | Text input with Field integration and invalid state attrs                  |
 | Checkbox Group               | Manages multiple checkboxes with items API and form submission             |
-| Select                       | `role="listbox"`, keyboard nav, typeahead, `aria-selected`                 |
+| Select                       | `role="listbox"`, keyboard nav, typeahead, autocomplete filtering          |
+| Combobox                     | Input + listbox, `aria-autocomplete`, `aria-activedescendant`              |
 | Number Field                 | Increment/decrement, `role="spinbutton"`, min/max/step                     |
 | Slider                       | `role="slider"`, `aria-valuenow/min/max`, pointer and keyboard step        |
 | Toggle Group                 | Single or multiple selection, `role="group"`, roving focus                 |
 | Meter                        | `role="meter"`, `aria-valuenow/min/max`, read-only gauge                   |
 | OverlayProvider / useOverlay | Programmatic overlay provider + composable                                 |
-
-### Planned — Complex Patterns
-
-| Component               | Notes                                                               |
-| ----------------------- | ------------------------------------------------------------------- |
-| Context Menu            | Right-click triggered Menu, positions at pointer                    |
-| Navigation Menu         | Top-level nav with flyout submenus, `role="navigation"`             |
-| Menubar                 | Horizontal menu strip, `role="menubar"`, arrow key nav across menus |
-| Toolbar                 | `role="toolbar"`, roving focus across buttons and controls          |
-| Combobox                | Input + listbox, `aria-autocomplete`, `aria-activedescendant`       |
-| Autocomplete for Select | Add async suggestion loading/filtering to `Select`                  |
-| Toast                   | `role="status"` / `role="alert"`, auto-dismiss, queue management    |
-| Hover Preview Card      | Hover-triggered rich content card (link previews, user cards)       |
+| Toast                        | `role="status"` / `role="alert"`, auto-dismiss, queue management           |
+| Hover Preview Card           | Hover-triggered rich content card for links, users, and entities           |
 
 ### Planned — Form & Input Primitives
 

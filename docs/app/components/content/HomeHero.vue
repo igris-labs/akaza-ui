@@ -25,14 +25,14 @@ const enterEase: [number, number, number, number] = [0.16, 1, 0.3, 1];
         <h1
           class="max-w-3xl text-4xl leading-[1.02] font-semibold tracking-[-0.05em] text-balance sm:text-6xl xl:text-7xl"
         >
-          Unstyled
-          <span class="text-muted">Vue</span>
-          components for accessible interfaces.
+          A Vue-native
+          <span class="text-muted">headless UI</span>
+          library.
         </h1>
 
         <p class="mt-7 max-w-xl text-lg leading-8 text-muted">
-          Headless primitives with a Vue-native slots API. Bring your own styles. Keyboard
-          navigation and ARIA are handled.
+          Accessible, unstyled primitives built from scratch for Vue 3. Use v-model, named scoped
+          slots, and the ui prop without React-style sub-component trees.
         </p>
 
         <div class="mt-9 flex flex-col gap-3 sm:flex-row sm:items-center">

@@ -12,6 +12,7 @@ import FieldsetSection from "./sections/fieldset/FieldsetSection.vue";
 import FormSection from "./sections/form/FormSection.vue";
 import InputSection from "./sections/input/InputSection.vue";
 import SelectSection from "./sections/select/SelectSection.vue";
+import ComboboxSection from "./sections/combobox/ComboboxSection.vue";
 import NumberFieldSection from "./sections/number-field/NumberFieldSection.vue";
 import SliderSection from "./sections/slider/SliderSection.vue";
 import AvatarSection from "./sections/avatar/AvatarSection.vue";
@@ -26,8 +27,14 @@ import DialogSection from "./sections/dialog/DialogSection.vue";
 import AlertDialogSection from "./sections/alert-dialog/AlertDialogSection.vue";
 import DrawerSection from "./sections/drawer/DrawerSection.vue";
 import MenuSection from "./sections/menu/MenuSection.vue";
+import ContextMenuSection from "./sections/context-menu/ContextMenuSection.vue";
+import MenubarSection from "./sections/menubar/MenubarSection.vue";
+import NavigationMenuSection from "./sections/navigation-menu/NavigationMenuSection.vue";
 import TabsSection from "./sections/tabs/TabsSection.vue";
 import ToggleGroupSection from "./sections/toggle-group/ToggleGroupSection.vue";
+import ToolbarSection from "./sections/toolbar/ToolbarSection.vue";
+import ToastSection from "./sections/toast/ToastSection.vue";
+import HoverPreviewCardSection from "./sections/hover-preview-card/HoverPreviewCardSection.vue";
 import OverlaySection from "./sections/overlay/OverlaySection.vue";
 
 const isDark = ref(false);
@@ -45,6 +52,7 @@ const sections = [
       "button",
       "input",
       "select",
+      "combobox",
       "number-field",
       "slider",
       "field",
@@ -58,14 +66,14 @@ const sections = [
       "radio-group",
     ],
   },
-  { id: "display", label: "Display", items: ["avatar", "separator", "meter", "progress"] },
+  { id: "display", label: "Display", items: ["avatar", "separator", "meter", "progress", "toast"] },
   { id: "disclosure", label: "Disclosure", items: ["collapsible", "accordion"] },
   {
     id: "overlay",
     label: "Overlay",
-    items: ["tooltip", "popover", "dialog", "alert-dialog", "drawer", "menu"],
+    items: ["tooltip", "popover", "hover-preview-card", "dialog", "alert-dialog", "drawer", "menu", "context-menu"],
   },
-  { id: "navigation", label: "Navigation", items: ["tabs"] },
+  { id: "navigation", label: "Navigation", items: ["tabs", "navigation-menu", "menubar", "toolbar"] },
   { id: "programmatic", label: "Programmatic", items: ["overlay"] },
 ];
 </script>
@@ -124,6 +132,8 @@ const sections = [
         <Separator class="border-t border-border" />
         <SelectSection />
         <Separator class="border-t border-border" />
+        <ComboboxSection />
+        <Separator class="border-t border-border" />
         <NumberFieldSection />
         <Separator class="border-t border-border" />
         <SliderSection />
@@ -170,7 +180,19 @@ const sections = [
         <Separator class="border-t border-border" />
         <MenuSection />
         <Separator class="border-t border-border" />
+        <ContextMenuSection />
+        <Separator class="border-t border-border" />
         <TabsSection />
+        <Separator class="border-t border-border" />
+        <NavigationMenuSection />
+        <Separator class="border-t border-border" />
+        <MenubarSection />
+        <Separator class="border-t border-border" />
+        <ToolbarSection />
+        <Separator class="border-t border-border" />
+        <ToastSection />
+        <Separator class="border-t border-border" />
+        <HoverPreviewCardSection />
         <Separator class="border-t border-border" />
         <OverlaySection />
       </main>

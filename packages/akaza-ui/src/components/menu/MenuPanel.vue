@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { MenuItem } from ".";
-import { inject, nextTick, ref, useTemplateRef } from "vue";
+import { inject, nextTick, onUnmounted, ref, useTemplateRef } from "vue";
 import { MENU_CONTEXT_KEY } from "./context";
 
 defineOptions({ name: "MenuPanel" });
@@ -172,6 +172,11 @@ function onSubmenuKeydown(e: KeyboardEvent, item: MenuItem) {
 function hasRootSlot(name: string): boolean {
   return !!ctx.rootSlots[name];
 }
+
+onUnmounted(() => {
+  clearTimeout(typeaheadTimer);
+  clearTimeout(submenuCloseTimer);
+});
 
 defineExpose({ panelRef, getItems, highlightItem });
 </script>

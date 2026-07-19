@@ -8,14 +8,19 @@ const COMPONENTS: Array<{ name: string; export: string }> = [
   { name: "Checkbox", export: "Checkbox" },
   { name: "CheckboxGroup", export: "CheckboxGroup" },
   { name: "Collapsible", export: "Collapsible" },
+  { name: "Combobox", export: "Combobox" },
+  { name: "ContextMenu", export: "ContextMenu" },
   { name: "Dialog", export: "Dialog" },
   { name: "Drawer", export: "Drawer" },
   { name: "Field", export: "Field" },
   { name: "Fieldset", export: "Fieldset" },
   { name: "Form", export: "Form" },
+  { name: "HoverPreviewCard", export: "HoverPreviewCard" },
   { name: "Input", export: "Input" },
+  { name: "Menubar", export: "Menubar" },
   { name: "Menu", export: "Menu" },
   { name: "Meter", export: "Meter" },
+  { name: "NavigationMenu", export: "NavigationMenu" },
   { name: "NumberField", export: "NumberField" },
   { name: "OverlayProvider", export: "OverlayProvider" },
   { name: "Popover", export: "Popover" },
@@ -29,6 +34,8 @@ const COMPONENTS: Array<{ name: string; export: string }> = [
   { name: "Toggle", export: "Toggle" },
   { name: "ToggleGroup", export: "ToggleGroup" },
   { name: "Tooltip", export: "Tooltip" },
+  { name: "Toast", export: "Toast" },
+  { name: "Toolbar", export: "Toolbar" },
 ];
 
 type AkazaNuxtModule = ReturnType<

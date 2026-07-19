@@ -23,8 +23,11 @@ export interface SelectUi {
   value?: string;
   placeholder?: string;
   icon?: string;
+  searchInput?: string;
   content?: string;
   viewport?: string;
+  empty?: string;
+  loading?: string;
   groupLabel?: string;
   separator?: string;
   option?: string;
@@ -49,6 +52,13 @@ export interface SelectProps {
   disabled?: boolean;
   invalid?: boolean;
   loop?: boolean;
+  autocomplete?: boolean;
+  filter?: (option: SelectOption, search: string) => boolean;
+  loading?: boolean;
+  emptyLabel?: string;
+  searchPlaceholder?: string;
+  resetSearchOnSelect?: boolean;
+  highlightOnHover?: boolean;
   side?: SelectSide;
   align?: SelectAlign;
   sideOffset?: number;

@@ -7,7 +7,9 @@ navigation:
 
 `Select` renders a trigger and a `role="listbox"` popup. It supports single or multiple values, labels, separators, typeahead, cancelable changes, and [Field](/components/field) metadata without a nested subcomponent tree.
 
-Use it when the user must choose from a known list. For free text or filtering, use an input/combobox-style control instead.
+Popup placement flips when preferred side lacks room, clamps to viewport, and follows anchor/content resize and ancestor scrolling.
+
+Use it when the user must choose from a known list. Use `autocomplete` when the same select needs lightweight filtering. Use [Combobox](/components/combobox) when the text input itself is the primary interaction.
 
 ## Anatomy
 
@@ -89,6 +91,29 @@ Use `type: "label"` and `type: "separator"` for non-selectable rows. They are sk
 </template>
 ```
 
+### Autocomplete filtering
+
+Set `autocomplete` to render a search input inside the popup. Focus moves into the search input when opened; that input owns `aria-activedescendant` and Arrow/Enter/Escape navigation. Bind `v-model:search` when search text should drive async loading or external filtering.
+
+```vue
+<script setup lang="ts">
+import { ref } from "vue";
+
+const value = ref("");
+const search = ref("");
+</script>
+
+<template>
+  <Select
+    v-model="value"
+    v-model:search="search"
+    autocomplete
+    :options="options"
+    search-placeholder="Filter options"
+  />
+</template>
+```
+
 ### Field integration
 
 Place `Select` inside [Field](/components/field) to inherit `id`, `name`, `required`, disabled state, invalid state, and `aria-describedby`. Required/native invalid state is revealed after selection, blur, or invalid submit; it is not shown on initial render.
@@ -153,6 +178,13 @@ Use `#option` to render richer option content. The component still owns `role="o
 | `disabled` | `boolean` | `false` | Disables trigger and options. |
 | `invalid` | `boolean` | `false` | Sets invalid attrs. |
 | `loop` | `boolean` | `true` | Arrow navigation wraps. |
+| `autocomplete` | `boolean` | `false` | Renders a search input in the popup and filters visible options. |
+| `filter` | `(option, search) => boolean` | label/description contains search | Custom autocomplete filter. |
+| `loading` | `boolean` | `false` | Shows loading slot/content inside the popup. |
+| `emptyLabel` | `string` | `"No options found."` | Default empty state text. |
+| `searchPlaceholder` | `string` | `"Search options..."` | Search input placeholder. |
+| `resetSearchOnSelect` | `boolean` | `false` | Clears search after selection. |
+| `highlightOnHover` | `boolean` | `true` | Pointer hover updates highlighted option. |
 | `side` | `"top" \| "right" \| "bottom" \| "left"` | `"bottom"` | Popup side. |
 | `align` | `"start" \| "center" \| "end"` | `"start"` | Popup alignment. |
 | `sideOffset` | `number` | `6` | Popup offset in px. |
@@ -167,6 +199,7 @@ Use `#option` to render richer option content. The component still owns `role="o
 |-------|---------|-------------|
 | `open-change` | `(open, details)` | Fired before popup opens/closes. `details.cancel()` prevents the change. |
 | `value-change` | `(value: string \| string[], details)` | Fired before selected value updates. `details.cancel()` prevents the update. |
+| `search-change` | `(value: string, details)` | Fired before autocomplete search updates. `details.cancel()` prevents the update. |
 
 ### Slots
 
@@ -176,6 +209,8 @@ Use `#option` to render richer option content. The component still owns `role="o
 | `value` | `option`, `options`, `value`, `values`, `label` | Custom selected value. |
 | `option` | `option`, `value`, `label`, `description`, `isSelected`, `isHighlighted`, `isDisabled`, `select` | Custom option row. |
 | `group-label` | `option`, `label` | Custom label row for `type: "label"` options. |
+| `empty` | — | Empty state for autocomplete filtering. |
+| `loading` | — | Loading state content. |
 
 ### Option Shape
 
@@ -197,8 +232,11 @@ Use `#option` to render richer option content. The component still owns `role="o
 | `value` | Selected value wrapper. |
 | `placeholder` | Placeholder text. |
 | `icon` | Default chevron icon. |
+| `searchInput` | Autocomplete search input. |
 | `content` | Listbox popup. |
 | `viewport` | Scrollable viewport inside popup. |
+| `empty` | Empty state. |
+| `loading` | Loading state. |
 | `groupLabel` | Non-selectable label row. |
 | `separator` | Separator row. |
 | `option` | Option row. |
@@ -217,17 +255,22 @@ Use `#option` to render richer option content. The component still owns `role="o
 | `value` | `akaza-select-value` | — |
 | `placeholder` | `akaza-select-placeholder` | — |
 | `icon` | `akaza-select-icon` | — |
-| `content` | `akaza-select-content` | `data-akaza-state`, `data-akaza-side`, `data-akaza-align` |
+| `searchInput` | `akaza-select-search-input` | `role="searchbox"`, `aria-controls`, `aria-activedescendant`, `aria-expanded` |
+| `content` | `akaza-select-content` | `data-akaza-state`, `data-akaza-side`, `data-akaza-align`, `--akaza-select-anchor-width`, `--akaza-select-anchor-height`, `--akaza-select-available-width`, `--akaza-select-available-height`, `--akaza-select-transform-origin`, `--akaza-select-duration` |
 | `viewport` | `akaza-select-viewport` | — |
+| `empty` | `akaza-select-empty` | — |
+| `loading` | `akaza-select-loading` | — |
 | `groupLabel` | `akaza-select-group-label` | — |
 | `separator` | `akaza-select-separator` | — |
-| `option` | `akaza-select-option` | `data-akaza-state`, `data-akaza-highlighted`, `data-akaza-disabled` |
+| `option` | `akaza-select-option` | `data-akaza-state`, `data-akaza-highlighted`, `data-akaza-disabled`, `aria-disabled` |
 | `indicator` | `akaza-select-indicator` | — |
 | `optionText` | `akaza-select-option-text` | — |
 | `optionLabel` | `akaza-select-option-label` | — |
 | `optionDescription` | `akaza-select-option-description` | — |
 
 Plain `class` applies to the root wrapper. Use `ui.trigger`, `ui.content`, and `ui.option` for internal parts.
+
+Popup entry and exit use a subtle side-aware structural transition. Override `--akaza-select-duration` to change its `120ms` duration. Reduced-motion preference shortens it automatically.
 
 Native `data-akaza-invalid` appears after interaction or invalid submit. Controlled invalid state from the `invalid` prop or parent `Field` appears immediately.
 

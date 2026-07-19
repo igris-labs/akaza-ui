@@ -213,7 +213,7 @@ Use `#option` to render richer option content. The component still owns `role="o
 |--------|-----------|------------|
 | `root` | `akaza-select` | `data-akaza-state`, `data-akaza-side`, `data-akaza-align`, `data-akaza-disabled`, `data-akaza-invalid`, `data-akaza-filled`, `data-akaza-focused` |
 | `nativeSelect` | `akaza-select-native` | — |
-| `trigger` | `akaza-select-trigger` | ARIA combobox attrs via trigger props |
+| `trigger` | `akaza-select-trigger` | Same select state attrs plus ARIA combobox attrs via trigger props |
 | `value` | `akaza-select-value` | — |
 | `placeholder` | `akaza-select-placeholder` | — |
 | `icon` | `akaza-select-icon` | — |

@@ -33,8 +33,63 @@ export default defineAppConfig({
     ],
   },
   footer: {
-    credits: `© ${new Date().getFullYear()} - Igris Labs`,
-    colorMode: false,
+    credits: `© ${new Date().getFullYear()} Akaza UI`,
+    description: "Open-source headless components for accessible Vue interfaces.",
+    tagline: "Open source. Vue first.",
+    colorMode: true,
+    columns: [
+      {
+        label: "Documentation",
+        children: [
+          {
+            label: "Getting Started",
+            to: "/getting-started",
+          },
+          {
+            label: "Styling",
+            to: "/getting-started/styling",
+          },
+          {
+            label: "Components",
+            to: "/components",
+          },
+          {
+            label: "Usage",
+            to: "/getting-started/usage",
+          },
+        ],
+      },
+      {
+        label: "Ecosystem",
+        children: [
+          {
+            label: "Inspira UI",
+            to: "https://inspira-ui.com",
+            target: "_blank",
+          },
+          {
+            label: "Inspira UI Pro",
+            to: "https://pro.inspira-ui.com",
+            target: "_blank",
+          },
+        ],
+      },
+      {
+        label: "Project",
+        children: [
+          {
+            label: "Rahul Vashishtha",
+            to: "https://rahulv.dev",
+            target: "_blank",
+          },
+          {
+            label: "Igris Labs",
+            to: "https://github.com/igris-labs",
+            target: "_blank",
+          },
+        ],
+      },
+    ],
     links: [
       {
         icon: "i-simple-icons-x",

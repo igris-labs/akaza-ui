@@ -1,4 +1,8 @@
 <script setup lang="ts">
+definePageMeta({
+  layout: false,
+});
+
 const { data: page } = await useAsyncData("index", () =>
   queryCollection("landing").path("/").first(),
 );
@@ -27,5 +31,9 @@ useSeoMeta({
 </script>
 
 <template>
-  <ContentRenderer v-if="page" :value="page" :prose="false" />
+  <ContentRenderer
+    v-if="page"
+    :value="page"
+    :prose="false"
+  />
 </template>

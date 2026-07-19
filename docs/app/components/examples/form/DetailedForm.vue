@@ -33,8 +33,8 @@ const seats = ref<number | null>(3);
 const riskScore = ref(72);
 const permissions = ref(["read", "export"]);
 const billingLocked = ref(true);
-const billingName = ref("Igris Labs Finance");
-const billingEmail = ref("ap@igris.test");
+const billingName = ref("Rahul Vashishtha");
+const billingEmail = ref("billing@example.com");
 
 const planOptions: SelectOption[] = [
   { type: "label", label: "Production" },
@@ -82,32 +82,32 @@ const fieldUi = {
 };
 
 const fieldsetUi = {
-  root: "rounded-xl border border-neutral-200 p-4 data-[akaza-disabled]:bg-neutral-50 data-[akaza-disabled]:opacity-80 dark:border-neutral-800 dark:data-[akaza-disabled]:bg-neutral-900/40",
+  root: "rounded-none border border-neutral-200 p-4 data-[akaza-disabled]:bg-neutral-50 data-[akaza-disabled]:opacity-80 dark:border-neutral-800 dark:data-[akaza-disabled]:bg-neutral-900/40",
   legend: "px-1 text-sm font-semibold text-neutral-950 dark:text-neutral-50",
   description: "mt-1 text-xs leading-5 text-neutral-500 dark:text-neutral-400",
   content: "mt-4 grid gap-4",
 };
 
 const inputClass =
-  "h-10 w-full rounded-lg border border-neutral-200 bg-white px-3 text-sm text-neutral-950 outline-none transition placeholder:text-neutral-400 focus:border-neutral-900 focus:ring-2 focus:ring-neutral-900/10 disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-500 data-[akaza-invalid]:border-red-500 data-[akaza-invalid]:ring-2 data-[akaza-invalid]:ring-red-500/20 data-[akaza-invalid]:focus:border-red-500 data-[akaza-invalid]:focus:ring-red-500/30 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-50 dark:focus:border-neutral-100 dark:focus:ring-white/10 dark:disabled:bg-neutral-900 dark:data-[akaza-invalid]:border-red-400 dark:data-[akaza-invalid]:ring-red-400/20 dark:data-[akaza-invalid]:focus:border-red-400 dark:data-[akaza-invalid]:focus:ring-red-400/30";
+  "h-10 w-full rounded-none border border-neutral-200 bg-white px-3 text-sm text-neutral-950 outline-none transition placeholder:text-neutral-400 focus:border-neutral-900 focus:ring-2 focus:ring-neutral-900/10 disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-500 data-[akaza-invalid]:border-red-500 data-[akaza-invalid]:ring-2 data-[akaza-invalid]:ring-red-500/20 data-[akaza-invalid]:focus:border-red-500 data-[akaza-invalid]:focus:ring-red-500/30 dark:border-neutral-800 dark:bg-black dark:text-neutral-50 dark:focus:border-neutral-100 dark:focus:ring-white/10 dark:disabled:bg-neutral-900 dark:data-[akaza-invalid]:border-red-400 dark:data-[akaza-invalid]:ring-red-400/20 dark:data-[akaza-invalid]:focus:border-red-400 dark:data-[akaza-invalid]:focus:ring-red-400/30";
 
 const selectUi = {
   root: "w-full",
   trigger:
-    "flex h-10 w-full items-center justify-between rounded-lg border border-neutral-200 bg-white px-3 text-left text-sm text-neutral-950 outline-none transition focus:border-neutral-900 focus:ring-2 focus:ring-neutral-900/10 disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-500 data-[akaza-invalid]:border-red-500 data-[akaza-invalid]:ring-2 data-[akaza-invalid]:ring-red-500/20 data-[akaza-invalid]:focus:border-red-500 data-[akaza-invalid]:focus:ring-red-500/30 dark:border-neutral-800 dark:bg-neutral-950 dark:text-neutral-50 dark:focus:border-neutral-100 dark:focus:ring-white/10 dark:disabled:bg-neutral-900 dark:data-[akaza-invalid]:border-red-400 dark:data-[akaza-invalid]:ring-red-400/20 dark:data-[akaza-invalid]:focus:border-red-400 dark:data-[akaza-invalid]:focus:ring-red-400/30",
+    "flex h-10 w-full items-center justify-between rounded-none border border-neutral-200 bg-white px-3 text-left text-sm text-neutral-950 outline-none transition focus:border-neutral-900 focus:ring-2 focus:ring-neutral-900/10 disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-500 data-[akaza-invalid]:border-red-500 data-[akaza-invalid]:ring-2 data-[akaza-invalid]:ring-red-500/20 data-[akaza-invalid]:focus:border-red-500 data-[akaza-invalid]:focus:ring-red-500/30 dark:border-neutral-800 dark:bg-black dark:text-neutral-50 dark:focus:border-neutral-100 dark:focus:ring-white/10 dark:disabled:bg-neutral-900 dark:data-[akaza-invalid]:border-red-400 dark:data-[akaza-invalid]:ring-red-400/20 dark:data-[akaza-invalid]:focus:border-red-400 dark:data-[akaza-invalid]:focus:ring-red-400/30",
   placeholder: "text-neutral-400",
   content:
-    "z-20 rounded-lg border border-neutral-200 bg-white p-1 shadow-lg dark:border-neutral-800 dark:bg-neutral-950",
+    "z-20 rounded-none border border-neutral-200 bg-white p-1 shadow-lg dark:border-neutral-800 dark:bg-black",
   viewport: "max-h-64 overflow-auto",
   option:
-    "flex cursor-pointer items-start gap-2 rounded-md px-2 py-1.5 text-sm text-neutral-950 data-[akaza-highlighted]:bg-neutral-100 data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-40 dark:text-neutral-50 dark:data-[akaza-highlighted]:bg-neutral-800",
+    "flex cursor-pointer items-start gap-2 rounded-none px-2 py-1.5 text-sm text-neutral-950 data-[akaza-highlighted]:bg-neutral-100 data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-40 dark:text-neutral-50 dark:data-[akaza-highlighted]:bg-neutral-800",
   indicator: "w-4 text-neutral-900 dark:text-neutral-100",
   optionText: "grid gap-0.5",
   optionDescription: "text-xs text-neutral-500",
 };
 
 const numberUi = {
-  root: "h-10 w-full overflow-hidden rounded-lg border border-neutral-200 bg-white focus-within:border-neutral-900 focus-within:ring-2 focus-within:ring-neutral-900/10 data-[akaza-invalid]:border-red-500 data-[akaza-invalid]:ring-2 data-[akaza-invalid]:ring-red-500/20 data-[akaza-invalid]:focus-within:border-red-500 data-[akaza-invalid]:focus-within:ring-red-500/30 dark:border-neutral-800 dark:bg-neutral-950 dark:focus-within:border-neutral-100 dark:focus-within:ring-white/10 dark:data-[akaza-invalid]:border-red-400 dark:data-[akaza-invalid]:ring-red-400/20 dark:data-[akaza-invalid]:focus-within:border-red-400 dark:data-[akaza-invalid]:focus-within:ring-red-400/30",
+  root: "h-10 w-full overflow-hidden rounded-none border border-neutral-200 bg-white focus-within:border-neutral-900 focus-within:ring-2 focus-within:ring-neutral-900/10 data-[akaza-invalid]:border-red-500 data-[akaza-invalid]:ring-2 data-[akaza-invalid]:ring-red-500/20 data-[akaza-invalid]:focus-within:border-red-500 data-[akaza-invalid]:focus-within:ring-red-500/30 dark:border-neutral-800 dark:bg-black dark:focus-within:border-neutral-100 dark:focus-within:ring-white/10 dark:data-[akaza-invalid]:border-red-400 dark:data-[akaza-invalid]:ring-red-400/20 dark:data-[akaza-invalid]:focus-within:border-red-400 dark:data-[akaza-invalid]:focus-within:ring-red-400/30",
   decrement:
     "grid h-full w-10 place-items-center border-r border-neutral-200 text-sm text-neutral-700 disabled:cursor-not-allowed disabled:opacity-40 dark:border-neutral-800 dark:text-neutral-300",
   input:
@@ -124,23 +124,23 @@ const checkboxUi = {
 
 const checkboxGroupUi = {
   root: "grid gap-2",
-  item: "rounded-lg border border-neutral-200 p-3 data-[akaza-state=checked]:border-neutral-900 dark:border-neutral-800 dark:data-[akaza-state=checked]:border-neutral-100",
+  item: "rounded-none border border-neutral-200 p-3 data-[akaza-state=checked]:border-neutral-900 dark:border-neutral-800 dark:data-[akaza-state=checked]:border-neutral-100",
   checkbox: checkboxUi,
 };
 
 const sliderUi = {
   root: "h-6 w-full",
-  track: "h-2 w-full rounded-full bg-neutral-200 dark:bg-neutral-800",
-  range: "h-full rounded-full bg-neutral-900 dark:bg-white",
+  track: "h-2 w-full rounded-none bg-neutral-200 dark:bg-neutral-800",
+  range: "h-full rounded-none bg-neutral-900 dark:bg-white",
   thumb:
-    "size-5 rounded-full border-2 border-neutral-900 bg-white outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 dark:border-white dark:bg-neutral-950 dark:focus-visible:ring-white",
+    "size-5 rounded-none border-2 border-neutral-900 bg-white outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 dark:border-white dark:bg-black dark:focus-visible:ring-white",
 };
 
 const switchUi = {
   wrapper: "items-start",
-  root: "relative h-5 w-9 rounded-full bg-neutral-200 transition data-[akaza-state=checked]:bg-neutral-900 dark:bg-neutral-800 dark:data-[akaza-state=checked]:bg-white",
+  root: "relative h-5 w-9 rounded-none bg-neutral-200 transition data-[akaza-state=checked]:bg-neutral-900 dark:bg-neutral-800 dark:data-[akaza-state=checked]:bg-white",
   thumb:
-    "absolute left-0.5 top-0.5 size-4 rounded-full bg-white transition-transform data-[akaza-state=checked]:translate-x-4 dark:bg-neutral-950",
+    "absolute left-0.5 top-0.5 size-4 rounded-none bg-white transition-transform data-[akaza-state=checked]:translate-x-4 dark:bg-black",
   label: "text-sm font-medium text-neutral-950 dark:text-neutral-50",
   description: "text-xs leading-5 text-neutral-500 dark:text-neutral-400",
 };
@@ -325,24 +325,19 @@ function onFormSubmit(values: FormValues, details: FormSubmitDetails) {
 </script>
 
 <template>
-  <section
-    class="border-y border-neutral-200 bg-neutral-50/70 py-14 dark:border-neutral-800 dark:bg-neutral-950"
-  >
+  <section class="border-b border-neutral-200 bg-background py-20 dark:border-white/10 sm:py-28">
     <div class="mx-auto grid max-w-7xl gap-8 px-4 sm:px-6 lg:grid-cols-[0.8fr_1.2fr] lg:px-8">
       <div class="max-w-xl">
-        <p class="text-sm font-medium text-neutral-500 dark:text-neutral-400">Real form, early</p>
         <h2
-          class="mt-3 text-3xl font-semibold tracking-tight text-neutral-950 dark:text-neutral-50 sm:text-4xl"
+          class="text-3xl font-semibold tracking-tight text-neutral-950 dark:text-neutral-50 sm:text-4xl"
         >
-          Not a toy email field.
+          Complete form behavior, in one example.
         </h2>
         <p class="mt-4 text-base leading-7 text-neutral-600 dark:text-neutral-300">
-          This is the messy shape teams ship: native validation, server errors, hint text, disabled
-          billing data, grouped controls, and nested fields in one form.
+          Native validation, server errors, disabled groups, custom controls, and nested fields work
+          together in one real flow.
         </p>
-        <div
-          class="mt-6 rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950"
-        >
+        <div class="mt-7 border-t border-neutral-200 pt-5 dark:border-neutral-800">
           <h3 class="text-sm font-semibold text-neutral-950 dark:text-neutral-50">What to try</h3>
           <ul class="mt-3 grid gap-2 text-sm leading-6 text-neutral-600 dark:text-neutral-300">
             <li>Select a plan and raise seats to 5 or more to clear native validation.</li>
@@ -358,53 +353,59 @@ function onFormSubmit(values: FormValues, details: FormSubmitDetails) {
           </ul>
         </div>
 
-        <div
-          class="mt-4 rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950"
-        >
+        <div class="mt-5 border-t border-neutral-200 pt-5 dark:border-neutral-800">
           <h3 class="text-sm font-semibold text-neutral-950 dark:text-neutral-50">Live checks</h3>
           <ul
             v-if="liveIssues.length"
             class="mt-3 grid gap-2 text-sm leading-6 text-amber-700 dark:text-amber-300"
           >
-            <li v-for="issue in liveIssues" :key="issue">
+            <li
+              v-for="issue in liveIssues"
+              :key="issue"
+            >
               {{ issue }}
             </li>
           </ul>
-          <p v-else class="mt-3 text-sm text-emerald-700 dark:text-emerald-300">
+          <p
+            v-else
+            class="mt-3 text-sm text-emerald-700 dark:text-emerald-300"
+          >
             No known client-side or demo server issues.
           </p>
         </div>
 
-        <div
-          class="mt-4 rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950"
-        >
+        <div class="mt-5 border-t border-neutral-200 pt-5 dark:border-neutral-800">
           <h3 class="text-sm font-semibold text-neutral-950 dark:text-neutral-50">Server errors</h3>
           <ul
             v-if="serverErrorItems.length"
             class="mt-3 grid gap-2 text-sm leading-6 text-red-700 dark:text-red-300"
           >
-            <li v-for="item in serverErrorItems" :key="`${item.field}-${item.message}`">
+            <li
+              v-for="item in serverErrorItems"
+              :key="`${item.field}-${item.message}`"
+            >
               <span class="font-mono">{{ item.field }}</span>: {{ item.message }}
             </li>
           </ul>
-          <p v-else class="mt-3 text-sm text-neutral-500 dark:text-neutral-400">
+          <p
+            v-else
+            class="mt-3 text-sm text-neutral-500 dark:text-neutral-400"
+          >
             None yet. Submit with reserved slug or blocked email to populate this.
           </p>
         </div>
 
-        <div
-          class="mt-4 rounded-xl border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950"
-        >
+        <div class="mt-5 border-t border-neutral-200 pt-5 dark:border-neutral-800">
           <h3 class="text-sm font-semibold text-neutral-950 dark:text-neutral-50">Realtime data</h3>
           <pre
-            class="mt-3 max-h-80 overflow-auto rounded-lg bg-neutral-100 p-3 text-xs leading-5 text-neutral-700 dark:bg-neutral-900 dark:text-neutral-300"
+            class="mt-3 max-h-80 overflow-auto rounded-none bg-neutral-100 p-3 text-xs leading-5 text-neutral-700 dark:bg-neutral-900 dark:text-neutral-300"
           >{{ liveData }}</pre>
         </div>
       </div>
 
       <Form
         :errors="errors"
-        class="grid gap-5 rounded-2xl border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-950 sm:p-6"
+        class="grid gap-5 rounded-none border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-black sm:p-6"
         @form-submit="onFormSubmit"
         @invalid.capture="onFormInvalid"
       >
@@ -468,7 +469,7 @@ function onFormSubmit(values: FormValues, details: FormSubmitDetails) {
                 v-model="workspaceSlug"
                 :class="inputClass"
                 pattern="[a-z0-9-]+"
-                placeholder="acme-support"
+                placeholder="support-team"
                 @blur="markInteracted('workspaceSlug')"
                 @value-change="onFieldValueChange('workspaceSlug')"
               />
@@ -577,7 +578,10 @@ function onFormSubmit(values: FormValues, details: FormSubmitDetails) {
                 :disabled="billingLocked"
                 :ui="fieldUi"
               >
-                <Input v-model="billingName" :class="inputClass" />
+                <Input
+                  v-model="billingName"
+                  :class="inputClass"
+                />
               </Field>
 
               <Field
@@ -586,7 +590,11 @@ function onFormSubmit(values: FormValues, details: FormSubmitDetails) {
                 :disabled="billingLocked"
                 :ui="fieldUi"
               >
-                <Input v-model="billingEmail" type="email" :class="inputClass" />
+                <Input
+                  v-model="billingEmail"
+                  type="email"
+                  :class="inputClass"
+                />
               </Field>
             </div>
           </Fieldset>
@@ -597,13 +605,13 @@ function onFormSubmit(values: FormValues, details: FormSubmitDetails) {
         >
           <Button
             type="submit"
-            class="h-10 rounded-lg bg-neutral-950 px-4 text-sm font-medium text-white outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 dark:bg-white dark:text-neutral-950 dark:focus-visible:ring-white"
+            class="h-10 rounded-none bg-neutral-950 px-4 text-sm font-medium text-white outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 dark:bg-white dark:text-neutral-950 dark:focus-visible:ring-white"
           >
-            Submit ugly form
+            Submit form
           </Button>
 
           <pre
-            class="max-h-44 overflow-auto rounded-lg bg-neutral-100 p-3 text-xs leading-5 text-neutral-700 dark:bg-neutral-900 dark:text-neutral-300"
+            class="max-h-44 overflow-auto rounded-none bg-neutral-100 p-3 text-xs leading-5 text-neutral-700 dark:bg-neutral-900 dark:text-neutral-300"
           >{{ result }}</pre>
         </div>
       </Form>

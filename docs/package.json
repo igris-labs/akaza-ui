@@ -27,6 +27,7 @@
     "akaza-ui": "workspace:*",
     "better-sqlite3": "^12.8.0",
     "minimark": "^1.0.0",
+    "motion-v": "2.2.0",
     "nuxt": "^4.4.2",
     "nuxt-gtag": "^4.1.0",
     "nuxt-llms": "0.2.0",

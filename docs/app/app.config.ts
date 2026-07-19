@@ -75,7 +75,7 @@ export default defineAppConfig({
         ],
       },
       {
-        label: "Project",
+        label: "Created by",
         children: [
           {
             label: "Rahul Vashishtha",

@@ -7,7 +7,7 @@ const darkMode = ref(false);
 const sound = ref(false);
 
 const trackUi = {
-  root: "data-[akaza-state=checked]:bg-neutral-900 dark:data-[akaza-state=checked]:bg-white data-[akaza-state=unchecked]:bg-neutral-200 dark:data-[akaza-state=unchecked]:bg-neutral-700",
+  root: "data-[akaza-state=checked]:bg-neutral-900 dark:data-[akaza-state=checked]:bg-white data-[akaza-state=unchecked]:bg-neutral-300 dark:data-[akaza-state=unchecked]:bg-neutral-700",
 };
 </script>
 
@@ -48,7 +48,7 @@ const trackUi = {
 </template>
 
 <style scoped>
-@reference "tailwindcss";
+@reference "../../../assets/css/main.css";
 
 :deep(.akaza-switch-wrapper) {
   @apply flex items-center justify-between gap-4;
@@ -63,7 +63,7 @@ const trackUi = {
 }
 
 :deep(.akaza-switch-description) {
-  @apply text-xs text-neutral-500 dark:text-neutral-400;
+  @apply text-xs text-neutral-600 dark:text-neutral-400;
 }
 
 :deep(.akaza-switch) {

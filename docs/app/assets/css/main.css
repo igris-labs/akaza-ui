@@ -4,6 +4,12 @@
 
 @source "../../../content/**/*";
 
+@custom-variant dark (&:is(.dark *));
+
+html {
+  @apply antialiased;
+}
+
 @theme static {
   --font-sans: "Geist", sans-serif;
   --font-heading: "Geist";

@@ -4,7 +4,7 @@ import { Collapsible } from "akaza-ui";
 
 <template>
   <div
-    class="w-full max-w-sm rounded-xl border border-neutral-200 bg-white dark:border-neutral-800 dark:bg-neutral-900"
+    class="w-full max-w-sm rounded-xl border border-neutral-300 bg-white dark:border-neutral-800 dark:bg-neutral-900"
   >
     <Collapsible
       :ui="{
@@ -18,7 +18,7 @@ import { Collapsible } from "akaza-ui";
       </template>
       <template #icon="{ isOpen }">
         <svg
-          class="size-4 text-neutral-400 transition-transform duration-200 dark:text-neutral-500"
+          class="size-4 text-neutral-500 transition-transform duration-200 dark:text-neutral-500"
           :class="{ 'rotate-180': isOpen }"
           viewBox="0 0 16 16"
           fill="none"
@@ -30,15 +30,15 @@ import { Collapsible } from "akaza-ui";
       </template>
 
       <template #content>
-        <div class="border-t border-neutral-100 px-4 py-4 dark:border-neutral-800">
+        <div class="border-t border-neutral-200 px-4 py-4 dark:border-neutral-800">
           <div class="flex flex-col gap-3">
             <label class="flex items-center justify-between text-sm">
               <span class="text-neutral-700 dark:text-neutral-300">Enable telemetry</span>
-              <span class="text-xs text-neutral-400">off</span>
+              <span class="text-xs text-neutral-600">off</span>
             </label>
             <label class="flex items-center justify-between text-sm">
               <span class="text-neutral-700 dark:text-neutral-300">Debug mode</span>
-              <span class="text-xs text-neutral-400">off</span>
+              <span class="text-xs text-neutral-600">off</span>
             </label>
             <label class="flex items-center justify-between text-sm">
               <span class="text-neutral-700 dark:text-neutral-300">Beta features</span>

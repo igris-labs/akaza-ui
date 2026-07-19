@@ -6,11 +6,11 @@ import { Popover } from "akaza-ui";
   <Popover side="bottom" align="center" :side-offset="8" :ui="{ content: 'popover-panel' }">
     <template #trigger="{ toggle }">
       <button
-        class="flex items-center gap-2 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm font-medium text-neutral-700 shadow-sm transition-colors hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
+        class="flex items-center gap-2 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm font-medium text-neutral-700 shadow-sm transition-colors hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
         @click="() => toggle()"
       >
         <svg
-          class="size-4 text-neutral-400"
+          class="size-4 text-neutral-500"
           viewBox="0 0 16 16"
           fill="none"
           stroke="currentColor"
@@ -26,7 +26,7 @@ import { Popover } from "akaza-ui";
     <template #content="{ close }">
       <div class="flex flex-col gap-2">
         <p class="text-xs font-semibold text-neutral-900 dark:text-neutral-100">Akaza UI</p>
-        <p class="text-xs leading-relaxed text-neutral-500 dark:text-neutral-400">
+        <p class="text-xs leading-relaxed text-neutral-600 dark:text-neutral-400">
           Headless, accessible Vue components. Bring your own styles and compose UI exactly how you
           want.
         </p>
@@ -38,7 +38,7 @@ import { Popover } from "akaza-ui";
             Documentation →
           </a>
           <button
-            class="text-xs text-neutral-400 hover:text-neutral-700 dark:text-neutral-500 dark:hover:text-neutral-200"
+            class="text-xs text-neutral-600 hover:text-neutral-900 dark:text-neutral-500 dark:hover:text-neutral-200"
             @click="() => close()"
           >
             Dismiss
@@ -50,9 +50,9 @@ import { Popover } from "akaza-ui";
 </template>
 
 <style>
-@reference "tailwindcss";
+@reference "../../../assets/css/main.css";
 
 .popover-panel {
-  @apply w-64 rounded-xl border border-neutral-200 bg-white p-4 shadow-lg dark:border-neutral-800 dark:bg-neutral-900;
+  @apply w-64 rounded-xl border border-neutral-300 bg-white p-4 shadow-lg dark:border-neutral-800 dark:bg-neutral-900;
 }
 </style>

@@ -28,7 +28,7 @@ const active = ref("account");
           :class="
             isActive
               ? 'text-neutral-900 dark:text-neutral-100'
-              : 'text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200'
+              : 'text-neutral-600 hover:text-neutral-900 dark:text-neutral-400 dark:hover:text-neutral-200'
           "
         >
           {{ item.label }}
@@ -37,10 +37,10 @@ const active = ref("account");
 
       <template #panel-account>
         <div
-          class="flex flex-col gap-2 rounded-xl border border-neutral-200 p-4 dark:border-neutral-800"
+          class="flex flex-col gap-2 rounded-xl border border-neutral-300 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950"
         >
           <p class="text-sm font-medium text-neutral-900 dark:text-neutral-100">Account settings</p>
-          <p class="text-xs text-neutral-500 dark:text-neutral-400">
+          <p class="text-xs text-neutral-600 dark:text-neutral-400">
             Manage your name, email, and profile picture.
           </p>
         </div>
@@ -48,12 +48,12 @@ const active = ref("account");
 
       <template #panel-security>
         <div
-          class="flex flex-col gap-2 rounded-xl border border-neutral-200 p-4 dark:border-neutral-800"
+          class="flex flex-col gap-2 rounded-xl border border-neutral-300 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950"
         >
           <p class="text-sm font-medium text-neutral-900 dark:text-neutral-100">
             Security settings
           </p>
-          <p class="text-xs text-neutral-500 dark:text-neutral-400">
+          <p class="text-xs text-neutral-600 dark:text-neutral-400">
             Change your password and enable two-factor authentication.
           </p>
         </div>
@@ -61,12 +61,12 @@ const active = ref("account");
 
       <template #panel-notifications>
         <div
-          class="flex flex-col gap-2 rounded-xl border border-neutral-200 p-4 dark:border-neutral-800"
+          class="flex flex-col gap-2 rounded-xl border border-neutral-300 bg-white p-4 dark:border-neutral-800 dark:bg-neutral-950"
         >
           <p class="text-sm font-medium text-neutral-900 dark:text-neutral-100">
             Notification preferences
           </p>
-          <p class="text-xs text-neutral-500 dark:text-neutral-400">
+          <p class="text-xs text-neutral-600 dark:text-neutral-400">
             Choose what you want to be notified about.
           </p>
         </div>
@@ -76,10 +76,10 @@ const active = ref("account");
 </template>
 
 <style>
-@reference "tailwindcss";
+@reference "../../../assets/css/main.css";
 
 .tabs-list {
-  @apply relative mb-4 flex border-b border-neutral-200 dark:border-neutral-800;
+  @apply relative mb-4 flex border-b border-neutral-300 dark:border-neutral-800;
 }
 
 .tabs-tab {

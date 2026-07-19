@@ -87,14 +87,14 @@ const checkboxUi = {
 </template>
 
 <style scoped>
-@reference "tailwindcss";
+@reference "../../../assets/css/main.css";
 
 :deep(.akaza-checkbox-wrapper) {
   @apply flex cursor-pointer items-start gap-3;
 }
 
 :deep(.checkbox-box) {
-  @apply flex size-4 items-center justify-center rounded border border-neutral-300 bg-white text-transparent transition-colors dark:border-neutral-600 dark:bg-neutral-800;
+  @apply flex size-4 items-center justify-center rounded border border-neutral-400 bg-white text-transparent transition-colors dark:border-neutral-600 dark:bg-neutral-800;
 }
 
 :deep(.checkbox-box[data-akaza-state="checked"]),
@@ -115,6 +115,6 @@ const checkboxUi = {
 }
 
 :deep(.akaza-checkbox-description) {
-  @apply text-xs text-neutral-500 dark:text-neutral-400;
+  @apply text-xs text-neutral-600 dark:text-neutral-400;
 }
 </style>

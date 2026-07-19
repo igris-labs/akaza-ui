@@ -12,7 +12,7 @@ const underline = ref(false);
     <div
       role="toolbar"
       aria-label="Text formatting"
-      class="flex items-center gap-1 rounded-xl border border-neutral-200 bg-white p-1 dark:border-neutral-800 dark:bg-neutral-900"
+      class="flex items-center gap-1 rounded-xl border border-neutral-300 bg-white p-1 dark:border-neutral-800 dark:bg-neutral-900"
     >
       <Toggle
         v-model="bold"

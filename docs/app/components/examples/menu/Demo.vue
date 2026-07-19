@@ -25,12 +25,12 @@ const items = [
   >
     <template #trigger="{ toggle }">
       <button
-        class="flex items-center gap-2 rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm font-medium text-neutral-700 shadow-sm transition-colors hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
+        class="flex items-center gap-2 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm font-medium text-neutral-700 shadow-sm transition-colors hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
         @click="() => toggle()"
       >
         Actions
         <svg
-          class="size-3.5 text-neutral-400"
+          class="size-3.5 text-neutral-500"
           viewBox="0 0 16 16"
           fill="none"
           stroke="currentColor"
@@ -44,10 +44,10 @@ const items = [
 </template>
 
 <style>
-@reference "tailwindcss";
+@reference "../../../assets/css/main.css";
 
 .menu-content {
-  @apply min-w-40 overflow-hidden rounded-xl border border-neutral-200 bg-white p-1 shadow-lg dark:border-neutral-800 dark:bg-neutral-900;
+  @apply min-w-40 overflow-hidden rounded-xl border border-neutral-300 bg-white p-1 shadow-lg dark:border-neutral-800 dark:bg-neutral-900;
 }
 
 .menu-item {
@@ -59,6 +59,6 @@ const items = [
 }
 
 .menu-separator {
-  @apply my-1 h-px bg-neutral-100 dark:bg-neutral-800;
+  @apply my-1 h-px bg-neutral-200 dark:bg-neutral-800;
 }
 </style>

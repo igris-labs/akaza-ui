@@ -9,13 +9,13 @@ const value = ref(65);
   <div class="flex w-full max-w-xs flex-col gap-4">
     <!-- Determinate -->
     <div class="flex flex-col gap-2">
-      <div class="flex items-center justify-between text-xs text-neutral-500 dark:text-neutral-400">
+      <div class="flex items-center justify-between text-xs text-neutral-600 dark:text-neutral-400">
         <span>Upload progress</span>
         <span>{{ value }}%</span>
       </div>
       <Progress
         v-model="value"
-        class="h-2 w-full overflow-hidden rounded-full bg-neutral-100 dark:bg-neutral-800"
+        class="h-2 w-full overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-800"
       >
         <template #indicator="{ percentage }">
           <div
@@ -29,13 +29,13 @@ const value = ref(65);
     <!-- Controls -->
     <div class="flex items-center gap-2">
       <button
-        class="flex-1 rounded-lg border border-neutral-200 bg-white py-1.5 text-xs font-medium text-neutral-700 transition-colors hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
+        class="flex-1 rounded-lg border border-neutral-300 bg-white py-1.5 text-xs font-medium text-neutral-700 transition-colors hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
         @click="value = Math.max(0, value - 20)"
       >
         − 20%
       </button>
       <button
-        class="flex-1 rounded-lg border border-neutral-200 bg-white py-1.5 text-xs font-medium text-neutral-700 transition-colors hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
+        class="flex-1 rounded-lg border border-neutral-300 bg-white py-1.5 text-xs font-medium text-neutral-700 transition-colors hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
         @click="value = Math.min(100, value + 20)"
       >
         + 20%
@@ -44,10 +44,10 @@ const value = ref(65);
 
     <!-- Indeterminate -->
     <div class="flex flex-col gap-2">
-      <span class="text-xs text-neutral-500 dark:text-neutral-400">Indeterminate</span>
+      <span class="text-xs text-neutral-600 dark:text-neutral-400">Indeterminate</span>
       <Progress
         :model-value="null"
-        class="h-2 w-full overflow-hidden rounded-full bg-neutral-100 dark:bg-neutral-800"
+        class="h-2 w-full overflow-hidden rounded-full bg-neutral-200 dark:bg-neutral-800"
         aria-label="Loading"
       >
         <template #indicator>

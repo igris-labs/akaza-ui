@@ -31,7 +31,7 @@ import { Avatar } from "akaza-ui";
       <template #fallback>
         <span class="flex size-full items-center justify-center bg-neutral-100 dark:bg-neutral-800">
           <svg
-            class="size-5 text-neutral-400 dark:text-neutral-500"
+            class="size-5 text-neutral-600 dark:text-neutral-500"
             viewBox="0 0 20 20"
             fill="currentColor"
           >
@@ -48,10 +48,10 @@ import { Avatar } from "akaza-ui";
 </template>
 
 <style scoped>
-@reference "tailwindcss";
+@reference "../../../assets/css/main.css";
 
 :deep(.akaza-avatar) {
-  @apply size-10 overflow-hidden rounded-full border border-neutral-200 dark:border-neutral-800;
+  @apply size-10 overflow-hidden rounded-full border border-neutral-300 dark:border-neutral-800;
 }
 
 :deep(.akaza-avatar img) {

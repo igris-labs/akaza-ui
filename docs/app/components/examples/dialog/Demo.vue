@@ -6,12 +6,12 @@ import { Dialog } from "akaza-ui";
   <Dialog
     :ui="{
       overlay: 'bg-black/50',
-      content: 'w-full max-w-md rounded-xl bg-white shadow-xl ring-1 ring-neutral-200 dark:bg-neutral-900 dark:ring-neutral-800',
+      content: 'w-full max-w-md rounded-xl bg-white shadow-xl ring-1 ring-neutral-300 dark:bg-neutral-900 dark:ring-neutral-800',
     }"
   >
     <template #trigger="{ toggle }">
       <button
-        class="rounded-lg border border-neutral-200 bg-white px-4 py-2 text-sm font-medium text-neutral-700 shadow-sm transition-colors hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
+        class="rounded-lg border border-neutral-300 bg-white px-4 py-2 text-sm font-medium text-neutral-700 shadow-sm transition-colors hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
         @click="() => toggle()"
       >
         Edit profile
@@ -20,13 +20,13 @@ import { Dialog } from "akaza-ui";
 
     <template #header="{ close, titleId }">
       <div
-        class="flex items-center justify-between border-b border-neutral-100 px-5 py-4 dark:border-neutral-800"
+        class="flex items-center justify-between border-b border-neutral-200 px-5 py-4 dark:border-neutral-800"
       >
         <h2 :id="titleId" class="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
           Edit profile
         </h2>
         <button
-          class="rounded-md p-1 text-neutral-400 transition-colors hover:bg-neutral-100 hover:text-neutral-700 dark:text-neutral-500 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
+          class="rounded-md p-1 text-neutral-500 transition-colors hover:bg-neutral-100 hover:text-neutral-700 dark:text-neutral-500 dark:hover:bg-neutral-800 dark:hover:text-neutral-200"
           aria-label="Close"
           @click="() => close()"
         >
@@ -52,7 +52,7 @@ import { Dialog } from "akaza-ui";
           <input
             type="text"
             placeholder="Jane Doe"
-            class="rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 placeholder-neutral-400 outline-none transition-colors focus:border-neutral-400 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:placeholder-neutral-500 dark:focus:border-neutral-500"
+            class="rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 placeholder-neutral-500 outline-none transition-colors focus:border-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:placeholder-neutral-500 dark:focus:border-neutral-500"
           >
         </label>
         <label class="flex flex-col gap-1.5">
@@ -60,7 +60,7 @@ import { Dialog } from "akaza-ui";
           <input
             type="email"
             placeholder="jane@example.com"
-            class="rounded-lg border border-neutral-200 bg-white px-3 py-2 text-sm text-neutral-900 placeholder-neutral-400 outline-none transition-colors focus:border-neutral-400 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:placeholder-neutral-500 dark:focus:border-neutral-500"
+            class="rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm text-neutral-900 placeholder-neutral-500 outline-none transition-colors focus:border-neutral-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-100 dark:placeholder-neutral-500 dark:focus:border-neutral-500"
           >
         </label>
       </div>
@@ -68,10 +68,10 @@ import { Dialog } from "akaza-ui";
 
     <template #footer="{ close }">
       <div
-        class="flex justify-end gap-2 border-t border-neutral-100 px-5 py-4 dark:border-neutral-800"
+        class="flex justify-end gap-2 border-t border-neutral-200 px-5 py-4 dark:border-neutral-800"
       >
         <button
-          class="rounded-lg border border-neutral-200 bg-white px-4 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
+          class="rounded-lg border border-neutral-300 bg-white px-4 py-2 text-sm font-medium text-neutral-700 transition-colors hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
           @click="() => close()"
         >
           Cancel

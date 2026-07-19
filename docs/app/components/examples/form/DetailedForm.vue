@@ -77,54 +77,54 @@ const permissionOptions: CheckboxGroupOption[] = [
 const fieldUi = {
   label: "text-sm font-medium text-neutral-950 dark:text-neutral-50",
   required: "ml-0.5 text-red-600 dark:text-red-400",
-  description: "text-xs leading-5 text-neutral-500 dark:text-neutral-400",
+  description: "text-xs leading-5 text-neutral-600 dark:text-neutral-400",
   error: "text-xs font-medium text-red-600 dark:text-red-400",
 };
 
 const fieldsetUi = {
-  root: "rounded-none border border-neutral-200 p-4 data-[akaza-disabled]:bg-neutral-50 data-[akaza-disabled]:opacity-80 dark:border-neutral-800 dark:data-[akaza-disabled]:bg-neutral-900/40",
+  root: "rounded-none border border-neutral-300 p-4 data-[akaza-disabled]:bg-neutral-50 data-[akaza-disabled]:opacity-80 dark:border-neutral-800 dark:data-[akaza-disabled]:bg-neutral-900/40",
   legend: "px-1 text-sm font-semibold text-neutral-950 dark:text-neutral-50",
-  description: "mt-1 text-xs leading-5 text-neutral-500 dark:text-neutral-400",
+  description: "mt-1 text-xs leading-5 text-neutral-600 dark:text-neutral-400",
   content: "mt-4 grid gap-4",
 };
 
 const inputClass =
-  "h-10 w-full rounded-none border border-neutral-200 bg-white px-3 text-sm text-neutral-950 outline-none transition placeholder:text-neutral-400 focus:border-neutral-900 focus:ring-2 focus:ring-neutral-900/10 disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-500 data-[akaza-invalid]:border-red-500 data-[akaza-invalid]:ring-2 data-[akaza-invalid]:ring-red-500/20 data-[akaza-invalid]:focus:border-red-500 data-[akaza-invalid]:focus:ring-red-500/30 dark:border-neutral-800 dark:bg-black dark:text-neutral-50 dark:focus:border-neutral-100 dark:focus:ring-white/10 dark:disabled:bg-neutral-900 dark:data-[akaza-invalid]:border-red-400 dark:data-[akaza-invalid]:ring-red-400/20 dark:data-[akaza-invalid]:focus:border-red-400 dark:data-[akaza-invalid]:focus:ring-red-400/30";
+  "h-10 w-full rounded-none border border-neutral-300 bg-white px-3 text-sm text-neutral-950 outline-none transition placeholder:text-neutral-500 focus:border-neutral-900 focus:ring-2 focus:ring-neutral-900/10 disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-600 data-[akaza-invalid]:border-red-500 data-[akaza-invalid]:ring-2 data-[akaza-invalid]:ring-red-500/20 data-[akaza-invalid]:focus:border-red-500 data-[akaza-invalid]:focus:ring-red-500/30 dark:border-neutral-800 dark:bg-black dark:text-neutral-50 dark:focus:border-neutral-100 dark:focus:ring-white/10 dark:disabled:bg-neutral-900 dark:data-[akaza-invalid]:border-red-400 dark:data-[akaza-invalid]:ring-red-400/20 dark:data-[akaza-invalid]:focus:border-red-400 dark:data-[akaza-invalid]:focus:ring-red-400/30";
 
 const selectUi = {
   root: "w-full",
   trigger:
-    "flex h-10 w-full items-center justify-between rounded-none border border-neutral-200 bg-white px-3 text-left text-sm text-neutral-950 outline-none transition focus:border-neutral-900 focus:ring-2 focus:ring-neutral-900/10 disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-500 data-[akaza-invalid]:border-red-500 data-[akaza-invalid]:ring-2 data-[akaza-invalid]:ring-red-500/20 data-[akaza-invalid]:focus:border-red-500 data-[akaza-invalid]:focus:ring-red-500/30 dark:border-neutral-800 dark:bg-black dark:text-neutral-50 dark:focus:border-neutral-100 dark:focus:ring-white/10 dark:disabled:bg-neutral-900 dark:data-[akaza-invalid]:border-red-400 dark:data-[akaza-invalid]:ring-red-400/20 dark:data-[akaza-invalid]:focus:border-red-400 dark:data-[akaza-invalid]:focus:ring-red-400/30",
-  placeholder: "text-neutral-400",
+    "flex h-10 w-full items-center justify-between rounded-none border border-neutral-300 bg-white px-3 text-left text-sm text-neutral-950 outline-none transition focus:border-neutral-900 focus:ring-2 focus:ring-neutral-900/10 disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-600 data-[akaza-invalid]:border-red-500 data-[akaza-invalid]:ring-2 data-[akaza-invalid]:ring-red-500/20 data-[akaza-invalid]:focus:border-red-500 data-[akaza-invalid]:focus:ring-red-500/30 dark:border-neutral-800 dark:bg-black dark:text-neutral-50 dark:focus:border-neutral-100 dark:focus:ring-white/10 dark:disabled:bg-neutral-900 dark:data-[akaza-invalid]:border-red-400 dark:data-[akaza-invalid]:ring-red-400/20 dark:data-[akaza-invalid]:focus:border-red-400 dark:data-[akaza-invalid]:focus:ring-red-400/30",
+  placeholder: "text-neutral-500",
   content:
-    "z-20 rounded-none border border-neutral-200 bg-white p-1 shadow-lg dark:border-neutral-800 dark:bg-black",
+    "z-20 rounded-none border border-neutral-300 bg-white p-1 shadow-lg dark:border-neutral-800 dark:bg-black",
   viewport: "max-h-64 overflow-auto",
   option:
     "flex cursor-pointer items-start gap-2 rounded-none px-2 py-1.5 text-sm text-neutral-950 data-[akaza-highlighted]:bg-neutral-100 data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-40 dark:text-neutral-50 dark:data-[akaza-highlighted]:bg-neutral-800",
   indicator: "w-4 text-neutral-900 dark:text-neutral-100",
   optionText: "grid gap-0.5",
-  optionDescription: "text-xs text-neutral-500",
+  optionDescription: "text-xs text-neutral-600",
 };
 
 const numberUi = {
-  root: "h-10 w-full overflow-hidden rounded-none border border-neutral-200 bg-white focus-within:border-neutral-900 focus-within:ring-2 focus-within:ring-neutral-900/10 data-[akaza-invalid]:border-red-500 data-[akaza-invalid]:ring-2 data-[akaza-invalid]:ring-red-500/20 data-[akaza-invalid]:focus-within:border-red-500 data-[akaza-invalid]:focus-within:ring-red-500/30 dark:border-neutral-800 dark:bg-black dark:focus-within:border-neutral-100 dark:focus-within:ring-white/10 dark:data-[akaza-invalid]:border-red-400 dark:data-[akaza-invalid]:ring-red-400/20 dark:data-[akaza-invalid]:focus-within:border-red-400 dark:data-[akaza-invalid]:focus-within:ring-red-400/30",
+  root: "h-10 w-full overflow-hidden rounded-none border border-neutral-300 bg-white focus-within:border-neutral-900 focus-within:ring-2 focus-within:ring-neutral-900/10 data-[akaza-invalid]:border-red-500 data-[akaza-invalid]:ring-2 data-[akaza-invalid]:ring-red-500/20 data-[akaza-invalid]:focus-within:border-red-500 data-[akaza-invalid]:focus-within:ring-red-500/30 dark:border-neutral-800 dark:bg-black dark:focus-within:border-neutral-100 dark:focus-within:ring-white/10 dark:data-[akaza-invalid]:border-red-400 dark:data-[akaza-invalid]:ring-red-400/20 dark:data-[akaza-invalid]:focus-within:border-red-400 dark:data-[akaza-invalid]:focus-within:ring-red-400/30",
   decrement:
-    "grid h-full w-10 place-items-center border-r border-neutral-200 text-sm text-neutral-700 disabled:cursor-not-allowed disabled:opacity-40 dark:border-neutral-800 dark:text-neutral-300",
+    "grid h-full w-10 place-items-center border-r border-neutral-300 text-sm text-neutral-700 disabled:cursor-not-allowed disabled:opacity-40 dark:border-neutral-800 dark:text-neutral-300",
   input:
-    "h-full min-w-0 flex-1 bg-transparent px-3 text-center text-sm text-neutral-950 outline-none disabled:cursor-not-allowed disabled:text-neutral-500 dark:text-neutral-50",
+    "h-full min-w-0 flex-1 bg-transparent px-3 text-center text-sm text-neutral-950 outline-none disabled:cursor-not-allowed disabled:text-neutral-600 dark:text-neutral-50",
   increment:
-    "grid h-full w-10 place-items-center border-l border-neutral-200 text-sm text-neutral-700 disabled:cursor-not-allowed disabled:opacity-40 dark:border-neutral-800 dark:text-neutral-300",
+    "grid h-full w-10 place-items-center border-l border-neutral-300 text-sm text-neutral-700 disabled:cursor-not-allowed disabled:opacity-40 dark:border-neutral-800 dark:text-neutral-300",
 };
 
 const checkboxUi = {
   root: "border-neutral-300 text-neutral-900 data-[akaza-state=checked]:bg-neutral-900 data-[akaza-state=checked]:text-white dark:border-neutral-700 dark:text-neutral-100 dark:data-[akaza-state=checked]:bg-white dark:data-[akaza-state=checked]:text-neutral-950",
   label: "text-sm font-medium text-neutral-950 dark:text-neutral-50",
-  description: "text-xs leading-5 text-neutral-500 dark:text-neutral-400",
+  description: "text-xs leading-5 text-neutral-600 dark:text-neutral-400",
 };
 
 const checkboxGroupUi = {
   root: "grid gap-2",
-  item: "rounded-none border border-neutral-200 p-3 data-[akaza-state=checked]:border-neutral-900 dark:border-neutral-800 dark:data-[akaza-state=checked]:border-neutral-100",
+  item: "rounded-none border border-neutral-300 p-3 data-[akaza-state=checked]:border-neutral-900 dark:border-neutral-800 dark:data-[akaza-state=checked]:border-neutral-100",
   checkbox: checkboxUi,
 };
 
@@ -142,7 +142,7 @@ const switchUi = {
   thumb:
     "absolute left-0.5 top-0.5 size-4 rounded-none bg-white transition-transform data-[akaza-state=checked]:translate-x-4 dark:bg-black",
   label: "text-sm font-medium text-neutral-950 dark:text-neutral-50",
-  description: "text-xs leading-5 text-neutral-500 dark:text-neutral-400",
+  description: "text-xs leading-5 text-neutral-600 dark:text-neutral-400",
 };
 
 const workspaceSlugPattern = /^[a-z0-9-]+$/;
@@ -389,7 +389,7 @@ function onFormSubmit(values: FormValues, details: FormSubmitDetails) {
           </ul>
           <p
             v-else
-            class="mt-3 text-sm text-neutral-500 dark:text-neutral-400"
+            class="mt-3 text-sm text-neutral-600 dark:text-neutral-400"
           >
             None yet. Submit with reserved slug or blocked email to populate this.
           </p>
@@ -405,7 +405,7 @@ function onFormSubmit(values: FormValues, details: FormSubmitDetails) {
 
       <Form
         :errors="errors"
-        class="grid gap-5 rounded-none border border-neutral-200 bg-white p-4 dark:border-neutral-800 dark:bg-black sm:p-6"
+        class="grid gap-5 rounded-none border border-neutral-300 bg-white p-4 dark:border-neutral-800 dark:bg-black sm:p-6"
         @form-submit="onFormSubmit"
         @invalid.capture="onFormInvalid"
       >

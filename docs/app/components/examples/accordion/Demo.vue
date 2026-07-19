@@ -9,7 +9,7 @@ const items = [
 </script>
 
 <template>
-  <div class="w-full max-w-sm divide-y divide-neutral-200 rounded-xl border border-neutral-200 bg-white dark:divide-neutral-800 dark:border-neutral-800 dark:bg-neutral-900">
+  <div class="w-full max-w-sm divide-y divide-neutral-300 rounded-xl border border-neutral-300 bg-white dark:divide-neutral-800 dark:border-neutral-800 dark:bg-neutral-900">
     <Accordion
       :items="items"
       collapsible
@@ -20,7 +20,7 @@ const items = [
       </template>
       <template #icon="{ isOpen }">
         <svg
-          class="size-4 shrink-0 text-neutral-400 transition-transform duration-200 dark:text-neutral-500"
+          class="size-4 shrink-0 text-neutral-500 transition-transform duration-200 dark:text-neutral-500"
           :class="{ 'rotate-180': isOpen }"
           viewBox="0 0 16 16"
           fill="none"
@@ -31,7 +31,7 @@ const items = [
         </svg>
       </template>
       <template #content="{ item }">
-        <p class="px-4 pb-4 text-sm leading-relaxed text-neutral-500 dark:text-neutral-400">
+        <p class="px-4 pb-4 text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">
           {{ item.content }}
         </p>
       </template>

@@ -16,7 +16,7 @@ const options = [
     v-model="plan"
     :options="options"
     :ui="{
-      item: 'flex w-72 cursor-pointer items-start gap-3 rounded-xl border p-4 text-left transition-all',
+      item: 'flex w-72 cursor-pointer items-start gap-3 rounded-xl border border-neutral-300 bg-white p-4 text-left transition-all data-[akaza-state=checked]:border-neutral-900 dark:border-neutral-800 dark:bg-neutral-950 dark:data-[akaza-state=checked]:border-neutral-100',
     }"
     class="flex flex-col gap-2"
   >
@@ -26,7 +26,7 @@ const options = [
         :class="
           isChecked
             ? 'border-neutral-900 bg-neutral-900 dark:border-white dark:bg-white'
-            : 'border-neutral-300 dark:border-neutral-600'
+            : 'border-neutral-400 dark:border-neutral-600'
         "
       >
         <span v-if="isChecked" class="size-1.5 rounded-full bg-white dark:bg-neutral-900" />
@@ -36,7 +36,7 @@ const options = [
         <span class="text-sm font-medium text-neutral-900 dark:text-neutral-100">
           {{ option.label }}
         </span>
-        <span class="text-xs text-neutral-500 dark:text-neutral-400">
+        <span class="text-xs text-neutral-600 dark:text-neutral-400">
           {{ option.description }}
         </span>
       </span>

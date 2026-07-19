@@ -12,11 +12,11 @@ const value = ref(60);
       aria-label="Volume"
       :ui="{
         root: 'h-6 w-full',
-        track: 'h-2 w-full rounded-full bg-neutral-100 dark:bg-neutral-800',
+        track: 'h-2 w-full rounded-full bg-neutral-200 dark:bg-neutral-800',
         range: 'h-full rounded-full bg-neutral-900 dark:bg-white',
         thumb: 'size-5 rounded-full border-2 border-neutral-900 bg-white outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 dark:border-white dark:bg-neutral-950 dark:focus-visible:ring-white',
       }"
     />
-    <p class="text-xs text-neutral-500">Value: {{ value }}</p>
+    <p class="text-xs text-neutral-600">Value: {{ value }}</p>
   </div>
 </template>

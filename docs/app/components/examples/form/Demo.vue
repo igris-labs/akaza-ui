@@ -18,7 +18,7 @@ function onFormSubmit(values: FormValues, details: FormSubmitDetails) {
 <template>
   <Form
     :errors="errors"
-    class="grid max-w-sm gap-4 rounded-xl border border-neutral-200 p-5 dark:border-neutral-800"
+    class="grid max-w-sm gap-4 rounded-xl border border-neutral-300 bg-white p-5 dark:border-neutral-800 dark:bg-neutral-950"
     @form-submit="onFormSubmit"
   >
     <Field
@@ -30,7 +30,7 @@ function onFormSubmit(values: FormValues, details: FormSubmitDetails) {
       <Input
         type="email"
         placeholder="you@example.com"
-        class="h-9 rounded-lg border border-neutral-200 bg-white px-3 text-sm data-[invalid]:border-red-500 dark:border-neutral-800 dark:bg-neutral-950"
+        class="h-9 rounded-lg border border-neutral-300 bg-white px-3 text-sm data-[invalid]:border-red-500 dark:border-neutral-800 dark:bg-neutral-950"
       />
     </Field>
     <Button
@@ -39,6 +39,6 @@ function onFormSubmit(values: FormValues, details: FormSubmitDetails) {
     >
       Create account
     </Button>
-    <p v-if="result" class="text-xs text-neutral-500">{{ result }}</p>
+    <p v-if="result" class="text-xs text-neutral-600">{{ result }}</p>
   </Form>
 </template>

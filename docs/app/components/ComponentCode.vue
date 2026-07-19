@@ -6,9 +6,9 @@ const showCode = ref(false);
 
 <template>
   <div
-    class="not-prose mb-6 overflow-hidden rounded-b-xl border border-neutral-200 dark:border-neutral-800 z-30"
+    class="not-prose mb-6 overflow-hidden rounded-b-xl border border-neutral-300 dark:border-neutral-800 z-30"
   >
-    <div v-show="showCode" class="border-b border-neutral-200 dark:border-neutral-800">
+    <div v-show="showCode" class="border-b border-neutral-300 dark:border-neutral-800">
       <div class="[&_pre]:m-0 [&_pre]:rounded-none [&_pre]:max-h-96 [&_pre]:overflow-auto">
         <slot />
       </div>

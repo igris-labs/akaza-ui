@@ -22,15 +22,15 @@ const options = [
       :options="options"
       :ui="{
         legend: 'mb-1 text-sm font-semibold',
-        parentItem: 'mb-2 border-b border-neutral-200 pb-3 dark:border-neutral-800',
+        parentItem: 'mb-2 border-b border-neutral-300 pb-3 dark:border-neutral-800',
         checkbox: {
           wrapper: 'gap-3',
-          root: 'mt-0.5 rounded border border-neutral-300 bg-white data-[akaza-state=checked]:border-neutral-900 data-[akaza-state=checked]:bg-neutral-900 data-[akaza-state=checked]:text-white dark:border-neutral-700 dark:bg-neutral-950 dark:data-[akaza-state=checked]:border-white dark:data-[akaza-state=checked]:bg-white dark:data-[akaza-state=checked]:text-neutral-950',
+          root: 'mt-0.5 rounded border border-neutral-400 bg-white data-[akaza-state=checked]:border-neutral-900 data-[akaza-state=checked]:bg-neutral-900 data-[akaza-state=checked]:text-white dark:border-neutral-700 dark:bg-neutral-950 dark:data-[akaza-state=checked]:border-white dark:data-[akaza-state=checked]:bg-white dark:data-[akaza-state=checked]:text-neutral-950',
           label: 'text-sm font-medium',
-          description: 'block text-xs text-neutral-500 dark:text-neutral-400',
+          description: 'block text-xs text-neutral-600 dark:text-neutral-400',
         },
       }"
     />
-    <p class="text-xs text-neutral-500">Selected: {{ value.join(", ") || "none" }}</p>
+    <p class="text-xs text-neutral-600">Selected: {{ value.join(", ") || "none" }}</p>
   </div>
 </template>

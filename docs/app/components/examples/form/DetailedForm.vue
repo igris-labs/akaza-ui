@@ -75,6 +75,7 @@ const permissionOptions: CheckboxGroupOption[] = [
 ];
 
 const fieldUi = {
+  root: "min-w-0",
   label: "text-sm font-medium text-neutral-950 dark:text-neutral-50",
   required: "ml-0.5 text-red-600 dark:text-red-400",
   description: "text-xs leading-5 text-neutral-600 dark:text-neutral-400",
@@ -82,17 +83,17 @@ const fieldUi = {
 };
 
 const fieldsetUi = {
-  root: "rounded-none border border-neutral-300 p-4 data-[akaza-disabled]:bg-neutral-50 data-[akaza-disabled]:opacity-80 dark:border-neutral-800 dark:data-[akaza-disabled]:bg-neutral-900/40",
+  root: "min-w-0 rounded-none border border-neutral-300 p-4 data-[akaza-disabled]:bg-neutral-50 data-[akaza-disabled]:opacity-80 dark:border-neutral-800 dark:data-[akaza-disabled]:bg-neutral-900/40",
   legend: "px-1 text-sm font-semibold text-neutral-950 dark:text-neutral-50",
   description: "mt-1 text-xs leading-5 text-neutral-600 dark:text-neutral-400",
-  content: "mt-4 grid gap-4",
+  content: "mt-4 grid min-w-0 gap-4",
 };
 
 const inputClass =
-  "h-10 w-full rounded-none border border-neutral-300 bg-white px-3 text-sm text-neutral-950 outline-none transition placeholder:text-neutral-500 focus:border-neutral-900 focus:ring-2 focus:ring-neutral-900/10 disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-600 data-[akaza-invalid]:border-red-500 data-[akaza-invalid]:ring-2 data-[akaza-invalid]:ring-red-500/20 data-[akaza-invalid]:focus:border-red-500 data-[akaza-invalid]:focus:ring-red-500/30 dark:border-neutral-800 dark:bg-black dark:text-neutral-50 dark:focus:border-neutral-100 dark:focus:ring-white/10 dark:disabled:bg-neutral-900 dark:data-[akaza-invalid]:border-red-400 dark:data-[akaza-invalid]:ring-red-400/20 dark:data-[akaza-invalid]:focus:border-red-400 dark:data-[akaza-invalid]:focus:ring-red-400/30";
+  "h-10 min-w-0 w-full rounded-none border border-neutral-300 bg-white px-3 text-sm text-neutral-950 outline-none transition placeholder:text-neutral-500 focus:border-neutral-900 focus:ring-2 focus:ring-neutral-900/10 disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-600 data-[akaza-invalid]:border-red-500 data-[akaza-invalid]:ring-2 data-[akaza-invalid]:ring-red-500/20 data-[akaza-invalid]:focus:border-red-500 data-[akaza-invalid]:focus:ring-red-500/30 dark:border-neutral-800 dark:bg-black dark:text-neutral-50 dark:focus:border-neutral-100 dark:focus:ring-white/10 dark:disabled:bg-neutral-900 dark:data-[akaza-invalid]:border-red-400 dark:data-[akaza-invalid]:ring-red-400/20 dark:data-[akaza-invalid]:focus:border-red-400 dark:data-[akaza-invalid]:focus:ring-red-400/30";
 
 const selectUi = {
-  root: "w-full",
+  root: "min-w-0 w-full",
   trigger:
     "flex h-10 w-full items-center justify-between rounded-none border border-neutral-300 bg-white px-3 text-left text-sm text-neutral-950 outline-none transition focus:border-neutral-900 focus:ring-2 focus:ring-neutral-900/10 disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-600 data-[akaza-invalid]:border-red-500 data-[akaza-invalid]:ring-2 data-[akaza-invalid]:ring-red-500/20 data-[akaza-invalid]:focus:border-red-500 data-[akaza-invalid]:focus:ring-red-500/30 dark:border-neutral-800 dark:bg-black dark:text-neutral-50 dark:focus:border-neutral-100 dark:focus:ring-white/10 dark:disabled:bg-neutral-900 dark:data-[akaza-invalid]:border-red-400 dark:data-[akaza-invalid]:ring-red-400/20 dark:data-[akaza-invalid]:focus:border-red-400 dark:data-[akaza-invalid]:focus:ring-red-400/30",
   placeholder: "text-neutral-500",
@@ -123,7 +124,7 @@ const checkboxUi = {
 };
 
 const checkboxGroupUi = {
-  root: "grid gap-2",
+  root: "grid min-w-0 gap-2",
   item: "rounded-none border border-neutral-300 p-3 data-[akaza-state=checked]:border-neutral-900 dark:border-neutral-800 dark:data-[akaza-state=checked]:border-neutral-100",
   checkbox: checkboxUi,
 };
@@ -326,8 +327,10 @@ function onFormSubmit(values: FormValues, details: FormSubmitDetails) {
 
 <template>
   <section class="border-b border-neutral-200 bg-background py-20 dark:border-white/10 sm:py-28">
-    <div class="mx-auto grid max-w-7xl gap-8 px-4 sm:px-6 lg:grid-cols-[0.8fr_1.2fr] lg:px-8">
-      <div class="max-w-xl">
+    <div
+      class="mx-auto grid w-full min-w-0 max-w-7xl gap-8 px-4 sm:px-6 lg:grid-cols-[0.8fr_1.2fr] lg:px-8"
+    >
+      <div class="min-w-0 max-w-xl">
         <h2
           class="text-3xl font-semibold tracking-tight text-neutral-950 dark:text-neutral-50 sm:text-4xl"
         >
@@ -359,17 +362,11 @@ function onFormSubmit(values: FormValues, details: FormSubmitDetails) {
             v-if="liveIssues.length"
             class="mt-3 grid gap-2 text-sm leading-6 text-amber-700 dark:text-amber-300"
           >
-            <li
-              v-for="issue in liveIssues"
-              :key="issue"
-            >
+            <li v-for="issue in liveIssues" :key="issue">
               {{ issue }}
             </li>
           </ul>
-          <p
-            v-else
-            class="mt-3 text-sm text-emerald-700 dark:text-emerald-300"
-          >
+          <p v-else class="mt-3 text-sm text-emerald-700 dark:text-emerald-300">
             No known client-side or demo server issues.
           </p>
         </div>
@@ -380,17 +377,12 @@ function onFormSubmit(values: FormValues, details: FormSubmitDetails) {
             v-if="serverErrorItems.length"
             class="mt-3 grid gap-2 text-sm leading-6 text-red-700 dark:text-red-300"
           >
-            <li
-              v-for="item in serverErrorItems"
-              :key="`${item.field}-${item.message}`"
-            >
-              <span class="font-mono">{{ item.field }}</span>: {{ item.message }}
+            <li v-for="item in serverErrorItems" :key="`${item.field}-${item.message}`">
+              <span class="font-mono"> {{ item.field }} </span>
+              : {{ item.message }}
             </li>
           </ul>
-          <p
-            v-else
-            class="mt-3 text-sm text-neutral-600 dark:text-neutral-400"
-          >
+          <p v-else class="mt-3 text-sm text-neutral-600 dark:text-neutral-400">
             None yet. Submit with reserved slug or blocked email to populate this.
           </p>
         </div>
@@ -398,14 +390,14 @@ function onFormSubmit(values: FormValues, details: FormSubmitDetails) {
         <div class="mt-5 border-t border-neutral-200 pt-5 dark:border-neutral-800">
           <h3 class="text-sm font-semibold text-neutral-950 dark:text-neutral-50">Realtime data</h3>
           <pre
-            class="mt-3 max-h-80 overflow-auto rounded-none bg-neutral-100 p-3 text-xs leading-5 text-neutral-700 dark:bg-neutral-900 dark:text-neutral-300"
+            class="mt-3 max-h-80 w-full min-w-0 max-w-full overflow-auto rounded-none bg-neutral-100 p-3 text-xs leading-5 text-neutral-700 dark:bg-neutral-900 dark:text-neutral-300"
           >{{ liveData }}</pre>
         </div>
       </div>
 
       <Form
         :errors="errors"
-        class="grid gap-5 rounded-none border border-neutral-300 bg-white p-4 dark:border-neutral-800 dark:bg-black sm:p-6"
+        class="grid min-w-0 gap-5 rounded-none border border-neutral-300 bg-white p-4 dark:border-neutral-800 dark:bg-black sm:p-6"
         @form-submit="onFormSubmit"
         @invalid.capture="onFormInvalid"
       >
@@ -414,7 +406,7 @@ function onFormSubmit(values: FormValues, details: FormSubmitDetails) {
           description="Nested fields share one semantic group, but each control keeps its own label, hint, and error."
           :ui="fieldsetUi"
         >
-          <div class="grid gap-4 md:grid-cols-2">
+          <div class="grid min-w-0 gap-4 md:grid-cols-2">
             <Field
               name="ownerName"
               label="Requester"
@@ -455,7 +447,7 @@ function onFormSubmit(values: FormValues, details: FormSubmitDetails) {
             </Field>
           </div>
 
-          <div class="grid gap-4 md:grid-cols-3">
+          <div class="grid min-w-0 gap-4 md:grid-cols-3">
             <Field
               name="workspaceSlug"
               label="Workspace slug"
@@ -571,17 +563,14 @@ function onFormSubmit(values: FormValues, details: FormSubmitDetails) {
             :disabled="billingLocked"
             :ui="fieldsetUi"
           >
-            <div class="grid gap-4 md:grid-cols-2">
+            <div class="grid min-w-0 gap-4 md:grid-cols-2">
               <Field
                 name="billingName"
                 label="Billing name"
                 :disabled="billingLocked"
                 :ui="fieldUi"
               >
-                <Input
-                  v-model="billingName"
-                  :class="inputClass"
-                />
+                <Input v-model="billingName" :class="inputClass" />
               </Field>
 
               <Field
@@ -590,18 +579,14 @@ function onFormSubmit(values: FormValues, details: FormSubmitDetails) {
                 :disabled="billingLocked"
                 :ui="fieldUi"
               >
-                <Input
-                  v-model="billingEmail"
-                  type="email"
-                  :class="inputClass"
-                />
+                <Input v-model="billingEmail" type="email" :class="inputClass" />
               </Field>
             </div>
           </Fieldset>
         </Fieldset>
 
         <div
-          class="grid gap-3 border-t border-neutral-200 pt-5 dark:border-neutral-800 sm:grid-cols-[auto_1fr] sm:items-start"
+          class="grid min-w-0 gap-3 border-t border-neutral-200 pt-5 dark:border-neutral-800 sm:grid-cols-[auto_1fr] sm:items-start"
         >
           <Button
             type="submit"
@@ -611,7 +596,7 @@ function onFormSubmit(values: FormValues, details: FormSubmitDetails) {
           </Button>
 
           <pre
-            class="max-h-44 overflow-auto rounded-none bg-neutral-100 p-3 text-xs leading-5 text-neutral-700 dark:bg-neutral-900 dark:text-neutral-300"
+            class="max-h-44 w-full min-w-0 max-w-full overflow-auto rounded-none bg-neutral-100 p-3 text-xs leading-5 text-neutral-700 dark:bg-neutral-900 dark:text-neutral-300"
           >{{ result }}</pre>
         </div>
       </Form>

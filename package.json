@@ -11,7 +11,8 @@
     "build:docs": "pnpm -r --filter ./docs run build",
     "dev:docs": "pnpm -r --filter ./docs run dev",
     "lint": "pnpm -r --filter ./packages/** run lint",
-    "test": "pnpm -r --filter ./packages/** run test"
+    "test": "pnpm -r --filter ./packages/** run test",
+    "check": "pnpm --filter akaza-ui lint && pnpm --filter akaza-ui typecheck && pnpm --filter akaza-ui coverage && pnpm --filter akaza-ui build && pnpm --dir playground lint && pnpm --dir playground type-check && pnpm --dir playground build && pnpm --dir docs lint && pnpm --dir docs typecheck && pnpm --dir docs build && pnpm --filter akaza-ui exec npm pack --dry-run"
   },
   "engines": {
     "node": ">=18.18.0"

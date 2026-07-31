@@ -3,6 +3,9 @@ title: Alert Dialog
 description: A modal dialog that interrupts the user and requires a response.
 navigation:
   icon: i-lucide-triangle-alert
+  badge:
+    label: UPDATED
+    color: warning
 ---
 
 An alert dialog interrupts the user with important content and blocks interaction with the rest of the page until dismissed. Focus is trapped inside and screen readers announce it as an alert.

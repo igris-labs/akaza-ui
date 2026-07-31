@@ -3,6 +3,9 @@ title: Dialog
 description: A modal dialog that appears over the page and traps focus.
 navigation:
   icon: i-lucide-square
+  badge:
+    label: UPDATED
+    color: warning
 ---
 
 A modal panel that overlays the page. Focus is trapped inside while open and restored to the trigger when closed. Screen readers are informed via `role="dialog"` and `aria-modal`.

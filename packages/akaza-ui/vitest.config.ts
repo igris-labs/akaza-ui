@@ -12,13 +12,18 @@ export default defineConfig({
   test: {
     environment: "jsdom",
     globals: true,
-    passWithNoTests: true,
-    include: ["src/**/*.{test,spec}.{ts,tsx}"],
+    include: ["tests/**/*.{test,spec}.{ts,tsx}"],
     coverage: {
       provider: "v8",
       reporter: ["text", "json", "html"],
       include: ["src/**/*.{ts,vue}"],
       exclude: ["src/index.ts", "src/**/index.ts"],
+      thresholds: {
+        statements: 75,
+        branches: 60,
+        functions: 60,
+        lines: 75,
+      },
     },
   },
 });

@@ -3,6 +3,9 @@ title: Accordion
 description: A set of collapsible sections with headings.
 navigation:
   icon: i-lucide-layout-panel-top
+  badge:
+    label: UPDATED
+    color: warning
 ---
 
 A vertically stacked list of items that can be expanded or collapsed. Supports single or multiple open items and full keyboard navigation.

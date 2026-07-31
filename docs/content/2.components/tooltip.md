@@ -3,6 +3,9 @@ title: Tooltip
 description: A floating label that appears when the user hovers or focuses an element.
 navigation:
   icon: i-lucide-info
+  badge:
+    label: UPDATED
+    color: warning
 ---
 
 A small informational popup that appears on hover and focus. Does not trap focus. Use it to provide supplemental context for icon buttons or truncated text.

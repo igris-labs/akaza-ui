@@ -59,7 +59,7 @@ No manual CSS import or component registration needed.
 
 ## Components
 
-`Accordion` · `AlertDialog` · `Avatar` · `Button` · `Checkbox` · `CheckboxGroup` · `Collapsible` · `Dialog` · `Drawer` · `Field` · `Fieldset` · `Form` · `Input` · `Menu` · `Meter` · `NumberField` · `OverlayProvider` · `Popover` · `Progress` · `RadioGroup` · `Select` · `Separator` · `Slider` · `Switch` · `Tabs` · `Toggle` · `ToggleGroup` · `Tooltip`
+`Accordion` · `AlertDialog` · `Avatar` · `Button` · `Checkbox` · `CheckboxGroup` · `Collapsible` · `Combobox` · `ContextMenu` · `Dialog` · `Drawer` · `Editable` · `Field` · `Fieldset` · `Form` · `HoverPreviewCard` · `Input` · `Listbox` · `Menu` · `Menubar` · `Meter` · `NavigationMenu` · `NumberField` · `OverlayProvider` · `Pagination` · `PinInput` · `Popover` · `Progress` · `RadioGroup` · `Rating` · `Select` · `Separator` · `Slider` · `Stepper` · `Switch` · `Tabs` · `TagsInput` · `Toast` · `Toggle` · `ToggleGroup` · `Toolbar` · `Tooltip`
 
 ## Usage
 

@@ -37,7 +37,7 @@ Unlike libraries ported from React (Radix, Reka), Akaza UI is designed from scra
 - **Slot-based, not sub-component-based** - named scoped slots (`#trigger`, `#header`, `#body`, `#footer`) keep templates flat and readable
 - **`v-model`-native** - all stateful components bind via standard `v-model`
 - **`ui` prop for structural styling** - pass class strings per part (`ui.overlay`, `ui.content`, `ui.header`) instead of wrapping sub-components
-- **Items-based API for lists** - `RadioGroup`, `Menu`, `Tabs`, `Select`, `CheckboxGroup`, and `ToggleGroup` accept data arrays; per-item rendering uses named slots
+- **Items-based API for lists** - `RadioGroup`, `Menu`, `Tabs`, `Select`, `Listbox`, `CheckboxGroup`, and `ToggleGroup` accept data arrays; per-item rendering uses named slots
 - **Accessible by default** - WAI-ARIA roles, keyboard navigation, and focus management built in
 
 ## Installation
@@ -54,7 +54,7 @@ Import the CSS in your app entry point:
 
 ```ts
 // main.ts
-import 'akaza-ui/dist/akaza-ui.css'
+import "akaza-ui/dist/akaza-ui.css";
 ```
 
 **If you use Tailwind CSS**, declare the `akaza-reset` layer before Tailwind so utility classes can override component base styles:
@@ -72,44 +72,58 @@ Use the built-in Nuxt module — it registers all components as auto-imports and
 ```ts
 // nuxt.config.ts
 export default defineNuxtConfig({
-  modules: ['akaza-ui/nuxt'],
-})
+  modules: ["akaza-ui/nuxt"],
+});
 ```
 
 No manual CSS import or component registration needed.
 
 ## Components
 
-| Component        | Description                                                                     |
-| ---------------- | ------------------------------------------------------------------------------- |
-| `Accordion`      | Single or multi-open collapsible item list                                      |
-| `AlertDialog`    | Confirmation dialog with alertdialog semantics                                  |
-| `Avatar`         | Image with fallback slot on load error                                          |
-| `Button`         | Accessible button with disabled, loading, async click, and `as` support         |
-| `Checkbox`       | Tri-state checkbox (`true`, `false`, `'indeterminate'`)                         |
-| `CheckboxGroup`  | Multi-select checkbox list with an items-based API                              |
-| `Collapsible`    | Single show/hide region with animated height                                    |
-| `Dialog`         | Modal dialog with focus trap, Escape, backdrop                                  |
-| `Drawer`         | Side panel with slide-in animation (`top`, `right`, `bottom`, `left`)           |
-| `Field`          | Label, description, and error wiring for controls                               |
-| `Fieldset`       | Native fieldset and legend wrapper for related controls                         |
-| `Form`           | Submit wrapper exposing `FormData` and native validity state                    |
-| `Input`          | Text input with Field integration and invalid state attrs                       |
-| `Menu`           | Dropdown menu with items-based API, submenus, checkbox/radio items              |
-| `Meter`          | Read-only gauge for bounded numeric values                                      |
-| `NumberField`    | Spinbutton number input with increment/decrement and scrub support              |
-| `OverlayProvider` | Programmatic overlay mounting with `useOverlay`                                |
-| `Popover`        | Click-triggered floating panel with auto-positioning                            |
-| `Progress`       | Progressbar with determinate and indeterminate support                          |
-| `RadioGroup`     | Accessible radio group with roving tabindex and custom item rendering           |
-| `Select`         | Listbox select with keyboard navigation, typeahead, and form submission         |
-| `Separator`      | Horizontal or vertical divider, decorative or semantic                          |
-| `Slider`         | Slider with pointer drag, keyboard step, and ARIA value metadata                |
-| `Switch`         | Binary toggle with WAI-ARIA switch role                                         |
-| `Tabs`           | Accessible tab set with animated indicator, items-based API                     |
-| `Toggle`         | On/off button with `aria-pressed`                                               |
-| `ToggleGroup`    | Single or multiple pressed values with roving focus                             |
-| `Tooltip`        | Hover/focus tooltip with auto-positioning and delay                             |
+| Component          | Description                                                                |
+| ------------------ | -------------------------------------------------------------------------- |
+| `Accordion`        | Single or multi-open collapsible item list                                 |
+| `AlertDialog`      | Confirmation dialog with alertdialog semantics                             |
+| `Avatar`           | Image with fallback slot on load error                                     |
+| `Button`           | Accessible button with disabled, loading, async click, and `as` support    |
+| `Checkbox`         | Tri-state checkbox (`true`, `false`, `'indeterminate'`)                    |
+| `CheckboxGroup`    | Multi-select checkbox list with an items-based API                         |
+| `Collapsible`      | Single show/hide region with animated height                               |
+| `Combobox`         | Editable input plus listbox selection, filtering, and creation             |
+| `ContextMenu`      | Right-click menu positioned at the pointer                                 |
+| `Dialog`           | Modal dialog with focus trap, Escape, backdrop                             |
+| `Drawer`           | Side panel with slide-in animation (`top`, `right`, `bottom`, `left`)      |
+| `Editable`         | Inline text editing with preview, draft, submit, and cancel states         |
+| `Field`            | Label, description, and error wiring for controls                          |
+| `Fieldset`         | Native fieldset and legend wrapper for related controls                    |
+| `Form`             | Submit wrapper exposing `FormData` and native validity state               |
+| `Input`            | Text input with Field integration and invalid state attrs                  |
+| `Listbox`          | Standalone single/multiple selection with filtering and virtualization     |
+| `Menu`             | Dropdown menu with items-based API, submenus, checkbox/radio items         |
+| `Menubar`          | Horizontal menu strip with cross-menu keyboard navigation                  |
+| `Meter`            | Read-only gauge for bounded numeric values                                 |
+| `NavigationMenu`   | Site navigation with hover/focus flyout panels                             |
+| `NumberField`      | Spinbutton number input with increment/decrement and scrub support         |
+| `OverlayProvider`  | Programmatic overlay mounting with `useOverlay`                            |
+| `Pagination`       | Page navigation with compact ranges, ellipses, controls, and links         |
+| `PinInput`         | Multi-cell OTP/PIN input with paste distribution and form support          |
+| `Popover`          | Click-triggered floating panel with auto-positioning                       |
+| `Progress`         | Progressbar with determinate and indeterminate support                     |
+| `RadioGroup`       | Accessible radio group with roving tabindex and custom item rendering      |
+| `Rating`           | Rating input with fractional values, hover preview, and form support       |
+| `Select`           | Listbox select with keyboard navigation, typeahead, and form submission    |
+| `Separator`        | Horizontal or vertical divider, decorative or semantic                     |
+| `Slider`           | Slider with pointer drag, keyboard step, and ARIA value metadata           |
+| `Stepper`          | Multi-step progress and navigation with linear rules and panels            |
+| `Switch`           | Binary toggle with WAI-ARIA switch role                                    |
+| `Tabs`             | Accessible tab set with animated indicator, items-based API                |
+| `TagsInput`        | Tokenized text input with keyboard editing, validation, and paste handling |
+| `Toast`            | Queued status/alert notifications with actions and direction-aware motion  |
+| `Toggle`           | On/off button with `aria-pressed`                                          |
+| `ToggleGroup`      | Single or multiple pressed values with roving focus                        |
+| `Toolbar`          | Command strip with roving focus across controls                            |
+| `Tooltip`          | Hover/focus tooltip with auto-positioning and delay                        |
+| `HoverPreviewCard` | Hover/focus rich preview for links and entities                            |
 
 ## Usage
 
@@ -128,7 +142,8 @@ const isOpen = ref(false);
     v-model="isOpen"
     :ui="{
       overlay: 'fixed inset-0 bg-black/50 backdrop-blur-sm',
-      content: 'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl shadow-xl w-full max-w-md',
+      content:
+        'fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-white rounded-xl shadow-xl w-full max-w-md',
       header: 'flex items-center justify-between p-6 border-b',
       body: 'p-6',
       footer: 'flex justify-end gap-2 p-6 border-t',
@@ -242,6 +257,7 @@ packages/
       components/  — Vue component primitives
       composables/ — internal + public composables (useOverlay)
       utils/       — focusTrap, focusable helpers
+    tests/         — component, utility, and Nuxt integration tests
 docs/             — documentation site (Nuxt + Nuxt UI)
 ```
 
@@ -251,4 +267,4 @@ Early development. API is not stable. Breaking changes may occur between minor v
 
 ## License
 
-MIT
+[MIT](./LICENSE)

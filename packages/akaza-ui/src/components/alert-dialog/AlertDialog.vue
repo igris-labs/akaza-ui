@@ -4,6 +4,7 @@ import type { AkazaChangeEventDetails } from "../../types";
 import { nextTick, useId, useTemplateRef, watch } from "vue";
 import { useAlertDialog } from "../../composables/alert-dialog";
 import { resolveAction } from "../../utils/changeEvent";
+import { useDismissableLayer } from "../../utils/dismissableLayer";
 import { useFocusScope } from "../../utils/focusScope";
 
 const {
@@ -28,13 +29,16 @@ const contentRef = useTemplateRef<HTMLElement>("contentRef");
 const titleId = useId();
 const descriptionId = useId();
 const { activate, deactivate } = useFocusScope(contentRef, { initialFocusSelector: "[data-akaza-cancel]" });
+const { register, unregister } = useDismissableLayer(() => {});
 
 watch(isOpen, async (val) => {
   if (val) {
     await nextTick();
     activate();
+    register();
   } else {
     deactivate();
+    unregister();
   }
 }, { immediate: true });
 

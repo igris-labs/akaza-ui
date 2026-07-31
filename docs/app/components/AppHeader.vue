@@ -34,7 +34,7 @@ const { header } = useAppConfig();
       </span>
 
       <UBadge
-        label="Alpha"
+        :label="`v${header?.version}`"
         size="xs"
         class="my-auto rounded-none"
       />

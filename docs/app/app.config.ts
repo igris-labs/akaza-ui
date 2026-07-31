@@ -1,3 +1,5 @@
+import akazaPackage from "../../packages/akaza-ui/package.json";
+
 export default defineAppConfig({
   ui: {
     colors: {
@@ -15,6 +17,7 @@ export default defineAppConfig({
   },
   header: {
     title: "Akaza UI",
+    version: akazaPackage.version,
     to: "/",
     logo: {
       alt: "",

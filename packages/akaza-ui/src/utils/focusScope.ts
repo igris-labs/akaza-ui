@@ -120,10 +120,10 @@ export function useFocusScope(containerRef: Ref<HTMLElement | null>, options: Fo
   function activate() {
     if (typeof document === "undefined") return;
     previouslyFocused = document.activeElement as HTMLElement;
-    focusFirst();
+    add(scope);
     document.addEventListener("keydown", handleKeyDown);
     document.addEventListener("focusin", handleFocusIn);
-    add(scope);
+    focusFirst();
   }
 
   function deactivate() {

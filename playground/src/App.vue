@@ -12,7 +12,13 @@ import FieldsetSection from "./sections/fieldset/FieldsetSection.vue";
 import FormSection from "./sections/form/FormSection.vue";
 import InputSection from "./sections/input/InputSection.vue";
 import SelectSection from "./sections/select/SelectSection.vue";
+import ListboxSection from "./sections/listbox/ListboxSection.vue";
 import ComboboxSection from "./sections/combobox/ComboboxSection.vue";
+import PinInputSection from "./sections/pin-input/PinInputSection.vue";
+import TagsInputSection from "./sections/tags-input/TagsInputSection.vue";
+import EditableSection from "./sections/editable/EditableSection.vue";
+import RatingSection from "./sections/rating/RatingSection.vue";
+import StepperSection from "./sections/stepper/StepperSection.vue";
 import NumberFieldSection from "./sections/number-field/NumberFieldSection.vue";
 import SliderSection from "./sections/slider/SliderSection.vue";
 import AvatarSection from "./sections/avatar/AvatarSection.vue";
@@ -35,6 +41,7 @@ import ToggleGroupSection from "./sections/toggle-group/ToggleGroupSection.vue";
 import ToolbarSection from "./sections/toolbar/ToolbarSection.vue";
 import ToastSection from "./sections/toast/ToastSection.vue";
 import HoverPreviewCardSection from "./sections/hover-preview-card/HoverPreviewCardSection.vue";
+import PaginationSection from "./sections/pagination/PaginationSection.vue";
 import OverlaySection from "./sections/overlay/OverlaySection.vue";
 
 const isDark = ref(false);
@@ -52,7 +59,13 @@ const sections = [
       "button",
       "input",
       "select",
+      "listbox",
       "combobox",
+      "pin-input",
+      "tags-input",
+      "editable",
+      "rating",
+      "stepper",
       "number-field",
       "slider",
       "field",
@@ -73,7 +86,7 @@ const sections = [
     label: "Overlay",
     items: ["tooltip", "popover", "hover-preview-card", "dialog", "alert-dialog", "drawer", "menu", "context-menu"],
   },
-  { id: "navigation", label: "Navigation", items: ["tabs", "navigation-menu", "menubar", "toolbar"] },
+  { id: "navigation", label: "Navigation", items: ["tabs", "pagination", "navigation-menu", "menubar", "toolbar"] },
   { id: "programmatic", label: "Programmatic", items: ["overlay"] },
 ];
 </script>
@@ -132,7 +145,19 @@ const sections = [
         <Separator class="border-t border-border" />
         <SelectSection />
         <Separator class="border-t border-border" />
+        <ListboxSection />
+        <Separator class="border-t border-border" />
         <ComboboxSection />
+        <Separator class="border-t border-border" />
+        <PinInputSection />
+        <Separator class="border-t border-border" />
+        <TagsInputSection />
+        <Separator class="border-t border-border" />
+        <EditableSection />
+        <Separator class="border-t border-border" />
+        <RatingSection />
+        <Separator class="border-t border-border" />
+        <StepperSection />
         <Separator class="border-t border-border" />
         <NumberFieldSection />
         <Separator class="border-t border-border" />
@@ -183,6 +208,8 @@ const sections = [
         <ContextMenuSection />
         <Separator class="border-t border-border" />
         <TabsSection />
+        <Separator class="border-t border-border" />
+        <PaginationSection />
         <Separator class="border-t border-border" />
         <NavigationMenuSection />
         <Separator class="border-t border-border" />

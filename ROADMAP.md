@@ -31,7 +31,10 @@
 | Input                        | Text input with Field integration and invalid state attrs                  |
 | Checkbox Group               | Manages multiple checkboxes with items API and form submission             |
 | Select                       | `role="listbox"`, keyboard nav, typeahead, autocomplete filtering          |
+| Listbox                      | Standalone single/multiple selection, filtering, range select, virtualization |
 | Combobox                     | Input + listbox, `aria-autocomplete`, `aria-activedescendant`              |
+| Pin / OTP Input              | Multi-cell fixed-length input, paste distribution, OTP and form metadata   |
+| Tags Input                   | Tokenized values, keyboard editing, validation, paste, and form submission |
 | Number Field                 | Increment/decrement, `role="spinbutton"`, min/max/step                     |
 | Slider                       | `role="slider"`, `aria-valuenow/min/max`, pointer and keyboard step        |
 | Toggle Group                 | Single or multiple selection, `role="group"`, roving focus                 |
@@ -39,18 +42,10 @@
 | OverlayProvider / useOverlay | Programmatic overlay provider + composable                                 |
 | Toast                        | `role="status"` / `role="alert"`, auto-dismiss, queue management           |
 | Hover Preview Card           | Hover-triggered rich content card for links, users, and entities           |
-
-### Planned — Form & Input Primitives
-
-| Component       | Notes                                                              |
-| --------------- | ------------------------------------------------------------------ |
-| Editable        | Inline editable text/input with submit, cancel, preview/edit modes |
-| Listbox         | Standalone selectable listbox primitive                            |
-| Pin / OTP Input | Multi-cell input for OTP, PIN, and verification codes              |
-| Tags Input      | Tokenized text input with add/remove keyboard behavior             |
-| Rating          | Star/rating input with keyboard and readonly modes                 |
-| Stepper         | Multi-step flow indicator and navigation primitive                 |
-| Pagination      | Page navigation with current page and disabled states              |
+| Editable                     | Inline text editing with preview, draft, submit, cancel, and forms         |
+| Rating                       | Fractional radio-group rating input with hover and keyboard support        |
+| Stepper                      | Linear/non-linear multi-step navigation with panels and roving focus       |
+| Pagination                   | Page ranges, ellipses, boundary controls, links, and cancelable changes    |
 
 ### Planned — Date & Time Primitives
 

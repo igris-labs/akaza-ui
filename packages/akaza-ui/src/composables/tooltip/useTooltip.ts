@@ -1,5 +1,5 @@
 import type { Ref } from "vue";
-import { ref } from "vue";
+import { onScopeDispose, ref } from "vue";
 
 export interface UseTooltipOptions {
   delayDuration?: number;
@@ -22,15 +22,29 @@ export function useTooltip(
   let closeTimer: ReturnType<typeof setTimeout> | null = null;
 
   function open() {
+    if (openTimer) clearTimeout(openTimer);
     if (closeTimer) { clearTimeout(closeTimer); closeTimer = null; }
-    openTimer = setTimeout(() => { isOpen.value = true; }, delayDuration);
+    openTimer = setTimeout(() => {
+      isOpen.value = true;
+      openTimer = null;
+    }, delayDuration);
   }
   function close() {
     if (openTimer) { clearTimeout(openTimer); openTimer = null; }
-    closeTimer = setTimeout(() => { isOpen.value = false; }, closeDelay);
+    if (closeTimer) clearTimeout(closeTimer);
+    closeTimer = setTimeout(() => {
+      isOpen.value = false;
+      closeTimer = null;
+    }, closeDelay);
   }
   function toggle() {
     isOpen.value ? close() : open();
   }
+
+  onScopeDispose(() => {
+    if (openTimer) clearTimeout(openTimer);
+    if (closeTimer) clearTimeout(closeTimer);
+  });
+
   return { isOpen, open, close, toggle };
 }

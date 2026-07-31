@@ -2,7 +2,7 @@
 import type { AccordionItem, AccordionProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
 import { onKeyStroke } from "@vueuse/core";
-import { useTemplateRef } from "vue";
+import { useId, useTemplateRef } from "vue";
 
 const {
   items,
@@ -26,6 +26,7 @@ const emit = defineEmits<{
 const model = defineModel<string | string[]>({ default: "" });
 
 const rootRef = useTemplateRef<HTMLElement>("rootRef");
+const idBase = useId();
 
 function getValue(item: AccordionItem): string {
   if (valueKey) return String(item[valueKey]);
@@ -71,11 +72,11 @@ function toggle(item: AccordionItem, event?: Event) {
 }
 
 function triggerId(item: AccordionItem): string {
-  return `akaza-accordion-trigger-${getValue(item)}`;
+  return `akaza-accordion-trigger-${idBase}-${getValue(item)}`;
 }
 
 function panelId(item: AccordionItem): string {
-  return `akaza-accordion-panel-${getValue(item)}`;
+  return `akaza-accordion-panel-${idBase}-${getValue(item)}`;
 }
 
 onKeyStroke(["ArrowDown", "ArrowUp", "ArrowRight", "ArrowLeft", "Home", "End"], (e) => {

@@ -88,6 +88,102 @@ export const toggleGroupCardUi = {
   label: "font-medium text-foreground",
   description: "mt-1 text-xs text-muted-foreground",
 };
+export const listboxUi = {
+  root: "grid w-full max-w-sm gap-2",
+  filter:
+    "h-9 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground shadow-sm outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50",
+  content:
+    "max-h-64 rounded-md border border-border bg-background p-1 text-foreground shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background data-[akaza-invalid]:border-destructive data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50",
+  virtualWrapper: "min-w-full",
+  empty: "px-3 py-6 text-center text-sm text-muted-foreground",
+  groupLabel: "px-2.5 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground",
+  separator: "my-1 h-px bg-border",
+  option:
+    "flex cursor-pointer items-start gap-2 rounded-sm px-2.5 py-2 text-sm outline-none transition-colors data-[akaza-highlighted]:bg-accent data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50",
+  indicator: "mt-0.5 w-4 shrink-0 text-primary",
+  optionText: "grid gap-0.5",
+  optionLabel: "font-medium text-foreground",
+  optionDescription: "text-xs text-muted-foreground",
+};
+export const pinInputUi = {
+  root: "gap-2 data-[akaza-disabled]:opacity-50",
+  input:
+    "size-11 rounded-md border border-input bg-background text-center font-mono text-lg text-foreground shadow-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background data-[akaza-invalid]:border-destructive data-[akaza-invalid]:ring-destructive/30 disabled:cursor-not-allowed",
+};
+export const tagsInputUi = {
+  root:
+    "min-h-10 w-full max-w-md items-center gap-1.5 rounded-md border border-input bg-background p-1.5 shadow-sm transition-colors data-[akaza-focused]:ring-2 data-[akaza-focused]:ring-ring data-[akaza-focused]:ring-offset-1 data-[akaza-focused]:ring-offset-background data-[akaza-invalid]:border-destructive data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50",
+  item:
+    "inline-flex h-7 items-center gap-1 rounded-md bg-muted px-2 text-xs font-medium text-foreground outline-none data-[akaza-highlighted]:ring-2 data-[akaza-highlighted]:ring-ring",
+  itemText: "max-w-40 truncate",
+  delete:
+    "grid size-4 place-items-center rounded text-muted-foreground transition-colors hover:bg-background hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none",
+  input:
+    "h-7 min-w-24 flex-1 border-0 bg-transparent px-1 text-sm text-foreground outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed",
+  clear:
+    "h-7 rounded-md px-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+};
+export const editableUi = {
+  root: "grid w-full max-w-md gap-2",
+  area: "min-w-0",
+  preview:
+    "min-h-9 w-full rounded-md border border-transparent bg-transparent px-3 py-2 text-left text-sm text-foreground outline-none transition-colors hover:bg-muted focus-visible:border-input focus-visible:ring-2 focus-visible:ring-ring data-[akaza-empty]:text-muted-foreground",
+  input:
+    "min-h-9 w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-sm outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
+  actions: "flex flex-wrap gap-2",
+  edit: buttonGhost,
+  submit: buttonPrimary,
+  cancel: buttonGhost,
+};
+export const ratingUi = {
+  root: "gap-1 text-3xl leading-none data-[akaza-disabled]:opacity-50",
+  item: "size-8",
+  base: "text-muted-foreground/35",
+  fill: "text-primary",
+  fillIcon: "text-3xl leading-none",
+  radio:
+    "rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed",
+};
+export const stepperUi = {
+  root: "grid w-full gap-5",
+  list: "flex w-full items-start",
+  item: "relative flex min-w-0 flex-1 items-start last:flex-none",
+  trigger:
+    "group flex min-w-0 items-start gap-3 rounded-md text-left outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-45",
+  indicator:
+    "grid size-8 shrink-0 place-items-center rounded-full border border-border bg-background text-xs font-semibold text-muted-foreground transition-colors group-data-[akaza-state=active]:border-primary group-data-[akaza-state=active]:bg-primary group-data-[akaza-state=active]:text-primary-foreground group-data-[akaza-state=completed]:border-primary group-data-[akaza-state=completed]:text-primary",
+  text: "hidden min-w-0 gap-0.5 sm:grid",
+  title: "truncate text-sm font-medium text-foreground",
+  description: "text-xs text-muted-foreground",
+  optional: "text-[11px] text-muted-foreground",
+  separator:
+    "mx-3 mt-4 h-px min-w-4 flex-1 bg-border data-[akaza-state=completed]:bg-primary",
+  panels: "rounded-lg border border-border bg-background p-4",
+  panel: "text-sm text-muted-foreground",
+  controls: "flex justify-between gap-2",
+  previous: buttonGhost,
+  next: buttonPrimary,
+};
+export const stepperVerticalUi = {
+  ...stepperUi,
+  list: "flex w-full flex-col gap-0",
+  item: "relative flex min-w-0 pb-6 last:pb-0",
+  text: "grid min-w-0 gap-0.5",
+  separator:
+    "absolute left-4 top-9 h-[calc(100%-2.25rem)] w-px -translate-x-1/2 bg-border data-[akaza-state=completed]:bg-primary",
+};
+export const paginationUi = {
+  root: "max-w-full overflow-x-auto",
+  list: "w-max items-center gap-1",
+  item: "shrink-0",
+  first: buttonGhost,
+  previous: buttonGhost,
+  page:
+    "grid size-9 place-items-center rounded-md border border-transparent text-sm font-medium text-muted-foreground no-underline transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-state=active]:border-primary data-[akaza-state=active]:bg-primary data-[akaza-state=active]:text-primary-foreground disabled:pointer-events-none disabled:opacity-50",
+  ellipsis: "grid size-9 place-items-center text-sm text-muted-foreground",
+  next: buttonGhost,
+  last: buttonGhost,
+};
 export const meterUi = {
   root: "grid w-full max-w-sm grid-cols-2 gap-y-2",
   label: "text-sm font-medium text-foreground",

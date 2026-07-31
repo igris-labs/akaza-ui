@@ -3,6 +3,9 @@ title: Drawer
 description: A panel that slides in from the edge of the viewport.
 navigation:
   icon: i-lucide-panel-right
+  badge:
+    label: UPDATED
+    color: warning
 ---
 
 A slide-in panel anchored to a viewport edge. Supports swipe-to-close on touch devices, focus trapping, and all four sides.

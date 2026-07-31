@@ -3,6 +3,9 @@ title: Overlay Provider
 description: Programmatic overlay mounting with useOverlay.
 navigation:
   icon: i-lucide-panels-top-left
+  badge:
+    label: UPDATED
+    color: warning
 ---
 
 `OverlayProvider` renders overlay components created with `useOverlay`. Mount one provider near your app root, then open dialogs, drawers, or custom overlay components from anywhere.

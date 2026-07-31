@@ -1,6 +1,6 @@
 import type { Component, DefineComponent } from "vue";
 import { createSharedComposable } from "@vueuse/core";
-import { reactive } from "vue";
+import { markRaw, reactive } from "vue";
 
 /**
  * Extracts the props type from a Vue component.
@@ -61,7 +61,7 @@ function _useOverlay() {
     // All state mutations MUST go through getEntry() to hit the reactive proxy.
     const raw: _OverlayEntry = {
       id,
-      component,
+      component: markRaw(component),
       props: { ...options?.props } as Record<string, unknown>,
       modelValue: false,
       destroyOnClose: options?.destroyOnClose ?? false,

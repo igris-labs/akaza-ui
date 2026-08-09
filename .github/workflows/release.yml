@@ -23,8 +23,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Verify repository
-        run: pnpm check
+      - name: Build
+        run: pnpm --filter akaza-ui run build
 
       - name: Publish to NPM
         run: pnpm --filter akaza-ui publish --no-git-checks

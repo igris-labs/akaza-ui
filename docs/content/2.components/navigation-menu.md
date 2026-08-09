@@ -158,7 +158,7 @@ Use `#item` for richer content while the component keeps generated list and link
 | `indicator` | `akaza-navigation-menu-indicator` | `data-akaza-state` |
 | `content` | `akaza-navigation-menu-content` | `data-akaza-state`, `data-akaza-side`, `data-akaza-align`, `--akaza-navigation-menu-anchor-width`, `--akaza-navigation-menu-anchor-height`, `--akaza-navigation-menu-available-width`, `--akaza-navigation-menu-available-height`, `--akaza-navigation-menu-transform-origin`, `--akaza-navigation-menu-duration` |
 | `viewport` | `akaza-navigation-menu-viewport` | `data-akaza-activation-direction`, `--akaza-navigation-menu-viewport-width`, `--akaza-navigation-menu-viewport-height` |
-| `panel` | `akaza-navigation-menu-panel` | `data-akaza-activation-direction="left\|right"` |
+| `panel` | `akaza-navigation-menu-panel` | `data-akaza-state`, `data-akaza-motion="from-start\|from-end\|to-start\|to-end"`, `data-akaza-activation-direction="left\|right"` |
 | `contentList` | `akaza-navigation-menu-content-list` | — |
 | `contentItem` | `akaza-navigation-menu-content-item` | `data-akaza-disabled` |
 | `contentLink` | `akaza-navigation-menu-content-link` | — |

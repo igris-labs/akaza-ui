@@ -25,11 +25,12 @@ const emit = defineEmits<{
 
 const openValue = defineModel<string | null>("open", { default: null });
 const triggerRefs = ref<Array<HTMLElement | null>>([]);
+const panelRefs = ref<Array<HTMLElement | null>>([]);
 const rootRef = useTemplateRef<HTMLElement>("rootRef");
 const contentRef = useTemplateRef<HTMLElement>("contentRef");
-const panelRef = useTemplateRef<HTMLElement>("panelRef");
 const activeTriggerIndex = ref(Math.max(0, items.findIndex((item) => !item.disabled)));
 const activationDirection = ref<"left" | "right">();
+const previousOpenValue = ref<string | null>(null);
 const viewportStyle = ref<CSSProperties>({});
 const id = useId();
 const slots = useSlots() as Record<string, Slot | undefined>;
@@ -43,7 +44,12 @@ const { register, unregister } = useDismissableLayer((event?: KeyboardEvent) => 
   if (triggerIndex >= 0) focusTrigger(triggerIndex);
 });
 
-const activeItem = computed(() => items.find((item) => getValue(item) === openValue.value));
+const panelItems = computed(() => items.filter((item) => item.children?.length));
+const activeItem = computed(() => panelItems.value.find((item) => getValue(item) === openValue.value));
+const activePanelRef = computed(() => {
+  const index = panelItems.value.findIndex((item) => getValue(item) === openValue.value);
+  return index >= 0 ? panelRefs.value[index] ?? null : null;
+});
 const activeTriggerRef = computed(() => {
   const index = items.findIndex((item) => getValue(item) === openValue.value);
   return index >= 0 ? triggerRefs.value[index] ?? null : null;
@@ -60,7 +66,7 @@ const { actualAlign, actualSide, style: contentStyle } = useFloatingPosition({
 const indicatorRevision = ref(0);
 useResizeObserver(rootRef, () => { indicatorRevision.value += 1; });
 useResizeObserver(activeTriggerRef, () => { indicatorRevision.value += 1; });
-useResizeObserver(panelRef, updateViewportSize);
+useResizeObserver(activePanelRef, updateViewportSize);
 const indicatorStyle = computed(() => {
   void indicatorRevision.value;
   const index = items.findIndex((item) => getValue(item) === openValue.value);
@@ -88,7 +94,7 @@ function getContentId(index: number) {
 }
 
 function updateViewportSize() {
-  const panel = panelRef.value;
+  const panel = activePanelRef.value;
   if (!panel) return;
   const rect = panel.getBoundingClientRect();
   if (!rect.width || !rect.height) return;
@@ -113,6 +119,28 @@ function setTriggerRef(el: HTMLElement | null, index: number) {
 
 function setIndexedTriggerRef(index: number) {
   return (el: Element | null) => setTriggerRef(el as HTMLElement | null, index);
+}
+
+function setIndexedPanelRef(index: number) {
+  return (el: unknown) => {
+    panelRefs.value[index] = el as HTMLElement | null;
+  };
+}
+
+function isPanelOpen(item: NavigationMenuItem) {
+  return getValue(item) === openValue.value;
+}
+
+function getPanelMotion(item: NavigationMenuItem) {
+  const value = getValue(item);
+  if (!activationDirection.value) return undefined;
+  if (value === openValue.value) {
+    return activationDirection.value === "right" ? "from-end" : "from-start";
+  }
+  if (value === previousOpenValue.value) {
+    return activationDirection.value === "right" ? "to-start" : "to-end";
+  }
+  return undefined;
 }
 
 function setOpen(value: string | null, reason: string, event?: Event) {
@@ -240,8 +268,8 @@ function cancelClose() {
 }
 
 function getContentItems() {
-  if (!contentRef.value) return [];
-  return Array.from(contentRef.value.querySelectorAll<HTMLElement>("[data-akaza-navigation-menu-link]"))
+  if (!activePanelRef.value) return [];
+  return Array.from(activePanelRef.value.querySelectorAll<HTMLElement>("[data-akaza-navigation-menu-link]"))
     .filter((element) => element.getAttribute("aria-disabled") !== "true");
 }
 
@@ -287,8 +315,8 @@ watch(() => Boolean(activeItem.value?.children), (open) => {
 }, { immediate: true });
 // Direction depends on previous state, including externally controlled v-model updates.
 watch(openValue, async (value, previous) => {
-  if (value && previous) activationDirection.value = getActivationDirection(previous, value);
-  else activationDirection.value = undefined;
+  previousOpenValue.value = value && previous ? previous : null;
+  activationDirection.value = value && previous ? getActivationDirection(previous, value) : undefined;
   await nextTick();
   updateViewportSize();
 });
@@ -363,9 +391,7 @@ onUnmounted(() => {
     <Transition name="akaza-navigation-menu">
       <div
         v-if="activeItem?.children"
-        :id="getContentId(items.indexOf(activeItem))"
         ref="contentRef"
-        :aria-labelledby="getTriggerId(items.indexOf(activeItem))"
         :style="contentStyle"
         :class="ui?.content"
         data-akaza-state="open"
@@ -382,16 +408,26 @@ onUnmounted(() => {
           :data-akaza-activation-direction="activationDirection"
           class="akaza-navigation-menu-viewport"
         >
-          <Transition name="akaza-navigation-menu-panel">
+          <Transition
+            v-for="(panelItem, panelIndex) in panelItems"
+            :key="getValue(panelItem)"
+            name="akaza-navigation-menu-panel"
+          >
             <ul
-              :key="getValue(activeItem)"
-              ref="panelRef"
+              v-show="isPanelOpen(panelItem)"
+              :id="getContentId(items.indexOf(panelItem))"
+              :ref="setIndexedPanelRef(panelIndex)"
+              :aria-labelledby="getTriggerId(items.indexOf(panelItem))"
+              :aria-hidden="!isPanelOpen(panelItem) || undefined"
+              :inert="!isPanelOpen(panelItem) || undefined"
               :class="[ui?.panel, ui?.contentList]"
+              :data-akaza-state="isPanelOpen(panelItem) ? 'open' : 'closed'"
+              :data-akaza-motion="getPanelMotion(panelItem)"
               :data-akaza-activation-direction="activationDirection"
               class="akaza-navigation-menu-panel akaza-navigation-menu-content-list"
             >
               <li
-                v-for="child in activeItem.children"
+                v-for="child in panelItem.children"
                 :key="getValue(child)"
                 :class="ui?.contentItem"
                 :data-akaza-disabled="child.disabled || undefined"
@@ -464,6 +500,7 @@ onUnmounted(() => {
 </template>
 
 <style>
+@layer akaza-reset {
 .akaza-navigation-menu {
   position: relative;
 }
@@ -479,6 +516,9 @@ onUnmounted(() => {
 .akaza-navigation-menu-content {
   position: absolute;
   z-index: var(--akaza-z-navigation-menu, 1000);
+  transition:
+    left var(--akaza-navigation-menu-resize-duration, 200ms) cubic-bezier(0.22, 1, 0.36, 1),
+    top var(--akaza-navigation-menu-resize-duration, 200ms) cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .akaza-navigation-menu-viewport {
@@ -487,8 +527,8 @@ onUnmounted(() => {
   height: var(--akaza-navigation-menu-viewport-height, auto);
   overflow: hidden;
   transition:
-    width var(--akaza-navigation-menu-resize-duration, 240ms) cubic-bezier(0.22, 1, 0.36, 1),
-    height var(--akaza-navigation-menu-resize-duration, 240ms) cubic-bezier(0.22, 1, 0.36, 1);
+    width var(--akaza-navigation-menu-resize-duration, 200ms) cubic-bezier(0.22, 1, 0.36, 1),
+    height var(--akaza-navigation-menu-resize-duration, 200ms) cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .akaza-navigation-menu-panel {
@@ -498,8 +538,8 @@ onUnmounted(() => {
 .akaza-navigation-menu-panel-enter-active,
 .akaza-navigation-menu-panel-leave-active {
   transition:
-    opacity var(--akaza-navigation-menu-panel-duration, 200ms) ease-out,
-    translate var(--akaza-navigation-menu-panel-duration, 200ms) cubic-bezier(0.22, 1, 0.36, 1);
+    opacity var(--akaza-navigation-menu-panel-duration, 180ms) cubic-bezier(0.22, 1, 0.36, 1),
+    transform var(--akaza-navigation-menu-panel-duration, 180ms) cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .akaza-navigation-menu-panel-leave-active {
@@ -513,14 +553,14 @@ onUnmounted(() => {
   opacity: 0;
 }
 
-.akaza-navigation-menu-panel-enter-from[data-akaza-activation-direction="right"],
-.akaza-navigation-menu-panel-leave-to[data-akaza-activation-direction="left"] {
-  translate: var(--akaza-navigation-menu-slide-distance, 24px) 0;
+.akaza-navigation-menu-panel-enter-from[data-akaza-motion="from-end"],
+.akaza-navigation-menu-panel-leave-to[data-akaza-motion="to-end"] {
+  transform: translateX(var(--akaza-navigation-menu-slide-distance, 16px));
 }
 
-.akaza-navigation-menu-panel-enter-from[data-akaza-activation-direction="left"],
-.akaza-navigation-menu-panel-leave-to[data-akaza-activation-direction="right"] {
-  translate: calc(var(--akaza-navigation-menu-slide-distance, 24px) * -1) 0;
+.akaza-navigation-menu-panel-enter-from[data-akaza-motion="from-start"],
+.akaza-navigation-menu-panel-leave-to[data-akaza-motion="to-start"] {
+  transform: translateX(calc(var(--akaza-navigation-menu-slide-distance, 16px) * -1));
 }
 
 .akaza-navigation-menu-indicator {
@@ -558,5 +598,6 @@ onUnmounted(() => {
   .akaza-navigation-menu-viewport {
     transition-duration: 0.01ms;
   }
+}
 }
 </style>

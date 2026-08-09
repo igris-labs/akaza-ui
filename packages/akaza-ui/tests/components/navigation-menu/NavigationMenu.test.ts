@@ -34,16 +34,25 @@ describe("navigation menu", () => {
       props: {
         open: "products",
         items: [
-          { label: "Products", value: "products", children: [{ label: "Overview", href: "/overview" }] },
+          {
+            label: "Products",
+            value: "products",
+            children: [{ label: "Overview", href: "/overview" }],
+          },
           { label: "Docs", value: "docs", children: [{ label: "Guide", href: "/guide" }] },
         ],
       },
     });
 
     await wrapper.setProps({ open: "docs" });
-    expect(wrapper.get(".akaza-navigation-menu-panel").attributes("data-akaza-activation-direction")).toBe("right");
+    const forwardPanels = wrapper.findAll(".akaza-navigation-menu-panel");
+    expect(forwardPanels).toHaveLength(2);
+    expect(forwardPanels[0]!.attributes("data-akaza-motion")).toBe("to-start");
+    expect(forwardPanels[1]!.attributes("data-akaza-motion")).toBe("from-end");
 
     await wrapper.setProps({ open: "products" });
-    expect(wrapper.get(".akaza-navigation-menu-panel").attributes("data-akaza-activation-direction")).toBe("left");
+    const backwardPanels = wrapper.findAll(".akaza-navigation-menu-panel");
+    expect(backwardPanels[0]!.attributes("data-akaza-motion")).toBe("from-start");
+    expect(backwardPanels[1]!.attributes("data-akaza-motion")).toBe("to-end");
   });
 });

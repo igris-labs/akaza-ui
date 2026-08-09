@@ -24,9 +24,6 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Install browser test dependencies
-        run: pnpm --filter akaza-ui exec playwright install --with-deps chromium firefox webkit
-
       - name: Verify repository
         run: pnpm check
 

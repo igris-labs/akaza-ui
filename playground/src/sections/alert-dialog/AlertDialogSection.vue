@@ -75,12 +75,12 @@ const brandedUi = {
           :ui="alertUi"
         >
           <template #trigger="{ toggle }">
-            <button :class="buttonDestructive" @click="toggle()">Delete account</button>
+            <button :class="buttonDestructive" @click="toggle">Delete account</button>
           </template>
           <template #footer="{ close }">
             <div :class="footerActions">
-              <button :class="buttonGhost" @click="close()">Cancel</button>
-              <button :class="buttonDestructive" @click="close()">Yes, delete</button>
+              <button :class="buttonGhost" @click="close">Cancel</button>
+              <button :class="buttonDestructive" @click="close">Yes, delete</button>
             </div>
           </template>
         </AlertDialog>
@@ -102,7 +102,7 @@ const brandedUi = {
           :ui="alertUi"
         >
           <template #trigger="{ toggle }">
-            <button :class="buttonPrimary" @click="toggle()">Publish post</button>
+            <button :class="buttonPrimary" @click="toggle">Publish post</button>
           </template>
           <template #title>
             <div class="flex items-center gap-2 text-base font-semibold text-foreground">
@@ -128,8 +128,8 @@ const brandedUi = {
           </template>
           <template #footer="{ close }">
             <div :class="footerActions">
-              <button :class="buttonGhost" @click="close()">Not yet</button>
-              <button :class="buttonPrimary" @click="close()">Publish</button>
+              <button :class="buttonGhost" @click="close">Not yet</button>
+              <button :class="buttonPrimary" @click="close">Publish</button>
             </div>
           </template>
         </AlertDialog>
@@ -146,7 +146,7 @@ const brandedUi = {
       <div :class="canvasRow">
         <AlertDialog v-model="open3" title="Reset workspace" :ui="alertUi">
           <template #trigger="{ toggle }">
-            <button :class="buttonDestructive" @click="toggle()">Reset workspace</button>
+            <button :class="buttonDestructive" @click="toggle">Reset workspace</button>
           </template>
           <template #description>
             <p class="m-0 mb-2 text-sm text-muted-foreground">The following will be permanently removed:</p>
@@ -159,8 +159,8 @@ const brandedUi = {
           </template>
           <template #footer="{ close }">
             <div :class="footerActions">
-              <button :class="buttonGhost" @click="close()">Keep everything</button>
-              <button :class="buttonDestructive" @click="close()">Reset workspace</button>
+              <button :class="buttonGhost" @click="close">Keep everything</button>
+              <button :class="buttonDestructive" @click="close">Reset workspace</button>
             </div>
           </template>
         </AlertDialog>
@@ -183,12 +183,12 @@ const brandedUi = {
           :ui="alertUi"
         >
           <template #trigger="{ toggle }">
-            <button :class="buttonDestructive" @click="toggle()">Revoke key</button>
+            <button :class="buttonDestructive" @click="toggle">Revoke key</button>
           </template>
           <template #footer="{ close }">
             <div :class="footerActions">
-              <button :class="buttonGhost" data-akaza-cancel @click="close()">Keep key</button>
-              <button :class="buttonDestructive" @click="close()">Revoke</button>
+              <button :class="buttonGhost" data-akaza-cancel @click="close">Keep key</button>
+              <button :class="buttonDestructive" @click="close">Revoke</button>
             </div>
           </template>
         </AlertDialog>
@@ -211,11 +211,11 @@ const brandedUi = {
           :ui="alertUi"
         >
           <template #trigger="{ toggle }">
-            <button :class="buttonPrimary" @click="toggle()">Open (slow)</button>
+            <button :class="buttonPrimary" @click="toggle">Open (slow)</button>
           </template>
           <template #footer="{ close }">
             <div :class="footerActions">
-              <button :class="buttonGhost" data-akaza-cancel @click="close()">Close</button>
+              <button :class="buttonGhost" data-akaza-cancel @click="close">Close</button>
             </div>
           </template>
         </AlertDialog>
@@ -232,7 +232,7 @@ const brandedUi = {
       <div :class="canvasRow">
         <AlertDialog v-model="open6" :ui="alertUi">
           <template #trigger="{ toggle }">
-            <button :class="buttonPrimary" @click="toggle()">Transfer funds</button>
+            <button :class="buttonPrimary" @click="toggle">Transfer funds</button>
           </template>
           <template #header="{ titleId }">
             <div class="flex flex-col gap-1">
@@ -249,8 +249,8 @@ const brandedUi = {
           </template>
           <template #footer="{ close }">
             <div :class="footerActions">
-              <button :class="buttonGhost" data-akaza-cancel @click="close()">Cancel</button>
-              <button :class="buttonPrimary" @click="close()">Confirm transfer</button>
+              <button :class="buttonGhost" data-akaza-cancel @click="close">Cancel</button>
+              <button :class="buttonPrimary" @click="close">Confirm transfer</button>
             </div>
           </template>
         </AlertDialog>
@@ -273,12 +273,12 @@ const brandedUi = {
           :ui="brandedUi"
         >
           <template #trigger="{ toggle }">
-            <button :class="buttonPrimary" @click="toggle()">Log out everywhere</button>
+            <button :class="buttonPrimary" @click="toggle">Log out everywhere</button>
           </template>
           <template #footer="{ close }">
             <div :class="footerActions">
-              <button :class="buttonGhost" data-akaza-cancel @click="close()">Stay signed in</button>
-              <button :class="buttonPrimary" @click="close()">Log out</button>
+              <button :class="buttonGhost" data-akaza-cancel @click="close">Stay signed in</button>
+              <button :class="buttonPrimary" @click="close">Log out</button>
             </div>
           </template>
         </AlertDialog>
@@ -295,7 +295,7 @@ const brandedUi = {
       <div :class="canvasRow">
         <AlertDialog v-model="open8" :ui="compactUi">
           <template #trigger="{ toggle }">
-            <button :class="buttonDestructive" @click="toggle()">Remove member</button>
+            <button :class="buttonDestructive" @click="toggle">Remove member</button>
           </template>
           <template #body>
             <p :class="[dialogBodyText, 'text-center']">
@@ -304,8 +304,8 @@ const brandedUi = {
           </template>
           <template #footer="{ close }">
             <div :class="footerActions">
-              <button :class="buttonGhost" data-akaza-cancel @click="close()">Cancel</button>
-              <button :class="buttonDestructive" @click="close()">Remove</button>
+              <button :class="buttonGhost" data-akaza-cancel @click="close">Cancel</button>
+              <button :class="buttonDestructive" @click="close">Remove</button>
             </div>
           </template>
         </AlertDialog>

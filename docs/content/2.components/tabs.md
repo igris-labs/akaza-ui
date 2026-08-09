@@ -176,3 +176,15 @@ Remove inactive panels from the DOM instead of hiding them.
 | `indicator` | `akaza-tab-indicator` | — |
 | `panels` | `akaza-tab-panels` | — |
 | `panel` | `akaza-tab-panel` | `data-akaza-state` |
+
+### Keyboard
+
+| Key | Behavior |
+|-----|----------|
+| `ArrowLeft` / `ArrowRight` | Moves through enabled horizontal tabs and loops. |
+| `ArrowUp` / `ArrowDown` | Moves through enabled vertical tabs and loops. |
+| `Home` / `End` | Focuses first or last enabled tab. |
+| `Enter` / `Space` | Activates focused tab. Required in manual activation mode. |
+| `Tab` | Moves from active tab into active panel or next focusable control. |
+
+Automatic mode activates during arrow movement. Manual mode moves focus only until activation.

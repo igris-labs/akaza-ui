@@ -69,7 +69,7 @@ const open = ref(false);
           </template>
           <template #content>
             <div class="grid gap-2">
-              <p class="text-sm font-semibold text-foreground">0.0.5-alpha</p>
+              <p class="text-sm font-semibold text-foreground">0.0.6-alpha</p>
               <button
                 type="button"
                 class="rounded-md border border-border px-2 py-1 text-xs text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"

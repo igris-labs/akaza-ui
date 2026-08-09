@@ -28,7 +28,7 @@ import { Popover } from "akaza-ui";
 <template>
   <Popover>
     <template #trigger="{ toggle }">
-      <button @click="() => toggle()">Open</button>
+      <button @click="toggle">Open</button>
     </template>
 
     <template #content>
@@ -49,7 +49,7 @@ Use `side` and `align` to control where the panel appears relative to the trigge
 <template>
   <Popover side="top" align="center">
     <template #trigger="{ toggle }">
-      <button @click="() => toggle()">Info</button>
+      <button @click="toggle">Info</button>
     </template>
     <template #content>
       <p>Appears above the button.</p>
@@ -66,14 +66,14 @@ Use the content slot's `close` function for actions inside the panel.
 <template>
   <Popover>
     <template #trigger="{ toggle }">
-      <button @click="() => toggle()">Filters</button>
+      <button @click="toggle">Filters</button>
     </template>
 
     <template #content="{ close }">
       <div class="popover-panel">
         <h3>Filter options</h3>
         <!-- filter controls -->
-        <button @click="() => close()">Apply</button>
+        <button @click="close">Apply</button>
       </div>
     </template>
   </Popover>
@@ -88,7 +88,7 @@ By default the popover stays in the DOM tree next to its trigger. Pass `teleport
 <template>
   <Popover teleport="body">
     <template #trigger="{ toggle }">
-      <button @click="() => toggle()">Open</button>
+      <button @click="toggle">Open</button>
     </template>
     <template #content>Content in body.</template>
   </Popover>
@@ -142,3 +142,13 @@ By default the popover stays in the DOM tree next to its trigger. Pass `teleport
 |--------|-----------|------------|
 | `root` | `akaza-popover-root` | `data-akaza-state` |
 | `content` | `akaza-popover-content` | `data-akaza-state`, `data-akaza-side`, `data-akaza-align` |
+
+### Keyboard
+
+| Key | Behavior |
+|-----|----------|
+| `Enter` / `Space` | Opens when trigger is a native button wired to `toggle`. |
+| `Escape` | Closes topmost popover and restores trigger focus. |
+| `Tab` / `Shift + Tab` | Uses normal document order; Popover is non-modal and does not trap focus. |
+
+Apply `triggerProps` to trigger element so expanded state and popup relationship are announced.

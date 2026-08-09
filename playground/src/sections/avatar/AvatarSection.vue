@@ -76,7 +76,7 @@ const BROKEN_SRC = "https://broken.example/404.png";
       </div>
       <div :class="canvasRow">
         <Avatar :src="BROKEN_SRC" text="JD" :ui="{ root: avatarPrimary, fallback: avatarFallback }" />
-        <Avatar :src="BROKEN_SRC" text="MK" :ui="{ root: `${avatarRoot} bg-destructive text-white`, fallback: avatarFallback }" />
+        <Avatar :src="BROKEN_SRC" text="MK" :ui="{ root: `${avatarRoot} !bg-destructive text-white`, fallback: avatarFallback }" />
         <Avatar :src="BROKEN_SRC" text="+3" :ui="{ root: avatarMuted, fallback: avatarFallback }" />
         <!-- no src at all — text is the only content -->
         <Avatar text="CX" :ui="{ root: `${avatarRoot} bg-background border border-border text-foreground`, fallback: avatarFallback }" />
@@ -191,7 +191,7 @@ const BROKEN_SRC = "https://broken.example/404.png";
       <div :class="canvas">
         <div class="flex flex-row-reverse">
           <Avatar :src="REAL_SRC" alt="User 1" :ui="{ root: `${avatarRoot} -ml-2.5 border-2 border-card`, image: avatarImage, fallback: avatarFallback }" />
-          <Avatar :src="BROKEN_SRC" text="AB" :ui="{ root: `${avatarRoot} -ml-2.5 border-2 border-card bg-destructive text-white`, fallback: avatarFallback }" />
+          <Avatar :src="BROKEN_SRC" text="AB" :ui="{ root: `${avatarRoot} -ml-2.5 border-2 border-card !bg-destructive text-white`, fallback: avatarFallback }" />
           <Avatar text="CX" :ui="{ root: `${avatarRoot} -ml-2.5 border-2 border-card bg-primary text-primary-foreground`, fallback: avatarFallback }" />
           <Avatar text="+4" :ui="{ root: `${avatarRoot} border-2 border-card bg-muted text-muted-foreground`, fallback: avatarFallback }" />
         </div>

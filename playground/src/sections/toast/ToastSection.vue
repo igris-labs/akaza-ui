@@ -27,7 +27,7 @@ function show(type: ToastType) {
     status: ["Saved", "Workspace settings were updated."],
     alert: ["Action required", "Your session needs attention."],
     success: ["Published", "Deployment is live."],
-    info: ["New version", "Akaza UI 0.0.5-alpha is available."],
+    info: ["New version", "Akaza UI 0.0.6-alpha is available."],
     warning: ["Storage nearly full", "Less than 10% remains."],
     error: ["Deploy failed", "Production rejected the build artifact."],
   }[type]!;

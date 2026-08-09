@@ -40,12 +40,12 @@ import { AlertDialog } from "akaza-ui";
     description="This action cannot be undone. Your data will be permanently removed."
   >
     <template #trigger="{ toggle }">
-      <button @click="() => toggle()">Delete account</button>
+      <button @click="toggle">Delete account</button>
     </template>
 
     <template #footer="{ close }">
-      <button @click="() => close()">Cancel</button>
-      <button class="btn-danger" @click="() => close()">Delete</button>
+      <button @click="close">Cancel</button>
+      <button class="btn-danger" @click="close">Delete</button>
     </template>
   </AlertDialog>
 </template>
@@ -62,12 +62,12 @@ Use header, body, and footer slots when the default alert layout needs custom co
 <template>
   <AlertDialog>
     <template #trigger="{ toggle }">
-      <button @click="() => toggle()">Open</button>
+      <button @click="toggle">Open</button>
     </template>
 
     <template #header="{ close, titleId }">
       <h2 :id="titleId">Are you sure?</h2>
-      <button aria-label="Close" @click="() => close()">✕</button>
+      <button aria-label="Close" @click="close">✕</button>
     </template>
 
     <template #body="{ descriptionId }">
@@ -75,8 +75,8 @@ Use header, body, and footer slots when the default alert layout needs custom co
     </template>
 
     <template #footer="{ close }">
-      <button @click="() => close()">Cancel</button>
-      <button @click="() => close()">Confirm</button>
+      <button @click="close">Cancel</button>
+      <button @click="close">Confirm</button>
     </template>
   </AlertDialog>
 </template>
@@ -97,7 +97,7 @@ const dialog = ref();
 <template>
   <AlertDialog ref="dialog">
     <template #footer="{ close }">
-      <button @click="() => close()">Dismiss</button>
+      <button @click="close">Dismiss</button>
     </template>
   </AlertDialog>
 
@@ -172,3 +172,12 @@ const dialog = ref();
 | `footer` | `akaza-alert-dialog-footer` | — |
 
 `AlertDialog` renders trigger slot content plus teleported overlay/content. Use `ui` keys instead of relying on plain `class` fallthrough.
+
+### Keyboard
+
+| Key | Behavior |
+|-----|----------|
+| `Tab` / `Shift + Tab` | Cycles through focusable controls inside open alert dialog. |
+| `Escape` | Does not close alert dialog. User must explicitly choose an action. |
+
+Opening moves focus inside. Closing restores focus to previous element. Backdrop activation does not dismiss it.

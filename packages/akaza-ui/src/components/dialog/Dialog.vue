@@ -28,12 +28,20 @@ const model = defineModel<boolean>({ default: false });
 const { isOpen, open: _open, close: _close, toggle: _toggle } = useDialog(model);
 
 const contentRef = useTemplateRef<HTMLElement>("contentRef");
+const overlayRef = useTemplateRef<HTMLElement>("overlayRef");
 const titleId = useId();
 const descriptionId = useId();
-const { activate, deactivate } = useFocusScope(contentRef);
-const { register, unregister } = useDismissableLayer((event?: KeyboardEvent) =>
+const { activate, deactivate } = useFocusScope(contentRef, {
+  getExemptElements: () => [overlayRef.value],
+});
+const { layerOrder, register, unregister } = useDismissableLayer((event?: KeyboardEvent) =>
   close("escape", event),
 );
+let restoreFocusTarget: HTMLElement | null = null;
+
+function getEventTarget(event?: Event) {
+  return event?.currentTarget instanceof HTMLElement ? event.currentTarget : null;
+}
 
 function handleChange(nextOpen: boolean, reason: string, event?: Event) {
   let canceled = false;
@@ -45,6 +53,7 @@ function handleChange(nextOpen: boolean, reason: string, event?: Event) {
     },
   });
   if (canceled) return;
+  if (nextOpen) restoreFocusTarget = getEventTarget(event);
   nextOpen ? _open() : _close();
 }
 
@@ -65,8 +74,11 @@ watch(
   isOpen,
   async (val) => {
     if (val) {
+      const focusTarget = restoreFocusTarget
+        ?? (typeof document !== "undefined" ? document.activeElement as HTMLElement : null);
       await nextTick();
-      activate();
+      activate(focusTarget);
+      restoreFocusTarget = null;
       register();
     } else {
       deactivate();
@@ -90,8 +102,9 @@ defineExpose({ open, close, toggle, titleId, descriptionId });
     <Transition name="akaza-dialog-overlay">
       <div
         v-if="isOpen"
+        ref="overlayRef"
         :class="ui?.overlay"
-        :style="{ '--akaza-dialog-duration': `${duration}ms` }"
+        :style="{ '--akaza-dialog-duration': `${duration}ms`, '--akaza-layer-order': layerOrder }"
         class="akaza-dialog-overlay"
         data-akaza-state="open"
         @click="onBackdropClick"
@@ -111,7 +124,7 @@ defineExpose({ open, close, toggle, titleId, descriptionId });
         :aria-label="!($slots.title || title) ? ariaLabel : undefined"
         :aria-describedby="$slots.description || description ? descriptionId : undefined"
         :class="ui?.content"
-        :style="{ '--akaza-dialog-duration': `${duration}ms` }"
+        :style="{ '--akaza-dialog-duration': `${duration}ms`, '--akaza-layer-order': layerOrder }"
         :data-akaza-fullscreen="fullscreen || undefined"
         class="akaza-dialog-content"
         data-akaza-state="open"
@@ -153,7 +166,7 @@ defineExpose({ open, close, toggle, titleId, descriptionId });
 .akaza-dialog-overlay {
   position: fixed;
   inset: 0;
-  z-index: var(--akaza-z-overlay, 1200);
+  z-index: var(--akaza-z-overlay, calc(var(--akaza-z-layer-base, 1200) + var(--akaza-layer-order, 0)));
 }
 
 .akaza-dialog-content {
@@ -161,7 +174,7 @@ defineExpose({ open, close, toggle, titleId, descriptionId });
   top: 50%;
   left: 50%;
   translate: -50% -50%;
-  z-index: var(--akaza-z-overlay-content, 1201);
+  z-index: var(--akaza-z-overlay-content, calc(var(--akaza-z-layer-base, 1200) + var(--akaza-layer-order, 0) + 1));
 }
 
 .akaza-dialog-content[data-akaza-fullscreen] {

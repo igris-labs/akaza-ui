@@ -159,3 +159,10 @@ Remove the content from the DOM when collapsed, instead of hiding it.
 | `contentWrapper` | `akaza-collapsible-content` | `data-akaza-state` |
 | `contentInner` | `akaza-collapsible-content-inner` | — |
 | `content` | `akaza-collapsible-content-body` | — |
+
+### Keyboard
+
+| Key | Behavior |
+|-----|----------|
+| `Enter` / `Space` | Toggles focused trigger through native button behavior. |
+| `Tab` / `Shift + Tab` | Uses native order. Closed content is inert and cannot receive focus. |

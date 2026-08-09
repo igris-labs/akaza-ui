@@ -32,5 +32,9 @@ export interface CheckboxProps {
   label?: string;
   /** Convenience description below the label. Slot #description takes priority. */
   description?: string;
+  /** Accessible name for a checkbox without visible label content. */
+  ariaLabel?: string;
+  /** IDs of external elements that describe the checkbox. */
+  ariaDescribedby?: string;
   ui?: CheckboxUi;
 }

@@ -10,7 +10,7 @@ Built for Vue 3, not adapted from React. Every primitive uses `v-model`, named s
 
 - **Slot-based** - `#trigger`, `#header`, `#body`, `#footer` slots keep templates flat
 - **`ui` prop** - inject CSS classes per structural part (`ui.overlay`, `ui.content`)
-- **Accessible** - WAI-ARIA roles, keyboard navigation, focus management
+- **Accessible** - WAI-ARIA roles, keyboard navigation, focus management, and mouse/touch interaction
 - **Unstyled** - `data-akaza-*` attributes and semantic class hooks; no style opinion
 
 ## Requirements
@@ -59,7 +59,7 @@ No manual CSS import or component registration needed.
 
 ## Components
 
-`Accordion` · `AlertDialog` · `Avatar` · `Button` · `Checkbox` · `CheckboxGroup` · `Collapsible` · `Combobox` · `ContextMenu` · `Dialog` · `Drawer` · `Editable` · `Field` · `Fieldset` · `Form` · `HoverPreviewCard` · `Input` · `Listbox` · `Menu` · `Menubar` · `Meter` · `NavigationMenu` · `NumberField` · `OverlayProvider` · `Pagination` · `PinInput` · `Popover` · `Progress` · `RadioGroup` · `Rating` · `Select` · `Separator` · `Slider` · `Stepper` · `Switch` · `Tabs` · `TagsInput` · `Toast` · `Toggle` · `ToggleGroup` · `Toolbar` · `Tooltip`
+`Accordion` · `AlertDialog` · `Avatar` · `Button` · `Calendar` · `Checkbox` · `CheckboxGroup` · `Collapsible` · `Combobox` · `ContextMenu` · `DateField` · `DateRangeField` · `DateRangePicker` · `Dialog` · `Drawer` · `Editable` · `Field` · `Fieldset` · `Form` · `HoverPreviewCard` · `Input` · `Listbox` · `Menu` · `Menubar` · `Meter` · `NavigationMenu` · `NumberField` · `OverlayProvider` · `Pagination` · `PinInput` · `Popover` · `Progress` · `RadioGroup` · `Rating` · `Select` · `Separator` · `Slider` · `Stepper` · `Switch` · `Tabs` · `TagsInput` · `Toast` · `Toggle` · `ToggleGroup` · `Toolbar` · `Tooltip`
 
 ## Usage
 

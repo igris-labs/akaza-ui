@@ -13,7 +13,7 @@ const {
   label,
   description,
   error,
-  errorMatch,
+  errorMatch = "invalid",
   required = false,
   disabled = false,
   invalid = false,
@@ -52,7 +52,7 @@ const isValid = computed(() => !isInvalid.value);
 const explicitError = computed(() => error ?? formError.value);
 
 function matchesError(match: FieldErrorMatch | undefined): boolean {
-  if (match === undefined) return isInvalid.value;
+  if (match === undefined || match === "invalid") return isInvalid.value;
   if (typeof match === "boolean") return match;
   if (match === "valid") return isValid.value;
   return Boolean(control.value?.validity.value?.[match]);
@@ -105,6 +105,7 @@ function registerControl(state: FieldControlState) {
 
 provide(fieldContextKey, {
   inputId,
+  labelledBy: computed(() => hasLabel.value ? labelId : undefined),
   name: computed(() => name),
   disabled: computed(() => disabled),
   required: computed(() => required),

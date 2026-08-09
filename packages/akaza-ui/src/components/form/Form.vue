@@ -17,6 +17,7 @@ const {
 const emit = defineEmits<{
   submit: [details: FormSubmitDetails];
   "form-submit": [values: FormValues, details: FormSubmitDetails];
+  reset: [event: Event];
 }>();
 
 const submitted = ref(false);
@@ -69,6 +70,12 @@ function onSubmit(event: SubmitEvent) {
 
   if (canceled && !event.defaultPrevented) event.preventDefault();
 }
+
+function onReset(event: Event) {
+  submitted.value = false;
+  lastValid.value = null;
+  emit("reset", event);
+}
 </script>
 
 <template>
@@ -83,6 +90,7 @@ function onSubmit(event: SubmitEvent) {
     :data-akaza-invalid="lastValid === false || undefined"
     class="akaza-form"
     @invalid.capture="onInvalid"
+    @reset="onReset"
     @submit="onSubmit"
   >
     <slot :state="state" :submitted="submitted" :valid="lastValid" />

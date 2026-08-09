@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { InputProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
-import { computed, inject, onBeforeUnmount, onMounted, onUpdated, ref, useId, useTemplateRef } from "vue";
+import { computed, inject, nextTick, onBeforeUnmount, onMounted, onUpdated, ref, useId, useTemplateRef } from "vue";
 import { fieldContextKey } from "../field/context";
 
 const {
@@ -38,6 +38,7 @@ const validationActive = ref(false);
 const nativeInvalid = ref(false);
 const validationMessage = ref("");
 const validity = ref<ValidityState | null>(null);
+let formElement: HTMLFormElement | null = null;
 
 const resolvedId = computed(() => id ?? field?.inputId.value ?? `akaza-input-${autoId}`);
 const resolvedName = computed(() => name ?? field?.name.value);
@@ -115,9 +116,25 @@ function onInvalid() {
   updateValidity();
 }
 
-onMounted(() => updateValidity(false));
+function onFormReset() {
+  model.value = initialValue;
+  focused.value = false;
+  touched.value = false;
+  validationActive.value = false;
+  nativeInvalid.value = false;
+  nextTick(() => updateValidity(false));
+}
+
+onMounted(() => {
+  updateValidity(false);
+  formElement = inputRef.value?.form ?? null;
+  formElement?.addEventListener("reset", onFormReset);
+});
 onUpdated(updateValidity);
-onBeforeUnmount(() => unregister?.());
+onBeforeUnmount(() => {
+  formElement?.removeEventListener("reset", onFormReset);
+  unregister?.();
+});
 </script>
 
 <template>

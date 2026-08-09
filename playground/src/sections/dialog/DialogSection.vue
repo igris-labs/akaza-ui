@@ -175,20 +175,21 @@ function onGuardedChange(_open: boolean, details: AkazaChangeEventDetails) {
           <template #footer="{ close }">
             <div :class="footerActions">
               <button :class="buttonGhost" @click="close">Close</button>
-              <button :class="buttonPrimary" @click="open5Inner = true">Open inner</button>
-            </div>
-          </template>
-        </Dialog>
-
-        <Dialog
-          v-model="open5Inner"
-          title="Inner dialog"
-          description="This is stacked on top. The outer dialog's focus trap is paused."
-          :ui="{ overlay: dialogOverlayInner, content: dialogContentInner }"
-        >
-          <template #footer="{ close }">
-            <div :class="footerActions">
-              <button :class="buttonPrimary" @click="close">Close inner</button>
+              <Dialog
+                v-model="open5Inner"
+                title="Inner dialog"
+                description="This is stacked on top. The outer dialog's focus trap is paused."
+                :ui="{ overlay: dialogOverlayInner, content: dialogContentInner }"
+              >
+                <template #trigger="{ open }">
+                  <button :class="buttonPrimary" @click="open">Open inner</button>
+                </template>
+                <template #footer="{ close: closeInner }">
+                  <div :class="footerActions">
+                    <button :class="buttonPrimary" @click="closeInner">Close inner</button>
+                  </div>
+                </template>
+              </Dialog>
             </div>
           </template>
         </Dialog>

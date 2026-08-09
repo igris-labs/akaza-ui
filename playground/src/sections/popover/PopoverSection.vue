@@ -72,15 +72,15 @@ function onOpenChangeCancelEscape(open: boolean, details: AkazaChangeEventDetail
         </span>
       </div>
       <div :class="canvasRow">
-        <Popover :ui="{ content: popoverContent }">
+        <Popover teleport="body" :ui="{ content: popoverContent }">
           <template #trigger="{ toggle, triggerProps }">
-            <button :class="buttonPrimary" v-bind="triggerProps" @click="toggle()">Open popover</button>
+            <button :class="buttonPrimary" v-bind="triggerProps" @click="toggle">Open popover</button>
           </template>
           <template #content="{ close }">
             <div class="grid gap-1.5">
               <p class="m-0 text-sm font-semibold text-foreground">Popover content</p>
               <p class="m-0 text-xs text-muted-foreground">Click outside or press Escape to close.</p>
-              <button :class="buttonLink" @click="close()">Close</button>
+              <button :class="buttonLink" @click="close">Close</button>
             </div>
           </template>
         </Popover>
@@ -99,7 +99,7 @@ function onOpenChangeCancelEscape(open: boolean, details: AkazaChangeEventDetail
         <div class="flex flex-wrap items-center gap-2">
           <Popover v-model="isOpen" :ui="{ content: popoverContent }">
             <template #trigger="{ triggerProps, toggle }">
-              <button :class="buttonPrimary" v-bind="triggerProps" @click="toggle()">Toggle</button>
+              <button :class="buttonPrimary" v-bind="triggerProps" @click="toggle">Toggle</button>
             </template>
             <template #content>
               <div class="grid gap-1.5">
@@ -126,7 +126,7 @@ function onOpenChangeCancelEscape(open: boolean, details: AkazaChangeEventDetail
       <div :class="[canvasRow, 'justify-center gap-4']">
         <Popover v-for="a in ['start', 'center', 'end']" :key="a" :align="(a as any)" :ui="{ content: popoverContent }">
           <template #trigger="{ toggle, triggerProps }">
-            <button :class="buttonPrimary" v-bind="triggerProps" @click="toggle()">{{ a }}</button>
+            <button :class="buttonPrimary" v-bind="triggerProps" @click="toggle">{{ a }}</button>
           </template>
           <template #content>
             <div class="grid gap-1.5">
@@ -150,7 +150,7 @@ function onOpenChangeCancelEscape(open: boolean, details: AkazaChangeEventDetail
       <div :class="[canvasRow, 'justify-center gap-4']">
         <Popover v-for="s in ['top', 'bottom', 'left', 'right']" :key="s" :side="(s as any)" :ui="{ content: popoverContent }">
           <template #trigger="{ toggle, triggerProps }">
-            <button :class="buttonPrimary" v-bind="triggerProps" @click="toggle()">{{ s }}</button>
+            <button :class="buttonPrimary" v-bind="triggerProps" @click="toggle">{{ s }}</button>
           </template>
           <template #content>
             <p class="m-0 text-sm font-semibold text-foreground">side="{{ s }}"</p>
@@ -170,7 +170,7 @@ function onOpenChangeCancelEscape(open: boolean, details: AkazaChangeEventDetail
       <div :class="[canvasRow, 'justify-center gap-4']">
         <Popover v-for="offset in [0, 6, 16]" :key="offset" :side-offset="offset" :ui="{ content: popoverContent }">
           <template #trigger="{ toggle, triggerProps }">
-            <button :class="buttonPrimary" v-bind="triggerProps" @click="toggle()">offset={{ offset }}</button>
+            <button :class="buttonPrimary" v-bind="triggerProps" @click="toggle">offset={{ offset }}</button>
           </template>
           <template #content>
             <p class="m-0 text-sm font-semibold text-foreground">sideOffset={{ offset }}</p>
@@ -191,7 +191,7 @@ function onOpenChangeCancelEscape(open: boolean, details: AkazaChangeEventDetail
       <div :class="canvasRow">
         <Popover :ui="{ content: popoverContent }">
           <template #trigger="{ toggle, triggerProps, isOpen }">
-            <button :class="buttonPrimary" v-bind="triggerProps" @click="toggle()">
+            <button :class="buttonPrimary" v-bind="triggerProps" @click="toggle">
               {{ isOpen ? "Close" : "Open" }} (inspect ARIA attrs)
             </button>
           </template>
@@ -217,13 +217,13 @@ function onOpenChangeCancelEscape(open: boolean, details: AkazaChangeEventDetail
       <div :class="canvasCol">
         <Popover :ui="{ content: popoverContent }" @open-change="onOpenChange">
           <template #trigger="{ toggle, triggerProps }">
-            <button :class="buttonPrimary" v-bind="triggerProps" @click="toggle()">Open &amp; watch events</button>
+            <button :class="buttonPrimary" v-bind="triggerProps" @click="toggle">Open &amp; watch events</button>
           </template>
           <template #content="{ close }">
             <div class="grid gap-1.5">
               <p class="m-0 text-sm font-semibold text-foreground">Trigger a close</p>
               <p class="m-0 text-xs text-muted-foreground">Press Escape, click outside, or use the button.</p>
-              <button :class="buttonLink" @click="close()">Close (programmatic)</button>
+              <button :class="buttonLink" @click="close">Close (programmatic)</button>
             </div>
           </template>
         </Popover>
@@ -245,13 +245,13 @@ function onOpenChangeCancelEscape(open: boolean, details: AkazaChangeEventDetail
       <div :class="canvasCol">
         <Popover :ui="{ content: popoverContent }" @open-change="onOpenChangeCancelEscape">
           <template #trigger="{ toggle, triggerProps }">
-            <button :class="buttonPrimary" v-bind="triggerProps" @click="toggle()">Open (Escape blocked)</button>
+            <button :class="buttonPrimary" v-bind="triggerProps" @click="toggle">Open (Escape blocked)</button>
           </template>
           <template #content="{ close }">
             <div class="grid gap-1.5">
               <p class="m-0 text-sm font-semibold text-foreground">Escape is blocked</p>
               <p class="m-0 text-xs text-muted-foreground">Click outside or use the button to close.</p>
-              <button :class="buttonLink" @click="close()">Close</button>
+              <button :class="buttonLink" @click="close">Close</button>
             </div>
           </template>
         </Popover>
@@ -272,7 +272,7 @@ function onOpenChangeCancelEscape(open: boolean, details: AkazaChangeEventDetail
       <div :class="[canvasRow, 'gap-4']">
         <Popover transition="po-slide" :ui="{ content: popoverContent }">
           <template #trigger="{ toggle, triggerProps }">
-            <button :class="buttonPrimary" v-bind="triggerProps" @click="toggle()">Slide transition</button>
+            <button :class="buttonPrimary" v-bind="triggerProps" @click="toggle">Slide transition</button>
           </template>
           <template #content>
             <p class="m-0 text-sm font-semibold text-foreground">Custom slide</p>
@@ -281,7 +281,7 @@ function onOpenChangeCancelEscape(open: boolean, details: AkazaChangeEventDetail
 
         <Popover :transition="false" :ui="{ content: popoverContent }">
           <template #trigger="{ toggle, triggerProps }">
-            <button :class="buttonPrimary" v-bind="triggerProps" @click="toggle()">No transition</button>
+            <button :class="buttonPrimary" v-bind="triggerProps" @click="toggle">No transition</button>
           </template>
           <template #content>
             <p class="m-0 text-sm font-semibold text-foreground">No animation</p>

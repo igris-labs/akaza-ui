@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import type { Slot } from "vue";
+import type { CSSProperties, Slot } from "vue";
 import type { NavigationMenuItem, NavigationMenuProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
 import { onClickOutside, useResizeObserver } from "@vueuse/core";
-import { computed, onUnmounted, ref, useId, useSlots, useTemplateRef, watch } from "vue";
+import { computed, nextTick, onUnmounted, ref, useId, useSlots, useTemplateRef, watch } from "vue";
 import { useDismissableLayer } from "../../utils/dismissableLayer";
 import { useFloatingPosition } from "../../utils/floatingPosition";
 
@@ -27,7 +27,10 @@ const openValue = defineModel<string | null>("open", { default: null });
 const triggerRefs = ref<Array<HTMLElement | null>>([]);
 const rootRef = useTemplateRef<HTMLElement>("rootRef");
 const contentRef = useTemplateRef<HTMLElement>("contentRef");
+const panelRef = useTemplateRef<HTMLElement>("panelRef");
 const activeTriggerIndex = ref(Math.max(0, items.findIndex((item) => !item.disabled)));
+const activationDirection = ref<"left" | "right">();
+const viewportStyle = ref<CSSProperties>({});
 const id = useId();
 const slots = useSlots() as Record<string, Slot | undefined>;
 let openTimer: number | undefined;
@@ -57,6 +60,7 @@ const { actualAlign, actualSide, style: contentStyle } = useFloatingPosition({
 const indicatorRevision = ref(0);
 useResizeObserver(rootRef, () => { indicatorRevision.value += 1; });
 useResizeObserver(activeTriggerRef, () => { indicatorRevision.value += 1; });
+useResizeObserver(panelRef, updateViewportSize);
 const indicatorStyle = computed(() => {
   void indicatorRevision.value;
   const index = items.findIndex((item) => getValue(item) === openValue.value);
@@ -83,6 +87,26 @@ function getContentId(index: number) {
   return `${id}-content-${index}`;
 }
 
+function updateViewportSize() {
+  const panel = panelRef.value;
+  if (!panel) return;
+  const rect = panel.getBoundingClientRect();
+  if (!rect.width || !rect.height) return;
+  viewportStyle.value = {
+    "--akaza-navigation-menu-viewport-width": `${rect.width}px`,
+    "--akaza-navigation-menu-viewport-height": `${rect.height}px`,
+  } as CSSProperties;
+}
+
+function getActivationDirection(previous: string, next: string): "left" | "right" | undefined {
+  const previousIndex = items.findIndex((item) => getValue(item) === previous);
+  const nextIndex = items.findIndex((item) => getValue(item) === next);
+  if (previousIndex < 0 || nextIndex < 0 || previousIndex === nextIndex) return undefined;
+  const forward = nextIndex > previousIndex;
+  if (dir === "rtl") return forward ? "left" : "right";
+  return forward ? "right" : "left";
+}
+
 function setTriggerRef(el: HTMLElement | null, index: number) {
   triggerRefs.value[index] = el;
 }
@@ -94,6 +118,12 @@ function setIndexedTriggerRef(index: number) {
 function setOpen(value: string | null, reason: string, event?: Event) {
   if (disabled && value) return;
   if (openValue.value === value) return;
+  if (reason !== "hover") {
+    window.clearTimeout(openTimer);
+    window.clearTimeout(closeTimer);
+  } else if (value === null) {
+    window.clearTimeout(openTimer);
+  }
   let canceled = false;
   emit("open-change", value, {
     reason,
@@ -255,6 +285,13 @@ watch(() => Boolean(activeItem.value?.children), (open) => {
   if (open) register();
   else unregister();
 }, { immediate: true });
+// Direction depends on previous state, including externally controlled v-model updates.
+watch(openValue, async (value, previous) => {
+  if (value && previous) activationDirection.value = getActivationDirection(previous, value);
+  else activationDirection.value = undefined;
+  await nextTick();
+  updateViewportSize();
+});
 
 onUnmounted(() => {
   window.clearTimeout(openTimer);
@@ -339,74 +376,87 @@ onUnmounted(() => {
         @mouseleave="scheduleClose($event)"
         @keydown="onContentKeydown"
       >
-        <div :class="ui?.viewport" class="akaza-navigation-menu-viewport">
-          <ul :class="ui?.contentList" class="akaza-navigation-menu-content-list">
-            <li
-              v-for="child in activeItem.children"
-              :key="getValue(child)"
-              :class="ui?.contentItem"
-              :data-akaza-disabled="child.disabled || undefined"
-              class="akaza-navigation-menu-content-item"
+        <div
+          :style="viewportStyle"
+          :class="ui?.viewport"
+          :data-akaza-activation-direction="activationDirection"
+          class="akaza-navigation-menu-viewport"
+        >
+          <Transition name="akaza-navigation-menu-panel">
+            <ul
+              :key="getValue(activeItem)"
+              ref="panelRef"
+              :class="[ui?.panel, ui?.contentList]"
+              :data-akaza-activation-direction="activationDirection"
+              class="akaza-navigation-menu-panel akaza-navigation-menu-content-list"
             >
-              <component
-                :is="child.as ?? (child.href ? 'a' : 'button')"
-                :href="child.href"
-                :to="child.to"
-                :type="!child.as && !child.href ? 'button' : undefined"
-                :disabled="!child.as && !child.href ? child.disabled : undefined"
-                :aria-disabled="child.disabled || undefined"
-                :aria-current="child.active ? (child.ariaCurrent ?? 'page') : undefined"
-                :class="ui?.contentLink"
-                data-akaza-navigation-menu-link
-                class="akaza-navigation-menu-content-link"
-                @click="selectItem(child, $event)"
+              <li
+                v-for="child in activeItem.children"
+                :key="getValue(child)"
+                :class="ui?.contentItem"
+                :data-akaza-disabled="child.disabled || undefined"
+                class="akaza-navigation-menu-content-item"
               >
-                <component :is="() => renderSlot(child, 'item')" v-if="hasSlot(child, 'item')" />
-                <template v-else>
-                  <span :class="ui?.label" class="akaza-navigation-menu-label">
-                    {{ child.label }}
-                  </span>
-                  <span
-                    v-if="child.description"
-                    :class="ui?.description"
-                    class="akaza-navigation-menu-description"
-                  >
-                    {{ child.description }}
-                  </span>
-                </template>
-              </component>
-
-              <ul
-                v-if="child.children?.length"
-                :class="ui?.contentList"
-                class="akaza-navigation-menu-content-list akaza-navigation-menu-sub-list"
-              >
-                <li
-                  v-for="nested in child.children"
-                  :key="getValue(nested)"
-                  :class="ui?.contentItem"
-                  class="akaza-navigation-menu-content-item"
+                <component
+                  :is="child.as ?? (child.href ? 'a' : 'button')"
+                  :href="child.href"
+                  :to="child.to"
+                  :type="!child.as && !child.href ? 'button' : undefined"
+                  :disabled="!child.as && !child.href ? child.disabled : undefined"
+                  :aria-disabled="child.disabled || undefined"
+                  :aria-current="child.active ? (child.ariaCurrent ?? 'page') : undefined"
+                  :class="ui?.contentLink"
+                  data-akaza-navigation-menu-link
+                  class="akaza-navigation-menu-content-link"
+                  @click="selectItem(child, $event)"
                 >
-                  <component
-                    :is="nested.as ?? (nested.href ? 'a' : 'button')"
-                    :href="nested.href"
-                    :to="nested.to"
-                    :type="!nested.as && !nested.href ? 'button' : undefined"
-                    :disabled="!nested.as && !nested.href ? nested.disabled : undefined"
-                    :aria-disabled="nested.disabled || undefined"
-                    :aria-current="nested.active ? (nested.ariaCurrent ?? 'page') : undefined"
-                    :class="ui?.contentLink"
-                    data-akaza-navigation-menu-link
-                    class="akaza-navigation-menu-content-link"
-                    @click="selectItem(nested, $event)"
+                  <component :is="() => renderSlot(child, 'item')" v-if="hasSlot(child, 'item')" />
+                  <template v-else>
+                    <span :class="ui?.label" class="akaza-navigation-menu-label">
+                      {{ child.label }}
+                    </span>
+                    <span
+                      v-if="child.description"
+                      :class="ui?.description"
+                      class="akaza-navigation-menu-description"
+                    >
+                      {{ child.description }}
+                    </span>
+                  </template>
+                </component>
+
+                <ul
+                  v-if="child.children?.length"
+                  :class="ui?.contentList"
+                  class="akaza-navigation-menu-content-list akaza-navigation-menu-sub-list"
+                >
+                  <li
+                    v-for="nested in child.children"
+                    :key="getValue(nested)"
+                    :class="ui?.contentItem"
+                    class="akaza-navigation-menu-content-item"
                   >
-                    <component :is="() => renderSlot(nested, 'item')" v-if="hasSlot(nested, 'item')" />
-                    <template v-else>{{ nested.label }}</template>
-                  </component>
-                </li>
-              </ul>
-            </li>
-          </ul>
+                    <component
+                      :is="nested.as ?? (nested.href ? 'a' : 'button')"
+                      :href="nested.href"
+                      :to="nested.to"
+                      :type="!nested.as && !nested.href ? 'button' : undefined"
+                      :disabled="!nested.as && !nested.href ? nested.disabled : undefined"
+                      :aria-disabled="nested.disabled || undefined"
+                      :aria-current="nested.active ? (nested.ariaCurrent ?? 'page') : undefined"
+                      :class="ui?.contentLink"
+                      data-akaza-navigation-menu-link
+                      class="akaza-navigation-menu-content-link"
+                      @click="selectItem(nested, $event)"
+                    >
+                      <component :is="() => renderSlot(nested, 'item')" v-if="hasSlot(nested, 'item')" />
+                      <template v-else>{{ nested.label }}</template>
+                    </component>
+                  </li>
+                </ul>
+              </li>
+            </ul>
+          </Transition>
         </div>
       </div>
     </Transition>
@@ -429,6 +479,48 @@ onUnmounted(() => {
 .akaza-navigation-menu-content {
   position: absolute;
   z-index: var(--akaza-z-navigation-menu, 1000);
+}
+
+.akaza-navigation-menu-viewport {
+  position: relative;
+  width: var(--akaza-navigation-menu-viewport-width, auto);
+  height: var(--akaza-navigation-menu-viewport-height, auto);
+  overflow: hidden;
+  transition:
+    width var(--akaza-navigation-menu-resize-duration, 240ms) cubic-bezier(0.22, 1, 0.36, 1),
+    height var(--akaza-navigation-menu-resize-duration, 240ms) cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.akaza-navigation-menu-panel {
+  box-sizing: border-box;
+}
+
+.akaza-navigation-menu-panel-enter-active,
+.akaza-navigation-menu-panel-leave-active {
+  transition:
+    opacity var(--akaza-navigation-menu-panel-duration, 200ms) ease-out,
+    translate var(--akaza-navigation-menu-panel-duration, 200ms) cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.akaza-navigation-menu-panel-leave-active {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+}
+
+.akaza-navigation-menu-panel-enter-from,
+.akaza-navigation-menu-panel-leave-to {
+  opacity: 0;
+}
+
+.akaza-navigation-menu-panel-enter-from[data-akaza-activation-direction="right"],
+.akaza-navigation-menu-panel-leave-to[data-akaza-activation-direction="left"] {
+  translate: var(--akaza-navigation-menu-slide-distance, 24px) 0;
+}
+
+.akaza-navigation-menu-panel-enter-from[data-akaza-activation-direction="left"],
+.akaza-navigation-menu-panel-leave-to[data-akaza-activation-direction="right"] {
+  translate: calc(var(--akaza-navigation-menu-slide-distance, 24px) * -1) 0;
 }
 
 .akaza-navigation-menu-indicator {
@@ -460,7 +552,10 @@ onUnmounted(() => {
 
 @media (prefers-reduced-motion: reduce) {
   .akaza-navigation-menu-enter-active,
-  .akaza-navigation-menu-leave-active {
+  .akaza-navigation-menu-leave-active,
+  .akaza-navigation-menu-panel-enter-active,
+  .akaza-navigation-menu-panel-leave-active,
+  .akaza-navigation-menu-viewport {
     transition-duration: 0.01ms;
   }
 }

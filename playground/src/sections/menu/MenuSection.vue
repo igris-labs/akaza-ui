@@ -184,7 +184,7 @@ function onMenuSelect(item: MenuItem, details: AkazaChangeEventDetails) {
         </span>
       </div>
       <div :class="canvasRow">
-        <Menu :items="basicItems" :ui="menuUi">
+        <Menu :items="basicItems" teleport="body" :ui="menuUi">
           <template #trigger="{ toggle, triggerProps }">
             <button :class="buttonGhost" v-bind="triggerProps" @click="toggle">Actions</button>
           </template>

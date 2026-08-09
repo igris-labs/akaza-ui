@@ -98,6 +98,11 @@ describe("listbox", () => {
     expect(rendered.length).toBeGreaterThan(0);
     expect(rendered.length).toBeLessThan(options.length);
     expect(wrapper.find("[role='listbox']").attributes("style")).toContain("80px");
+
+    const listbox = wrapper.get("[role='listbox']").element as HTMLElement;
+    listbox.scrollTop = 40;
+    await rendered[0]!.trigger("mouseenter");
+    expect(listbox.scrollTop).toBe(40);
   });
 
   it("autofocuses the filter when filtering is enabled", async () => {

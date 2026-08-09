@@ -55,7 +55,17 @@ const rootRef = useTemplateRef<HTMLElement>("rootRef");
 const contentRef = useTemplateRef<HTMLElement>("contentRef");
 let positionFrame = 0;
 let resizeObserver: ResizeObserver | undefined;
-const { register, unregister } = useDismissableLayer((event?: KeyboardEvent) => close("escape", event));
+const { layerOrder, register, unregister } = useDismissableLayer((event?: KeyboardEvent) => {
+  close("escape", event);
+  nextTick(() => getTriggerFocusTarget()?.focus());
+});
+
+function getTriggerFocusTarget() {
+  const root = rootRef.value;
+  if (!root) return null;
+  const selector = "button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex='-1'])";
+  return root.matches(selector) ? root : root.querySelector<HTMLElement>(selector);
+}
 
 onClickOutside(
   rootRef,
@@ -72,6 +82,7 @@ const actualSide = ref<PopoverSide>(side);
 const contentStyle = computed<CSSProperties>(() => ({
   ...posStyle.value,
   position: teleport === false ? "absolute" : "fixed",
+  "--akaza-layer-order": layerOrder.value,
 }));
 
 function schedulePosition() {
@@ -253,7 +264,7 @@ defineExpose({ open, close, toggle });
 
 .akaza-popover-content {
   position: absolute;
-  z-index: var(--akaza-z-popover, 1000);
+  z-index: var(--akaza-z-popover, calc(var(--akaza-z-layer-base, 1200) + var(--akaza-layer-order, 0) + 1));
   isolation: isolate;
 }
 

@@ -12,6 +12,8 @@ const {
   falseValue = false,
   label,
   description,
+  ariaLabel,
+  ariaDescribedby,
   ui,
 } = defineProps<CheckboxProps>();
 
@@ -53,8 +55,9 @@ function toggle(reason = 'click', event?: Event) {
       type="button"
       role="checkbox"
       :aria-checked="isIndeterminate ? 'mixed' : isChecked"
+      :aria-label="!hasLabel ? ariaLabel : undefined"
       :aria-labelledby="hasLabel ? labelId : undefined"
-      :aria-describedby="hasDescription ? descriptionId : undefined"
+      :aria-describedby="ariaDescribedby ?? (hasDescription ? descriptionId : undefined)"
       :class="ui?.root"
       :data-akaza-state="isChecked ? 'checked' : isIndeterminate ? 'indeterminate' : 'unchecked'"
       :data-akaza-disabled="disabled || undefined"

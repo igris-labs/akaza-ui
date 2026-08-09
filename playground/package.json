@@ -17,6 +17,7 @@
     "format": "oxfmt src/"
   },
   "dependencies": {
+    "@internationalized/date": "^3.12.0",
     "@tailwindcss/postcss": "^4.2.1",
     "@tailwindcss/vite": "^4.2.1",
     "akaza-ui": "workspace:*",

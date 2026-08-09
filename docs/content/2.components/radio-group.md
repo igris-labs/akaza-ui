@@ -163,3 +163,15 @@ Use `getItemDisabled` to disable individual options programmatically.
 | `text` | `akaza-radio-group-text` | — |
 | `label` | `akaza-radio-group-label` | — |
 | `description` | `akaza-radio-group-description` | — |
+
+### Keyboard
+
+| Key | Behavior |
+|-----|----------|
+| `ArrowUp` / `ArrowDown` | Selects and focuses previous/next enabled item in vertical groups. |
+| `ArrowLeft` / `ArrowRight` | Selects and focuses previous/next enabled item in horizontal groups. |
+| `Home` / `End` | Selects and focuses first or last enabled item. |
+| `Space` | Selects focused radio. |
+| `Tab` | Enters group at selected item, or first enabled item. |
+
+Arrow navigation wraps when `loop` is true and skips disabled items.

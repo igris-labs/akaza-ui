@@ -86,6 +86,7 @@ function blockOwner(value: SelectModelValue, details: AkazaChangeEventDetails) {
         <div :class="canvasCol">
           <Select
             v-model="plan"
+            aria-label="Plan"
             :options="plans"
             placeholder="Choose plan"
             :ui="selectUi"
@@ -125,6 +126,7 @@ function blockOwner(value: SelectModelValue, details: AkazaChangeEventDetails) {
         <div :class="canvasCol">
           <Select
             v-model="permissions"
+            aria-label="Permissions"
             multiple
             :options="permissionOptions"
             placeholder="Choose permissions"
@@ -138,7 +140,7 @@ function blockOwner(value: SelectModelValue, details: AkazaChangeEventDetails) {
       <div>
         <h3 :class="exampleTitle">Custom option slot</h3>
         <div :class="canvasCol">
-          <Select v-model="region" :options="regions" :ui="selectUi">
+          <Select v-model="region" aria-label="Region" :options="regions" :ui="selectUi">
             <template #option="{ label, description, isSelected }">
               <span class="mt-0.5 size-2 rounded-full bg-primary" :class="{ 'opacity-100': isSelected, 'opacity-20': !isSelected }" />
               <span class="grid gap-0.5">
@@ -157,6 +159,7 @@ function blockOwner(value: SelectModelValue, details: AkazaChangeEventDetails) {
           <Select
             v-model="searchable"
             v-model:search="selectSearch"
+            aria-label="Permission"
             autocomplete
             :options="permissionOptions"
             placeholder="Choose permission"
@@ -173,12 +176,14 @@ function blockOwner(value: SelectModelValue, details: AkazaChangeEventDetails) {
         <div :class="[canvasGrid, 'sm:grid-cols-2']">
           <Select
             v-model="guarded"
+            aria-label="Role"
             :options="roles"
             :ui="selectUi"
             @value-change="blockOwner"
           />
           <Select
             model-value=""
+            aria-label="Disabled plan"
             disabled
             :options="plans"
             placeholder="Disabled"

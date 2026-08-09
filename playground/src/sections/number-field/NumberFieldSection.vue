@@ -53,7 +53,7 @@ function logCommit(value: number | null, details: AkazaChangeEventDetails) {
       <div>
         <h3 :class="exampleTitle">Increment/decrement</h3>
         <div :class="canvasCol">
-          <NumberField v-model="seats" :min="1" :max="10" :ui="numberFieldUi" @value-change="log" />
+          <NumberField v-model="seats" aria-label="Seats" :min="1" :max="10" :ui="numberFieldUi" @value-change="log" />
           <code :class="codePill">seats: {{ seats ?? "(empty)" }}</code>
         </div>
       </div>
@@ -77,7 +77,7 @@ function logCommit(value: number | null, details: AkazaChangeEventDetails) {
       <div>
         <h3 :class="exampleTitle">Decimal step</h3>
         <div :class="canvasCol">
-          <NumberField v-model="percent" :min="0" :max="1" :step="0.05" :ui="numberFieldUi" />
+          <NumberField v-model="percent" aria-label="Ratio" :min="0" :max="1" :step="0.05" :ui="numberFieldUi" />
           <code :class="codePill">ratio: {{ percent ?? "(empty)" }}</code>
         </div>
       </div>
@@ -87,6 +87,7 @@ function logCommit(value: number | null, details: AkazaChangeEventDetails) {
         <div :class="canvasCol">
           <NumberField
             v-model="scrubbed"
+            aria-label="Capacity"
             scrub-label="Drag"
             :min="0"
             :max="100"
@@ -102,8 +103,8 @@ function logCommit(value: number | null, details: AkazaChangeEventDetails) {
       <div>
         <h3 :class="exampleTitle">States + cancelable event</h3>
         <div :class="[canvasGrid, 'sm:grid-cols-2']">
-          <NumberField v-model="guarded" :min="0" :max="10" :ui="numberFieldUi" @value-change="blockOdd" />
-          <NumberField :model-value="4" disabled :ui="numberFieldUi" />
+          <NumberField v-model="guarded" aria-label="Guarded value" :min="0" :max="10" :ui="numberFieldUi" @value-change="blockOdd" />
+          <NumberField :model-value="4" aria-label="Disabled value" disabled :ui="numberFieldUi" />
           <p :class="eventEntry">{{ lastEvent }}</p>
         </div>
       </div>

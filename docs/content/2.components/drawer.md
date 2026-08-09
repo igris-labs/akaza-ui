@@ -36,7 +36,7 @@ import { Drawer } from "akaza-ui";
 <template>
   <Drawer title="Cart" side="right">
     <template #trigger="{ toggle }">
-      <button @click="() => toggle()">Open cart</button>
+      <button @click="toggle">Open cart</button>
     </template>
 
     <template #body>
@@ -44,7 +44,7 @@ import { Drawer } from "akaza-ui";
     </template>
 
     <template #footer="{ close }">
-      <button @click="() => close()">Close</button>
+      <button @click="close">Close</button>
       <button>Checkout</button>
     </template>
   </Drawer>
@@ -62,7 +62,7 @@ Use `side="bottom"` for mobile-style sheets and short task flows.
 <template>
   <Drawer side="bottom" title="Options">
     <template #trigger="{ toggle }">
-      <button @click="() => toggle()">Open options</button>
+      <button @click="toggle">Open options</button>
     </template>
     <template #body>
       <p>Sheet content.</p>
@@ -79,10 +79,10 @@ Disable swipe dismissal when accidental close would be costly.
 <template>
   <Drawer :swipe-to-close="false" title="Required">
     <template #trigger="{ toggle }">
-      <button @click="() => toggle()">Open</button>
+      <button @click="toggle">Open</button>
     </template>
     <template #footer="{ close }">
-      <button @click="() => close()">Done</button>
+      <button @click="close">Done</button>
     </template>
   </Drawer>
 </template>
@@ -96,12 +96,12 @@ Use `#header` when the drawer needs custom title actions.
 <template>
   <Drawer side="left">
     <template #trigger="{ toggle }">
-      <button @click="() => toggle()">Menu</button>
+      <button @click="toggle">Menu</button>
     </template>
 
     <template #header="{ close, titleId }">
       <h2 :id="titleId">Navigation</h2>
-      <button @click="() => close()">✕</button>
+      <button @click="close">✕</button>
     </template>
 
     <template #body>
@@ -181,3 +181,12 @@ Use `#header` when the drawer needs custom title actions.
 | `footer` | `akaza-drawer-footer` | — |
 
 `Drawer` renders trigger slot content plus teleported overlay/content. Use `ui` keys instead of relying on plain `class` fallthrough. The `handle` slot is fully owned by your markup.
+
+### Keyboard
+
+| Key | Behavior |
+|-----|----------|
+| `Tab` / `Shift + Tab` | Cycles through focusable drawer controls. |
+| `Escape` | Closes topmost drawer and restores prior focus. |
+
+Pointer and touch users can activate backdrop dismissal and configured swipe gestures. Keyboard users always have explicit controls and Escape.

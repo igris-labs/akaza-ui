@@ -36,7 +36,7 @@ const items = [
 <template>
   <Menu :items="items" @select="({ value }) => console.log(value)">
     <template #trigger="{ toggle }">
-      <button @click="() => toggle()">Actions ▾</button>
+      <button @click="toggle">Actions ▾</button>
     </template>
   </Menu>
 </template>
@@ -65,7 +65,7 @@ const items = [
 <template>
   <Menu :items="items">
     <template #trigger="{ toggle }">
-      <button @click="() => toggle()">More ▾</button>
+      <button @click="toggle">More ▾</button>
     </template>
   </Menu>
 </template>
@@ -104,7 +104,7 @@ const items = [
 <template>
   <Menu :items="items" v-model:radio-values="radioValues">
     <template #trigger="{ toggle }">
-      <button @click="() => toggle()">View ▾</button>
+      <button @click="toggle">View ▾</button>
     </template>
   </Menu>
 </template>
@@ -214,3 +214,17 @@ const items = [
 | `submenu` | `akaza-menu-submenu` | `data-akaza-state` |
 | `submenuTrigger` | `akaza-menu-submenu-trigger` | `data-akaza-state`, `data-akaza-disabled`, `data-akaza-highlighted` |
 | `submenuContent` | `akaza-menu-submenu-content` | `data-akaza-submenu` |
+
+### Keyboard
+
+| Key | Behavior |
+|-----|----------|
+| `ArrowDown` / `ArrowUp` | Moves focus through enabled items and loops. |
+| `Home` / `End` | Focuses first or last enabled item. |
+| `Enter` / `Space` | Activates item, checkbox, radio, or opens submenu. |
+| `ArrowRight` | Opens focused submenu and moves into it; reversed in RTL. |
+| `ArrowLeft` | Closes submenu and restores submenu-trigger focus; reversed in RTL. |
+| `Escape` | Closes submenu level or whole menu. |
+| Printable characters | Typeahead focuses first matching item within 500 ms buffer. |
+
+Opening focuses first enabled item. Trigger keyboard activation comes from trigger element supplied by user; apply `triggerProps` and use a native button.

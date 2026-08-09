@@ -182,3 +182,12 @@ const items = [
 | `contentWrapper` | `akaza-accordion-content` | `data-akaza-state` |
 | `contentInner` | `akaza-accordion-content-inner` | — |
 | `content` | `akaza-accordion-content-body` | — |
+
+### Keyboard
+
+| Key | Behavior |
+|-----|----------|
+| `Enter` / `Space` | Toggles focused trigger through native button behavior. |
+| `ArrowDown` / `ArrowUp` | Moves between enabled triggers in vertical orientation and loops. |
+| `ArrowRight` / `ArrowLeft` | Moves between enabled triggers in horizontal orientation and loops. |
+| `Home` / `End` | Focuses first or last enabled trigger. |

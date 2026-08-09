@@ -114,7 +114,7 @@ function logSelection(value: ListboxModelValue, details: AkazaChangeEventDetails
             aria-label="Large result set"
             :ui="listboxUi"
           />
-          <code :class="codePill">selected result: {{ virtualValue }}</code>
+          <code :class="codePill">selected result index: {{ virtualValue }}</code>
         </div>
       </div>
     </div>

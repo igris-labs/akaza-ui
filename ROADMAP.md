@@ -46,23 +46,16 @@
 | Rating                       | Fractional radio-group rating input with hover and keyboard support        |
 | Stepper                      | Linear/non-linear multi-step navigation with panels and roving focus       |
 | Pagination                   | Page ranges, ellipses, boundary controls, links, and cancelable changes    |
-
-### Planned — Date & Time Primitives
-
-| Component          | Notes                                                   |
-| ------------------ | ------------------------------------------------------- |
-| Calendar           | Single-date calendar grid with keyboard navigation      |
-| Range Calendar     | Date-range calendar grid                                |
-| Date Field         | Segmented date input                                    |
-| Date Picker        | Date Field + Calendar + Popover composition             |
-| Date Range Field   | Segmented date-range input                              |
-| Date Range Picker  | Date Range Field + Range Calendar + Popover composition |
-| Month Picker       | Month selection grid                                    |
-| Month Range Picker | Month-range selection grid                              |
-| Year Picker        | Year selection grid                                     |
-| Year Range Picker  | Year-range selection grid                               |
-| Time Field         | Segmented time input                                    |
-| Time Range Field   | Segmented time-range input                              |
+| Calendar                     | Locale-aware date grid, single/multiple/range selection, constraints, multi-month, roving focus |
+| Date Field                   | Locale-ordered segmented date input, optional Calendar popup, validation, paste, and native forms |
+| Date Range Field             | Segmented date-range input, aggregate validation, fixed endpoint, and native forms |
+| Date Range Picker            | Date Range Field + Calendar range mode + collision-aware popup composition |
+| Month Picker                 | Locale-aware month grid, single/multiple selection, constraints, and roving focus |
+| Month Range Picker           | Month range preview, maximum length, fixed endpoint, and unavailable periods |
+| Year Picker                  | Paged year grid, configurable page size, single/multiple selection, and roving focus |
+| Year Range Picker            | Year range preview, maximum length, fixed endpoint, and constraints |
+| Time Field                   | Segmented time input, 12/24-hour cycles, granularity, steps, validation, and native forms |
+| Time Range Field             | Coordinated time endpoints, aggregate validation, constraints, and native form values |
 
 ### Planned — Color Primitives
 

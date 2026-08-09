@@ -127,7 +127,7 @@ Use scoped state to render custom status text or styling beside the control.
 | `label` | `string` | — | Visible label. |
 | `description` | `string` | — | Help text. |
 | `error` | `string` | — | Error text. Also marks field invalid. |
-| `errorMatch` | `boolean \| FieldErrorMatch` | — | Controls when native validation errors are shown. |
+| `errorMatch` | `boolean \| FieldErrorMatch` | `"invalid"` | Controls when native validation errors are shown. |
 | `required` | `boolean` | `false` | Required state provided to child inputs. |
 | `disabled` | `boolean` | `false` | Disabled state provided to child inputs. |
 | `invalid` | `boolean` | `false` | Invalid state. |

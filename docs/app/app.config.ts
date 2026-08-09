@@ -37,7 +37,8 @@ export default defineAppConfig({
   },
   footer: {
     credits: `© ${new Date().getFullYear()} Akaza UI`,
-    description: "A Vue-native headless UI library built from scratch for Vue 3. Accessible, unstyled, and slot-based.",
+    description:
+      "A Vue-native headless UI library built from scratch for Vue 3. Accessible, unstyled, and slot-based.",
     tagline: "Built for Vue. Not ported to it.",
     colorMode: true,
     columns: [
@@ -78,6 +79,11 @@ export default defineAppConfig({
           {
             label: "Inspira UI Pro",
             to: "https://pro.inspira-ui.com",
+            target: "_blank",
+          },
+          {
+            label: "Instruo",
+            to: "https://instruo.org",
             target: "_blank",
           },
         ],

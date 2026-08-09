@@ -118,6 +118,8 @@ const permission = ref<"granted" | "denied">("denied");
 | `falseValue` | `unknown` | `false` | Model value when unchecked. |
 | `label` | `string` | — | Label text. Slot `#label` takes priority. |
 | `description` | `string` | — | Description text. Slot `#description` takes priority. |
+| `ariaLabel` | `string` | — | Accessible name when no visible label is rendered. |
+| `ariaDescribedby` | `string` | — | IDs of external descriptive elements. |
 | `ui` | `CheckboxUi` | — | CSS class overrides. |
 
 ### Slots
@@ -157,3 +159,12 @@ const permission = ref<"granted" | "denied">("denied");
 | `text` | `akaza-checkbox-text` | — |
 | `label` | `akaza-checkbox-label` | — |
 | `description` | `akaza-checkbox-description` | — |
+
+### Keyboard
+
+| Key | Behavior |
+|-----|----------|
+| `Enter` / `Space` | Toggles focused checkbox. |
+| `Tab` / `Shift + Tab` | Uses native document focus order. |
+
+Visible label is a real `<label>` associated with control, so pointer and touch activation on label toggles checkbox too.

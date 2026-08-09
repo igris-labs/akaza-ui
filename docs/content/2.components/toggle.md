@@ -111,3 +111,10 @@ Use `Toggle` inside toolbars for independent on/off controls.
 | UI key | CSS class | Data attrs |
 |--------|-----------|------------|
 | `root` | `akaza-toggle` | `data-akaza-state`, `data-akaza-disabled` |
+
+### Keyboard
+
+| Key | Behavior |
+|-----|----------|
+| `Enter` / `Space` | Toggles pressed state. Works for native button and custom `as` roots. |
+| `Tab` / `Shift + Tab` | Uses native focus order and skips disabled toggle. |

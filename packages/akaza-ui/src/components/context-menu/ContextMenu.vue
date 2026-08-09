@@ -29,12 +29,11 @@ const emit = defineEmits<{
 }>();
 
 const model = defineModel<boolean>({ default: false });
-const rootRef = useTemplateRef<HTMLElement>("rootRef");
 const contentRef = useTemplateRef<HTMLElement>("contentRef");
 const panelRef = useTemplateRef<InstanceType<typeof MenuPanel>>("panelRef");
 const menuId = `akaza-context-menu-${useId()}`;
 const point = ref({ x: 0, y: 0 });
-const positionStyle = ref<Record<string, string>>({ top: "-9999px", left: "-9999px" });
+const positionStyle = ref<Record<string, string>>({ position: "fixed", top: "-9999px", left: "-9999px" });
 const actualSide = ref<"left" | "right">("right");
 const actualAlign = ref<"start" | "end">("start");
 let previousFocus: HTMLElement | null = null;
@@ -67,7 +66,7 @@ function setOpen(next: boolean, reason: string, event?: Event) {
   if (canceled) return;
   model.value = next;
   if (!next && restoreFocus && reason !== "outside-click") {
-    nextTick(() => previousFocus?.focus());
+    nextTick(() => previousFocus?.focus({ preventScroll: true }));
   }
 }
 
@@ -236,9 +235,9 @@ watch(() => disabled, (value) => {
   if (value && model.value) close("disabled");
 });
 
-onClickOutside(rootRef, (event) => {
+onClickOutside(contentRef, (event) => {
   if (model.value) close("outside-click", event);
-}, { ignore: [contentRef] });
+});
 
 onUnmounted(() => {
   clearLongPress();
@@ -250,7 +249,6 @@ defineExpose({ openAt, close });
 
 <template>
   <div
-    ref="rootRef"
     :class="ui?.root"
     :data-akaza-state="model ? 'open' : 'closed'"
     :data-akaza-disabled="disabled || undefined"

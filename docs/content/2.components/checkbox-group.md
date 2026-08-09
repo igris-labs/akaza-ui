@@ -237,3 +237,12 @@ function keepOne(value: CheckboxGroupValue[], details: AkazaChangeEventDetails) 
 | `parentItem` | `akaza-checkbox-group-parent` | `data-akaza-state`, `data-akaza-disabled` |
 | `item` | `akaza-checkbox-group-item` | `data-akaza-state`, `data-akaza-disabled` |
 | `checkbox` | nested `Checkbox` classes | see [Checkbox](/components/checkbox) |
+
+### Keyboard
+
+| Key | Behavior |
+|-----|----------|
+| `Tab` / `Shift + Tab` | Moves through parent and enabled child checkboxes in document order. |
+| `Enter` / `Space` | Toggles focused checkbox. Parent control selects or clears allowed values. |
+
+Each checkbox remains independently focusable; group does not replace native tab order with roving focus.

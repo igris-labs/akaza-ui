@@ -30,11 +30,17 @@ const TRANSITION_DURATION = 300;
 
 const model = defineModel<boolean>({ default: false });
 const { isOpen, open: _open, close: _close, toggle: _toggle } = useDrawer(model);
+let restoreFocusTarget: HTMLElement | null = null;
+
+function getEventTarget(event?: Event) {
+  return event?.currentTarget instanceof HTMLElement ? event.currentTarget : null;
+}
 
 function handleChange(nextOpen: boolean, reason: string, event?: Event) {
   let canceled = false;
   emit('open-change', nextOpen, { reason, ...(event && { event }), cancel: () => { canceled = true; } });
   if (canceled) return;
+  if (nextOpen) restoreFocusTarget = getEventTarget(event);
   nextOpen ? _open() : _close();
 }
 
@@ -55,13 +61,18 @@ const contentRef = useTemplateRef<HTMLElement>("contentRef");
 const overlayRef = useTemplateRef<HTMLElement>("overlayRef");
 const titleId = useId();
 const descriptionId = useId();
-const { activate, deactivate } = useFocusScope(contentRef);
-const { register, unregister } = useDismissableLayer((event?: KeyboardEvent) => close('escape', event));
+const { activate, deactivate } = useFocusScope(contentRef, {
+  getExemptElements: () => [overlayRef.value],
+});
+const { layerOrder, register, unregister } = useDismissableLayer((event?: KeyboardEvent) => close('escape', event));
 
 watch(isOpen, async (val) => {
   if (val) {
+    const focusTarget = restoreFocusTarget
+      ?? (typeof document !== "undefined" ? document.activeElement as HTMLElement : null);
     await nextTick();
-    activate();
+    activate(focusTarget);
+    restoreFocusTarget = null;
     register();
   } else {
     deactivate();
@@ -222,6 +233,7 @@ defineExpose({ open, close, toggle, titleId, descriptionId });
         v-if="isOpen"
         ref="overlayRef"
         :class="ui?.overlay"
+        :style="{ '--akaza-layer-order': layerOrder }"
         class="akaza-drawer-overlay"
         data-akaza-state="open"
         @click="onOverlayClick"
@@ -245,7 +257,7 @@ defineExpose({ open, close, toggle, titleId, descriptionId });
         :aria-label="!($slots.title || title) ? ariaLabel : undefined"
         :aria-describedby="($slots.description || description) ? descriptionId : undefined"
         :class="ui?.content"
-        :style="drawerStyle"
+        :style="{ ...drawerStyle, '--akaza-layer-order': layerOrder }"
         class="akaza-drawer"
         :data-akaza-side="side"
         data-akaza-state="open"
@@ -300,13 +312,13 @@ defineExpose({ open, close, toggle, titleId, descriptionId });
   position: fixed;
   display: flex;
   flex-direction: column;
-  z-index: var(--akaza-z-overlay-content, 1201);
+  z-index: var(--akaza-z-overlay-content, calc(var(--akaza-z-layer-base, 1200) + var(--akaza-layer-order, 0) + 1));
 }
 
 .akaza-drawer-overlay {
   position: fixed;
   inset: 0;
-  z-index: var(--akaza-z-overlay, 1200);
+  z-index: var(--akaza-z-overlay, calc(var(--akaza-z-layer-base, 1200) + var(--akaza-layer-order, 0)));
 }
 
 .akaza-drawer[data-akaza-side="right"] {

@@ -38,8 +38,7 @@ export const selectUi = {
     "group flex h-9 w-full items-center justify-between rounded-md border border-input bg-background px-3 text-left text-sm text-foreground shadow-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background data-[akaza-invalid]:border-destructive data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50",
   placeholder: "text-muted-foreground",
   icon: "ml-2 text-muted-foreground transition-transform group-data-[akaza-state=open]:rotate-180",
-  content:
-    "rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-lg",
+  content: "rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-lg",
   viewport: "max-h-64 overflow-auto",
   groupLabel:
     "px-2.5 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground",
@@ -78,13 +77,11 @@ export const sliderVerticalUi = {
 };
 export const toggleGroupUi = {
   root: "gap-1 rounded-lg border border-border bg-muted p-1",
-  item:
-    "inline-flex h-8 items-center justify-center rounded-md px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-background hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-state=on]:bg-background data-[akaza-state=on]:text-foreground data-[akaza-state=on]:shadow-sm data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50",
+  item: "inline-flex h-8 items-center justify-center rounded-md px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-background hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-state=on]:bg-background data-[akaza-state=on]:text-foreground data-[akaza-state=on]:shadow-sm data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50",
 };
 export const toggleGroupCardUi = {
   root: "grid max-w-md gap-2",
-  item:
-    "flex w-full items-start justify-between rounded-lg border border-border bg-background p-3 text-left text-sm transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-state=on]:border-primary data-[akaza-state=on]:bg-primary/5 data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50",
+  item: "flex w-full items-start justify-between rounded-lg border border-border bg-background p-3 text-left text-sm transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-state=on]:border-primary data-[akaza-state=on]:bg-primary/5 data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50",
   label: "font-medium text-foreground",
   description: "mt-1 text-xs text-muted-foreground",
 };
@@ -96,7 +93,8 @@ export const listboxUi = {
     "max-h-64 rounded-md border border-border bg-background p-1 text-foreground shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background data-[akaza-invalid]:border-destructive data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50",
   virtualWrapper: "min-w-full",
   empty: "px-3 py-6 text-center text-sm text-muted-foreground",
-  groupLabel: "px-2.5 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground",
+  groupLabel:
+    "px-2.5 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground",
   separator: "my-1 h-px bg-border",
   option:
     "flex cursor-pointer items-start gap-2 rounded-sm px-2.5 py-2 text-sm outline-none transition-colors data-[akaza-highlighted]:bg-accent data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50",
@@ -111,10 +109,8 @@ export const pinInputUi = {
     "size-11 rounded-md border border-input bg-background text-center font-mono text-lg text-foreground shadow-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background data-[akaza-invalid]:border-destructive data-[akaza-invalid]:ring-destructive/30 disabled:cursor-not-allowed",
 };
 export const tagsInputUi = {
-  root:
-    "min-h-10 w-full max-w-md items-center gap-1.5 rounded-md border border-input bg-background p-1.5 shadow-sm transition-colors data-[akaza-focused]:ring-2 data-[akaza-focused]:ring-ring data-[akaza-focused]:ring-offset-1 data-[akaza-focused]:ring-offset-background data-[akaza-invalid]:border-destructive data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50",
-  item:
-    "inline-flex h-7 items-center gap-1 rounded-md bg-muted px-2 text-xs font-medium text-foreground outline-none data-[akaza-highlighted]:ring-2 data-[akaza-highlighted]:ring-ring",
+  root: "min-h-10 w-full max-w-md items-center gap-1.5 rounded-md border border-input bg-background p-1.5 shadow-sm transition-colors data-[akaza-focused]:ring-2 data-[akaza-focused]:ring-ring data-[akaza-focused]:ring-offset-1 data-[akaza-focused]:ring-offset-background data-[akaza-invalid]:border-destructive data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50",
+  item: "inline-flex h-7 items-center gap-1 rounded-md bg-muted px-2 text-xs font-medium text-foreground outline-none data-[akaza-highlighted]:ring-2 data-[akaza-highlighted]:ring-ring",
   itemText: "max-w-40 truncate",
   delete:
     "grid size-4 place-items-center rounded text-muted-foreground transition-colors hover:bg-background hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none",
@@ -156,8 +152,7 @@ export const stepperUi = {
   title: "truncate text-sm font-medium text-foreground",
   description: "text-xs text-muted-foreground",
   optional: "text-[11px] text-muted-foreground",
-  separator:
-    "mx-3 mt-4 h-px min-w-4 flex-1 bg-border data-[akaza-state=completed]:bg-primary",
+  separator: "mx-3 mt-4 h-px min-w-4 flex-1 bg-border data-[akaza-state=completed]:bg-primary",
   panels: "rounded-lg border border-border bg-background p-4",
   panel: "text-sm text-muted-foreground",
   controls: "flex justify-between gap-2",
@@ -178,11 +173,106 @@ export const paginationUi = {
   item: "shrink-0",
   first: buttonGhost,
   previous: buttonGhost,
-  page:
-    "grid size-9 place-items-center rounded-md border border-transparent text-sm font-medium text-muted-foreground no-underline transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-state=active]:border-primary data-[akaza-state=active]:bg-primary data-[akaza-state=active]:text-primary-foreground disabled:pointer-events-none disabled:opacity-50",
+  page: "grid size-9 place-items-center rounded-md border border-transparent text-sm font-medium text-muted-foreground no-underline transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-state=active]:border-primary data-[akaza-state=active]:bg-primary data-[akaza-state=active]:text-primary-foreground disabled:pointer-events-none disabled:opacity-50",
   ellipsis: "grid size-9 place-items-center text-sm text-muted-foreground",
   next: buttonGhost,
   last: buttonGhost,
+};
+export const calendarUi = {
+  root: "w-fit max-w-full rounded-lg border border-border bg-background p-3 text-foreground shadow-sm",
+  header: "mb-3 flex items-center justify-between gap-3",
+  previous:
+    "grid size-9 place-items-center rounded-md border border-border bg-background text-lg text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-40",
+  heading: "min-w-0 text-center text-sm font-semibold text-foreground",
+  next: "grid size-9 place-items-center rounded-md border border-border bg-background text-lg text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-40",
+  grids: "flex max-w-full flex-wrap gap-5 overflow-x-auto",
+  grid: "w-full min-w-64 table-fixed",
+  gridHead: "text-muted-foreground",
+  gridBody: "text-foreground",
+  gridRow: "h-9",
+  headCell: "size-9 text-center text-[11px] font-medium",
+  cell: "size-9 p-0 text-center",
+  cellTrigger:
+    "grid size-9 place-items-center rounded-md text-sm outline-none transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring data-[akaza-selected]:bg-primary data-[akaza-selected]:text-primary-foreground data-[akaza-in-range]:!bg-primary/15 data-[akaza-in-range]:!text-foreground data-[akaza-range-start]:!bg-primary data-[akaza-range-start]:!text-primary-foreground data-[akaza-range-end]:!bg-primary data-[akaza-range-end]:!text-primary-foreground data-[akaza-highlighted]:bg-primary/10 data-[akaza-today]:ring-1 data-[akaza-today]:ring-inset data-[akaza-today]:ring-border data-[akaza-outside-view]:text-muted-foreground data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:text-muted-foreground data-[akaza-unavailable]:text-muted-foreground data-[akaza-unavailable]:line-through",
+  footer: "mt-3 border-t border-border pt-3 text-xs text-muted-foreground",
+};
+export const periodPickerUi = {
+  root: "w-full max-w-sm rounded-lg border border-border bg-background p-3 text-foreground shadow-sm",
+  header: "mb-3 flex items-center justify-between gap-3",
+  previous:
+    "grid size-9 place-items-center rounded-md border border-border bg-background text-lg text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-40",
+  heading: "min-w-0 text-center text-sm font-semibold text-foreground",
+  next: "grid size-9 place-items-center rounded-md border border-border bg-background text-lg text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-40",
+  grid: "grid gap-2",
+  gridRow: "gap-2",
+  cell: "min-w-0",
+  cellTrigger:
+    "h-9 w-full rounded-md px-2 text-sm outline-none transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring data-[akaza-selected]:bg-primary data-[akaza-selected]:text-primary-foreground data-[akaza-in-range]:!bg-primary/15 data-[akaza-in-range]:!text-foreground data-[akaza-range-start]:!bg-primary data-[akaza-range-start]:!text-primary-foreground data-[akaza-range-end]:!bg-primary data-[akaza-range-end]:!text-primary-foreground data-[akaza-highlighted]:bg-primary/10 data-[akaza-today]:ring-1 data-[akaza-today]:ring-inset data-[akaza-today]:ring-border data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:text-muted-foreground data-[akaza-unavailable]:text-muted-foreground data-[akaza-unavailable]:line-through",
+  footer: "mt-3 border-t border-border pt-3 text-xs text-muted-foreground",
+};
+export const dateFieldUi = {
+  root: "h-9 w-full max-w-sm rounded-md border border-input bg-background px-2 text-foreground shadow-sm transition-colors data-[akaza-focused]:ring-2 data-[akaza-focused]:ring-ring data-[akaza-focused]:ring-offset-1 data-[akaza-focused]:ring-offset-background data-[akaza-invalid]:border-destructive data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50",
+  segments: "min-w-0 flex-1",
+  segment:
+    "rounded-sm px-0.5 text-sm tabular-nums text-foreground caret-transparent outline-none placeholder:text-muted-foreground focus:bg-muted focus:text-foreground data-[akaza-invalid]:text-destructive",
+  literal: "text-sm text-muted-foreground",
+  calendarTrigger:
+    "ml-auto inline-flex h-7 shrink-0 items-center justify-center rounded px-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
+  calendarContent:
+    "rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-lg",
+  calendar: calendarUi,
+  hiddenInput: "",
+};
+const dateRangeEndpointUi = {
+  ...dateFieldUi,
+  root: "h-7 min-w-0 flex-1 border-0 bg-transparent px-0 text-foreground shadow-none data-[akaza-focused]:ring-0 data-[akaza-invalid]:text-destructive data-[akaza-disabled]:opacity-50",
+  segments: "min-w-0 flex-1",
+};
+export const dateRangeFieldUi = {
+  root: "h-9 w-full max-w-xl gap-2 rounded-md border border-input bg-background px-3 text-foreground shadow-sm transition-colors data-[akaza-focused]:ring-2 data-[akaza-focused]:ring-ring data-[akaza-focused]:ring-offset-1 data-[akaza-focused]:ring-offset-background data-[akaza-invalid]:border-destructive data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50",
+  start: "min-w-0 flex-1",
+  startField: dateRangeEndpointUi,
+  separator: "shrink-0 text-sm text-muted-foreground",
+  end: "min-w-0 flex-1",
+  endField: dateRangeEndpointUi,
+  hiddenInput: "",
+};
+export const dateRangePickerUi = {
+  root: "w-full max-w-xl gap-1",
+  field: {
+    ...dateRangeFieldUi,
+    root: "h-9 min-w-0 flex-1 gap-2 rounded-md border border-input bg-background px-3 text-foreground shadow-sm transition-colors data-[akaza-focused]:ring-2 data-[akaza-focused]:ring-ring data-[akaza-focused]:ring-offset-1 data-[akaza-focused]:ring-offset-background data-[akaza-invalid]:border-destructive data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50",
+  },
+  trigger:
+    "inline-flex size-9 shrink-0 items-center justify-center rounded-md border border-border bg-background text-sm text-muted-foreground shadow-sm transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
+  content: "rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-lg",
+  calendar: calendarUi,
+  close:
+    "mt-1 inline-flex h-8 w-full items-center justify-center rounded-md text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+};
+export const timeFieldUi = {
+  root: "h-9 w-full max-w-sm gap-2 rounded-md border border-input bg-background px-3 text-foreground shadow-sm transition-colors data-[akaza-focused]:ring-2 data-[akaza-focused]:ring-ring data-[akaza-focused]:ring-offset-1 data-[akaza-focused]:ring-offset-background data-[akaza-invalid]:border-destructive data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50",
+  segments: "min-w-0 flex-1",
+  segment:
+    "rounded-sm px-0.5 text-sm tabular-nums text-foreground caret-transparent outline-none placeholder:text-muted-foreground focus:bg-muted focus:text-foreground data-[akaza-invalid]:text-destructive",
+  literal: "text-sm text-muted-foreground",
+  dayPeriod:
+    "shrink-0 rounded-sm px-1 text-xs font-medium text-muted-foreground outline-none transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none",
+  timeZone: "shrink-0 text-xs text-muted-foreground",
+  hiddenInput: "",
+};
+const timeRangeEndpointUi = {
+  ...timeFieldUi,
+  root: "h-7 min-w-0 flex-1 border-0 bg-transparent px-0 text-foreground shadow-none data-[akaza-focused]:ring-0 data-[akaza-invalid]:text-destructive data-[akaza-disabled]:opacity-50",
+};
+export const timeRangeFieldUi = {
+  root: "h-9 w-full max-w-xl gap-2 rounded-md border border-input bg-background px-3 text-foreground shadow-sm transition-colors data-[akaza-focused]:ring-2 data-[akaza-focused]:ring-ring data-[akaza-focused]:ring-offset-1 data-[akaza-focused]:ring-offset-background data-[akaza-invalid]:border-destructive data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50",
+  start: "min-w-0 flex-1",
+  startField: timeRangeEndpointUi,
+  separator: "shrink-0 text-sm text-muted-foreground",
+  end: "min-w-0 flex-1",
+  endField: timeRangeEndpointUi,
+  hiddenInput: "",
 };
 export const meterUi = {
   root: "grid w-full max-w-sm grid-cols-2 gap-y-2",
@@ -337,8 +427,7 @@ export const navigationMenuUi = {
   item: "relative",
   trigger:
     "rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-background hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-state=open]:bg-background data-[akaza-state=open]:text-foreground",
-  link:
-    "inline-flex rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground no-underline transition-colors hover:bg-background hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50",
+  link: "inline-flex rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground no-underline transition-colors hover:bg-background hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50",
   indicator: "bottom-0 h-0.5 rounded-full bg-primary transition-[left,width]",
   content:
     "w-full rounded-lg border border-border bg-popover p-2 text-popover-foreground shadow-lg",
@@ -352,15 +441,15 @@ export const navigationMenuUi = {
 };
 
 export const toolbarUi = {
-  root: "gap-1 rounded-lg border border-border bg-muted p-1",
+  root: "max-w-full gap-1 overflow-x-auto rounded-lg border border-border bg-muted p-1",
   group: "gap-1",
   button:
     "inline-flex h-8 min-w-8 items-center justify-center rounded-md px-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-background hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-state=on]:bg-background data-[akaza-state=on]:text-foreground data-[akaza-state=on]:shadow-sm data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50",
-  link:
-    "inline-flex h-8 items-center justify-center rounded-md px-2.5 text-sm font-medium text-muted-foreground no-underline transition-colors hover:bg-background hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+  link: "inline-flex h-8 items-center justify-center rounded-md px-2.5 text-sm font-medium text-muted-foreground no-underline transition-colors hover:bg-background hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
   input:
     "h-8 w-28 rounded-md border border-input bg-background px-2 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring",
-  separator: "mx-1 h-5 w-px bg-border data-[akaza-orientation=horizontal]:h-px data-[akaza-orientation=horizontal]:w-5",
+  separator:
+    "mx-1 h-5 w-px bg-border data-[akaza-orientation=horizontal]:h-px data-[akaza-orientation=horizontal]:w-5",
   label: "leading-none",
 };
 
@@ -371,11 +460,12 @@ export const comboboxUi = {
   tags: "flex flex-wrap gap-1",
   tag: "inline-flex h-8 items-center gap-1 rounded-md bg-muted px-2 text-xs font-medium text-foreground",
   tagLabel: "leading-none",
-  remove: "inline-flex size-5 items-center justify-center rounded text-muted-foreground hover:bg-background hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-  clear: "inline-flex size-9 items-center justify-center rounded-md border border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+  remove:
+    "inline-flex size-5 items-center justify-center rounded text-muted-foreground hover:bg-background hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+  clear:
+    "inline-flex size-9 items-center justify-center rounded-md border border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
   hiddenInput: "sr-only",
-  content:
-    "rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-lg",
+  content: "rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-lg",
   viewport: "max-h-64 overflow-auto",
   empty: "px-2.5 py-2 text-sm text-muted-foreground",
   loading: "px-2.5 py-2 text-sm text-muted-foreground",
@@ -388,11 +478,12 @@ export const comboboxUi = {
   optionText: "grid gap-0.5",
   optionLabel: "font-medium text-foreground",
   optionDescription: "text-xs text-muted-foreground",
-  create: "cursor-pointer rounded-sm px-2.5 py-2 text-sm font-medium text-primary transition-colors hover:bg-accent",
+  create:
+    "cursor-pointer rounded-sm px-2.5 py-2 text-sm font-medium text-primary transition-colors hover:bg-accent",
 };
 
 export const toastUi = {
-  viewport: "w-[min(100vw,24rem)]",
+  viewport: "w-[min(100dvw,24rem)]",
   toast:
     "relative grid gap-1 rounded-lg border border-border bg-popover p-4 pr-10 text-popover-foreground shadow-lg data-[akaza-type=error]:border-destructive/60 data-[akaza-type=warning]:border-primary/60",
   title: "text-sm font-semibold text-foreground",
@@ -414,20 +505,20 @@ export const hoverPreviewCardUi = {
 export const dialogOverlay = "fixed inset-0 bg-black/50 backdrop-blur-[2px]";
 export const dialogOverlayInner = "fixed inset-0 bg-black/40 backdrop-blur-[1px]";
 export const dialogContent =
-  "flex max-h-[90dvh] w-[min(90vw,480px)] flex-col overflow-hidden rounded-xl border border-border bg-card text-card-foreground shadow-2xl [&_.akaza-dialog-body]:flex-1 [&_.akaza-dialog-body]:overflow-y-auto [&_.akaza-dialog-body]:p-5 [&_.akaza-dialog-description]:mb-3 [&_.akaza-dialog-description]:text-sm [&_.akaza-dialog-description]:text-muted-foreground [&_.akaza-dialog-footer]:border-t [&_.akaza-dialog-footer]:border-border [&_.akaza-dialog-footer]:p-4 [&_.akaza-dialog-header]:border-b [&_.akaza-dialog-header]:border-border [&_.akaza-dialog-header]:p-4 [&_.akaza-dialog-title]:text-base [&_.akaza-dialog-title]:font-semibold [&_.akaza-dialog-title]:text-foreground";
-export const dialogContentInner = `${dialogContent} z-[400]`;
+  "flex max-h-[90dvh] w-[min(90dvw,480px)] flex-col overflow-hidden rounded-xl border border-border bg-card text-card-foreground shadow-2xl [&_.akaza-dialog-body]:flex-1 [&_.akaza-dialog-body]:overflow-y-auto [&_.akaza-dialog-body]:p-5 [&_.akaza-dialog-description]:mb-3 [&_.akaza-dialog-description]:text-sm [&_.akaza-dialog-description]:text-muted-foreground [&_.akaza-dialog-footer]:border-t [&_.akaza-dialog-footer]:border-border [&_.akaza-dialog-footer]:p-4 [&_.akaza-dialog-header]:border-b [&_.akaza-dialog-header]:border-border [&_.akaza-dialog-header]:p-4 [&_.akaza-dialog-title]:text-base [&_.akaza-dialog-title]:font-semibold [&_.akaza-dialog-title]:text-foreground";
+export const dialogContentInner = dialogContent;
 export const dialogContentFullscreen = `${dialogContent} h-[100dvh] w-screen max-w-none rounded-none border-0`;
 export const alertDialogContent =
-  "flex w-[min(90vw,440px)] flex-col overflow-hidden rounded-xl border border-border bg-card text-card-foreground shadow-2xl [&_.akaza-alert-dialog-body]:px-5 [&_.akaza-alert-dialog-body]:pb-5 [&_.akaza-alert-dialog-body]:pt-3 [&_.akaza-alert-dialog-description]:m-0 [&_.akaza-alert-dialog-description]:text-sm [&_.akaza-alert-dialog-description]:leading-relaxed [&_.akaza-alert-dialog-description]:text-muted-foreground [&_.akaza-alert-dialog-footer]:border-t [&_.akaza-alert-dialog-footer]:border-border [&_.akaza-alert-dialog-footer]:bg-muted [&_.akaza-alert-dialog-footer]:p-4 [&_.akaza-alert-dialog-header]:px-5 [&_.akaza-alert-dialog-header]:pt-5 [&_.akaza-alert-dialog-title]:text-base [&_.akaza-alert-dialog-title]:font-semibold [&_.akaza-alert-dialog-title]:text-foreground";
-export const alertDialogCompactContent = `${alertDialogContent} w-[min(90vw,340px)]`;
+  "flex w-[min(90dvw,440px)] flex-col overflow-hidden rounded-xl border border-border bg-card text-card-foreground shadow-2xl [&_.akaza-alert-dialog-body]:px-5 [&_.akaza-alert-dialog-body]:pb-5 [&_.akaza-alert-dialog-body]:pt-3 [&_.akaza-alert-dialog-description]:m-0 [&_.akaza-alert-dialog-description]:text-sm [&_.akaza-alert-dialog-description]:leading-relaxed [&_.akaza-alert-dialog-description]:text-muted-foreground [&_.akaza-alert-dialog-footer]:border-t [&_.akaza-alert-dialog-footer]:border-border [&_.akaza-alert-dialog-footer]:bg-muted [&_.akaza-alert-dialog-footer]:p-4 [&_.akaza-alert-dialog-header]:px-5 [&_.akaza-alert-dialog-header]:pt-5 [&_.akaza-alert-dialog-title]:text-base [&_.akaza-alert-dialog-title]:font-semibold [&_.akaza-alert-dialog-title]:text-foreground";
+export const alertDialogCompactContent = `${alertDialogContent} w-[min(90dvw,340px)]`;
 export const dialogBodyText = "m-0 text-sm leading-relaxed text-muted-foreground";
 
 export const drawerOverlay = "fixed inset-0 bg-black/50 backdrop-blur-[2px]";
 export const drawerOverlayReactive = `${drawerOverlay} opacity-[calc(1-var(--drawer-swipe-progress,0))]`;
 export const drawerPanel =
   "z-[200] overflow-hidden border border-border bg-card text-card-foreground shadow-2xl [&_.akaza-drawer-body]:flex-1 [&_.akaza-drawer-body]:overflow-y-auto [&_.akaza-drawer-body]:p-5 [&_.akaza-drawer-description]:text-sm [&_.akaza-drawer-description]:text-muted-foreground [&_.akaza-drawer-footer]:shrink-0 [&_.akaza-drawer-footer]:border-t [&_.akaza-drawer-footer]:border-border [&_.akaza-drawer-footer]:p-4 [&_.akaza-drawer-header]:shrink-0 [&_.akaza-drawer-header]:border-b [&_.akaza-drawer-header]:border-border [&_.akaza-drawer-header]:p-4 [&_.akaza-drawer-title]:text-base [&_.akaza-drawer-title]:font-semibold [&_.akaza-drawer-title]:text-foreground";
-export const drawerPanelRight = `${drawerPanel} w-[min(90vw,360px)] shadow-[-4px_0_24px_rgba(0,0,0,0.15)]`;
-export const drawerPanelLeft = `${drawerPanel} w-[min(90vw,360px)] shadow-[4px_0_24px_rgba(0,0,0,0.15)]`;
+export const drawerPanelRight = `${drawerPanel} w-[min(90dvw,360px)] shadow-[-4px_0_24px_rgba(0,0,0,0.15)]`;
+export const drawerPanelLeft = `${drawerPanel} w-[min(90dvw,360px)] shadow-[4px_0_24px_rgba(0,0,0,0.15)]`;
 export const drawerPanelBottom = `${drawerPanel} max-h-[60dvh] rounded-t-xl border-b-0`;
 export const drawerPanelTop = `${drawerPanel} max-h-[60dvh] rounded-b-xl border-t-0`;
 export const drawerHandle = "mx-auto mb-1 mt-3 h-1 w-12 rounded-full bg-muted-foreground/40";
@@ -437,7 +528,7 @@ export const avatarRoot =
 export const avatarImage = "block size-full object-cover";
 export const avatarFallback =
   "flex size-full select-none items-center justify-center text-sm font-semibold";
-export const avatarPrimary = `${avatarRoot} bg-primary text-primary-foreground`;
+export const avatarPrimary = `${avatarRoot} !bg-primary text-primary-foreground`;
 export const avatarMuted = `${avatarRoot} bg-muted text-muted-foreground`;
 
 export const collapsibleUi = {

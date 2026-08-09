@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { nextTick, useTemplateRef, watch } from "vue";
+import { nextTick, useId, useTemplateRef, watch } from "vue";
 import {
   buttonGhost,
   buttonPrimary,
@@ -18,13 +18,14 @@ const model = defineModel<boolean>({ default: false });
 const emit = defineEmits<{ close: [value: unknown] }>();
 
 const contentRef = useTemplateRef<HTMLElement>("contentRef");
+const titleId = useId();
 
 watch(model, async (val) => {
   if (val) {
     await nextTick();
     contentRef.value?.focus();
   }
-});
+}, { immediate: true });
 </script>
 
 <template>
@@ -44,12 +45,14 @@ watch(model, async (val) => {
           ref="contentRef"
           role="dialog"
           aria-modal="true"
+          :aria-labelledby="title ? titleId : undefined"
+          :aria-label="title ? undefined : 'Programmatic overlay'"
           :class="[dialogContent, 'outline-none']"
           tabindex="-1"
           @keydown.escape.prevent="model = false"
         >
           <div v-if="title" class="border-b border-border p-4">
-            <div class="text-base font-semibold text-foreground">{{ title }}</div>
+            <div :id="titleId" class="text-base font-semibold text-foreground">{{ title }}</div>
           </div>
           <div v-if="message" class="p-5">
             <p :class="dialogBodyText">{{ message }}</p>

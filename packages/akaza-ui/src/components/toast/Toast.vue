@@ -33,7 +33,7 @@ const emit = defineEmits<{
   "swipe-end": [toast: ToastItem, event: PointerEvent];
 }>();
 
-const viewportRef = useTemplateRef<HTMLOListElement>("viewportRef");
+const viewportRef = useTemplateRef<HTMLElement>("viewportRef");
 const expanded = ref(false);
 const toast = useToast(manager);
 const { toasts, close, pause, resume } = toast;
@@ -323,8 +323,9 @@ onBeforeUnmount(() => {
 
 <template>
   <Teleport :to="typeof teleport === 'string' ? teleport : 'body'" :disabled="teleport === false">
-    <ol
+    <div
       ref="viewportRef"
+      role="region"
       tabindex="-1"
       :aria-label="`${hotkeyLabel} (${hotkey.join('+')})`"
       v-bind="viewportAttrs"
@@ -336,7 +337,7 @@ onBeforeUnmount(() => {
       @focusout="onViewportFocusout"
     >
       <TransitionGroup name="akaza-toast">
-        <li
+        <div
           v-for="(item, index) in openToasts"
           :key="`${item.id}:${item.updateKey}`"
           :ref="(element) => setToastRef(item.id, element as HTMLElement | null)"
@@ -385,9 +386,9 @@ onBeforeUnmount(() => {
               <slot name="close" :toast="item">×</slot>
             </button>
           </slot>
-        </li>
+        </div>
       </TransitionGroup>
-    </ol>
+    </div>
   </Teleport>
 </template>
 

@@ -124,12 +124,16 @@ const { actualAlign, actualSide, style: contentStyle } = useFloatingPosition({
   matchWidth: true,
   cssVarPrefix: "akaza-combobox",
 });
-const { register: registerDismissable, unregister: unregisterDismissable } = useDismissableLayer(
+const { layerOrder, register: registerDismissable, unregister: unregisterDismissable } = useDismissableLayer(
   (event?: KeyboardEvent) => {
     setOpen(false, "escape", event);
     inputRef.value?.focus();
   },
 );
+const layeredContentStyle = computed(() => ({
+  ...contentStyle.value,
+  "--akaza-layer-order": layerOrder.value,
+}));
 const stateAttrs = computed(() => ({
   "data-akaza-state": openModel.value ? "open" : "closed",
   "data-akaza-disabled": isDisabled.value || undefined,
@@ -546,7 +550,7 @@ function hasOptionSlot(option: ComboboxOption) {
         :aria-busy="loading || undefined"
         :data-akaza-side="actualSide"
         :data-akaza-align="actualAlign"
-        :style="contentStyle"
+        :style="layeredContentStyle"
         data-akaza-state="open"
         :class="ui?.content"
         class="akaza-combobox-content"
@@ -669,7 +673,7 @@ function hasOptionSlot(option: ComboboxOption) {
 
 .akaza-combobox-content {
   position: absolute;
-  z-index: var(--akaza-z-combobox, 1000);
+  z-index: var(--akaza-z-combobox, calc(var(--akaza-z-layer-base, 1200) + var(--akaza-layer-order, 0) + 1));
   min-width: 100%;
 }
 

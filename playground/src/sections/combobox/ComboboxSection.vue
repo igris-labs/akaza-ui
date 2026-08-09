@@ -62,6 +62,7 @@ function onCreate(value: string) {
         <Combobox
           v-model="framework"
           v-model:search="search"
+          aria-label="Framework or skill"
           :options="options"
           placeholder="Search framework or skill"
           :ui="comboboxUi"
@@ -77,6 +78,7 @@ function onCreate(value: string) {
         </div>
         <Combobox
           v-model="skills"
+          aria-label="Skills"
           multiple
           clearable
           :options="options"
@@ -111,6 +113,7 @@ function onCreate(value: string) {
         </div>
         <Combobox
           v-model="customValue"
+          aria-label="New framework"
           creatable
           clearable
           :options="customOptions"
@@ -127,14 +130,14 @@ function onCreate(value: string) {
             <h3 :class="exampleLabelTitle">Read-only</h3>
             <p :class="exampleLabelDescription">Value remains visible but cannot open or change.</p>
           </div>
-          <Combobox v-model="framework" read-only :options="options" :ui="comboboxUi" />
+          <Combobox v-model="framework" aria-label="Read-only framework" read-only :options="options" :ui="comboboxUi" />
         </div>
         <div :class="canvasCol">
           <div>
             <h3 :class="exampleLabelTitle">Loading</h3>
             <p :class="exampleLabelDescription">Open to inspect busy listbox state and loading slot.</p>
           </div>
-          <Combobox :options="[]" loading placeholder="Loading options" :ui="comboboxUi" />
+          <Combobox aria-label="Loading options" :options="[]" loading placeholder="Loading options" :ui="comboboxUi" />
         </div>
       </div>
 

@@ -71,10 +71,10 @@ function onDrawerChange(open: boolean, details: AkazaChangeEventDetails) {
           :ui="rightUi"
         >
           <template #trigger="{ toggle }">
-            <button :class="buttonPrimary" @click="toggle()">Open right</button>
+            <button :class="buttonPrimary" @click="toggle">Open right</button>
           </template>
           <template #footer="{ close }">
-            <button :class="fullGhostButton" @click="close()">Close</button>
+            <button :class="fullGhostButton" @click="close">Close</button>
           </template>
         </Drawer>
       </div>
@@ -94,10 +94,10 @@ function onDrawerChange(open: boolean, details: AkazaChangeEventDetails) {
           :ui="leftUi"
         >
           <template #trigger="{ toggle }">
-            <button :class="buttonPrimary" @click="toggle()">Open left</button>
+            <button :class="buttonPrimary" @click="toggle">Open left</button>
           </template>
           <template #footer="{ close }">
-            <button :class="fullGhostButton" @click="close()">Close</button>
+            <button :class="fullGhostButton" @click="close">Close</button>
           </template>
         </Drawer>
       </div>
@@ -117,15 +117,15 @@ function onDrawerChange(open: boolean, details: AkazaChangeEventDetails) {
           :ui="bottomUi"
         >
           <template #trigger="{ toggle }">
-            <button :class="buttonPrimary" @click="toggle()">Open bottom</button>
+            <button :class="buttonPrimary" @click="toggle">Open bottom</button>
           </template>
           <template #handle>
             <div :class="drawerHandle" />
           </template>
           <template #footer="{ close }">
             <div :class="footerActions">
-              <button :class="buttonGhost" @click="close()">Cancel</button>
-              <button :class="buttonPrimary" @click="close()">Confirm</button>
+              <button :class="buttonGhost" @click="close">Cancel</button>
+              <button :class="buttonPrimary" @click="close">Confirm</button>
             </div>
           </template>
         </Drawer>
@@ -146,10 +146,10 @@ function onDrawerChange(open: boolean, details: AkazaChangeEventDetails) {
           :ui="topUi"
         >
           <template #trigger="{ toggle }">
-            <button :class="buttonPrimary" @click="toggle()">Open top</button>
+            <button :class="buttonPrimary" @click="toggle">Open top</button>
           </template>
           <template #footer="{ close }">
-            <button :class="fullGhostButton" @click="close()">Close</button>
+            <button :class="fullGhostButton" @click="close">Close</button>
           </template>
         </Drawer>
       </div>
@@ -170,10 +170,10 @@ function onDrawerChange(open: boolean, details: AkazaChangeEventDetails) {
           :ui="rightUi"
         >
           <template #trigger="{ toggle }">
-            <button :class="buttonPrimary" @click="toggle()">Open inset</button>
+            <button :class="buttonPrimary" @click="toggle">Open inset</button>
           </template>
           <template #footer="{ close }">
-            <button :class="fullGhostButton" @click="close()">Close</button>
+            <button :class="fullGhostButton" @click="close">Close</button>
           </template>
         </Drawer>
       </div>
@@ -194,10 +194,10 @@ function onDrawerChange(open: boolean, details: AkazaChangeEventDetails) {
           :ui="reactiveUi"
         >
           <template #trigger="{ toggle }">
-            <button :class="buttonPrimary" @click="toggle()">Open</button>
+            <button :class="buttonPrimary" @click="toggle">Open</button>
           </template>
           <template #footer="{ close }">
-            <button :class="fullGhostButton" @click="close()">Close</button>
+            <button :class="fullGhostButton" @click="close">Close</button>
           </template>
         </Drawer>
       </div>
@@ -211,7 +211,7 @@ function onDrawerChange(open: boolean, details: AkazaChangeEventDetails) {
       <div :class="canvasRow">
         <Drawer v-model="openCustomHeader" :ui="rightUi">
           <template #trigger="{ toggle }">
-            <button :class="buttonPrimary" @click="toggle()">Open</button>
+            <button :class="buttonPrimary" @click="toggle">Open</button>
           </template>
           <template #header="{ close, titleId }">
             <div class="flex items-center justify-between gap-4">
@@ -219,7 +219,7 @@ function onDrawerChange(open: boolean, details: AkazaChangeEventDetails) {
               <button
                 class="inline-flex size-8 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 aria-label="Close"
-                @click="close()"
+                @click="close"
               >
                 x
               </button>
@@ -231,7 +231,7 @@ function onDrawerChange(open: boolean, details: AkazaChangeEventDetails) {
             </p>
           </template>
           <template #footer="{ close }">
-            <button :class="fullGhostButton" @click="close()">Close</button>
+            <button :class="fullGhostButton" @click="close">Close</button>
           </template>
         </Drawer>
       </div>
@@ -251,10 +251,10 @@ function onDrawerChange(open: boolean, details: AkazaChangeEventDetails) {
           :ui="rightUi"
         >
           <template #trigger="{ toggle }">
-            <button :class="buttonPrimary" @click="toggle()">Open</button>
+            <button :class="buttonPrimary" @click="toggle">Open</button>
           </template>
           <template #footer="{ close }">
-            <button :class="fullGhostButton" @click="close()">Close</button>
+            <button :class="fullGhostButton" @click="close">Close</button>
           </template>
         </Drawer>
       </div>
@@ -276,10 +276,10 @@ function onDrawerChange(open: boolean, details: AkazaChangeEventDetails) {
           @open-change="onDrawerChange"
         >
           <template #trigger="{ toggle }">
-            <button :class="buttonPrimary" @click="toggle()">Open</button>
+            <button :class="buttonPrimary" @click="toggle">Open</button>
           </template>
           <template #footer="{ close }">
-            <button :class="fullGhostButton" @click="close()">Close</button>
+            <button :class="fullGhostButton" @click="close">Close</button>
           </template>
         </Drawer>
         <div v-if="drawerLog.length" :class="eventLogClass">

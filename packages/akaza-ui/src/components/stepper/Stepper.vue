@@ -225,7 +225,6 @@ defineExpose({ goToStep, hasNext, hasPrev, nextStep, prevStep });
   >
     <ol
       :aria-label="ariaLabel"
-      :aria-orientation="orientation"
       :class="ui?.list"
       class="akaza-stepper-list"
       :data-akaza-orientation="orientation"

@@ -89,6 +89,7 @@ function onCheckboxChange(value: CheckboxValue, details: AkazaChangeEventDetails
       <div :class="canvasRow">
         <Checkbox
           v-model="checked"
+          aria-label="Example state"
           :ui="{ root: checkboxUi.root, indicator: checkboxUi.indicator }"
         >
           <template #indicator="{ checked: val }">

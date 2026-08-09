@@ -136,3 +136,12 @@ Keeps the button in the tab order while disabled — useful for showing tooltips
 | `loadingText` | `akaza-button-loading-text` | — |
 
 Plain `class` also applies to the root button. Use `ui.root` when styling root together with `spinner` or `loadingText`.
+
+### Keyboard
+
+| Key | Behavior |
+|-----|----------|
+| `Enter` / `Space` | Activates native button and custom `as` roots. |
+| `Tab` | Focuses enabled button, or a disabled button only with `focusableWhenDisabled`. |
+
+Non-button roots receive `role="button"`, keyboard activation, and tab behavior. Loading and disabled states block activation.

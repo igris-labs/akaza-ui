@@ -27,6 +27,7 @@ export interface NavigationMenuUi {
   indicator?: string;
   content?: string;
   viewport?: string;
+  panel?: string;
   contentList?: string;
   contentItem?: string;
   contentLink?: string;

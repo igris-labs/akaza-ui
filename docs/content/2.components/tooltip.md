@@ -161,3 +161,12 @@ const open = ref(false);
 | `trigger` | `akaza-tooltip-trigger` | `data-akaza-state` |
 | `content` | `akaza-tooltip-content` | `data-akaza-state`, `data-akaza-side` |
 | `arrow` | `akaza-tooltip-arrow` | — |
+
+### Keyboard
+
+| Key | Behavior |
+|-----|----------|
+| `Tab` / `Shift + Tab` | Focusing trigger or its child opens tooltip; leaving closes it. |
+| `Escape` | Closes topmost tooltip and restores trigger focus. |
+
+Tooltip never requires pointer hover. Apply `triggerProps` to interactive trigger so `aria-describedby` reaches actual focus target.

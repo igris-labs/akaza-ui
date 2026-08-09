@@ -2,6 +2,7 @@ import type { ComputedRef, InjectionKey, Ref } from "vue";
 
 export type FieldErrorMatch =
   | boolean
+  | "invalid"
   | "valid"
   | "badInput"
   | "customError"
@@ -26,6 +27,7 @@ export interface FieldControlState {
 
 export interface FieldContext {
   inputId: ComputedRef<string>;
+  labelledBy: ComputedRef<string | undefined>;
   name: ComputedRef<string | undefined>;
   disabled: ComputedRef<boolean>;
   required: ComputedRef<boolean>;
@@ -34,4 +36,4 @@ export interface FieldContext {
   registerControl: (state: FieldControlState) => () => void;
 }
 
-export const fieldContextKey: InjectionKey<FieldContext> = Symbol("akaza-field");
+export const fieldContextKey: InjectionKey<FieldContext | null> = Symbol("akaza-field");

@@ -54,7 +54,7 @@ Your design, your CSS, your call.
 
 ## Accessibility is infrastructure, not a feature
 
-Focus management, ARIA roles, keyboard navigation, and screen reader support aren't optional add-ons. They're part of what "component" means. Every Akaza UI primitive implements the WAI-ARIA authoring practices for its pattern — so you don't have to think about it.
+Focus management, ARIA roles, keyboard navigation, screen reader support, and mouse/touch interaction aren't optional add-ons. They're part of what "component" means. Every Akaza UI primitive implements the WAI-ARIA authoring practices for its pattern and supports the input modalities that pattern requires — so you don't have to rebuild them.
 
 ## Core principles
 

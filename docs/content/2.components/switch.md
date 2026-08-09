@@ -148,3 +148,12 @@ Use `aria-label` when there's no visible label text.
 | `text` | `akaza-switch-text` | — |
 | `label` | `akaza-switch-label` | — |
 | `description` | `akaza-switch-description` | — |
+
+### Keyboard
+
+| Key | Behavior |
+|-----|----------|
+| `Enter` / `Space` | Toggles focused switch. |
+| `Tab` / `Shift + Tab` | Uses native document focus order. |
+
+Visible label is associated with switch, so mouse and touch activation on label also toggles it.

@@ -28,4 +28,22 @@ describe("navigation menu", () => {
     expect(wrapper.find(".akaza-navigation-menu-trigger").exists()).toBe(false);
     expect(wrapper.find(".custom-link").text()).toBe("Custom guide");
   });
+
+  it("exposes activation direction when controlled content changes", async () => {
+    const wrapper = mount(NavigationMenu, {
+      props: {
+        open: "products",
+        items: [
+          { label: "Products", value: "products", children: [{ label: "Overview", href: "/overview" }] },
+          { label: "Docs", value: "docs", children: [{ label: "Guide", href: "/guide" }] },
+        ],
+      },
+    });
+
+    await wrapper.setProps({ open: "docs" });
+    expect(wrapper.get(".akaza-navigation-menu-panel").attributes("data-akaza-activation-direction")).toBe("right");
+
+    await wrapper.setProps({ open: "products" });
+    expect(wrapper.get(".akaza-navigation-menu-panel").attributes("data-akaza-activation-direction")).toBe("left");
+  });
 });

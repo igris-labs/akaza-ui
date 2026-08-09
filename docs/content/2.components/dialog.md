@@ -38,7 +38,7 @@ import { Dialog } from "akaza-ui";
 <template>
   <Dialog title="Edit profile">
     <template #trigger="{ toggle }">
-      <button @click="() => toggle()">Edit</button>
+      <button @click="toggle">Edit</button>
     </template>
 
     <template #body>
@@ -46,8 +46,8 @@ import { Dialog } from "akaza-ui";
     </template>
 
     <template #footer="{ close }">
-      <button @click="() => close()">Cancel</button>
-      <button @click="() => close()">Save</button>
+      <button @click="close">Cancel</button>
+      <button @click="close">Save</button>
     </template>
   </Dialog>
 </template>
@@ -64,12 +64,12 @@ Use `#header` when the close control belongs beside the title.
 <template>
   <Dialog>
     <template #trigger="{ toggle }">
-      <button @click="() => toggle()">Open</button>
+      <button @click="toggle">Open</button>
     </template>
 
     <template #header="{ close, titleId }">
       <h2 :id="titleId">Settings</h2>
-      <button aria-label="Close" @click="() => close()">✕</button>
+      <button aria-label="Close" @click="close">✕</button>
     </template>
 
     <template #body>
@@ -87,7 +87,7 @@ Use `fullscreen` for flows that should take over the viewport.
 <template>
   <Dialog :fullscreen="true" title="Full view">
     <template #trigger="{ toggle }">
-      <button @click="() => toggle()">Expand</button>
+      <button @click="toggle">Expand</button>
     </template>
     <template #body>
       <p>Takes up the entire viewport.</p>
@@ -104,10 +104,10 @@ Disable backdrop dismissal when the user must make an explicit choice.
 <template>
   <Dialog :close-on-backdrop-click="false" title="Required step">
     <template #trigger="{ toggle }">
-      <button @click="() => toggle()">Start</button>
+      <button @click="toggle">Start</button>
     </template>
     <template #footer="{ close }">
-      <button @click="() => close()">Complete</button>
+      <button @click="close">Complete</button>
     </template>
   </Dialog>
 </template>
@@ -129,7 +129,7 @@ const dialog = ref();
   <Dialog ref="dialog" title="Notification">
     <template #body><p>You have a new message.</p></template>
     <template #footer="{ close }">
-      <button @click="() => close()">Dismiss</button>
+      <button @click="close">Dismiss</button>
     </template>
   </Dialog>
 
@@ -207,3 +207,12 @@ const dialog = ref();
 | `footer` | `akaza-dialog-footer` | — |
 
 `Dialog` renders trigger slot content plus teleported overlay/content. Use `ui` keys instead of relying on plain `class` fallthrough.
+
+### Keyboard
+
+| Key | Behavior |
+|-----|----------|
+| `Tab` / `Shift + Tab` | Cycles through focusable controls inside open dialog. |
+| `Escape` | Closes topmost dialog and restores prior focus. |
+
+Opening moves focus inside, locks page scroll, and makes background content inert while modal is active.

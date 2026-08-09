@@ -30,6 +30,16 @@ describe("nuxt module", () => {
     expect(mocks.addComponent).toHaveBeenCalledWith({ name: "Rating", export: "Rating", filePath: "akaza-ui" });
     expect(mocks.addComponent).toHaveBeenCalledWith({ name: "Stepper", export: "Stepper", filePath: "akaza-ui" });
     expect(mocks.addComponent).toHaveBeenCalledWith({ name: "Pagination", export: "Pagination", filePath: "akaza-ui" });
-    expect(mocks.addComponent).toHaveBeenCalledTimes(42);
+    expect(mocks.addComponent).toHaveBeenCalledWith({ name: "Calendar", export: "Calendar", filePath: "akaza-ui" });
+    expect(mocks.addComponent).toHaveBeenCalledWith({ name: "DateField", export: "DateField", filePath: "akaza-ui" });
+    expect(mocks.addComponent).toHaveBeenCalledWith({ name: "DateRangeField", export: "DateRangeField", filePath: "akaza-ui" });
+    expect(mocks.addComponent).toHaveBeenCalledWith({ name: "DateRangePicker", export: "DateRangePicker", filePath: "akaza-ui" });
+    expect(mocks.addComponent).toHaveBeenCalledWith({ name: "MonthPicker", export: "MonthPicker", filePath: "akaza-ui" });
+    expect(mocks.addComponent).toHaveBeenCalledWith({ name: "MonthRangePicker", export: "MonthRangePicker", filePath: "akaza-ui" });
+    expect(mocks.addComponent).toHaveBeenCalledWith({ name: "TimeField", export: "TimeField", filePath: "akaza-ui" });
+    expect(mocks.addComponent).toHaveBeenCalledWith({ name: "TimeRangeField", export: "TimeRangeField", filePath: "akaza-ui" });
+    expect(mocks.addComponent).toHaveBeenCalledWith({ name: "YearPicker", export: "YearPicker", filePath: "akaza-ui" });
+    expect(mocks.addComponent).toHaveBeenCalledWith({ name: "YearRangePicker", export: "YearRangePicker", filePath: "akaza-ui" });
+    expect(mocks.addComponent).toHaveBeenCalledTimes(52);
   });
 });

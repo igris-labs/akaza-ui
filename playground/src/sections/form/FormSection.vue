@@ -22,6 +22,8 @@ import {
 
 const errors = ref<FormErrors>({});
 const result = ref("No submit yet.");
+const billingEnabled = ref(false);
+const billingCode = ref("INV-42");
 
 function onFormSubmit(values: FormValues, details: FormSubmitDetails) {
   result.value = "Native validation blocked submit.";
@@ -95,6 +97,26 @@ function onReset() {
                   placeholder="Akaza Labs"
                   :ui="{ root: inputControl }"
                 />
+              </Field>
+            </Fieldset>
+
+            <Button :class="buttonGhost" type="button" @click="billingEnabled = !billingEnabled">
+              {{ billingEnabled ? "Disable" : "Enable" }} billing fieldset
+            </Button>
+
+            <Fieldset
+              legend="Billing metadata"
+              description="Disabled fieldsets are omitted from native FormData."
+              :disabled="!billingEnabled"
+              :ui="{
+                root: fieldsetRoot,
+                legend: fieldsetLegend,
+                description: fieldsetDescription,
+                content: fieldsetContent,
+              }"
+            >
+              <Field label="Billing code" name="billingCode" :ui="{ label: fieldLabel }">
+                <Input v-model="billingCode" :ui="{ root: inputControl }" />
               </Field>
             </Fieldset>
 

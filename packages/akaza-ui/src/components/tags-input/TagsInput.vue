@@ -379,6 +379,7 @@ onBeforeUnmount(() => unregister?.());
     :aria-label="ariaLabel"
     :aria-labelledby="ariaLabelledby"
     :aria-describedby="describedBy"
+    :aria-disabled="isDisabled || undefined"
     :class="ui?.root"
     class="akaza-tags-input"
     :data-akaza-state="state"

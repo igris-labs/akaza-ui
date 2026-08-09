@@ -26,15 +26,27 @@ const model = defineModel<boolean>({ default: false });
 const { isOpen, open: _open, close: _close, toggle: _toggle } = useAlertDialog(model);
 
 const contentRef = useTemplateRef<HTMLElement>("contentRef");
+const overlayRef = useTemplateRef<HTMLElement>("overlayRef");
 const titleId = useId();
 const descriptionId = useId();
-const { activate, deactivate } = useFocusScope(contentRef, { initialFocusSelector: "[data-akaza-cancel]" });
-const { register, unregister } = useDismissableLayer(() => {});
+const { activate, deactivate } = useFocusScope(contentRef, {
+  initialFocusSelector: "[data-akaza-cancel]",
+  getExemptElements: () => [overlayRef.value],
+});
+const { layerOrder, register, unregister } = useDismissableLayer(() => {});
+let restoreFocusTarget: HTMLElement | null = null;
+
+function getEventTarget(event?: Event) {
+  return event?.currentTarget instanceof HTMLElement ? event.currentTarget : null;
+}
 
 watch(isOpen, async (val) => {
   if (val) {
+    const focusTarget = restoreFocusTarget
+      ?? (typeof document !== "undefined" ? document.activeElement as HTMLElement : null);
     await nextTick();
-    activate();
+    activate(focusTarget);
+    restoreFocusTarget = null;
     register();
   } else {
     deactivate();
@@ -46,6 +58,7 @@ function handleChange(open: boolean, reason: string, event?: Event) {
   let canceled = false;
   emit('open-change', open, { reason, ...(event && { event }), cancel: () => { canceled = true; } });
   if (canceled) return;
+  if (open) restoreFocusTarget = getEventTarget(event);
   open ? _open() : _close();
 }
 
@@ -83,8 +96,9 @@ defineExpose({ open, close, toggle, titleId, descriptionId });
     <Transition name="akaza-alert-dialog-overlay">
       <div
         v-if="isOpen"
+        ref="overlayRef"
         :class="ui?.overlay"
-        :style="{ '--akaza-dialog-duration': `${duration}ms` }"
+        :style="{ '--akaza-dialog-duration': `${duration}ms`, '--akaza-layer-order': layerOrder }"
         class="akaza-alert-dialog-overlay"
         data-akaza-state="open"
       />
@@ -101,7 +115,7 @@ defineExpose({ open, close, toggle, titleId, descriptionId });
         :aria-label="!($slots.title || title) ? ariaLabel : undefined"
         :aria-describedby="($slots.description || description) ? descriptionId : undefined"
         :class="ui?.content"
-        :style="{ '--akaza-dialog-duration': `${duration}ms` }"
+        :style="{ '--akaza-dialog-duration': `${duration}ms`, '--akaza-layer-order': layerOrder }"
         class="akaza-alert-dialog-content"
         data-akaza-state="open"
         tabindex="-1"
@@ -161,7 +175,7 @@ defineExpose({ open, close, toggle, titleId, descriptionId });
 .akaza-alert-dialog-overlay {
   position: fixed;
   inset: 0;
-  z-index: var(--akaza-z-overlay, 1200);
+  z-index: var(--akaza-z-overlay, calc(var(--akaza-z-layer-base, 1200) + var(--akaza-layer-order, 0)));
 }
 
 .akaza-alert-dialog-content {
@@ -169,7 +183,7 @@ defineExpose({ open, close, toggle, titleId, descriptionId });
   top: 50%;
   left: 50%;
   translate: -50% -50%;
-  z-index: var(--akaza-z-overlay-content, 1201);
+  z-index: var(--akaza-z-overlay-content, calc(var(--akaza-z-layer-base, 1200) + var(--akaza-layer-order, 0) + 1));
 }
 
 .akaza-alert-dialog-overlay-enter-active,

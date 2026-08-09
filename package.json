@@ -1,18 +1,19 @@
 {
   "name": "akaza-ui-monorepo",
-  "version": "0.0.5-alpha",
+  "version": "0.0.6-alpha",
   "private": true,
   "license": "MIT",
   "scripts": {
     "build": "pnpm build:projects && pnpm build:playground && pnpm build:docs",
     "build:projects": "pnpm -r --filter ./packages/** run build",
     "build:playground": "pnpm -r --filter ./playground run build",
-    "dev:playground": "pnpm -r --filter ./playground run dev",
     "build:docs": "pnpm -r --filter ./docs run build",
+    "dev:playground": "pnpm -r --filter ./playground run dev",
     "dev:docs": "pnpm -r --filter ./docs run dev",
     "lint": "pnpm -r --filter ./packages/** run lint",
     "test": "pnpm -r --filter ./packages/** run test",
-    "check": "pnpm --filter akaza-ui lint && pnpm --filter akaza-ui typecheck && pnpm --filter akaza-ui coverage && pnpm --filter akaza-ui build && pnpm --dir playground lint && pnpm --dir playground type-check && pnpm --dir playground build && pnpm --dir docs lint && pnpm --dir docs typecheck && pnpm --dir docs build && pnpm --filter akaza-ui exec npm pack --dry-run"
+    "test:browser": "pnpm --filter akaza-ui test:browser",
+    "check": "pnpm --filter akaza-ui lint && pnpm --filter akaza-ui typecheck && pnpm --filter akaza-ui coverage && pnpm --filter akaza-ui build && pnpm --dir playground lint && pnpm --dir playground type-check && pnpm --dir playground build && pnpm --filter akaza-ui test:browser && pnpm --dir docs lint && pnpm --dir docs typecheck && pnpm --dir docs build && pnpm --filter akaza-ui exec npm pack --dry-run"
   },
   "engines": {
     "node": ">=18.18.0"

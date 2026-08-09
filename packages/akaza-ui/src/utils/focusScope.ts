@@ -5,8 +5,15 @@ import { getFocusableElements } from "./focusable";
 
 interface FocusScopeAPI {
   paused: boolean;
+  container: Ref<HTMLElement | null>;
+  getExemptElements: () => Array<HTMLElement | null | undefined>;
   pause: () => void;
   resume: () => void;
+}
+
+interface OutsideTreeState {
+  ariaHidden: string | null;
+  inert: boolean;
 }
 
 /**
@@ -17,7 +24,46 @@ interface FocusScopeAPI {
  */
 const useScopeStack = createGlobalState(() => {
   const stack: FocusScopeAPI[] = [];
+  const outsideTree = new Map<HTMLElement, OutsideTreeState>();
   let previousBodyOverflow = "";
+
+  function restoreOutsideTree() {
+    for (const [element, state] of outsideTree) {
+      element.inert = state.inert;
+      if (state.ariaHidden === null) element.removeAttribute("aria-hidden");
+      else element.setAttribute("aria-hidden", state.ariaHidden);
+    }
+    outsideTree.clear();
+  }
+
+  function hideOutsideTree() {
+    restoreOutsideTree();
+    if (typeof document === "undefined") return;
+    const top = stack[stack.length - 1];
+    const protectedElements = [top?.container.value, ...(top?.getExemptElements() ?? [])]
+      .filter((element): element is HTMLElement => Boolean(element));
+    if (!protectedElements.length) return;
+
+    function visit(parent: HTMLElement) {
+      for (const child of Array.from(parent.children) as HTMLElement[]) {
+        const containsProtected = protectedElements.some((element) =>
+          child === element || child.contains(element),
+        );
+        if (containsProtected) {
+          if (!protectedElements.includes(child)) visit(child);
+          continue;
+        }
+        outsideTree.set(child, {
+          ariaHidden: child.getAttribute("aria-hidden"),
+          inert: child.inert,
+        });
+        child.inert = true;
+        child.setAttribute("aria-hidden", "true");
+      }
+    }
+
+    visit(document.body);
+  }
 
   function lockBody() {
     if (typeof document === "undefined") return;
@@ -42,6 +88,7 @@ const useScopeStack = createGlobalState(() => {
       if (idx !== -1) stack.splice(idx, 1);
       stack.push(scope);
       lockBody();
+      hideOutsideTree();
     },
     remove(scope: FocusScopeAPI) {
       const idx = stack.indexOf(scope);
@@ -49,6 +96,7 @@ const useScopeStack = createGlobalState(() => {
       unlockBody();
       // resume the new top
       stack[stack.length - 1]?.resume();
+      hideOutsideTree();
     },
   };
 });
@@ -56,13 +104,18 @@ const useScopeStack = createGlobalState(() => {
 interface FocusScopeOptions {
   /** CSS selector for the element to focus when the scope activates. Falls back to the first focusable element. */
   initialFocusSelector?: string;
+  /** Elements outside the focus container that remain interactive, such as its backdrop. */
+  getExemptElements?: () => Array<HTMLElement | null | undefined>;
 }
 
 export function useFocusScope(containerRef: Ref<HTMLElement | null>, options: FocusScopeOptions = {}) {
   let previouslyFocused: HTMLElement | null = null;
+  let focusOperation = 0;
 
   const scope: FocusScopeAPI = {
     paused: false,
+    container: containerRef,
+    getExemptElements: options.getExemptElements ?? (() => []),
     pause() {
       this.paused = true;
     },
@@ -117,9 +170,10 @@ export function useFocusScope(containerRef: Ref<HTMLElement | null>, options: Fo
     focusFirst();
   }
 
-  function activate() {
+  function activate(restoreFocusTarget?: HTMLElement | null) {
     if (typeof document === "undefined") return;
-    previouslyFocused = document.activeElement as HTMLElement;
+    focusOperation += 1;
+    previouslyFocused = restoreFocusTarget ?? document.activeElement as HTMLElement;
     add(scope);
     document.addEventListener("keydown", handleKeyDown);
     document.addEventListener("focusin", handleFocusIn);
@@ -128,11 +182,20 @@ export function useFocusScope(containerRef: Ref<HTMLElement | null>, options: Fo
 
   function deactivate() {
     if (typeof document === "undefined") return;
+    const operation = ++focusOperation;
+    const restoreTarget = previouslyFocused;
     remove(scope);
     document.removeEventListener("keydown", handleKeyDown);
     document.removeEventListener("focusin", handleFocusIn);
-    previouslyFocused?.focus();
     previouslyFocused = null;
+    restoreTarget?.focus({ preventScroll: true });
+    if (restoreTarget && document.activeElement !== restoreTarget) {
+      requestAnimationFrame(() => {
+        if (focusOperation === operation && restoreTarget.isConnected) {
+          restoreTarget.focus({ preventScroll: true });
+        }
+      });
+    }
   }
 
   onUnmounted(deactivate);

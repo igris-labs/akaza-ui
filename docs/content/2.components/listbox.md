@@ -285,7 +285,7 @@ Change events fire before state updates. Call `details.cancel()` to keep the cur
 | `virtualWrapper` | `akaza-listbox-virtual-wrapper` | virtual transform/height style |
 | `empty` | `akaza-listbox-empty` | - |
 | `groupLabel` | `akaza-listbox-group-label` | `role="presentation"` |
-| `separator` | `akaza-listbox-separator` | `role="separator"` |
+| `separator` | `akaza-listbox-separator` | `role="presentation"`, `aria-hidden="true"` |
 | `option` | `akaza-listbox-option` | `data-akaza-state`, `data-akaza-highlighted`, `data-akaza-disabled`, `aria-selected`, `aria-disabled` |
 | `indicator` | `akaza-listbox-indicator` | - |
 | `optionText` | `akaza-listbox-option-text` | - |

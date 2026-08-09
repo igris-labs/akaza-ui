@@ -78,6 +78,7 @@ const resolvedName = computed(() => name ?? field?.name.value);
 const isDisabled = computed(() => disabled || field?.disabled.value || false);
 const isRequired = computed(() => required || field?.required.value || false);
 const describedBy = computed(() => ariaDescribedby ?? field?.describedBy.value);
+const labelledBy = computed(() => ariaLabelledby ?? field?.labelledBy.value);
 const selectedValues = computed<ListboxValue[]>(() =>
   Array.isArray(model.value)
     ? model.value
@@ -293,10 +294,9 @@ function setActive(index: number, reason: string, event?: Event) {
   emit("highlight-change", option, change.details);
   if (change.canceled()) return;
   activeIndex.value = index;
-  if (virtualize) {
+  if (virtualize && (reason === "keyboard" || reason === "typeahead")) {
     scrollToVirtualIndex(index);
-    nextTick(() => optionRefs.value[index]?.scrollIntoView?.({ block: "nearest" }));
-  } else {
+  } else if (!virtualize && reason !== "pointer") {
     optionRefs.value[index]?.scrollIntoView?.({ block: "nearest" });
   }
 }
@@ -512,7 +512,7 @@ onBeforeUnmount(() => {
       role="listbox"
       :tabindex="isDisabled ? -1 : 0"
       :aria-label="ariaLabel"
-      :aria-labelledby="ariaLabelledby"
+      :aria-labelledby="labelledBy"
       :aria-describedby="describedBy"
       :aria-activedescendant="activeOptionId"
       :aria-multiselectable="multiple || undefined"
@@ -558,7 +558,8 @@ onBeforeUnmount(() => {
           </div>
           <div
             v-else-if="row.data.type === 'separator'"
-            role="separator"
+            role="presentation"
+            aria-hidden="true"
             :class="ui?.separator"
             class="akaza-listbox-separator"
           />

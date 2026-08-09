@@ -37,7 +37,7 @@ function highlightItem(el: HTMLElement) {
   });
   el.setAttribute("data-akaza-highlighted", "");
   el.tabIndex = 0;
-  el.focus();
+  el.focus({ preventScroll: true });
 }
 
 // ── Typeahead ────────────────────────────────────────────────────────────────
@@ -165,7 +165,7 @@ function onSubmenuKeydown(e: KeyboardEvent, item: MenuItem) {
     const trigger = panelRef.value?.querySelector<HTMLElement>(
       `[data-akaza-value="${ctx.getItemValue(item)}"]`,
     );
-    trigger?.focus();
+    trigger?.focus({ preventScroll: true });
   }
 }
 

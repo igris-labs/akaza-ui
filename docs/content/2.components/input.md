@@ -166,3 +166,7 @@ Native `data-akaza-invalid` appears after interaction or invalid submit. Control
 | `root` | `akaza-input` | `data-valid`, `data-invalid`, `data-dirty`, `data-touched`, `data-filled`, `data-focused`, `data-disabled`, and matching `data-akaza-*` attrs |
 
 Plain `class` also applies to the native input root. `ui.root` is the structured equivalent.
+
+### Keyboard
+
+`Input` preserves native keyboard behavior for its `type`, `inputmode`, autocomplete, selection, clipboard, and form submission. Akaza does not replace browser text editing shortcuts. `Enter` submits an owning form when native HTML rules permit it.

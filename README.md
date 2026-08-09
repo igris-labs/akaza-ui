@@ -86,11 +86,15 @@ No manual CSS import or component registration needed.
 | `AlertDialog`      | Confirmation dialog with alertdialog semantics                             |
 | `Avatar`           | Image with fallback slot on load error                                     |
 | `Button`           | Accessible button with disabled, loading, async click, and `as` support    |
+| `Calendar`         | Locale-aware single, multiple, and range date grid                         |
 | `Checkbox`         | Tri-state checkbox (`true`, `false`, `'indeterminate'`)                    |
 | `CheckboxGroup`    | Multi-select checkbox list with an items-based API                         |
 | `Collapsible`      | Single show/hide region with animated height                               |
 | `Combobox`         | Editable input plus listbox selection, filtering, and creation             |
 | `ContextMenu`      | Right-click menu positioned at the pointer                                 |
+| `DateField`        | Locale-ordered segmented date entry with optional Calendar                 |
+| `DateRangeField`   | Segmented start/end entry with range validation and native forms           |
+| `DateRangePicker`  | Date range entry plus collision-aware Calendar popup                       |
 | `Dialog`           | Modal dialog with focus trap, Escape, backdrop                             |
 | `Drawer`           | Side panel with slide-in animation (`top`, `right`, `bottom`, `left`)      |
 | `Editable`         | Inline text editing with preview, draft, submit, and cancel states         |
@@ -257,7 +261,7 @@ packages/
       components/  — Vue component primitives
       composables/ — internal + public composables (useOverlay)
       utils/       — focusTrap, focusable helpers
-    tests/         — component, utility, and Nuxt integration tests
+    tests/         — unit, Nuxt integration, axe, and cross-browser interaction tests
 docs/             — documentation site (Nuxt + Nuxt UI)
 ```
 

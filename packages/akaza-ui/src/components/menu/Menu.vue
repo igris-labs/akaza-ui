@@ -62,7 +62,7 @@ const menuId = useId();
 const rootRef = useTemplateRef<HTMLElement>("rootRef");
 const contentRef = useTemplateRef<HTMLElement>("contentRef");
 const panelRef = useTemplateRef<InstanceType<typeof MenuPanel>>("panelRef");
-const { register, unregister } = useDismissableLayer((event?: KeyboardEvent) => close("escape", event));
+const { layerOrder, register, unregister } = useDismissableLayer((event?: KeyboardEvent) => close("escape", event));
 
 // ── Normalize items to groups ────────────────────────────────────────────────
 
@@ -107,10 +107,14 @@ const localPositionStyle = computed(() => {
   return s;
 });
 
-const fixedPositionStyle = ref<Record<string, string>>({ top: "-9999px", left: "-9999px" });
+const fixedPositionStyle = ref<Record<string, string>>({ position: "fixed", top: "-9999px", left: "-9999px" });
 const positionStyle = computed(() =>
   teleport === false ? localPositionStyle.value : fixedPositionStyle.value,
 );
+const layeredPositionStyle = computed(() => ({
+  ...positionStyle.value,
+  "--akaza-layer-order": String(layerOrder.value),
+}));
 
 function computePosition() {
   if (typeof window === "undefined") return;
@@ -138,7 +142,7 @@ function computePosition() {
 
   top = Math.max(4, Math.min(top, window.innerHeight - content.height - 4));
   left = Math.max(4, Math.min(left, window.innerWidth - content.width - 4));
-  fixedPositionStyle.value = { top: `${top}px`, left: `${left}px` };
+  fixedPositionStyle.value = { position: "fixed", top: `${top}px`, left: `${left}px` };
 }
 
 function addPositionListeners() {
@@ -311,7 +315,7 @@ defineExpose({ open, close, toggle });
           :id="menuId"
           ref="contentRef"
           :class="ui?.content"
-          :style="positionStyle"
+          :style="layeredPositionStyle"
           :data-akaza-side="side"
           :data-akaza-align="align"
           data-akaza-state="open"
@@ -331,7 +335,7 @@ defineExpose({ open, close, toggle });
           :id="menuId"
           ref="contentRef"
           :class="ui?.content"
-          :style="positionStyle"
+          :style="layeredPositionStyle"
           :data-akaza-side="side"
           :data-akaza-align="align"
           data-akaza-state="open"
@@ -354,7 +358,7 @@ defineExpose({ open, close, toggle });
 
 .akaza-menu-content {
   position: absolute;
-  z-index: var(--akaza-z-menu, 1000);
+  z-index: var(--akaza-z-menu, calc(var(--akaza-z-layer-base, 1200) + var(--akaza-layer-order, 0) + 1));
 }
 
 /* Submenu positioning */
@@ -366,7 +370,7 @@ defineExpose({ open, close, toggle });
   position: absolute;
   left: 100%;
   top: 0;
-  z-index: var(--akaza-z-menu, 1000);
+  z-index: var(--akaza-z-menu, calc(var(--akaza-z-layer-base, 1200) + var(--akaza-layer-order, 0) + 2));
 }
 
 .akaza-menu-submenu-content[data-akaza-side="left"] {

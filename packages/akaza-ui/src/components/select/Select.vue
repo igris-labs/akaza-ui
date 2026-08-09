@@ -138,12 +138,16 @@ const { actualAlign, actualSide, style: contentStyle } = useFloatingPosition({
   matchWidth: true,
   cssVarPrefix: "akaza-select",
 });
-const { register: registerDismissable, unregister: unregisterDismissable } = useDismissableLayer(
+const { layerOrder, register: registerDismissable, unregister: unregisterDismissable } = useDismissableLayer(
   (event?: KeyboardEvent) => {
     setOpen(false, "escape", event);
     triggerRef.value?.focus();
   },
 );
+const layeredContentStyle = computed(() => ({
+  ...contentStyle.value,
+  "--akaza-layer-order": layerOrder.value,
+}));
 
 const unregister = field?.registerControl({
   dirty: isDirty,
@@ -450,7 +454,7 @@ watch(openModel, async (open) => {
   if (autocomplete) {
     await nextTick();
     if (!openModel.value) return;
-    searchRef.value?.focus();
+    searchRef.value?.focus({ preventScroll: true });
   }
 }, { immediate: true });
 watch(isDisabled, (value) => {
@@ -555,7 +559,7 @@ onBeforeUnmount(() => {
         :data-akaza-side="actualSide"
         :data-akaza-align="actualAlign"
         :class="ui?.content"
-        :style="contentStyle"
+        :style="layeredContentStyle"
         class="akaza-select-content"
       >
         <input
@@ -687,7 +691,7 @@ onBeforeUnmount(() => {
 
 .akaza-select-content {
   position: absolute;
-  z-index: var(--akaza-z-select, 1000);
+  z-index: var(--akaza-z-select, calc(var(--akaza-z-layer-base, 1200) + var(--akaza-layer-order, 0) + 1));
   min-width: 100%;
 }
 

@@ -1,5 +1,5 @@
 import { createGlobalState, onKeyStroke } from "@vueuse/core";
-import { onUnmounted } from "vue";
+import { onUnmounted, ref } from "vue";
 
 /**
  * Global ordered registry of active dismissable layers.
@@ -11,26 +11,40 @@ import { onUnmounted } from "vue";
  */
 const useLayerStack = createGlobalState(() => {
   const layers: Array<(event?: KeyboardEvent) => void> = [];
-  return layers;
+  let nextOrder = 0;
+  return {
+    layers,
+    allocateOrder() {
+      nextOrder += 2;
+      return nextOrder;
+    },
+    resetOrder() {
+      if (layers.length === 0) nextOrder = 0;
+    },
+  };
 });
 
 export function useDismissableLayer(onDismiss: (event?: KeyboardEvent) => void) {
-  const layers = useLayerStack();
+  const stack = useLayerStack();
+  const layerOrder = ref(0);
 
   function register() {
-    if (layers.includes(onDismiss)) return;
-    layers.push(onDismiss);
+    if (stack.layers.includes(onDismiss)) return;
+    layerOrder.value = stack.allocateOrder();
+    stack.layers.push(onDismiss);
   }
 
   function unregister() {
-    const idx = layers.lastIndexOf(onDismiss);
-    if (idx !== -1) layers.splice(idx, 1);
+    const idx = stack.layers.lastIndexOf(onDismiss);
+    if (idx !== -1) stack.layers.splice(idx, 1);
+    layerOrder.value = 0;
+    stack.resetOrder();
   }
 
   // Each layer listens independently — only the topmost one acts.
   onKeyStroke("Escape", (event) => {
     if (event.defaultPrevented) return;
-    const isTop = layers[layers.length - 1] === onDismiss;
+    const isTop = stack.layers[stack.layers.length - 1] === onDismiss;
     if (!isTop) return;
     event.preventDefault();
     onDismiss(event);
@@ -38,5 +52,5 @@ export function useDismissableLayer(onDismiss: (event?: KeyboardEvent) => void) 
 
   onUnmounted(unregister);
 
-  return { register, unregister };
+  return { layerOrder, register, unregister };
 }

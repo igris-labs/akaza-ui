@@ -52,6 +52,7 @@ const isDisabled = computed(() => disabled || field?.disabled.value || false);
 const isRequired = computed(() => required || field?.required.value || false);
 const isInvalid = computed(() => invalid || field?.invalid.value || nativeInvalid.value || false);
 const describedBy = computed(() => ariaDescribedby ?? field?.describedBy.value);
+const labelledBy = computed(() => ariaLabelledby ?? field?.labelledBy.value);
 const values = computed(() => toValues(model.value).map((value) => normalize(value)));
 const percentages = computed(() => values.value.map((value) => getPercentage(value)));
 const clampedValue = computed(() => isMultipleValue(model.value) ? values.value : values.value[0]!);
@@ -335,7 +336,7 @@ onBeforeUnmount(() => unregister?.());
       :ref="(el) => setThumbRef(el as HTMLElement | null, index)"
       role="slider"
       :aria-label="getThumbAriaLabel(index)"
-      :aria-labelledby="ariaLabelledby"
+      :aria-labelledby="labelledBy"
       :aria-describedby="describedBy"
       :aria-valuemin="min"
       :aria-valuemax="max"

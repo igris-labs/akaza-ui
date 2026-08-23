@@ -40,6 +40,7 @@ describe("nuxt module", () => {
     expect(mocks.addComponent).toHaveBeenCalledWith({ name: "TimeRangeField", export: "TimeRangeField", filePath: "akaza-ui" });
     expect(mocks.addComponent).toHaveBeenCalledWith({ name: "YearPicker", export: "YearPicker", filePath: "akaza-ui" });
     expect(mocks.addComponent).toHaveBeenCalledWith({ name: "YearRangePicker", export: "YearRangePicker", filePath: "akaza-ui" });
-    expect(mocks.addComponent).toHaveBeenCalledTimes(52);
+    expect(mocks.addComponent).toHaveBeenCalledWith({ name: "DataTable", export: "DataTable", filePath: "akaza-ui" });
+    expect(mocks.addComponent).toHaveBeenCalledTimes(53);
   });
 });

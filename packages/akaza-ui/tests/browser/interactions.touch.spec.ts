@@ -134,6 +134,11 @@ test("tap selects collection items and disclosures", async ({ page }) => {
   const initialPage = Number(await pagination.getAttribute("data-akaza-page"));
   await tap(page, nextPage);
   await expect(pagination).toHaveAttribute("data-akaza-page", String(initialPage + 1));
+
+  const dataTable = section(page, "data-table").getByRole("table", { name: "Workspace members" });
+  const rowSelection = dataTable.getByRole("checkbox", { name: "Select row 1" });
+  await tap(page, rowSelection);
+  await expect(rowSelection).toBeChecked();
 });
 
 test("tap operates navigation composites and long press opens context menu", async ({ browserName, page }) => {
@@ -237,4 +242,21 @@ test("touch drag updates slider and dismisses a swipe-enabled drawer", async ({ 
   await page.waitForTimeout(400);
   await dragTouch(page, drawer, 0, 140, { x: 0.5, y: 0.25 });
   await expect(drawer).toBeHidden();
+});
+
+test("touch drag resizes and reorders data table rows", async ({ browserName, page }) => {
+  if (browserName !== "chromium") return;
+
+  const table = section(page, "data-table").getByRole("table", { name: "Workspace members" });
+  const resize = table.locator('th[data-akaza-column="name"] .akaza-data-table-resize-handle');
+  const initialSize = Number(await resize.getAttribute("aria-valuenow"));
+  await dragTouch(page, resize, 32, 0);
+  expect(Number(await resize.getAttribute("aria-valuenow"))).toBeGreaterThan(initialSize);
+
+  const handles = table.locator("tbody .akaza-data-table-reorder-handle");
+  const sourceBox = await handles.nth(0).boundingBox();
+  const targetBox = await handles.nth(1).boundingBox();
+  if (!sourceBox || !targetBox) throw new Error("Data table reorder handles have no bounding boxes");
+  await dragTouch(page, handles.nth(0), 0, targetBox.y - sourceBox.y);
+  await expect(table.locator("tbody .akaza-data-table-row").first()).toHaveAttribute("data-akaza-row-key", "2");
 });

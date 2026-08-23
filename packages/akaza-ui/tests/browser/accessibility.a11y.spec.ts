@@ -77,4 +77,5 @@ test("non-interactive primitives expose their required semantics", async ({ page
   await expect(page.locator("#time-field .akaza-time-field").first()).toHaveAttribute("role", "group");
   await expect(page.locator("#time-field .akaza-time-field-segment").first()).toHaveAttribute("role", "spinbutton");
   await expect(page.locator("#time-range-field .akaza-time-range-field").first()).toHaveAttribute("role", "group");
+  await expect(page.locator("#data-table table.akaza-data-table-table").first()).toHaveAccessibleName("Workspace members");
 });

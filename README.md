@@ -92,6 +92,7 @@ No manual CSS import or component registration needed.
 | `Collapsible`      | Single show/hide region with animated height                               |
 | `Combobox`         | Editable input plus listbox selection, filtering, and creation             |
 | `ContextMenu`      | Right-click menu positioned at the pointer                                 |
+| `DataTable`        | Typed semantic table with custom cells, sorting, filtering, and selection  |
 | `DateField`        | Locale-ordered segmented date entry with optional Calendar                 |
 | `DateRangeField`   | Segmented start/end entry with range validation and native forms           |
 | `DateRangePicker`  | Date range entry plus collision-aware Calendar popup                       |

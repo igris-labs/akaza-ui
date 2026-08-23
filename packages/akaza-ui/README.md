@@ -59,7 +59,7 @@ No manual CSS import or component registration needed.
 
 ## Components
 
-`Accordion` · `AlertDialog` · `Avatar` · `Button` · `Calendar` · `Checkbox` · `CheckboxGroup` · `Collapsible` · `Combobox` · `ContextMenu` · `DateField` · `DateRangeField` · `DateRangePicker` · `Dialog` · `Drawer` · `Editable` · `Field` · `Fieldset` · `Form` · `HoverPreviewCard` · `Input` · `Listbox` · `Menu` · `Menubar` · `Meter` · `NavigationMenu` · `NumberField` · `OverlayProvider` · `Pagination` · `PinInput` · `Popover` · `Progress` · `RadioGroup` · `Rating` · `Select` · `Separator` · `Slider` · `Stepper` · `Switch` · `Tabs` · `TagsInput` · `Toast` · `Toggle` · `ToggleGroup` · `Toolbar` · `Tooltip`
+`Accordion` · `AlertDialog` · `Avatar` · `Button` · `Calendar` · `Checkbox` · `CheckboxGroup` · `Collapsible` · `Combobox` · `ContextMenu` · `DataTable` · `DateField` · `DateRangeField` · `DateRangePicker` · `Dialog` · `Drawer` · `Editable` · `Field` · `Fieldset` · `Form` · `HoverPreviewCard` · `Input` · `Listbox` · `Menu` · `Menubar` · `Meter` · `NavigationMenu` · `NumberField` · `OverlayProvider` · `Pagination` · `PinInput` · `Popover` · `Progress` · `RadioGroup` · `Rating` · `Select` · `Separator` · `Slider` · `Stepper` · `Switch` · `Tabs` · `TagsInput` · `Toast` · `Toggle` · `ToggleGroup` · `Toolbar` · `Tooltip`
 
 ## Usage
 

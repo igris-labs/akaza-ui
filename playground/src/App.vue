@@ -24,6 +24,7 @@ import RatingSection from "./sections/rating/RatingSection.vue";
 import StepperSection from "./sections/stepper/StepperSection.vue";
 import NumberFieldSection from "./sections/number-field/NumberFieldSection.vue";
 import CalendarSection from "./sections/calendar/CalendarSection.vue";
+import DataTableSection from "./sections/data-table/DataTableSection.vue";
 import DateFieldSection from "./sections/date-field/DateFieldSection.vue";
 import DateRangeFieldSection from "./sections/date-range-field/DateRangeFieldSection.vue";
 import DateRangePickerSection from "./sections/date-range-picker/DateRangePickerSection.vue";
@@ -66,7 +67,7 @@ function toggleTheme() {
 
 const sections = [
   { id: "disclosure", label: "Disclosure", items: ["accordion", "collapsible"] },
-  { id: "display", label: "Display", items: ["avatar", "meter", "progress", "separator", "toast"] },
+  { id: "display", label: "Display", items: ["avatar", "data-table", "meter", "progress", "separator", "toast"] },
   {
     id: "inputs",
     label: "Inputs",
@@ -124,6 +125,7 @@ const pageSections = [
   { id: "collapsible", component: CollapsibleSection },
   { id: "combobox", component: ComboboxSection },
   { id: "context-menu", component: ContextMenuSection },
+  { id: "data-table", component: DataTableSection },
   { id: "date-field", component: DateFieldSection },
   { id: "date-range-field", component: DateRangeFieldSection },
   { id: "date-range-picker", component: DateRangePickerSection },

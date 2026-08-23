@@ -73,6 +73,53 @@ test("virtualized listbox preserves manual pointer scrolling", async ({ page }) 
   expect(await listbox.evaluate((element) => element.scrollTop)).toBeLessThan(bottom - 100);
 });
 
+test("data table composes sorting, filtering, selection, pagination, and expansion", async ({ page }) => {
+  const dataTableSection = section(page, "data-table");
+  const table = dataTableSection.getByRole("table", { name: "Workspace members" });
+  await expect(table).toBeVisible();
+  await expect(table.locator("tbody .akaza-data-table-row")).toHaveCount(4);
+
+  const selectAda = table.getByRole("checkbox", { name: "Select row 1" });
+  await selectAda.click();
+  await expect(selectAda).toBeChecked();
+  await expect(table.locator('tbody tr[data-akaza-row-key="1"]')).toHaveAttribute("data-akaza-selected", "true");
+
+  const memberSort = table.getByRole("button", { name: "Sort Member ascending" });
+  await memberSort.click();
+  await expect(table.locator('th[data-akaza-column="name"]')).toHaveAttribute("aria-sort", "ascending");
+
+  const search = dataTableSection.getByRole("searchbox", { name: "Search members" });
+  await search.fill("Hamilton");
+  await expect(table.locator("tbody .akaza-data-table-row")).toHaveCount(1);
+  await expect(table.locator('td[data-akaza-column="name"]')).toContainText("Margaret Hamilton");
+  await search.fill("");
+
+  await dataTableSection.getByRole("button", { name: "Hide role" }).click();
+  await expect(table.locator('th[data-akaza-column="role"]')).toHaveCount(0);
+
+  const resize = table.locator('th[data-akaza-column="name"] .akaza-data-table-resize-handle');
+  const width = Number(await resize.getAttribute("aria-valuenow"));
+  const nameHeader = table.locator('th[data-akaza-column="name"]');
+  const nameWidth = await nameHeader.evaluate(element => element.getBoundingClientRect().width);
+  const tableWidth = await table.evaluate(element => element.getBoundingClientRect().width);
+  await resize.focus();
+  await resize.press("ArrowRight");
+  await expect(resize).toHaveAttribute("aria-valuenow", String(width + 16));
+  await expect.poll(() => nameHeader.evaluate(element => element.getBoundingClientRect().width)).toBeCloseTo(nameWidth + 16, 0);
+  await expect.poll(() => table.evaluate(element => element.getBoundingClientRect().width)).toBeCloseTo(tableWidth + 16, 0);
+  await expect(nameHeader).toHaveCSS("z-index", "3");
+  await expect(table.locator('tbody [data-akaza-column="name"]').first()).toHaveCSS("z-index", "1");
+
+  const next = dataTableSection.locator(".akaza-data-table-pagination .akaza-pagination-next");
+  await next.click();
+  await expect(table.locator('tbody tr[data-akaza-row-key="8"]')).toBeVisible();
+
+  const groupedTable = dataTableSection.getByRole("table").nth(1);
+  await expect(groupedTable.locator('th[data-akaza-column="identity"]')).toHaveAttribute("scope", "colgroup");
+  await groupedTable.getByRole("button", { name: "Expand row 1" }).click();
+  await expect(groupedTable.locator(".akaza-data-table-expanded-row")).toContainText("nested assignments");
+});
+
 test("collapsible, accordion, tabs, and stepper expose keyboard state", async ({ page }) => {
   const collapsible = section(page, "collapsible").locator(".akaza-collapsible").first();
   const collapsibleTrigger = collapsible.locator(".akaza-collapsible-trigger");

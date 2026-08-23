@@ -32,6 +32,7 @@
 | Checkbox Group               | Manages multiple checkboxes with items API and form submission             |
 | Select                       | `role="listbox"`, keyboard nav, typeahead, autocomplete filtering          |
 | Listbox                      | Standalone single/multiple selection, filtering, range select, virtualization |
+| Data Table                   | Native semantic table with typed columns, custom cells, sorting, filtering, selection, pagination, expansion, and layout state |
 | Combobox                     | Input + listbox, `aria-autocomplete`, `aria-activedescendant`              |
 | Pin / OTP Input              | Multi-cell fixed-length input, paste distribution, OTP and form metadata   |
 | Tags Input                   | Tokenized values, keyboard editing, validation, paste, and form submission |

@@ -11,6 +11,7 @@ const COMPONENTS: Array<{ name: string; export: string }> = [
   { name: "Collapsible", export: "Collapsible" },
   { name: "Combobox", export: "Combobox" },
   { name: "ContextMenu", export: "ContextMenu" },
+  { name: "DataTable", export: "DataTable" },
   { name: "DateField", export: "DateField" },
   { name: "DateRangeField", export: "DateRangeField" },
   { name: "DateRangePicker", export: "DateRangePicker" },

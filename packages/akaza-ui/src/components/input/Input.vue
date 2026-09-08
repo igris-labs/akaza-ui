@@ -97,6 +97,7 @@ function onInput(event: Event) {
     },
   });
   if (!canceled) model.value = value;
+  else (event.target as HTMLInputElement).value = model.value;
   updateValidity();
 }
 
@@ -116,7 +117,9 @@ function onInvalid() {
   updateValidity();
 }
 
-function onFormReset() {
+async function onFormReset(event: Event) {
+  await nextTick();
+  if (event.defaultPrevented) return;
   model.value = initialValue;
   focused.value = false;
   touched.value = false;

@@ -155,6 +155,12 @@ Read-only segments stay focusable for inspection but cannot change. Disabled seg
 <DateField v-model="date" disabled />
 ```
 
+## Reactive validation
+
+Changing min/max, required state, unavailable-date predicates, or the controlled value updates native custom validity without requiring another keystroke. Error presentation still follows interaction/submission state. Native reset restores the initial segments unless canceled.
+
+The optional calendar registers as a logical popup branch when used inside an Akaza modal, including when teleported to body.
+
 ## API Reference
 
 ### Model

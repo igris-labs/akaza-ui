@@ -124,6 +124,7 @@ describe("date field", () => {
     await wrapper.get("[data-akaza-segment='month']").setValue("08");
     (wrapper.get("form").element as HTMLFormElement).reset();
     await nextTick();
+    await nextTick();
     expect(wrapper.get("[data-akaza-segment='month']").element.value).toBe("");
     wrapper.unmount();
   });

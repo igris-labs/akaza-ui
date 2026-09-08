@@ -5,6 +5,7 @@ import type { MenuItem } from "../menu";
 import { onClickOutside } from "@vueuse/core";
 import { computed, nextTick, onUnmounted, provide, ref, useId, useSlots, useTemplateRef, watch } from "vue";
 import { useDismissableLayer } from "../../utils/dismissableLayer";
+import { useFocusBranch } from "../../utils/focusScope";
 import { MENU_CONTEXT_KEY } from "../menu/context";
 import MenuPanel from "../menu/MenuPanel.vue";
 
@@ -30,6 +31,7 @@ const emit = defineEmits<{
 
 const model = defineModel<boolean>({ default: false });
 const contentRef = useTemplateRef<HTMLElement>("contentRef");
+useFocusBranch(contentRef);
 const panelRef = useTemplateRef<InstanceType<typeof MenuPanel>>("panelRef");
 const menuId = `akaza-context-menu-${useId()}`;
 const point = ref({ x: 0, y: 0 });
@@ -206,9 +208,9 @@ const slots = useSlots();
 
 provide(MENU_CONTEXT_KEY, {
   dir: "ltr",
-  ui,
-  radioValues,
-  closeOnSelect,
+  get ui() { return ui; },
+  get radioValues() { return radioValues; },
+  get closeOnSelect() { return closeOnSelect; },
   closeMenu: close,
   onItemSelect,
   onCheckboxSelect,
@@ -288,37 +290,39 @@ defineExpose({ openAt, close });
 </template>
 
 <style>
-.akaza-context-menu-root {
-  display: contents;
-}
+@layer akaza-reset {
+  .akaza-context-menu-root {
+    display: contents;
+  }
 
-.akaza-context-menu-content {
-  z-index: var(--akaza-z-context-menu, 1000);
-}
+  .akaza-context-menu-content {
+    z-index: var(--akaza-z-context-menu, 1000);
+  }
 
-.akaza-context-menu-enter-active,
-.akaza-context-menu-leave-active {
-  transition:
-    opacity var(--akaza-context-menu-duration, 120ms) ease-out,
-    scale var(--akaza-context-menu-duration, 120ms) ease-out,
-    translate var(--akaza-context-menu-duration, 120ms) ease-out;
-}
-
-.akaza-context-menu-enter-from,
-.akaza-context-menu-leave-to {
-  opacity: 0;
-  scale: 0.98;
-}
-
-.akaza-context-menu-enter-from[data-akaza-side="right"],
-.akaza-context-menu-leave-to[data-akaza-side="right"] { translate: -4px 0; }
-.akaza-context-menu-enter-from[data-akaza-side="left"],
-.akaza-context-menu-leave-to[data-akaza-side="left"] { translate: 4px 0; }
-
-@media (prefers-reduced-motion: reduce) {
   .akaza-context-menu-enter-active,
   .akaza-context-menu-leave-active {
-    transition-duration: 0.01ms;
+    transition:
+      opacity var(--akaza-context-menu-duration, 120ms) ease-out,
+      scale var(--akaza-context-menu-duration, 120ms) ease-out,
+      translate var(--akaza-context-menu-duration, 120ms) ease-out;
+  }
+
+  .akaza-context-menu-enter-from,
+  .akaza-context-menu-leave-to {
+    opacity: 0;
+    scale: 0.98;
+  }
+
+  .akaza-context-menu-enter-from[data-akaza-side="right"],
+  .akaza-context-menu-leave-to[data-akaza-side="right"] { translate: -4px 0; }
+  .akaza-context-menu-enter-from[data-akaza-side="left"],
+  .akaza-context-menu-leave-to[data-akaza-side="left"] { translate: 4px 0; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .akaza-context-menu-enter-active,
+    .akaza-context-menu-leave-active {
+      transition-duration: 0.01ms;
+    }
   }
 }
 </style>

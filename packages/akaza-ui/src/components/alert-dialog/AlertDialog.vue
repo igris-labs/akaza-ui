@@ -172,40 +172,42 @@ defineExpose({ open, close, toggle, titleId, descriptionId });
 </template>
 
 <style>
-.akaza-alert-dialog-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: var(--akaza-z-overlay, calc(var(--akaza-z-layer-base, 1200) + var(--akaza-layer-order, 0)));
-}
+@layer akaza-reset {
+  .akaza-alert-dialog-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: var(--akaza-z-overlay, calc(var(--akaza-z-layer-base, 1200) + var(--akaza-layer-order, 0)));
+  }
 
-.akaza-alert-dialog-content {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  translate: -50% -50%;
-  z-index: var(--akaza-z-overlay-content, calc(var(--akaza-z-layer-base, 1200) + var(--akaza-layer-order, 0) + 1));
-}
+  .akaza-alert-dialog-content {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    translate: -50% -50%;
+    z-index: var(--akaza-z-overlay-content, calc(var(--akaza-z-layer-base, 1200) + var(--akaza-layer-order, 0) + 1));
+  }
 
-.akaza-alert-dialog-overlay-enter-active,
-.akaza-alert-dialog-overlay-leave-active {
-  transition: opacity var(--akaza-dialog-duration, 150ms) ease-out;
-}
+  .akaza-alert-dialog-overlay-enter-active,
+  .akaza-alert-dialog-overlay-leave-active {
+    transition: opacity var(--akaza-dialog-duration, 150ms) ease-out;
+  }
 
-.akaza-alert-dialog-overlay-enter-from,
-.akaza-alert-dialog-overlay-leave-to {
-  opacity: 0;
-}
+  .akaza-alert-dialog-overlay-enter-from,
+  .akaza-alert-dialog-overlay-leave-to {
+    opacity: 0;
+  }
 
-.akaza-alert-dialog-enter-active,
-.akaza-alert-dialog-leave-active {
-  transition:
-    opacity var(--akaza-dialog-duration, 150ms) ease-out,
-    transform var(--akaza-dialog-duration, 150ms) ease-out;
-}
+  .akaza-alert-dialog-enter-active,
+  .akaza-alert-dialog-leave-active {
+    transition:
+      opacity var(--akaza-dialog-duration, 150ms) ease-out,
+      transform var(--akaza-dialog-duration, 150ms) ease-out;
+  }
 
-.akaza-alert-dialog-enter-from,
-.akaza-alert-dialog-leave-to {
-  opacity: 0;
-  transform: scale(0.95);
+  .akaza-alert-dialog-enter-from,
+  .akaza-alert-dialog-leave-to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
 }
 </style>

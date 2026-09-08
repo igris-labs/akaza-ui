@@ -4,6 +4,7 @@ import type { ListboxModelValue, ListboxOption, ListboxProps, ListboxValue } fro
 import type { AkazaChangeEventDetails } from "../../types";
 import { useVirtualList } from "@vueuse/core";
 import { computed, inject, nextTick, onBeforeUnmount, onMounted, onUpdated, ref, useId } from "vue";
+import { useFormReset } from "../../utils/useFormReset";
 import { fieldContextKey } from "../field/context";
 
 const {
@@ -98,11 +99,6 @@ const visibleOptions = computed(() => {
 });
 const hasSelectableOption = computed(() => visibleOptions.value.some(isSelectableOption));
 const activeOption = computed(() => activeIndex.value >= 0 ? visibleOptions.value[activeIndex.value] : undefined);
-const activeOptionId = computed(() =>
-  activeOption.value && isSelectableOption(activeOption.value)
-    ? `${listboxId.value}-option-${activeIndex.value}`
-    : undefined,
-);
 const state = computed(() => isFilled.value ? "selected" : "empty");
 
 const {
@@ -117,6 +113,11 @@ const {
 const renderedRows = computed(() => virtualize
   ? virtualRows.value
   : visibleOptions.value.map((data, index) => ({ data, index })));
+const activeOptionId = computed(() =>
+  activeOption.value && isSelectableOption(activeOption.value) && renderedRows.value.some(row => row.index === activeIndex.value)
+    ? `${listboxId.value}-option-${activeIndex.value}`
+    : undefined,
+);
 const virtualContainerStyle = computed(() => virtualize
   ? { height: `var(--akaza-listbox-virtual-height, ${virtualHeight}px)` }
   : undefined);
@@ -187,6 +188,15 @@ function getOptionKey(option: ListboxOption, index: number): string {
   if (!isSelectableOption(option)) return `${option.type}:${getLabel(option)}:${index}`;
   return `${getFormValue(getValue(option))}:${index}`;
 }
+
+useFormReset(() => hiddenRef.value, () => {
+  model.value = Array.isArray(initialValue) ? [...initialValue] : initialValue;
+  touched.value = false;
+  validationActive.value = false;
+  nativeInvalid.value = false;
+  activeIndex.value = -1;
+  selectionAnchor.value = -1;
+});
 
 function updateValidity(reveal = validationActive.value) {
   const input = hiddenRef.value;
@@ -404,6 +414,7 @@ function onFocusIn(event: FocusEvent) {
     if (change.canceled()) return;
     activeIndex.value = index;
     selectionAnchor.value = activeIndex.value;
+    if (virtualize && index >= 0) scrollToVirtualIndex(index);
   }
 }
 

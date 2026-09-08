@@ -2,7 +2,8 @@
 import type { ComponentPublicInstance } from "vue";
 import type { PinInputProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
-import { computed, inject, nextTick, onBeforeUnmount, onMounted, onUpdated, ref, useId } from "vue";
+import { computed, inject, nextTick, onBeforeUnmount, onMounted, onUpdated, ref, useId, watch } from "vue";
+import { useFormReset } from "../../utils/useFormReset";
 import { fieldContextKey } from "../field/context";
 
 const {
@@ -49,14 +50,20 @@ const validity = ref<ValidityState | null>(null);
 const initialValue = model.value;
 const safeLength = computed(() => Math.max(1, Math.floor(length)));
 const normalizedValue = computed(() => Array.from(model.value).slice(0, safeLength.value).join(""));
-const cells = computed(() => Array.from({ length: safeLength.value }, (_, index) => Array.from(normalizedValue.value)[index] ?? ""));
+const draftCells = ref(Array.from(model.value));
+let acceptedValue = model.value;
+watch(model, value => {
+  if (value !== acceptedValue) draftCells.value = Array.from(value);
+  acceptedValue = value;
+}, { flush: "sync" });
+const cells = computed(() => Array.from({ length: safeLength.value }, (_, index) => draftCells.value[index] ?? ""));
 const resolvedId = computed(() => id ?? field?.inputId.value ?? `akaza-pin-input-${autoId}`);
 const resolvedName = computed(() => name ?? field?.name.value);
 const isDisabled = computed(() => disabled || field?.disabled.value || false);
 const isRequired = computed(() => required || field?.required.value || false);
 const describedBy = computed(() => ariaDescribedby ?? field?.describedBy.value);
 const isFilled = computed(() => normalizedValue.value.length > 0);
-const isComplete = computed(() => normalizedValue.value.length === safeLength.value);
+const isComplete = computed(() => cells.value.every(Boolean));
 const isDirty = computed(() => model.value !== initialValue);
 const isInvalid = computed(() => invalid || field?.invalid.value || nativeInvalid.value || false);
 const state = computed(() => isComplete.value ? "complete" : "incomplete");
@@ -69,6 +76,16 @@ const unregister = field?.registerControl({
   invalid: nativeInvalid,
   validationMessage,
   validity,
+});
+
+useFormReset(() => hiddenRef.value, () => {
+  model.value = initialValue;
+  touched.value = false;
+  validationActive.value = false;
+  nativeInvalid.value = false;
+  draftCells.value = Array.from(initialValue);
+  acceptedValue = initialValue;
+  activeIndex.value = -1;
 });
 
 function updateValidity(reveal = validationActive.value) {
@@ -103,18 +120,20 @@ function normalizeCharacters(value: string): string[] {
   });
 }
 
-function commitValue(value: string, reason: string, event?: Event): boolean {
+function commitValue(value: string | string[], reason: string, event?: Event): boolean {
   if (isDisabled.value || readOnly) return false;
-  const next = normalizeCharacters(value).slice(0, safeLength.value).join("");
-  if (next === normalizedValue.value) return true;
+  const nextCells = (Array.isArray(value) ? value : normalizeCharacters(value)).slice(0, safeLength.value);
+  const next = nextCells.join("");
   const change = createDetails(reason, event);
   emit("value-change", next, change.details);
   if (change.canceled()) return false;
   validationActive.value = true;
+  draftCells.value = nextCells;
+  acceptedValue = next;
   model.value = next;
   nextTick(() => {
     updateValidity();
-    if (next.length === safeLength.value) {
+    if (isComplete.value) {
       const completeDetails = createDetails("complete", event).details;
       emit("complete", next, completeDetails);
     }
@@ -135,7 +154,7 @@ function setInputRef(element: Element | ComponentPublicInstance | null, index: n
 function replaceCell(index: number, value: string, reason: string, event?: Event) {
   const next = [...cells.value];
   next[index] = value;
-  return commitValue(next.join(""), reason, event);
+  return commitValue(next, reason, event);
 }
 
 function fillFrom(index: number, rawValue: string, reason: string, event?: Event) {
@@ -151,7 +170,7 @@ function fillFrom(index: number, rawValue: string, reason: string, event?: Event
     next[cursor] = character;
     cursor++;
   }
-  if (commitValue(next.join(""), reason, event)) {
+  if (commitValue(next, reason, event)) {
     nextTick(() => focusInput(Math.min(cursor, safeLength.value - 1)));
   }
 }

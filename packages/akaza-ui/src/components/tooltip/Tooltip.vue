@@ -3,6 +3,7 @@ import type { TooltipDirection, TooltipProps } from ".";
 import { computed, nextTick, onUnmounted, ref, useId, useTemplateRef, watch } from "vue";
 import { useTooltip } from "../../composables/tooltip";
 import { useDismissableLayer } from "../../utils/dismissableLayer";
+import { useFocusBranch } from "../../utils/focusScope";
 
 const {
   direction = "top",
@@ -16,7 +17,10 @@ const {
 } = defineProps<TooltipProps>();
 
 const model = defineModel<boolean>({ default: false });
-const { open: _open, close: _close } = useTooltip(model, { delayDuration, closeDelay });
+const { open: _open, close: _close } = useTooltip(model, {
+  get delayDuration() { return delayDuration; },
+  get closeDelay() { return closeDelay; },
+});
 
 function open() { if (!disabled) _open(); }
 function close() { if (!disabled || model.value) _close(); }
@@ -24,6 +28,7 @@ function close() { if (!disabled || model.value) _close(); }
 const tooltipId = useId();
 const triggerRef = useTemplateRef<HTMLElement>("triggerRef");
 const contentRef = useTemplateRef<HTMLElement>("contentRef");
+useFocusBranch(contentRef);
 
 const GAP = 8;
 const posStyle = ref({ top: "-9999px", left: "-9999px" });
@@ -88,16 +93,20 @@ function computePosition() {
 
 const posReady = ref(false);
 let posCleanup: (() => void) | null = null;
-const { register, unregister } = useDismissableLayer((event?: KeyboardEvent) => {
+const { layerOrder, register, unregister } = useDismissableLayer((event?: KeyboardEvent) => {
   event?.preventDefault();
-  close();
-  triggerRef.value?.focus();
+  _close();
+  model.value = false;
 });
 
-watch(model, async (val) => {
+watch(model, async (val, _old, cleanup) => {
+  if (typeof window === "undefined") return;
+  let canceled = false;
+  cleanup(() => { canceled = true; });
   if (val) {
     posReady.value = false;
     await nextTick();
+    if (canceled) return;
     register();
     computePosition();
     posReady.value = true;
@@ -162,7 +171,7 @@ const triggerProps = computed(() => ({
           :class="ui?.content"
           data-akaza-state="open"
           :data-akaza-side="actualDirection"
-          :style="[posStyle, posReady ? {} : { visibility: 'hidden' }]"
+          :style="[posStyle, { '--akaza-layer-order': layerOrder }, posReady ? {} : { visibility: 'hidden' }]"
           class="akaza-tooltip-content"
           @mouseenter="open"
           @mouseleave="close"
@@ -181,66 +190,76 @@ const triggerProps = computed(() => ({
 </template>
 
 <style>
-.akaza-tooltip-trigger {
-  display: inline-block;
-}
+@layer akaza-reset {
+  .akaza-tooltip-trigger {
+    display: inline-block;
+  }
 
-.akaza-tooltip-content {
-  position: fixed;
-  z-index: var(--akaza-z-tooltip, 1100);
-}
+  .akaza-tooltip-content {
+    position: fixed;
+    z-index: var(--akaza-z-tooltip, calc(var(--akaza-z-layer-base, 1200) + var(--akaza-layer-order, 0) + 1));
+  }
 
-.akaza-tooltip-arrow {
-  position: absolute;
-  width: 8px;
-  height: 8px;
-  background: inherit;
-  border: inherit;
-  transform: rotate(45deg);
-}
+  /* Transparent hit area bridges the positioning gap during hover handoff. */
+  .akaza-tooltip-content::before {
+    content: "";
+    position: absolute;
+    inset: -8px;
+    z-index: -1;
+  }
 
-.akaza-tooltip-content[data-akaza-side="top"] .akaza-tooltip-arrow {
-  bottom: -4px;
-  left: 50%;
-  margin-left: -4px;
-  border-top: none;
-  border-left: none;
-}
+  .akaza-tooltip-arrow {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: inherit;
+    border: inherit;
+    transform: rotate(45deg);
+  }
 
-.akaza-tooltip-content[data-akaza-side="bottom"] .akaza-tooltip-arrow {
-  top: -4px;
-  left: 50%;
-  margin-left: -4px;
-  border-bottom: none;
-  border-right: none;
-}
+  .akaza-tooltip-content[data-akaza-side="top"] .akaza-tooltip-arrow {
+    bottom: -4px;
+    left: 50%;
+    margin-left: -4px;
+    border-top: none;
+    border-left: none;
+  }
 
-.akaza-tooltip-content[data-akaza-side="left"] .akaza-tooltip-arrow {
-  right: -4px;
-  top: 50%;
-  margin-top: -4px;
-  border-top: none;
-  border-right: none;
-}
+  .akaza-tooltip-content[data-akaza-side="bottom"] .akaza-tooltip-arrow {
+    top: -4px;
+    left: 50%;
+    margin-left: -4px;
+    border-bottom: none;
+    border-right: none;
+  }
 
-.akaza-tooltip-content[data-akaza-side="right"] .akaza-tooltip-arrow {
-  left: -4px;
-  top: 50%;
-  margin-top: -4px;
-  border-bottom: none;
-  border-left: none;
-}
+  .akaza-tooltip-content[data-akaza-side="left"] .akaza-tooltip-arrow {
+    right: -4px;
+    top: 50%;
+    margin-top: -4px;
+    border-top: none;
+    border-right: none;
+  }
 
-.akaza-tooltip-enter-active,
-.akaza-tooltip-leave-active {
-  transition:
-    opacity 0.075s ease-out,
-    transform 0.075s ease-out;
-}
+  .akaza-tooltip-content[data-akaza-side="right"] .akaza-tooltip-arrow {
+    left: -4px;
+    top: 50%;
+    margin-top: -4px;
+    border-bottom: none;
+    border-left: none;
+  }
 
-.akaza-tooltip-enter-from,
-.akaza-tooltip-leave-to {
-  opacity: 0;
-  transform: scale(0.93);
+  .akaza-tooltip-enter-active,
+  .akaza-tooltip-leave-active {
+    transition:
+      opacity 0.075s ease-out,
+      transform 0.075s ease-out;
+  }
+
+  .akaza-tooltip-enter-from,
+  .akaza-tooltip-leave-to {
+    opacity: 0;
+    transform: scale(0.93);
+  }
 }
 </style>

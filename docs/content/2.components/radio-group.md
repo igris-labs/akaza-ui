@@ -103,6 +103,12 @@ Use `getItemDisabled` to disable individual options programmatically.
 </template>
 ```
 
+## Field and form validation
+
+RadioGroup inherits Field name, required/disabled state, label, description, and validation feedback. A separate unnamed validation proxy allows required validation even when no serialization name is provided. Invalid submission focuses the selected or first enabled visible radio. Per-option native inputs still submit the selected named value.
+
+Native reset restores the initial selection unless canceled. Unselected required groups reveal errors after interaction or submission, not on initial render.
+
 ## API Reference
 
 ### Props
@@ -155,7 +161,7 @@ Use `getItemDisabled` to disable individual options programmatically.
 
 | UI key | CSS class | Data attrs |
 |--------|-----------|------------|
-| `root` | `akaza-radio-group` | `data-akaza-orientation`, `data-akaza-disabled` |
+| `root` | `akaza-radio-group` | `data-akaza-orientation`, `data-akaza-disabled`, `data-akaza-invalid`, `data-akaza-dirty`, `data-akaza-touched`, `data-akaza-focused`, `data-akaza-filled` |
 | `legend` | `akaza-radio-group-legend` | — |
 | `input` | `akaza-radio-group-input` | — |
 | `item` | `akaza-radio-group-item` | `data-akaza-state`, `data-akaza-disabled` |

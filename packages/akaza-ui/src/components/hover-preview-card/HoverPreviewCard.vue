@@ -5,6 +5,7 @@ import type { AkazaChangeEventDetails } from "../../types";
 import { onClickOutside } from "@vueuse/core";
 import { computed, nextTick, onUnmounted, ref, useId, useTemplateRef, watch } from "vue";
 import { useDismissableLayer } from "../../utils/dismissableLayer";
+import { useFocusBranch } from "../../utils/focusScope";
 
 const {
   side = "bottom",
@@ -30,6 +31,7 @@ const cardId = useId();
 const rootRef = useTemplateRef<HTMLElement>("rootRef");
 const triggerRef = useTemplateRef<HTMLElement>("triggerRef");
 const contentRef = useTemplateRef<HTMLElement>("contentRef");
+useFocusBranch(contentRef);
 const posStyle = ref<Record<string, string>>({ top: "-9999px", left: "-9999px" });
 const arrowStyle = ref<Record<string, string>>({});
 const actualSide = ref<HoverPreviewCardSide>(side);
@@ -37,7 +39,7 @@ let openTimer: number | undefined;
 let closeTimer: number | undefined;
 let lastPointerType = "mouse";
 let restoringFocus = false;
-const { register, unregister } = useDismissableLayer((event?: KeyboardEvent) => {
+const { layerOrder, register, unregister } = useDismissableLayer((event?: KeyboardEvent) => {
   event?.preventDefault();
   closeImmediately("escape", event);
   nextTick(() => {
@@ -274,7 +276,7 @@ const triggerProps = computed(() => ({
           :id="cardId"
           ref="contentRef"
           :class="ui?.content"
-          :style="contentStyle"
+          :style="[contentStyle, { '--akaza-layer-order': layerOrder }]"
           :role="ariaLabel ? 'dialog' : undefined"
           :aria-label="ariaLabel"
           :aria-hidden="!model || undefined"
@@ -303,56 +305,58 @@ const triggerProps = computed(() => ({
 </template>
 
 <style>
-.akaza-hover-preview-card-root {
-  position: relative;
-  display: inline-block;
-}
+@layer akaza-reset {
+  .akaza-hover-preview-card-root {
+    position: relative;
+    display: inline-block;
+  }
 
-.akaza-hover-preview-card-trigger {
-  display: inline-block;
-}
+  .akaza-hover-preview-card-trigger {
+    display: inline-block;
+  }
 
-.akaza-hover-preview-card-content {
-  position: fixed;
-  z-index: var(--akaza-z-hover-preview-card, 1000);
-}
+  .akaza-hover-preview-card-content {
+    position: fixed;
+    z-index: var(--akaza-z-hover-preview-card, calc(var(--akaza-z-layer-base, 1200) + var(--akaza-layer-order, 0) + 1));
+  }
 
-.akaza-hover-preview-card-arrow {
-  position: absolute;
-  width: 8px;
-  height: 8px;
-  background: inherit;
-  border: inherit;
-  transform: rotate(45deg);
-}
+  .akaza-hover-preview-card-arrow {
+    position: absolute;
+    width: 8px;
+    height: 8px;
+    background: inherit;
+    border: inherit;
+    transform: rotate(45deg);
+  }
 
-.akaza-hover-preview-card-enter-active,
-.akaza-hover-preview-card-leave-active {
-  transition:
-    opacity var(--akaza-hover-preview-card-duration, 120ms) ease-out,
-    scale var(--akaza-hover-preview-card-duration, 120ms) ease-out,
-    translate var(--akaza-hover-preview-card-duration, 120ms) ease-out;
-}
-
-.akaza-hover-preview-card-enter-from,
-.akaza-hover-preview-card-leave-to {
-  opacity: 0;
-  scale: 0.98;
-}
-
-.akaza-hover-preview-card-enter-from[data-akaza-side="bottom"],
-.akaza-hover-preview-card-leave-to[data-akaza-side="bottom"] { translate: 0 -4px; }
-.akaza-hover-preview-card-enter-from[data-akaza-side="top"],
-.akaza-hover-preview-card-leave-to[data-akaza-side="top"] { translate: 0 4px; }
-.akaza-hover-preview-card-enter-from[data-akaza-side="right"],
-.akaza-hover-preview-card-leave-to[data-akaza-side="right"] { translate: -4px 0; }
-.akaza-hover-preview-card-enter-from[data-akaza-side="left"],
-.akaza-hover-preview-card-leave-to[data-akaza-side="left"] { translate: 4px 0; }
-
-@media (prefers-reduced-motion: reduce) {
   .akaza-hover-preview-card-enter-active,
   .akaza-hover-preview-card-leave-active {
-    transition-duration: 0.01ms;
+    transition:
+      opacity var(--akaza-hover-preview-card-duration, 120ms) ease-out,
+      scale var(--akaza-hover-preview-card-duration, 120ms) ease-out,
+      translate var(--akaza-hover-preview-card-duration, 120ms) ease-out;
+  }
+
+  .akaza-hover-preview-card-enter-from,
+  .akaza-hover-preview-card-leave-to {
+    opacity: 0;
+    scale: 0.98;
+  }
+
+  .akaza-hover-preview-card-enter-from[data-akaza-side="bottom"],
+  .akaza-hover-preview-card-leave-to[data-akaza-side="bottom"] { translate: 0 -4px; }
+  .akaza-hover-preview-card-enter-from[data-akaza-side="top"],
+  .akaza-hover-preview-card-leave-to[data-akaza-side="top"] { translate: 0 4px; }
+  .akaza-hover-preview-card-enter-from[data-akaza-side="right"],
+  .akaza-hover-preview-card-leave-to[data-akaza-side="right"] { translate: -4px 0; }
+  .akaza-hover-preview-card-enter-from[data-akaza-side="left"],
+  .akaza-hover-preview-card-leave-to[data-akaza-side="left"] { translate: 4px 0; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .akaza-hover-preview-card-enter-active,
+    .akaza-hover-preview-card-leave-active {
+      transition-duration: 0.01ms;
+    }
   }
 }
 </style>

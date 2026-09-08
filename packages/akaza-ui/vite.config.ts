@@ -9,7 +9,6 @@ export default defineConfig({
     dts({
       tsconfigPath: "./tsconfig.build.json",
       outDir: "dist/types",
-      exclude: ["src/nuxt.ts"],
     }),
   ],
   resolve: {

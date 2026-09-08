@@ -112,6 +112,16 @@ Use `#thumb` when the thumb needs visible value text or custom markup.
 </template>
 ```
 
+## Range accessibility and forms
+
+Every thumb has a unique id: the first uses `id` (or the generated Field id); later thumbs append `-2`, `-3`, and so on. Use `ariaLabels` for distinct endpoint names. Each thumb reports bounds constrained by its neighbors and `minStepsBetweenThumbs`.
+
+Disabling the slider disables all serialization inputs, including each range value. Native disabled fieldsets also block pointer/keyboard changes. Visual track thickness, thumb size, colors, and focus rings belong in `ui`.
+
+### Native Form Reset
+
+An uncanceled native form reset restores the initial model value and clears interaction validation state. Cancel the form's `reset` event to keep the current value. Reset does not emit a user `value-change` action. Controlled consumers must accept the emitted model update.
+
 ## API Reference
 
 ### Props

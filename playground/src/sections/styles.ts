@@ -334,8 +334,9 @@ export const fieldsetContent = "grid gap-4";
 
 export const checkboxUi = {
   wrapper: "gap-3",
+  text: "flex flex-col gap-0.5",
   root: "mt-0.5 size-4 rounded border border-border bg-background text-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background data-[akaza-state=checked]:border-primary data-[akaza-state=checked]:bg-primary data-[akaza-state=indeterminate]:border-primary data-[akaza-state=indeterminate]:bg-primary data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50",
-  indicator: "grid place-items-center text-primary",
+  indicator: "grid place-items-center text-primary-foreground [&_svg]:size-3",
   label: "text-sm font-medium leading-none text-foreground",
   description: "mt-1 block text-xs leading-relaxed text-muted-foreground",
 };
@@ -344,8 +345,9 @@ export const checkboxLabelMuted = "text-sm font-medium leading-none text-muted-f
 export const linkInline = "font-medium text-primary underline underline-offset-2";
 export const checkboxCustomUi = {
   wrapper: "gap-3 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2",
+  text: "flex flex-col gap-0.5",
   root: "mt-0.5 size-5 rounded-md border-2 border-primary bg-background text-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background data-[akaza-state=checked]:bg-primary data-[akaza-state=indeterminate]:bg-primary",
-  indicator: "grid place-items-center text-primary",
+  indicator: "grid place-items-center text-primary-foreground [&_svg]:size-3",
   label: "text-sm font-semibold text-primary",
   description: "mt-1 block text-xs text-muted-foreground",
 };
@@ -369,6 +371,7 @@ export const radioChip =
 
 export const switchUi = {
   wrapper: "gap-3",
+  text: "flex flex-col gap-0.5",
   root: "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full bg-muted-foreground/30 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background data-[akaza-state=checked]:bg-primary data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50",
   thumb:
     "grid size-5 translate-x-0.5 place-items-center rounded-full bg-background text-[10px] shadow-sm transition-transform data-[akaza-state=checked]:translate-x-5",
@@ -400,7 +403,7 @@ export const progressBarVertical =
 export const tabsUi = {
   list: "flex border-b border-border",
   tab: "px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-state=active]:text-foreground data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-40",
-  indicator: "bg-primary",
+  indicator: "h-0.5 bg-primary",
   panels: "mt-4",
   panel:
     "text-sm text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
@@ -419,7 +422,7 @@ export const tabsVerticalUi = {
   root: "flex gap-6",
   list: "flex w-40 shrink-0 flex-col border-r border-border",
   tab: "px-3 py-2 text-left text-sm font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-state=active]:text-foreground data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-40",
-  indicator: "bg-primary",
+  indicator: "w-0.5 bg-primary",
   panels: "flex-1",
   panel:
     "pt-1 text-sm text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
@@ -521,7 +524,7 @@ export const comboboxUi = {
 };
 
 export const toastUi = {
-  viewport: "w-[min(100dvw,24rem)]",
+  viewport: "w-[min(100dvw,24rem)] p-4",
   toast:
     "relative grid gap-1 rounded-lg border border-border bg-popover p-4 pr-10 text-popover-foreground shadow-lg data-[akaza-type=error]:border-destructive/60 data-[akaza-type=warning]:border-primary/60",
   title: "text-sm font-semibold text-foreground",
@@ -554,7 +557,7 @@ export const dialogBodyText = "m-0 text-sm leading-relaxed text-muted-foreground
 export const drawerOverlay = "fixed inset-0 bg-black/50 backdrop-blur-[2px]";
 export const drawerOverlayReactive = `${drawerOverlay} opacity-[calc(1-var(--drawer-swipe-progress,0))]`;
 export const drawerPanel =
-  "z-[200] overflow-hidden border border-border bg-card text-card-foreground shadow-2xl [&_.akaza-drawer-body]:flex-1 [&_.akaza-drawer-body]:overflow-y-auto [&_.akaza-drawer-body]:p-5 [&_.akaza-drawer-description]:text-sm [&_.akaza-drawer-description]:text-muted-foreground [&_.akaza-drawer-footer]:shrink-0 [&_.akaza-drawer-footer]:border-t [&_.akaza-drawer-footer]:border-border [&_.akaza-drawer-footer]:p-4 [&_.akaza-drawer-header]:shrink-0 [&_.akaza-drawer-header]:border-b [&_.akaza-drawer-header]:border-border [&_.akaza-drawer-header]:p-4 [&_.akaza-drawer-title]:text-base [&_.akaza-drawer-title]:font-semibold [&_.akaza-drawer-title]:text-foreground";
+  "overflow-hidden border border-border bg-card text-card-foreground shadow-2xl [&_.akaza-drawer-body]:flex-1 [&_.akaza-drawer-body]:overflow-y-auto [&_.akaza-drawer-body]:p-5 [&_.akaza-drawer-description]:text-sm [&_.akaza-drawer-description]:text-muted-foreground [&_.akaza-drawer-footer]:shrink-0 [&_.akaza-drawer-footer]:border-t [&_.akaza-drawer-footer]:border-border [&_.akaza-drawer-footer]:p-4 [&_.akaza-drawer-header]:shrink-0 [&_.akaza-drawer-header]:border-b [&_.akaza-drawer-header]:border-border [&_.akaza-drawer-header]:p-4 [&_.akaza-drawer-title]:text-base [&_.akaza-drawer-title]:font-semibold [&_.akaza-drawer-title]:text-foreground";
 export const drawerPanelRight = `${drawerPanel} w-[min(90dvw,360px)] shadow-[-4px_0_24px_rgba(0,0,0,0.15)]`;
 export const drawerPanelLeft = `${drawerPanel} w-[min(90dvw,360px)] shadow-[4px_0_24px_rgba(0,0,0,0.15)]`;
 export const drawerPanelBottom = `${drawerPanel} max-h-[60dvh] rounded-t-xl border-b-0`;

@@ -135,6 +135,16 @@ Inside [Field](/components/field), PinInput inherits `id`, `name`, required/disa
 </template>
 ```
 
+## Partial positions
+
+Empty positions are preserved in the internal cell draft. Editing or deleting a middle cell never shifts later characters to the left. `v-model` remains a compact string containing entered characters in position order; it does not encode gaps. A different external model value replaces the cell draft from the first position. `complete` is emitted only when every cell is filled.
+
+Use the `#cell` slot's positional values for partial-entry UI, not indexes into the compact model string.
+
+### Native Form Reset
+
+An uncanceled native form reset restores the initial model value and clears interaction validation state. Cancel the form's `reset` event to keep the current value. Reset does not emit a user `value-change` action. Controlled consumers must accept the emitted model update.
+
 ## API Reference
 
 ### Model

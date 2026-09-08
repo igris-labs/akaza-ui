@@ -104,6 +104,14 @@ const permission = ref<"granted" | "denied">("denied");
 </template>
 ```
 
+## Field and native forms
+
+Inside `Field`, Checkbox inherits its id, name, required/disabled state, accessible label, and error/hint description. Validation is revealed after interaction or an invalid submit, not merely because an untouched required control is empty. Invalid submission focuses the visible button. Required validation also works without a name; unnamed controls do not submit a value.
+
+Clicking label text activates the native button, so a disabled fieldset remains disabled. Links and other interactive descendants in the label do not toggle the checkbox. Native reset restores its mount-time model unless the reset is canceled.
+
+`class`/`ui.wrapper` style the outer wrapper. `ui.root` styles the checkbox button. Supply dimensions, border, radius, spacing, and disabled opacity through `ui`.
+
 ## API Reference
 
 ### Props
@@ -153,7 +161,7 @@ const permission = ref<"granted" | "denied">("denied");
 | UI key | CSS class | Data attrs |
 |--------|-----------|------------|
 | `wrapper` | `akaza-checkbox-wrapper` | — |
-| `root` | `akaza-checkbox` | `data-akaza-state`, `data-akaza-disabled` |
+| `root` | `akaza-checkbox` | `data-akaza-state`, `data-akaza-disabled`, `data-akaza-invalid`, `data-akaza-dirty`, `data-akaza-touched`, `data-akaza-focused`, `data-akaza-filled` |
 | `indicator` | `akaza-checkbox-indicator` | `data-akaza-state` |
 | `input` | `akaza-checkbox-input` | — |
 | `text` | `akaza-checkbox-text` | — |

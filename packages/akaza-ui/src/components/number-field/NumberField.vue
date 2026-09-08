@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { NumberFieldProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
-import { computed, inject, onBeforeUnmount, onMounted, onUpdated, ref, useId, useTemplateRef } from "vue";
+import { computed, inject, nextTick, onBeforeUnmount, onMounted, onUpdated, ref, useId, useTemplateRef } from "vue";
 import { fieldContextKey } from "../field/context";
 
 const {
@@ -48,6 +48,7 @@ const scrubbing = ref(false);
 let scrubStartX = 0;
 let scrubStartValue = 0;
 let pendingCommitValue: number | null | undefined;
+let formElement: HTMLFormElement | null = null;
 
 const resolvedId = computed(() => id ?? field?.inputId.value ?? `akaza-number-field-${autoId}`);
 const resolvedName = computed(() => name ?? field?.name.value);
@@ -58,10 +59,10 @@ const describedBy = computed(() => ariaDescribedby ?? field?.describedBy.value);
 const isFilled = computed(() => model.value !== null);
 const isDirty = computed(() => model.value !== initialValue);
 const canDecrement = computed(() =>
-  !isDisabled.value && !readonly && (min === undefined || (model.value ?? min) > min),
+  !isDisabled.value && !readonly && (model.value === null || min === undefined || model.value > min),
 );
 const canIncrement = computed(() =>
-  !isDisabled.value && !readonly && (max === undefined || (model.value ?? max) < max),
+  !isDisabled.value && !readonly && (model.value === null || max === undefined || model.value < max),
 );
 const textValue = computed(() => model.value === null ? "" : String(model.value));
 const ariaValueText = computed(() => getValueLabel?.(model.value));
@@ -88,8 +89,8 @@ const unregister = field?.registerControl({
 });
 
 function decimals(value: number): number {
-  const [, decimal = ""] = String(value).split(".");
-  return decimal.length;
+  const [coefficient = "", exponent = "0"] = String(value).toLowerCase().split("e");
+  return Math.min(100, Math.max(0, (coefficient.split(".")[1]?.length ?? 0) - Number(exponent)));
 }
 
 function clamp(value: number): number {
@@ -120,7 +121,7 @@ function updateValidity(reveal = validationActive.value) {
 function setValue(value: number | null, reason: string, event?: Event): boolean {
   if (isDisabled.value || readonly) return false;
   validationActive.value = true;
-  const next = value === null ? null : normalize(value);
+  const next = value === null ? null : reason === "input" ? value : normalize(value);
   let canceled = false;
   emit("value-change", next, {
     reason,
@@ -130,6 +131,7 @@ function setValue(value: number | null, reason: string, event?: Event): boolean 
     },
   });
   if (canceled) {
+    if (inputRef.value) inputRef.value.value = textValue.value;
     pendingCommitValue = undefined;
     return false;
   }
@@ -140,7 +142,7 @@ function setValue(value: number | null, reason: string, event?: Event): boolean 
 }
 
 function commitValue(reason: string, event?: Event) {
-  const value = pendingCommitValue ?? model.value;
+  const value = pendingCommitValue === undefined ? model.value : pendingCommitValue;
   pendingCommitValue = undefined;
   emit("value-commit", value, {
     reason,
@@ -221,6 +223,7 @@ function onBlur() {
   validationActive.value = true;
   touched.value = true;
   focused.value = false;
+  if (pendingCommitValue !== undefined && model.value !== null && normalize(model.value) !== model.value) setValue(model.value, "blur");
   updateValidity();
   commitValue("blur");
 }
@@ -230,9 +233,28 @@ function onInvalid() {
   updateValidity();
 }
 
-onMounted(() => updateValidity(false));
+async function onFormReset(event: Event) {
+  await nextTick();
+  if (event.defaultPrevented) return;
+  model.value = initialValue;
+  pendingCommitValue = undefined;
+  touched.value = false;
+  validationActive.value = false;
+  nativeInvalid.value = false;
+  await nextTick();
+  updateValidity(false);
+}
+
+onMounted(() => {
+  updateValidity(false);
+  formElement = inputRef.value?.form ?? null;
+  formElement?.addEventListener("reset", onFormReset);
+});
 onUpdated(updateValidity);
-onBeforeUnmount(() => unregister?.());
+onBeforeUnmount(() => {
+  formElement?.removeEventListener("reset", onFormReset);
+  unregister?.();
+});
 </script>
 
 <template>
@@ -316,13 +338,15 @@ onBeforeUnmount(() => unregister?.());
 </template>
 
 <style>
-.akaza-number-field {
-  display: inline-flex;
-  align-items: center;
-}
+@layer akaza-reset {
+  .akaza-number-field {
+    display: inline-flex;
+    align-items: center;
+  }
 
-.akaza-number-field-scrub-area {
-  touch-action: none;
-  user-select: none;
+  .akaza-number-field-scrub-area {
+    touch-action: none;
+    user-select: none;
+  }
 }
 </style>

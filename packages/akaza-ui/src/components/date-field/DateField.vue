@@ -8,6 +8,7 @@ import { computed, inject, nextTick, onBeforeUnmount, onMounted, reactive, ref, 
 import { resolveAction } from "../../utils/changeEvent";
 import { useDismissableLayer } from "../../utils/dismissableLayer";
 import { useFloatingPosition } from "../../utils/floatingPosition";
+import { useFocusBranch } from "../../utils/focusScope";
 import Calendar from "../calendar/Calendar.vue";
 import { fieldContextKey } from "../field/context";
 
@@ -52,6 +53,7 @@ const rootRef = useTemplateRef<HTMLElement>("rootRef");
 const hiddenRef = useTemplateRef<HTMLInputElement>("hiddenRef");
 const calendarTriggerRef = useTemplateRef<HTMLButtonElement>("calendarTriggerRef");
 const calendarContentRef = useTemplateRef<HTMLElement>("calendarContentRef");
+useFocusBranch(calendarContentRef);
 const segmentRefs = new Map<DateFieldSegment, HTMLInputElement>();
 const values = reactive<Record<DateFieldSegment, string>>({ day: "", month: "", year: "" });
 const focusedSegment = ref<DateFieldSegment | null>(null);
@@ -233,10 +235,13 @@ function validationError(): string {
   return "";
 }
 
+const nativeError = computed(validationError);
+watch(nativeError, () => updateValidity(), { flush: "post" });
+
 function updateValidity(reveal = validationActive.value) {
   const input = hiddenRef.value;
   if (!input) return;
-  input.setCustomValidity(validationError());
+  input.setCustomValidity(nativeError.value);
   validity.value = input.validity;
   validationMessage.value = input.validationMessage;
   nativeInvalid.value = reveal && !input.validity.valid;
@@ -395,7 +400,9 @@ function onInvalid(event: Event) {
   focusSegment(firstSegment.value as DateFieldSegment);
 }
 
-function onFormReset() {
+async function onFormReset(event: Event) {
+  await nextTick();
+  if (event.defaultPrevented) return;
   model.value = initialValue;
   syncSegments(initialValue);
   touched.value = false;
@@ -428,6 +435,7 @@ onBeforeUnmount(() => {
 });
 
 defineExpose({
+  validationState: computed(() => ({ invalid: Boolean(nativeError.value) && isFilled.value, filled: isFilled.value })),
   clear,
   closeCalendar,
   focus: () => focusSegment(parts.value.find(({ type }) => type !== "literal")?.type as DateFieldSegment),

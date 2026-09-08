@@ -7,6 +7,7 @@ import { computed, nextTick, onUnmounted, ref, useId, useTemplateRef, watch } fr
 import { usePopover } from "../../composables/popover";
 import { resolveAction } from "../../utils/changeEvent";
 import { useDismissableLayer } from "../../utils/dismissableLayer";
+import { useFocusBranch } from "../../utils/focusScope";
 
 const {
   side = "bottom",
@@ -53,6 +54,7 @@ function toggle(reasonOrEvent?: string | Event, event?: Event) {
 const popoverId = useId();
 const rootRef = useTemplateRef<HTMLElement>("rootRef");
 const contentRef = useTemplateRef<HTMLElement>("contentRef");
+useFocusBranch(contentRef);
 let positionFrame = 0;
 let resizeObserver: ResizeObserver | undefined;
 const { layerOrder, register, unregister } = useDismissableLayer((event?: KeyboardEvent) => {
@@ -256,28 +258,30 @@ defineExpose({ open, close, toggle });
 </template>
 
 <style>
-.akaza-popover-root {
-  position: relative;
-  display: inline-block;
-  isolation: isolate;
-}
+@layer akaza-reset {
+  .akaza-popover-root {
+    position: relative;
+    display: inline-block;
+    isolation: isolate;
+  }
 
-.akaza-popover-content {
-  position: absolute;
-  z-index: var(--akaza-z-popover, calc(var(--akaza-z-layer-base, 1200) + var(--akaza-layer-order, 0) + 1));
-  isolation: isolate;
-}
+  .akaza-popover-content {
+    position: absolute;
+    z-index: var(--akaza-z-popover, calc(var(--akaza-z-layer-base, 1200) + var(--akaza-layer-order, 0) + 1));
+    isolation: isolate;
+  }
 
-.akaza-popover-enter-active,
-.akaza-popover-leave-active {
-  transition:
-    opacity 0.1s ease-out,
-    transform 0.1s ease-out;
-}
+  .akaza-popover-enter-active,
+  .akaza-popover-leave-active {
+    transition:
+      opacity 0.1s ease-out,
+      transform 0.1s ease-out;
+  }
 
-.akaza-popover-enter-from,
-.akaza-popover-leave-to {
-  opacity: 0;
-  transform: scale(0.96) translateY(-4px);
+  .akaza-popover-enter-from,
+  .akaza-popover-leave-to {
+    opacity: 0;
+    transform: scale(0.96) translateY(-4px);
+  }
 }
 </style>

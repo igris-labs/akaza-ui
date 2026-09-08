@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import type { CheckboxProps, CheckboxValue } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
-import { computed, useId, useSlots } from "vue";
+import { computed, useId, useSlots, useTemplateRef } from "vue";
+import { useCheckableField } from "../../utils/useCheckableField";
 
 const {
   disabled = false,
@@ -25,7 +26,13 @@ const model = defineModel<CheckboxValue>({ default: false });
 
 const slots = useSlots();
 const autoId = useId();
-const buttonId = computed(() => id ?? `akaza-checkbox-${autoId}`);
+const buttonRef = useTemplateRef<HTMLButtonElement>("buttonRef");
+const inputRef = useTemplateRef<HTMLInputElement>("inputRef");
+const bridge = useCheckableField(model, inputRef, () => buttonRef.value?.focus(), computed(() => model.value === trueValue));
+const effectiveDisabled = computed(() => disabled || bridge.field?.disabled.value || false);
+const effectiveRequired = computed(() => required || bridge.field?.required.value || false);
+const effectiveName = computed(() => name ?? bridge.field?.name.value);
+const buttonId = computed(() => id ?? bridge.field?.inputId.value ?? `akaza-checkbox-${autoId}`);
 const labelId = `akaza-checkbox-label-${autoId}`;
 const descriptionId = `akaza-checkbox-desc-${autoId}`;
 
@@ -36,12 +43,13 @@ const isChecked = computed(() => model.value === trueValue);
 const isIndeterminate = computed(() => model.value === "indeterminate");
 
 function toggle(reason = 'click', event?: Event) {
-  if (disabled) return;
+  if (effectiveDisabled.value || buttonRef.value?.matches(":disabled")) return;
   const nextValue = (isChecked.value ? falseValue : trueValue) as CheckboxValue;
   let canceled = false;
   emit('value-change', nextValue, { reason, ...(event && { event }), cancel: () => { canceled = true; } });
   if (canceled) return;
   model.value = nextValue;
+  bridge.onChange();
 }
 </script>
 
@@ -52,17 +60,22 @@ function toggle(reason = 'click', event?: Event) {
   >
     <button
       :id="buttonId"
+      ref="buttonRef"
+      v-bind="bridge.attrs.value"
+      :aria-invalid="bridge.invalid.value || undefined"
       type="button"
       role="checkbox"
       :aria-checked="isIndeterminate ? 'mixed' : isChecked"
       :aria-label="!hasLabel ? ariaLabel : undefined"
-      :aria-labelledby="hasLabel ? labelId : undefined"
-      :aria-describedby="ariaDescribedby ?? (hasDescription ? descriptionId : undefined)"
+      :aria-labelledby="hasLabel ? labelId : bridge.field?.labelledBy.value"
+      :aria-describedby="[ariaDescribedby ?? bridge.field?.describedBy.value, hasDescription ? descriptionId : undefined].filter(Boolean).join(' ') || undefined"
       :class="ui?.root"
       :data-akaza-state="isChecked ? 'checked' : isIndeterminate ? 'indeterminate' : 'unchecked'"
-      :data-akaza-disabled="disabled || undefined"
-      :disabled="disabled"
+      :data-akaza-disabled="effectiveDisabled || undefined"
+      :disabled="effectiveDisabled"
       class="akaza-checkbox"
+      @focus="bridge.onFocus"
+      @blur="bridge.onBlur"
       @click="toggle('click', $event)"
       @keydown.space.prevent="toggle('keyboard', $event)"
     >
@@ -102,17 +115,18 @@ function toggle(reason = 'click', event?: Event) {
 
     <!-- Hidden native input for form submission -->
     <input
-      v-if="name"
+      ref="inputRef"
       type="checkbox"
-      :name="name"
+      :name="effectiveName"
       :value="String(trueValue)"
       :checked="isChecked"
-      :required="required"
-      :disabled="disabled"
+      :required="effectiveRequired"
+      :disabled="effectiveDisabled"
       aria-hidden="true"
       tabindex="-1"
       :class="ui?.input"
       class="akaza-checkbox-input"
+      @invalid="bridge.onInvalid"
     >
 
     <!-- Label + description -->
@@ -120,7 +134,7 @@ function toggle(reason = 'click', event?: Event) {
       v-if="hasLabel || hasDescription"
       :class="ui?.text"
       class="akaza-checkbox-text"
-      @click="toggle('label-click', $event)"
+      @click="!($event.target as HTMLElement).closest('a, button, input, select, textarea, [role=button]') && buttonRef?.click()"
     >
       <span
         v-if="hasLabel"
@@ -143,57 +157,39 @@ function toggle(reason = 'click', event?: Event) {
 </template>
 
 <style>
-.akaza-checkbox-wrapper {
-  display: inline-flex;
-  align-items: flex-start;
-  gap: 8px;
-}
+@layer akaza-reset {
+  .akaza-checkbox-wrapper {
+    display: inline-flex;
+    align-items: flex-start;
+  }
 
-.akaza-checkbox {
-  display: inline-flex;
-  width: 1rem;
-  height: 1rem;
-  flex-shrink: 0;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid currentColor;
-  border-radius: 4px;
-  background: transparent;
-  color: currentColor;
-  cursor: pointer;
-}
+  .akaza-checkbox {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+  }
 
-.akaza-checkbox:disabled,
-.akaza-checkbox[data-akaza-disabled] {
-  cursor: not-allowed;
-  opacity: 0.5;
-}
+  .akaza-checkbox-indicator {
+    display: inline-flex;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+  }
 
-.akaza-checkbox-indicator {
-  display: inline-flex;
-  width: 100%;
-  height: 100%;
-  align-items: center;
-  justify-content: center;
-}
+  .akaza-checkbox-text {
+    display: flex;
+    flex-direction: column;
+  }
 
-.akaza-checkbox-indicator svg {
-  width: 0.75rem;
-  height: 0.75rem;
-}
-
-.akaza-checkbox-text {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.akaza-checkbox-input {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
-  pointer-events: none;
-  margin: 0;
+  .akaza-checkbox-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+    margin: 0;
+  }
 }
 </style>

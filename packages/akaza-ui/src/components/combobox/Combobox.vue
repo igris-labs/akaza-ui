@@ -5,6 +5,8 @@ import type { AkazaChangeEventDetails } from "../../types";
 import { computed, inject, onBeforeUnmount, onMounted, onUpdated, ref, useId, useSlots, useTemplateRef, watch } from "vue";
 import { useDismissableLayer } from "../../utils/dismissableLayer";
 import { useFloatingPosition } from "../../utils/floatingPosition";
+import { useFocusBranch } from "../../utils/focusScope";
+import { useFormReset } from "../../utils/useFormReset";
 import { fieldContextKey } from "../field/context";
 
 const {
@@ -64,6 +66,7 @@ const rootRef = useTemplateRef<HTMLElement>("rootRef");
 const inputRef = useTemplateRef<HTMLInputElement>("inputRef");
 const hiddenRef = useTemplateRef<HTMLInputElement>("hiddenRef");
 const contentRef = useTemplateRef<HTMLElement>("contentRef");
+useFocusBranch(contentRef);
 const optionRefs = ref<Array<HTMLElement | null>>([]);
 const slots = useSlots() as Record<string, Slot | undefined>;
 const focused = ref(false);
@@ -90,9 +93,6 @@ const selectedOptions = computed(() =>
 );
 const isFilled = computed(() => selectedValues.value.length > 0);
 const isDirty = computed(() => !modelValuesEqual(model.value, initialValue));
-const activeOptionId = computed(() =>
-  openModel.value && !loading && activeIndex.value >= 0 ? `${contentId}-option-${activeIndex.value}` : undefined,
-);
 const filteredOptions = computed(() => {
   const query = searchModel.value.trim().toLowerCase();
   if (!filterable || !query) return options;
@@ -103,6 +103,14 @@ const filteredOptions = computed(() => {
   });
 });
 const hasVisibleOption = computed(() => filteredOptions.value.some(isSelectableOption));
+watch(filteredOptions, (current, previous) => {
+  const active = previous[activeIndex.value];
+  const preserved = active ? current.findIndex(option => !isItemDisabled(option) && valuesEqual(getValue(option), getValue(active))) : -1;
+  activeIndex.value = preserved >= 0 ? preserved : current.findIndex(option => !isItemDisabled(option));
+}, { flush: "sync" });
+const activeOptionId = computed(() =>
+  openModel.value && !loading && filteredOptions.value[activeIndex.value] && !isItemDisabled(filteredOptions.value[activeIndex.value]!) ? `${contentId}-option-${activeIndex.value}` : undefined,
+);
 const canCreate = computed(() => {
   const query = searchModel.value.trim();
   return !loading && creatable && Boolean(query) && !options.some((option) =>
@@ -198,6 +206,16 @@ function isItemDisabled(option: ComboboxOption): boolean {
 function isOptionSelected(option: ComboboxOption): boolean {
   return selectedValues.value.some((value) => valuesEqual(value, getValue(option)));
 }
+
+useFormReset(() => hiddenRef.value, () => {
+  model.value = Array.isArray(initialValue) ? [...initialValue] : initialValue;
+  touched.value = false;
+  validationActive.value = false;
+  nativeInvalid.value = false;
+  openModel.value = false;
+  searchModel.value = "";
+  activeIndex.value = -1;
+});
 
 function updateValidity(reveal = validationActive.value) {
   const input = hiddenRef.value;
@@ -351,6 +369,7 @@ function onInput(event: Event) {
 }
 
 function onKeydown(event: KeyboardEvent) {
+  if (event.isComposing) return;
   if (event.key === "ArrowDown" || event.key === "ArrowUp") {
     event.preventDefault();
     if (!openModel.value) setOpen(true, "keyboard", event);
@@ -358,7 +377,8 @@ function onKeydown(event: KeyboardEvent) {
   } else if (event.key === "Enter") {
     if (openModel.value && activeIndex.value >= 0) {
       event.preventDefault();
-      selectOption(filteredOptions.value[activeIndex.value]!, event);
+      const option = filteredOptions.value[activeIndex.value];
+      if (option && !loading) selectOption(option, event);
     } else if (openModel.value && canCreate.value) {
       event.preventDefault();
       createOption(event);
@@ -607,18 +627,17 @@ function hasOptionSlot(option: ComboboxOption) {
               @click="selectOption(option, $event)"
               @mouseenter="highlightOnHover && !isItemDisabled(option) && focusOption(index)"
             >
-              <component
-                :is="() => slots[option.slot ?? 'option']!({
-                  option,
-                  value: getValue(option),
-                  label: getLabel(option),
-                  description: getDescription(option),
-                  isSelected: isOptionSelected(option),
-                  isHighlighted: activeIndex === index,
-                  isDisabled: isItemDisabled(option),
-                  select: (event?: Event) => selectOption(option, event),
-                })"
+              <slot
                 v-if="hasOptionSlot(option)"
+                :name="option.slot ?? 'option'"
+                :option="option"
+                :value="getValue(option)"
+                :label="getLabel(option)"
+                :description="getDescription(option)"
+                :is-selected="isOptionSelected(option)"
+                :is-highlighted="activeIndex === index"
+                :is-disabled="isItemDisabled(option)"
+                :select="(event?: Event) => selectOption(option, event)"
               />
               <template v-else>
                 <span :class="ui?.indicator" class="akaza-combobox-indicator" aria-hidden="true">
@@ -658,74 +677,76 @@ function hasOptionSlot(option: ComboboxOption) {
 </template>
 
 <style>
-.akaza-combobox {
-  position: relative;
-  display: inline-block;
-}
+@layer akaza-reset {
+  .akaza-combobox {
+    position: relative;
+    display: inline-block;
+  }
 
-.akaza-combobox-hidden-input {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
-  pointer-events: none;
-}
+  .akaza-combobox-hidden-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+  }
 
-.akaza-combobox-content {
-  position: absolute;
-  z-index: var(--akaza-z-combobox, calc(var(--akaza-z-layer-base, 1200) + var(--akaza-layer-order, 0) + 1));
-  min-width: 100%;
-}
+  .akaza-combobox-content {
+    position: absolute;
+    z-index: var(--akaza-z-combobox, calc(var(--akaza-z-layer-base, 1200) + var(--akaza-layer-order, 0) + 1));
+    min-width: 100%;
+  }
 
-.akaza-combobox-content[data-akaza-side="bottom"] {
-  top: calc(100% + var(--akaza-combobox-side-offset, 6px));
-}
+  .akaza-combobox-content[data-akaza-side="bottom"] {
+    top: calc(100% + var(--akaza-combobox-side-offset, 6px));
+  }
 
-.akaza-combobox-content[data-akaza-side="top"] {
-  bottom: calc(100% + var(--akaza-combobox-side-offset, 6px));
-}
+  .akaza-combobox-content[data-akaza-side="top"] {
+    bottom: calc(100% + var(--akaza-combobox-side-offset, 6px));
+  }
 
-.akaza-combobox-content[data-akaza-align="center"] {
-  left: 50%;
-  transform: translateX(-50%);
-}
+  .akaza-combobox-content[data-akaza-align="center"] {
+    left: 50%;
+    transform: translateX(-50%);
+  }
 
-.akaza-combobox-content[data-akaza-align="end"] {
-  right: 0;
-}
+  .akaza-combobox-content[data-akaza-align="end"] {
+    right: 0;
+  }
 
-.akaza-combobox-viewport {
-  max-height: min(16rem, 60vh);
-  overflow: auto;
-}
+  .akaza-combobox-viewport {
+    max-height: min(16rem, 60vh);
+    overflow: auto;
+  }
 
-.akaza-combobox-enter-active,
-.akaza-combobox-leave-active {
-  transition:
-    opacity var(--akaza-combobox-duration, 120ms) ease-out,
-    scale var(--akaza-combobox-duration, 120ms) ease-out,
-    translate var(--akaza-combobox-duration, 120ms) ease-out;
-}
-
-.akaza-combobox-enter-from,
-.akaza-combobox-leave-to {
-  opacity: 0;
-  scale: 0.98;
-}
-
-.akaza-combobox-enter-from[data-akaza-side="bottom"],
-.akaza-combobox-leave-to[data-akaza-side="bottom"] { translate: 0 -4px; }
-.akaza-combobox-enter-from[data-akaza-side="top"],
-.akaza-combobox-leave-to[data-akaza-side="top"] { translate: 0 4px; }
-.akaza-combobox-enter-from[data-akaza-side="right"],
-.akaza-combobox-leave-to[data-akaza-side="right"] { translate: -4px 0; }
-.akaza-combobox-enter-from[data-akaza-side="left"],
-.akaza-combobox-leave-to[data-akaza-side="left"] { translate: 4px 0; }
-
-@media (prefers-reduced-motion: reduce) {
   .akaza-combobox-enter-active,
   .akaza-combobox-leave-active {
-    transition-duration: 0.01ms;
+    transition:
+      opacity var(--akaza-combobox-duration, 120ms) ease-out,
+      scale var(--akaza-combobox-duration, 120ms) ease-out,
+      translate var(--akaza-combobox-duration, 120ms) ease-out;
+  }
+
+  .akaza-combobox-enter-from,
+  .akaza-combobox-leave-to {
+    opacity: 0;
+    scale: 0.98;
+  }
+
+  .akaza-combobox-enter-from[data-akaza-side="bottom"],
+  .akaza-combobox-leave-to[data-akaza-side="bottom"] { translate: 0 -4px; }
+  .akaza-combobox-enter-from[data-akaza-side="top"],
+  .akaza-combobox-leave-to[data-akaza-side="top"] { translate: 0 4px; }
+  .akaza-combobox-enter-from[data-akaza-side="right"],
+  .akaza-combobox-leave-to[data-akaza-side="right"] { translate: -4px 0; }
+  .akaza-combobox-enter-from[data-akaza-side="left"],
+  .akaza-combobox-leave-to[data-akaza-side="left"] { translate: 4px 0; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .akaza-combobox-enter-active,
+    .akaza-combobox-leave-active {
+      transition-duration: 0.01ms;
+    }
   }
 }
 </style>

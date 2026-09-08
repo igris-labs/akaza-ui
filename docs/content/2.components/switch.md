@@ -94,6 +94,12 @@ Use `aria-label` when there's no visible label text.
 </template>
 ```
 
+## Field and native forms
+
+Switch inherits Field metadata and registers focused, touched, dirty, filled, and invalid state. Required validation does not depend on providing a name. Invalid submission focuses the visible switch; untouched empty controls are not immediately marked invalid.
+
+Label clicks respect native disabled fieldsets and ignore embedded links. Native reset restores the mount-time model unless canceled. `class` and `ui.wrapper` target the outer wrapper; `ui.root` targets the switch button. Supply visual spacing and disabled appearance in your `ui` classes.
+
 ## API Reference
 
 ### Props
@@ -142,7 +148,7 @@ Use `aria-label` when there's no visible label text.
 | UI key | CSS class | Data attrs |
 |--------|-----------|------------|
 | `wrapper` | `akaza-switch-wrapper` | — |
-| `root` | `akaza-switch` | `data-akaza-state`, `data-akaza-disabled` |
+| `root` | `akaza-switch` | `data-akaza-state`, `data-akaza-disabled`, `data-akaza-invalid`, `data-akaza-dirty`, `data-akaza-touched`, `data-akaza-focused`, `data-akaza-filled` |
 | `thumb` | `akaza-switch-thumb` | `data-akaza-state` |
 | `input` | `akaza-switch-input` | — |
 | `text` | `akaza-switch-text` | — |

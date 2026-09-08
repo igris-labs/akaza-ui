@@ -83,7 +83,8 @@ function itemState(item: StepperItem, index: number): StepperItemState {
 function canActivate(item: StepperItem, index: number): boolean {
   if (isItemDisabled(item)) return false;
   if (!linear || currentIndex.value < 0) return true;
-  return index <= currentIndex.value + 1 || isCompleted(item, index);
+  const nextIndex = items.findIndex((entry, position) => position > currentIndex.value && !isItemDisabled(entry));
+  return index <= currentIndex.value || index === nextIndex || isCompleted(item, index);
 }
 
 function firstEnabledIndex(): number {
@@ -246,8 +247,8 @@ defineExpose({ goToStep, hasNext, hasPrev, nextStep, prevStep });
           :disabled="!canActivate(item, index)"
           :tabindex="tabIndex(item, index)"
           :aria-current="index === currentIndex ? 'step' : undefined"
-          :aria-labelledby="titleId(index)"
-          :aria-describedby="getDescription(item) ? descriptionId(index) : undefined"
+          :aria-labelledby="$slots[item.slot ?? 'item'] ? undefined : titleId(index)"
+          :aria-describedby="!$slots[item.slot ?? 'item'] && getDescription(item) ? descriptionId(index) : undefined"
           :aria-controls="panelId(index)"
           :class="ui?.trigger"
           class="akaza-stepper-trigger"

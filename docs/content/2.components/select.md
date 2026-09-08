@@ -158,6 +158,14 @@ Use `#option` to render richer option content. The component still owns `role="o
 </template>
 ```
 
+## Replacing suggestions
+
+Autocomplete results may change while the popup is open. The active option follows its value when results are reordered; removing it falls back to the first enabled result, or clears the active target when none remain. Enter does not activate a missing, disabled, or loading option. IME confirmation in the search input does not select prematurely.
+
+### Native Form Reset
+
+An uncanceled native form reset restores the initial model value and clears interaction validation state. Cancel the form's `reset` event to keep the current value. Reset does not emit a user `value-change` action. Controlled consumers must accept the emitted model update.
+
 ## API Reference
 
 ### Props

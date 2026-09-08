@@ -153,6 +153,12 @@ const emit = defineEmits<{
 </template>
 ```
 
+## SSR and ownership
+
+During SSR, `useOverlay()` called in component setup shares one manager within that Vue app, isolated from other requests. Do not call it at module scope or outside component setup on the server. Capture the returned manager in setup for later event handlers. The browser default remains shared so programmatic calls and `OverlayProvider` reach the same queue.
+
+Overlay focus scopes recognize Akaza popup descendants across Teleport. Keep `OverlayProvider` mounted for the lifetime of the overlays it renders.
+
 ## API Reference
 
 ### `useOverlay()`

@@ -1,5 +1,6 @@
 import type { ComputedRef, InjectionKey } from "vue";
 import { computed, hasInjectionContext, inject, provide, ref } from "vue";
+import { createAppState } from "../../utils/appState";
 
 export type ToastType = "status" | "alert" | "success" | "info" | "warning" | "error";
 export type ToastPriority = "low" | "high";
@@ -242,7 +243,7 @@ export function createToastManager(options: ToastManagerOptions = {}): ToastMana
   };
 }
 
-const defaultManager = createToastManager();
+const useDefaultManager = createAppState(createToastManager);
 
 /** Provide an app- or subtree-scoped manager. Prefer this in SSR applications. */
 export function provideToastManager(manager = createToastManager()) {
@@ -252,6 +253,6 @@ export function provideToastManager(manager = createToastManager()) {
 
 export function useToast(manager?: ToastManager): ToastManager {
   if (manager) return manager;
-  if (hasInjectionContext()) return inject(TOAST_MANAGER_KEY, defaultManager);
-  return defaultManager;
+  const provided = hasInjectionContext() ? inject(TOAST_MANAGER_KEY, null) : null;
+  return provided ?? useDefaultManager();
 }

@@ -8,6 +8,7 @@ import { computed, nextTick, onBeforeUnmount, useId, useTemplateRef, watch } fro
 import { resolveAction } from "../../utils/changeEvent";
 import { useDismissableLayer } from "../../utils/dismissableLayer";
 import { useFloatingPosition } from "../../utils/floatingPosition";
+import { useFocusBranch } from "../../utils/focusScope";
 import Calendar from "../calendar/Calendar.vue";
 import DateRangeField from "../date-range-field/DateRangeField.vue";
 
@@ -69,6 +70,7 @@ const rootRef = useTemplateRef<HTMLElement>("rootRef");
 const fieldRef = useTemplateRef<InstanceType<typeof DateRangeField>>("fieldRef");
 const triggerRef = useTemplateRef<HTMLButtonElement>("triggerRef");
 const contentRef = useTemplateRef<HTMLElement>("contentRef");
+useFocusBranch(contentRef);
 
 const state = computed(() => openModel.value ? "open" : "closed");
 const fieldBindings = computed(() => ({

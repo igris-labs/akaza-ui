@@ -2,6 +2,7 @@
 import type { SliderProps, SliderValue } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
 import { computed, inject, onBeforeUnmount, onMounted, ref, useId, useTemplateRef } from "vue";
+import { useFormReset } from "../../utils/useFormReset";
 import { fieldContextKey } from "../field/context";
 
 const {
@@ -44,7 +45,7 @@ const activeThumbIndex = ref(0);
 const nativeInvalid = ref(false);
 const validationMessage = ref("");
 const validity = ref<ValidityState | null>(null);
-const initialValue = model.value;
+const initialValue = Array.isArray(model.value) ? [...model.value] : model.value;
 
 const resolvedId = computed(() => id ?? field?.inputId.value ?? `akaza-slider-${autoId}`);
 const resolvedName = computed(() => name ?? field?.name.value);
@@ -130,6 +131,14 @@ function toValues(value: SliderValue): number[] {
   return next.length ? next : [min];
 }
 
+useFormReset(() => inputRef.value, () => {
+  model.value = Array.isArray(initialValue) ? [...initialValue] : initialValue;
+  touched.value = false;
+  validationActive.value = false;
+  nativeInvalid.value = false;
+  dragging.value = false;
+});
+
 function updateValidity(reveal = validationActive.value) {
   const input = inputRef.value;
   if (!input) return;
@@ -173,7 +182,7 @@ function getThumbAriaLabel(index: number): string | undefined {
 }
 
 function setValueAt(index: number, value: number, reason: string, event?: Event) {
-  if (isDisabled.value) return;
+  if (isDisabled.value || inputRef.value?.matches(":disabled")) return;
   validationActive.value = true;
   const nextValues = [...values.value];
   const gap = Math.max(0, minStepsBetweenThumbs) * step;
@@ -216,7 +225,7 @@ function valueFromPointer(event: PointerEvent): number {
 }
 
 function onPointerDown(event: PointerEvent) {
-  if (isDisabled.value) return;
+  if (isDisabled.value || inputRef.value?.matches(":disabled")) return;
   const nextValue = valueFromPointer(event);
   activeThumbIndex.value = getClosestThumbIndex(nextValue);
   dragging.value = true;
@@ -287,10 +296,9 @@ onBeforeUnmount(() => unregister?.());
     @pointercancel="dragging = false"
   >
     <input
-      v-if="resolvedName && values.length === 1"
       ref="inputRef"
       type="range"
-      :name="resolvedName"
+      :name="values.length === 1 ? resolvedName : undefined"
       :value="values[0]"
       :min="min"
       :max="max"
@@ -308,6 +316,7 @@ onBeforeUnmount(() => unregister?.());
         v-for="(value, index) in values"
         :key="index"
         type="hidden"
+        :disabled="isDisabled"
         :name="resolvedName"
         :value="value"
         :class="ui?.input"
@@ -331,15 +340,15 @@ onBeforeUnmount(() => unregister?.());
 
     <span
       v-for="(value, index) in values"
-      :id="resolvedId"
+      :id="index === 0 ? resolvedId : `${resolvedId}-${index + 1}`"
       :key="index"
       :ref="(el) => setThumbRef(el as HTMLElement | null, index)"
       role="slider"
       :aria-label="getThumbAriaLabel(index)"
       :aria-labelledby="labelledBy"
       :aria-describedby="describedBy"
-      :aria-valuemin="min"
-      :aria-valuemax="max"
+      :aria-valuemin="index === 0 ? min : values[index - 1]! + step * minStepsBetweenThumbs"
+      :aria-valuemax="index === values.length - 1 ? max : values[index + 1]! - step * minStepsBetweenThumbs"
       :aria-valuenow="value"
       :aria-valuetext="getValueLabel?.(value, max) ?? (index === 0 ? ariaValueText : undefined)"
       :aria-orientation="orientation"
@@ -361,54 +370,56 @@ onBeforeUnmount(() => unregister?.());
 </template>
 
 <style>
-.akaza-slider {
-  position: relative;
-  display: flex;
-  align-items: center;
-  touch-action: none;
-  user-select: none;
-}
+@layer akaza-reset {
+  .akaza-slider {
+    position: relative;
+    display: flex;
+    align-items: center;
+    touch-action: none;
+    user-select: none;
+  }
 
-.akaza-slider[data-akaza-orientation="vertical"] {
-  flex-direction: column;
-}
+  .akaza-slider[data-akaza-orientation="vertical"] {
+    flex-direction: column;
+  }
 
-.akaza-slider-input {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
-  pointer-events: none;
-}
+  .akaza-slider-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+  }
 
-.akaza-slider-track {
-  position: relative;
-  flex: 1;
-}
+  .akaza-slider-track {
+    position: relative;
+    flex: 1;
+  }
 
-.akaza-slider-range {
-  position: absolute;
-}
+  .akaza-slider-range {
+    position: absolute;
+  }
 
-.akaza-slider[data-akaza-orientation="horizontal"] .akaza-slider-range {
-  left: var(--akaza-slider-start-percentage);
-  width: calc(var(--akaza-slider-end-percentage) - var(--akaza-slider-start-percentage));
-}
+  .akaza-slider[data-akaza-orientation="horizontal"] .akaza-slider-range {
+    left: var(--akaza-slider-start-percentage);
+    width: calc(var(--akaza-slider-end-percentage) - var(--akaza-slider-start-percentage));
+  }
 
-.akaza-slider[data-akaza-orientation="vertical"] .akaza-slider-range {
-  bottom: var(--akaza-slider-start-percentage);
-  height: calc(var(--akaza-slider-end-percentage) - var(--akaza-slider-start-percentage));
-}
+  .akaza-slider[data-akaza-orientation="vertical"] .akaza-slider-range {
+    bottom: var(--akaza-slider-start-percentage);
+    height: calc(var(--akaza-slider-end-percentage) - var(--akaza-slider-start-percentage));
+  }
 
-.akaza-slider-thumb {
-  position: absolute;
-}
+  .akaza-slider-thumb {
+    position: absolute;
+  }
 
-.akaza-slider[data-akaza-orientation="horizontal"] .akaza-slider-thumb {
-  transform: translateX(-50%);
-}
+  .akaza-slider[data-akaza-orientation="horizontal"] .akaza-slider-thumb {
+    transform: translateX(-50%);
+  }
 
-.akaza-slider[data-akaza-orientation="vertical"] .akaza-slider-thumb {
-  transform: translateY(50%);
+  .akaza-slider[data-akaza-orientation="vertical"] .akaza-slider-thumb {
+    transform: translateY(50%);
+  }
 }
 </style>

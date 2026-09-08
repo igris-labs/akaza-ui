@@ -118,6 +118,10 @@ Use data attributes in `ui.root` for focused, invalid, dirty, and filled states.
 </template>
 ```
 
+## Canceled edits and reset
+
+Calling `details.cancel()` in `value-change` restores the accepted native input value as well as suppressing the model update. Rejected text is not left in FormData. Native reset restores the mount-time value and clears touched/invalid state only when the reset event is not canceled.
+
 ## API Reference
 
 ### Props

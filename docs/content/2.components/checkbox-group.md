@@ -166,6 +166,12 @@ function keepOne(value: CheckboxGroupValue[], details: AkazaChangeEventDetails) 
 </template>
 ```
 
+## Group validation
+
+The group has its own native validation proxy. An enabled required empty group is invalid even when its first option is disabled, or when no name is supplied. Invalid submission focuses the first enabled visible checkbox. If no options are enabled, explicitly disable the group or remove `required`; an enabled required empty group remains invalid.
+
+Field metadata and validation belong to the group, not independently to every child checkbox. Parent select-all changes only enabled values and preserves disabled selected values. Native reset restores the initial group selection unless canceled.
+
 ## API Reference
 
 ### Props
@@ -219,6 +225,7 @@ function keepOne(value: CheckboxGroupValue[], details: AkazaChangeEventDetails) 
 | Key | Description |
 |-----|-------------|
 | `root` | The group wrapper. |
+| `input` | Visually hidden native group-validation proxy. |
 | `legend` | The visible legend element. |
 | `parentItem` | The parent select-all item wrapper. |
 | `item` | Each option item wrapper. |
@@ -232,7 +239,8 @@ function keepOne(value: CheckboxGroupValue[], details: AkazaChangeEventDetails) 
 
 | UI key | CSS class | Data attrs |
 |--------|-----------|------------|
-| `root` | `akaza-checkbox-group` | `data-akaza-orientation`, `data-akaza-disabled` |
+| `root` | `akaza-checkbox-group` | `data-akaza-orientation`, `data-akaza-disabled`, `data-akaza-invalid`, `data-akaza-dirty`, `data-akaza-touched`, `data-akaza-focused`, `data-akaza-filled` |
+| `input` | `akaza-checkbox-group-input` | — |
 | `legend` | `akaza-checkbox-group-legend` | — |
 | `parentItem` | `akaza-checkbox-group-parent` | `data-akaza-state`, `data-akaza-disabled` |
 | `item` | `akaza-checkbox-group-item` | `data-akaza-state`, `data-akaza-disabled` |

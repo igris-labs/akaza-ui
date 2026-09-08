@@ -1,6 +1,6 @@
 import type { Component, DefineComponent } from "vue";
-import { createSharedComposable } from "@vueuse/core";
 import { markRaw, reactive } from "vue";
+import { createAppState } from "../../utils/appState";
 
 /**
  * Extracts the props type from a Vue component.
@@ -132,4 +132,4 @@ function _useOverlay() {
   return { overlays, create };
 }
 
-export const useOverlay = createSharedComposable(_useOverlay);
+export const useOverlay = createAppState(_useOverlay);

@@ -198,9 +198,11 @@ function hasSlot(item: ToolbarItem): boolean {
           @click="selectItem(child, $event)"
           @focus="onItemFocus"
         >
-          <component
-            :is="() => slots[child.slot!]!({ item: child, isDisabled: isDisabled(child) })"
+          <slot
             v-if="hasSlot(child)"
+            :name="child.slot!"
+            :item="child"
+            :is-disabled="isDisabled(child)"
           />
           <span v-else :class="ui?.label" class="akaza-toolbar-label">{{ child.label }}</span>
         </button>
@@ -239,9 +241,11 @@ function hasSlot(item: ToolbarItem): boolean {
         @click="selectItem(item, $event)"
         @focus="onItemFocus"
       >
-        <component
-          :is="() => slots[item.slot!]!({ item, isDisabled: isDisabled(item) })"
+        <slot
           v-if="hasSlot(item)"
+          :name="item.slot!"
+          :item="item"
+          :is-disabled="isDisabled(item)"
         />
         <span v-else :class="ui?.label" class="akaza-toolbar-label">{{ item.label }}</span>
       </a>
@@ -263,9 +267,11 @@ function hasSlot(item: ToolbarItem): boolean {
         @click="selectItem(item, $event)"
         @focus="onItemFocus"
       >
-        <component
-          :is="() => slots[item.slot!]!({ item, isDisabled: isDisabled(item) })"
+        <slot
           v-if="hasSlot(item)"
+          :name="item.slot!"
+          :item="item"
+          :is-disabled="isDisabled(item)"
         />
         <span v-else :class="ui?.label" class="akaza-toolbar-label">{{ item.label }}</span>
       </button>
@@ -276,14 +282,16 @@ function hasSlot(item: ToolbarItem): boolean {
 </template>
 
 <style>
-.akaza-toolbar,
-.akaza-toolbar-group {
-  display: inline-flex;
-  align-items: center;
-}
+@layer akaza-reset {
+  .akaza-toolbar,
+  .akaza-toolbar-group {
+    display: inline-flex;
+    align-items: center;
+  }
 
-.akaza-toolbar[data-akaza-orientation="vertical"] {
-  flex-direction: column;
-  align-items: stretch;
+  .akaza-toolbar[data-akaza-orientation="vertical"] {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }
 </style>

@@ -104,6 +104,12 @@ Add `scrub-label` or `#scrub` to let pointer users drag horizontally to change t
 </template>
 ```
 
+## Drafts, bounds, and reset
+
+Typing a finite number emits `value-change` without immediately snapping or clamping it. This permits intermediate values such as `1` while entering `12` with `min="10"`. On blur after an edit, the value snaps to the step grid and clamps to min/max before `value-commit`. A supplied out-of-range value is validated on blur; merely focusing and leaving it does not silently repair external state.
+
+Increment/decrement remain available when empty. They start from `min` when present, otherwise zero, apply the requested step, then clamp. Canceled changes restore the accepted input value. Native form reset restores the mount-time value and clears interaction state; a canceled reset leaves both unchanged.
+
 ## API Reference
 
 ### Props

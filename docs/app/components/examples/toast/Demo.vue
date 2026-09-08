@@ -42,7 +42,7 @@ function show(type: ToastType) {
 
   <Toast
     :ui="{
-      viewport: 'w-[min(100vw,24rem)]',
+      viewport: 'w-[min(100vw,24rem)] p-4',
       toast: 'relative grid gap-1 rounded-lg border border-neutral-300 bg-white p-4 pr-10 shadow-lg data-[akaza-type=error]:border-red-500 data-[akaza-type=warning]:border-amber-500 dark:border-neutral-800 dark:bg-neutral-900',
       title: 'text-sm font-semibold text-neutral-900 dark:text-neutral-100',
       description: 'text-sm text-neutral-600 dark:text-neutral-400',

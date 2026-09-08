@@ -209,28 +209,27 @@ function activate(item: TabsItem, event?: Event) {
 </template>
 
 <style>
-.akaza-tab-list {
-  position: relative;
-}
+@layer akaza-reset {
+  .akaza-tab-list {
+    position: relative;
+  }
 
-.akaza-tab-indicator {
-  position: absolute;
-  background: var(--akaza-tab-indicator-color, currentColor);
-  transition:
-    left 0.2s ease,
-    width 0.2s ease,
-    top 0.2s ease,
-    height 0.2s ease;
-  pointer-events: none;
-}
+  .akaza-tab-indicator {
+    position: absolute;
+    transition:
+      left 0.2s ease,
+      width 0.2s ease,
+      top 0.2s ease,
+      height 0.2s ease;
+    pointer-events: none;
+  }
 
-.akaza-tab-list[aria-orientation="horizontal"] .akaza-tab-indicator {
-  bottom: 0;
-  height: 2px;
-}
+  .akaza-tab-list[aria-orientation="horizontal"] .akaza-tab-indicator {
+    bottom: 0;
+  }
 
-.akaza-tab-list[aria-orientation="vertical"] .akaza-tab-indicator {
-  left: 0;
-  width: 2px;
+  .akaza-tab-list[aria-orientation="vertical"] .akaza-tab-indicator {
+    left: 0;
+  }
 }
 </style>

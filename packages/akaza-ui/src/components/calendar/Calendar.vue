@@ -52,7 +52,7 @@ const emit = defineEmits<{
 const model = defineModel<CalendarModelValue>();
 const placeholderModel = defineModel<CalendarDateValue>("placeholder");
 const localToday = today(getLocalTimeZone());
-const initialDate = firstSelected(model.value) ?? localToday;
+const initialDate = placeholderModel.value ?? firstSelected(model.value) ?? localToday;
 const internalPlaceholder = shallowRef<CalendarDateValue>(initialDate.copy());
 const focusedDate = shallowRef<CalendarDateValue>(initialDate.copy());
 const hoveredDate = shallowRef<CalendarDateValue>();
@@ -63,6 +63,17 @@ const mode = computed(() => selectionMode ?? (multiple ? "multiple" : "single"))
 const placeholder = computed<CalendarDateValue>(() => placeholderModel.value ?? internalPlaceholder.value);
 const visibleStart = computed(() => startOfMonth(placeholder.value));
 const visibleEnd = computed(() => endOfMonth(visibleStart.value.add({ months: safeNumberOfMonths.value - 1 })));
+const focusTarget = computed(() => {
+  for (const date of [focusedDate.value, placeholder.value]) {
+    if (date.compare(visibleStart.value) >= 0 && date.compare(visibleEnd.value) <= 0 && !isDateDisabled(date, false)) return date;
+  }
+  let date = visibleStart.value;
+  while (date.compare(visibleEnd.value) <= 0) {
+    if (!isDateDisabled(date, false)) return date;
+    date = date.add({ days: 1 });
+  }
+  return undefined;
+});
 const selectedDates = computed(() => {
   if (Array.isArray(model.value)) return model.value;
   if (isDateRange(model.value)) return [model.value.start, model.value.end].filter(Boolean) as CalendarDateValue[];
@@ -141,8 +152,16 @@ function dateKey(date: CalendarDateValue): string {
   return toCalendarDate(date).toString();
 }
 
+const formatters = computed(() => new Map<string, Intl.DateTimeFormat>([
+  ["heading", new Intl.DateTimeFormat(locale, { calendar: placeholder.value.calendar.identifier, month: "long", year: "numeric" })],
+  ["day", new Intl.DateTimeFormat(locale, { calendar: placeholder.value.calendar.identifier, day: "numeric" })],
+  ["full", new Intl.DateTimeFormat(locale, { calendar: placeholder.value.calendar.identifier, dateStyle: "full" })],
+  ["weekday", new Intl.DateTimeFormat(locale, { calendar: placeholder.value.calendar.identifier, weekday: weekdayFormat })],
+]));
+
 function formatDate(date: CalendarDateValue, options: Intl.DateTimeFormatOptions): string {
-  return new Intl.DateTimeFormat(locale, options).format(toCalendarDate(date).toDate(getLocalTimeZone()));
+  const key = options.month ? "heading" : options.day ? "day" : options.dateStyle ? "full" : "weekday";
+  return formatters.value.get(key)!.format(toCalendarDate(date).toDate(getLocalTimeZone()));
 }
 
 function formatMonth(date: CalendarDateValue): string {
@@ -218,7 +237,7 @@ function createDay(date: CalendarDateValue, month: CalendarDateValue): CalendarD
     outside,
     disabled: isDisabled(date, outside),
     unavailable: isUnavailable(date),
-    focused: isSameDay(date, focusedDate.value),
+    focused: Boolean(focusTarget.value && isSameDay(date, focusTarget.value)),
     rangeStart: isRangeStart(date),
     rangeEnd: isRangeEnd(date),
     inRange: mode.value === "range" && isSelected(date),
@@ -363,7 +382,7 @@ function setDayRef(element: Element | ComponentPublicInstance | null, date: Cale
 }
 
 function focusCurrentDate() {
-  dayRefs.get(dateKey(focusedDate.value))?.focus({ preventScroll: true });
+  if (focusTarget.value) dayRefs.get(dateKey(focusTarget.value))?.focus({ preventScroll: true });
 }
 
 async function focusDate(date: CalendarDateValue, reason = "keyboard", event?: Event) {

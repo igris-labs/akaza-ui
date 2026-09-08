@@ -139,6 +139,16 @@ Object values use identity by default. Supply `isEqual` when values are recreate
 </Combobox>
 ```
 
+## Async results and composition
+
+When results are replaced or reordered, the active option is reconciled by value identity. Removed or disabled options cannot be selected through a stale index; no-results/loading states do not expose missing active-descendant targets. IME confirmation Enter does not select an option prematurely.
+
+Custom option slots retain component identity during ordinary updates, preserving local state and focus.
+
+### Native Form Reset
+
+An uncanceled native form reset restores the initial model value and clears interaction validation state. Cancel the form's `reset` event to keep the current value. Reset does not emit a user `value-change` action. Controlled consumers must accept the emitted model update.
+
 ## API Reference
 
 ### Props

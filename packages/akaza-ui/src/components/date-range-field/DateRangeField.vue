@@ -242,21 +242,26 @@ function rangeError(): string {
   return "";
 }
 
+const nativeError = computed(rangeError);
+watch(nativeError, () => updateValidity(), { flush: "post" });
+
 function updateValidity(reveal = validationActive.value) {
   const input = validationRef.value;
   if (!input) return;
-  input.setCustomValidity(rangeError());
+  input.setCustomValidity(nativeError.value);
   validity.value = input.validity;
   validationMessage.value = input.validationMessage;
   nativeInvalid.value = reveal && !input.validity.valid;
 }
 
 function syncChildState() {
-  const roots = rootRef.value?.querySelectorAll<HTMLElement>(".akaza-date-field") ?? [];
-  childInvalid.value = Array.from(roots).some(root => root.dataset.akazaInvalid === "true");
-  childFilled.value = Array.from(roots).some(root => root.dataset.akazaFilled === "true");
+  const states = [startFieldRef.value?.validationState, endFieldRef.value?.validationState];
+  childInvalid.value = states.some(state => state?.invalid);
+  childFilled.value = states.some(state => state?.filled);
   updateValidity();
 }
+
+watch(() => [startFieldRef.value?.validationState, endFieldRef.value?.validationState], syncChildState, { flush: "post" });
 
 function onInput() {
   validationActive.value = true;
@@ -294,7 +299,9 @@ function clear(event?: Event): boolean {
   return requestValue({}, "clear", event);
 }
 
-function onFormReset() {
+async function onFormReset(event: Event) {
+  await nextTick();
+  if (event.defaultPrevented) return;
   model.value = cloneRange(initialRange);
   touched.value = false;
   validationActive.value = false;

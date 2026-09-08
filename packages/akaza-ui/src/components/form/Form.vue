@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import type { FormProps, FormSubmitDetails, FormValues } from ".";
-import { computed, provide, ref } from "vue";
+import { computed, nextTick, provide, ref } from "vue";
 import { formContextKey } from "./context";
 
 const {
@@ -58,7 +58,7 @@ function onSubmit(event: SubmitEvent) {
   const details: FormSubmitDetails = {
     reason: "submit",
     event,
-    formData: new FormData(form),
+    formData: new FormData(form, event.submitter),
     valid,
     cancel: () => {
       canceled = true;
@@ -71,10 +71,12 @@ function onSubmit(event: SubmitEvent) {
   if (canceled && !event.defaultPrevented) event.preventDefault();
 }
 
-function onReset(event: Event) {
+async function onReset(event: Event) {
+  emit("reset", event);
+  await nextTick();
+  if (event.defaultPrevented) return;
   submitted.value = false;
   lastValid.value = null;
-  emit("reset", event);
 }
 </script>
 

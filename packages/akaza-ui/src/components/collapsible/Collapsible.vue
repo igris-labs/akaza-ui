@@ -114,46 +114,35 @@ defineExpose({ open, close, toggle });
 
 <style>
 @layer akaza-reset {
-  .akaza-collapsible-trigger {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    background: none;
-    border: none;
-    padding: 0;
-    cursor: pointer;
-    text-align: left;
-  }
 
-  .akaza-collapsible-trigger:disabled,
-  .akaza-collapsible-trigger[data-akaza-disabled] {
-    cursor: not-allowed;
-    opacity: 0.5;
-  }
+    .akaza-collapsible-trigger {
+      background: none;
+      border: none;
+      padding: 0;
+    }
 
   .akaza-collapsible-icon {
-    flex-shrink: 0;
-    transition: transform 0.2s ease;
-  }
+      flex-shrink: 0;
+      transition: transform 0.2s ease;
+    }
 
   .akaza-collapsible-icon[data-akaza-state="open"] {
-    transform: rotate(180deg);
+      transform: rotate(180deg);
+    }
+
+  .akaza-collapsible-content {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.15s ease-out;
   }
-}
 
-.akaza-collapsible-content {
-  display: grid;
-  grid-template-rows: 0fr;
-  transition: grid-template-rows 0.15s ease-out;
-}
+  .akaza-collapsible-content[data-akaza-state="open"] {
+    grid-template-rows: 1fr;
+  }
 
-.akaza-collapsible-content[data-akaza-state="open"] {
-  grid-template-rows: 1fr;
-}
-
-.akaza-collapsible-content-inner {
-  min-height: 0;
-  overflow: hidden;
+  .akaza-collapsible-content-inner {
+    min-height: 0;
+    overflow: hidden;
+  }
 }
 </style>

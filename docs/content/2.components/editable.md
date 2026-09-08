@@ -107,6 +107,10 @@ The preview slot exposes an explicit action. Keep interaction on the generated p
 </template>
 ```
 
+### Native Form Reset
+
+An uncanceled native form reset restores the initial model value and clears interaction validation state. Cancel the form's `reset` event to keep the current value. Reset does not emit a user `value-change` action. Controlled consumers must accept the emitted model update.
+
 ## API Reference
 
 ### Model

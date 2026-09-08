@@ -130,6 +130,10 @@ Read-only segments stay focusable for inspection. Disabled segments leave the ta
 <DateRangeField :model-value="range" disabled />
 ```
 
+## Reactive validation
+
+Range and endpoint validation react to controlled values and constraints without an extra keystroke. Partial endpoint drafts participate in aggregate validity directly; styling attributes are not used as the source of truth. Changing required/min/max/unavailable or range-length constraints updates native validity. Canceled native resets leave endpoint drafts unchanged.
+
 ## API Reference
 
 ### Model

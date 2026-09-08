@@ -31,6 +31,7 @@
       }
     },
     "./nuxt": {
+      "types": "./dist/types/nuxt.d.ts",
       "import": "./dist/nuxt.js",
       "require": "./dist/nuxt.cjs"
     },

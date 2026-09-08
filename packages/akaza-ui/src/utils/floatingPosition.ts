@@ -51,16 +51,19 @@ export function useFloatingPosition(options: FloatingPositionOptions): FloatingP
   const actualSide = ref<FloatingSide>(toValue(options.side));
   const actualAlign = ref<FloatingAlign>(toValue(options.align));
   let listening = false;
+  let disposed = false;
   let resizeObserver: ResizeObserver | undefined;
 
   function update() {
-    if (typeof window === "undefined" || !toValue(options.active)) return;
+    if (disposed || typeof window === "undefined" || !toValue(options.active)) return;
     const reference = options.reference.value;
     const floating = options.floating.value;
     if (!reference || !floating) return;
 
     const referenceRect = reference.getBoundingClientRect();
-    const floatingRect = floating.getBoundingClientRect();
+    const measured = floating.getBoundingClientRect();
+    // Collision geometry must not change with the popup's enter/leave scale.
+    const floatingRect = { width: floating.offsetWidth || measured.width, height: floating.offsetHeight || measured.height };
     const width = window.innerWidth;
     const height = window.innerHeight;
     const padding = toValue(options.collisionPadding ?? 8);
@@ -95,8 +98,8 @@ export function useFloatingPosition(options: FloatingPositionOptions): FloatingP
 
     const offsetParent = floating.offsetParent as HTMLElement | null;
     const parentRect = offsetParent?.getBoundingClientRect();
-    const localLeft = parentRect ? left - parentRect.left + offsetParent!.scrollLeft : left + window.scrollX;
-    const localTop = parentRect ? top - parentRect.top + offsetParent!.scrollTop : top + window.scrollY;
+    const localLeft = parentRect ? left - parentRect.left + offsetParent!.scrollLeft - offsetParent!.clientLeft : left + window.scrollX;
+    const localTop = parentRect ? top - parentRect.top + offsetParent!.scrollTop - offsetParent!.clientTop : top + window.scrollY;
     const prefix = options.cssVarPrefix;
 
     actualSide.value = side;
@@ -119,7 +122,7 @@ export function useFloatingPosition(options: FloatingPositionOptions): FloatingP
   }
 
   function addListeners() {
-    if (listening || typeof window === "undefined") return;
+    if (disposed || listening || typeof window === "undefined") return;
     listening = true;
     window.addEventListener("scroll", update, { passive: true, capture: true });
     window.addEventListener("resize", update, { passive: true });
@@ -170,7 +173,10 @@ export function useFloatingPosition(options: FloatingPositionOptions): FloatingP
     addListeners();
   });
 
-  onUnmounted(removeListeners);
+  onUnmounted(() => {
+    disposed = true;
+    removeListeners();
+  });
 
   return { style, actualSide, actualAlign, update };
 }

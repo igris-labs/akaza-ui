@@ -96,6 +96,10 @@ Use vertical orientation when progress should match a vertical layout.
 </template>
 ```
 
+### Value Bounds
+
+Finite values are clamped to the effective bounds for ARIA, slots, percentage, and completion state without rewriting the model. A null or non-finite value is indeterminate. A non-finite minimum falls back to 0; an invalid maximum falls back to the effective minimum plus 100.
+
 ## API Reference
 
 ### Props

@@ -1,12 +1,13 @@
-import type { Ref } from "vue";
+import type { InjectionKey, Ref } from "vue";
 import { createGlobalState } from "@vueuse/core";
-import { onUnmounted } from "vue";
+import { inject, onUnmounted, provide, watchPostEffect } from "vue";
 import { getFocusableElements } from "./focusable";
 
 interface FocusScopeAPI {
   paused: boolean;
   container: Ref<HTMLElement | null>;
   getExemptElements: () => Array<HTMLElement | null | undefined>;
+  branches: Set<HTMLElement>;
   pause: () => void;
   resume: () => void;
 }
@@ -40,7 +41,7 @@ const useScopeStack = createGlobalState(() => {
     restoreOutsideTree();
     if (typeof document === "undefined") return;
     const top = stack[stack.length - 1];
-    const protectedElements = [top?.container.value, ...(top?.getExemptElements() ?? [])]
+    const protectedElements = [top?.container.value, ...(top?.branches ?? []), ...(top?.getExemptElements() ?? [])]
       .filter((element): element is HTMLElement => Boolean(element));
     if (!protectedElements.length) return;
 
@@ -80,6 +81,7 @@ const useScopeStack = createGlobalState(() => {
   }
 
   return {
+    refresh: hideOutsideTree,
     add(scope: FocusScopeAPI) {
       const top = stack[stack.length - 1];
       if (top && top !== scope) top.pause();
@@ -87,12 +89,13 @@ const useScopeStack = createGlobalState(() => {
       const idx = stack.indexOf(scope);
       if (idx !== -1) stack.splice(idx, 1);
       stack.push(scope);
-      lockBody();
+      if (idx === -1) lockBody();
       hideOutsideTree();
     },
     remove(scope: FocusScopeAPI) {
       const idx = stack.indexOf(scope);
-      if (idx !== -1) stack.splice(idx, 1);
+      if (idx === -1) return;
+      stack.splice(idx, 1);
       unlockBody();
       // resume the new top
       stack[stack.length - 1]?.resume();
@@ -100,6 +103,24 @@ const useScopeStack = createGlobalState(() => {
     },
   };
 });
+
+const focusBranchesKey: InjectionKey<Set<HTMLElement>> = Symbol("akaza-focus-branches");
+
+/** Register a logically owned popup without exposing portal wiring publicly. */
+export function useFocusBranch(element: Ref<HTMLElement | null>) {
+  const branches = inject(focusBranchesKey, null);
+  const stack = useScopeStack();
+  watchPostEffect((cleanup) => {
+    const node = element.value;
+    if (!node || !branches) return;
+    branches.add(node);
+    stack.refresh();
+    cleanup(() => {
+      branches.delete(node);
+      stack.refresh();
+    });
+  });
+}
 
 interface FocusScopeOptions {
   /** CSS selector for the element to focus when the scope activates. Falls back to the first focusable element. */
@@ -111,10 +132,13 @@ interface FocusScopeOptions {
 export function useFocusScope(containerRef: Ref<HTMLElement | null>, options: FocusScopeOptions = {}) {
   let previouslyFocused: HTMLElement | null = null;
   let focusOperation = 0;
+  const branches = new Set<HTMLElement>();
+  provide(focusBranchesKey, branches);
 
   const scope: FocusScopeAPI = {
     paused: false,
     container: containerRef,
+    branches,
     getExemptElements: options.getExemptElements ?? (() => []),
     pause() {
       this.paused = true;
@@ -129,7 +153,7 @@ export function useFocusScope(containerRef: Ref<HTMLElement | null>, options: Fo
   function handleKeyDown(event: KeyboardEvent) {
     if (scope.paused || event.key !== "Tab" || !containerRef.value) return;
 
-    const focusable = getFocusableElements(containerRef.value);
+    const focusable = [...new Set([containerRef.value, ...branches].flatMap(getFocusableElements))];
     if (focusable.length === 0) {
       event.preventDefault();
       return;
@@ -167,6 +191,7 @@ export function useFocusScope(containerRef: Ref<HTMLElement | null>, options: Fo
   function handleFocusIn(event: FocusEvent) {
     if (scope.paused || !containerRef.value) return;
     if (containerRef.value.contains(event.target as Node)) return;
+    if ([...branches].some((branch) => branch.contains(event.target as Node))) return;
     focusFirst();
   }
 

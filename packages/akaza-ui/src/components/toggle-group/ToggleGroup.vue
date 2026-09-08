@@ -2,6 +2,7 @@
 import type { ToggleGroupModel, ToggleGroupOption, ToggleGroupProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
 import { computed, ref } from "vue";
+import { useCheckableField } from "../../utils/useCheckableField";
 
 const {
   options,
@@ -28,12 +29,18 @@ const emit = defineEmits<{
 
 const model = defineModel<ToggleGroupModel>({ default: "" });
 const itemEls = ref<Array<HTMLElement | null>>([]);
+const inputRef = ref<HTMLInputElement | null>(null);
+const focusedIndex = ref(-1);
 
 const selectedValues = computed<string[]>(() => {
   if (Array.isArray(model.value)) return model.value;
   return model.value ? [model.value] : [];
 });
 const submittedValues = computed(() => type === "multiple" ? selectedValues.value : selectedValues.value.slice(0, 1));
+const bridge = useCheckableField(model, inputRef, () => focusItem(getRovingIndex()), computed(() => selectedValues.value.length > 0));
+const effectiveDisabled = computed(() => disabled || bridge.field?.disabled.value || false);
+const effectiveRequired = computed(() => required || bridge.field?.required.value || false);
+const effectiveName = computed(() => name ?? bridge.field?.name.value);
 
 function getValue(option: ToggleGroupOption): string {
   if (valueKey) return String(option[valueKey] ?? "");
@@ -51,7 +58,7 @@ function getDescription(option: ToggleGroupOption): string | undefined {
 }
 
 function isItemDisabled(option: ToggleGroupOption): boolean {
-  return disabled || Boolean(option[disabledKey]);
+  return effectiveDisabled.value || Boolean(option[disabledKey]);
 }
 
 function isSelected(option: ToggleGroupOption): boolean {
@@ -59,6 +66,7 @@ function isSelected(option: ToggleGroupOption): boolean {
 }
 
 function getRovingIndex(): number {
+  if (options[focusedIndex.value] && !isItemDisabled(options[focusedIndex.value]!)) return focusedIndex.value;
   const selectedIndex = options.findIndex((option) => isSelected(option) && !isItemDisabled(option));
   if (selectedIndex >= 0) return selectedIndex;
   return options.findIndex((option) => !isItemDisabled(option));
@@ -75,7 +83,8 @@ function setItemRef(el: HTMLElement | null, index: number) {
 }
 
 function focusItem(index: number) {
-  itemEls.value[index]?.focus();
+  focusedIndex.value = index;
+  itemEls.value[index]?.focus({ preventScroll: true });
 }
 
 function nextValue(option: ToggleGroupOption): ToggleGroupModel {
@@ -90,9 +99,9 @@ function nextValue(option: ToggleGroupOption): ToggleGroupModel {
 }
 
 function select(option: ToggleGroupOption, event?: Event) {
-  if (isItemDisabled(option)) return;
+  if (isItemDisabled(option) || inputRef.value?.matches(":disabled")) return;
   const next = nextValue(option);
-  if (required && (Array.isArray(next) ? next.length === 0 : !next)) return;
+  if (effectiveRequired.value && (Array.isArray(next) ? next.length === 0 : !next)) return;
   let canceled = false;
   emit("value-change", next, {
     reason: event ? "trigger" : "programmatic",
@@ -101,7 +110,10 @@ function select(option: ToggleGroupOption, event?: Event) {
       canceled = true;
     },
   });
-  if (!canceled) model.value = next;
+  if (!canceled) {
+    model.value = next;
+    bridge.onChange();
+  }
 }
 
 function move(index: number, delta: number) {
@@ -150,22 +162,38 @@ function handleKeydown(event: KeyboardEvent, index: number) {
 
 <template>
   <div
+    v-bind="bridge.attrs.value"
     role="group"
     :aria-label="ariaLabel"
-    :aria-labelledby="ariaLabelledby"
-    :aria-required="required || undefined"
+    :aria-labelledby="ariaLabelledby ?? bridge.field?.labelledBy.value"
+    :aria-describedby="bridge.field?.describedBy.value"
+    :aria-invalid="bridge.invalid.value || undefined"
     :data-akaza-orientation="orientation"
     :data-akaza-type="type"
-    :data-akaza-disabled="disabled || undefined"
+    :data-akaza-disabled="effectiveDisabled || undefined"
     :class="ui?.root"
     class="akaza-toggle-group"
   >
-    <template v-if="name">
+    <input
+      ref="inputRef"
+      type="text"
+      tabindex="-1"
+      aria-hidden="true"
+      :value="selectedValues.length ? 'selected' : ''"
+      :required="effectiveRequired"
+      :disabled="effectiveDisabled"
+      :class="ui?.input"
+      class="akaza-toggle-group-input"
+      style="position: absolute; width: 1px; height: 1px; padding: 0; border: 0; opacity: 0; pointer-events: none"
+      @invalid="bridge.onInvalid"
+    >
+    <template v-if="effectiveName">
       <input
         v-for="value in submittedValues"
         :key="value"
         type="hidden"
-        :name="name"
+        :name="effectiveName"
+        :disabled="effectiveDisabled"
         :value="value"
         :class="ui?.input"
         class="akaza-toggle-group-input"
@@ -174,6 +202,7 @@ function handleKeydown(event: KeyboardEvent, index: number) {
 
     <button
       v-for="(option, index) in options"
+      :id="index === getRovingIndex() ? bridge.field?.inputId.value : undefined"
       :key="getValue(option)"
       :ref="(el) => setItemRef(el as HTMLElement | null, index)"
       type="button"
@@ -186,6 +215,8 @@ function handleKeydown(event: KeyboardEvent, index: number) {
       class="akaza-toggle-group-item"
       @click="select(option, $event)"
       @keydown="handleKeydown($event, index)"
+      @focus="focusedIndex = index; bridge.onFocus()"
+      @blur="bridge.onBlur"
     >
       <slot
         name="item"
@@ -213,11 +244,13 @@ function handleKeydown(event: KeyboardEvent, index: number) {
 </template>
 
 <style>
-.akaza-toggle-group {
-  display: inline-flex;
-}
+@layer akaza-reset {
+  .akaza-toggle-group {
+    display: inline-flex;
+  }
 
-.akaza-toggle-group[data-akaza-orientation="vertical"] {
-  flex-direction: column;
+  .akaza-toggle-group[data-akaza-orientation="vertical"] {
+    flex-direction: column;
+  }
 }
 </style>

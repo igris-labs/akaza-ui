@@ -117,6 +117,10 @@ Use nested `startField` and `endField` UI objects for segment parts while root U
 />
 ```
 
+## Reactive validation
+
+Aggregate range validity includes partial endpoint drafts and reacts to changing min/max and other constraints. Child styling attributes are not the source of validation state. Native reset restores both initial endpoints unless canceled.
+
 ## API Reference
 
 ### Models

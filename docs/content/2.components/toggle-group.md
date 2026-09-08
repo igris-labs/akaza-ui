@@ -118,6 +118,12 @@ When `name` is provided, selected values are submitted with the form. Multiple m
 </template>
 ```
 
+### Native Form Reset
+
+Within `Field`, the group inherits name, required, disabled, label, and description metadata. An unnamed required group still participates in native validation. Invalid submission focuses an enabled toggle; disabled groups do not serialize selected values.
+
+An uncanceled native form reset restores the initial model value and clears interaction validation state. Cancel the form's `reset` event to keep the current value. Reset does not emit a user `value-change` action. Controlled consumers must accept the emitted model update.
+
 ## API Reference
 
 ### Props
@@ -167,7 +173,7 @@ When `name` is provided, selected values are submitted with the form. Multiple m
 
 | UI key | CSS class | Data attrs |
 |--------|-----------|------------|
-| `root` | `akaza-toggle-group` | `data-akaza-orientation`, `data-akaza-type`, `data-akaza-disabled` |
+| `root` | `akaza-toggle-group` | `data-akaza-orientation`, `data-akaza-type`, `data-akaza-disabled`, `data-akaza-invalid`, `data-akaza-dirty`, `data-akaza-touched`, `data-akaza-focused`, `data-akaza-filled` |
 | `input` | `akaza-toggle-group-input` | — |
 | `item` | `akaza-toggle-group-item` | `data-akaza-state`, `data-akaza-disabled` |
 | `label` | `akaza-toggle-group-label` | — |

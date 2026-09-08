@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { MenuItem } from ".";
 import { inject, nextTick, onUnmounted, ref, useTemplateRef } from "vue";
+import SlotContent from "../../utils/SlotContent";
 import { MENU_CONTEXT_KEY } from "./context";
 
 defineOptions({ name: "MenuPanel" });
@@ -13,6 +14,11 @@ const { items, ariaLabelledby } = defineProps<{
 const ctx = inject(MENU_CONTEXT_KEY)!;
 
 const panelRef = useTemplateRef<HTMLElement>("panelRef");
+
+function findSubmenu(value: string) {
+  return Array.from(panelRef.value?.querySelectorAll<HTMLElement>(".akaza-menu-submenu-content") ?? [])
+    .find(element => element.dataset.akazaSubmenu === value)?.querySelector<HTMLElement>('[role="menu"]');
+}
 const activeSubmenu = ref<string | null>(null);
 
 // ── Focus / highlight ────────────────────────────────────────────────────────
@@ -75,9 +81,7 @@ function onPanelKeydown(e: KeyboardEvent) {
       if (value) {
         activeSubmenu.value = value;
         nextTick(() => {
-          const submenu = panelRef.value?.querySelector<HTMLElement>(
-            `.akaza-menu-submenu-content[data-akaza-submenu="${value}"] > [role="menu"]`,
-          );
+          const submenu = findSubmenu(value);
           const first = getItems(submenu)?.[0];
           if (first) highlightItem(first);
         });
@@ -138,9 +142,7 @@ function openSubmenu(item: MenuItem) {
 function openSubmenuAndFocus(item: MenuItem) {
   openSubmenu(item);
   nextTick(() => {
-    const sub = panelRef.value?.querySelector<HTMLElement>(
-      `.akaza-menu-submenu-content[data-akaza-submenu="${ctx.getItemValue(item)}"] > [role="menu"]`,
-    );
+    const sub = findSubmenu(ctx.getItemValue(item));
     const first = getItems(sub)?.[0];
     if (first) highlightItem(first);
   });
@@ -162,9 +164,8 @@ function onSubmenuKeydown(e: KeyboardEvent, item: MenuItem) {
     e.preventDefault();
     e.stopPropagation();
     activeSubmenu.value = null;
-    const trigger = panelRef.value?.querySelector<HTMLElement>(
-      `[data-akaza-value="${ctx.getItemValue(item)}"]`,
-    );
+    const trigger = Array.from(panelRef.value?.querySelectorAll<HTMLElement>("[data-akaza-value]") ?? [])
+      .find(element => element.dataset.akazaValue === ctx.getItemValue(item));
     trigger?.focus({ preventScroll: true });
   }
 }
@@ -222,9 +223,10 @@ defineExpose({ panelRef, getItems, highlightItem });
             :class="ctx.ui?.label"
             class="akaza-menu-label"
           >
-            <component
-              :is="() => ctx.rootSlots[item.slot ?? 'label']!({ item })"
+            <SlotContent
               v-if="hasRootSlot(item.slot ?? 'label')"
+              :render="ctx.rootSlots[item.slot ?? 'label']!"
+              :scope="{ item }"
             />
             <template v-else>{{ item.label }}</template>
           </div>

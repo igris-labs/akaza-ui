@@ -53,9 +53,11 @@ const hasDescription = computed(() => !!(description || slots.description));
 </template>
 
 <style>
-.akaza-fieldset {
-  border: 0;
-  min-inline-size: 0;
-  padding: 0;
+@layer akaza-reset {
+  .akaza-fieldset {
+    border: 0;
+    min-inline-size: 0;
+    padding: 0;
+  }
 }
 </style>

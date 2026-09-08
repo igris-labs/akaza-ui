@@ -4,6 +4,8 @@ import type { AkazaChangeEventDetails } from "../../types";
 import { computed, inject, nextTick, onBeforeUnmount, onMounted, onUpdated, ref, useId, useTemplateRef, watch } from "vue";
 import { useDismissableLayer } from "../../utils/dismissableLayer";
 import { useFloatingPosition } from "../../utils/floatingPosition";
+import { useFocusBranch } from "../../utils/focusScope";
+import { useFormReset } from "../../utils/useFormReset";
 import { fieldContextKey } from "../field/context";
 
 const {
@@ -55,6 +57,7 @@ const nativeRef = useTemplateRef<HTMLSelectElement>("nativeRef");
 const triggerRef = useTemplateRef<HTMLButtonElement>("triggerRef");
 const searchRef = useTemplateRef<HTMLInputElement>("searchRef");
 const contentRef = useTemplateRef<HTMLElement>("contentRef");
+useFocusBranch(contentRef);
 const optionRefs = ref<Array<HTMLElement | null>>([]);
 const focused = ref(false);
 const touched = ref(false);
@@ -87,9 +90,6 @@ const selectedLabel = computed(() =>
 const isFilled = computed(() => selectedValues.value.length > 0);
 const isDirty = computed(() => !modelValuesEqual(model.value, initialValue));
 const activeIndex = ref(-1);
-const activeOptionId = computed(() =>
-  openModel.value && !loading && activeIndex.value >= 0 ? `${contentId}-option-${activeIndex.value}` : undefined,
-);
 const visibleOptions = computed(() => {
   const query = searchModel.value.trim().toLowerCase();
   if (!autocomplete || !query) return options;
@@ -101,6 +101,14 @@ const visibleOptions = computed(() => {
   });
 });
 const hasVisibleOption = computed(() => visibleOptions.value.some(isSelectableOption));
+const activeOptionId = computed(() =>
+  openModel.value && !loading && visibleOptions.value[activeIndex.value] && !isItemDisabled(visibleOptions.value[activeIndex.value]!) ? `${contentId}-option-${activeIndex.value}` : undefined,
+);
+watch(visibleOptions, (current, previous) => {
+  const active = previous[activeIndex.value];
+  const preserved = active ? current.findIndex(option => !isItemDisabled(option) && getValue(option) === getValue(active)) : -1;
+  activeIndex.value = preserved >= 0 ? preserved : current.findIndex(option => !isItemDisabled(option));
+}, { flush: "sync" });
 
 const triggerProps = computed(() => ({
   id: resolvedId.value,
@@ -197,6 +205,16 @@ function modelValuesEqual(left: SelectModelValue, right: SelectModelValue) {
     && leftValues.every((value, index) => value === rightValues[index]);
 }
 
+useFormReset(() => nativeRef.value, () => {
+  model.value = Array.isArray(initialValue) ? [...initialValue] : initialValue;
+  touched.value = false;
+  validationActive.value = false;
+  nativeInvalid.value = false;
+  openModel.value = false;
+  searchModel.value = "";
+  activeIndex.value = -1;
+});
+
 function updateValidity(reveal = validationActive.value) {
   const select = nativeRef.value;
   if (!select) return;
@@ -289,7 +307,7 @@ function onTriggerKeydown(event: KeyboardEvent) {
   if (event.key === "Enter" || event.key === " ") {
     event.preventDefault();
     if (!openModel.value) setOpen(true, "keyboard", event);
-    else if (activeIndex.value >= 0) selectOption(visibleOptions.value[activeIndex.value]!, event);
+    else if (visibleOptions.value[activeIndex.value]) selectOption(visibleOptions.value[activeIndex.value]!, event);
     return;
   }
   if (event.key === "Escape") {
@@ -352,12 +370,14 @@ function onSearchInput(event: Event) {
 }
 
 function onSearchKeydown(event: KeyboardEvent) {
+  if (event.isComposing) return;
   if (event.key === "ArrowDown" || event.key === "ArrowUp") {
     event.preventDefault();
     move(event.key === "ArrowDown" ? 1 : -1);
   } else if (event.key === "Enter" && activeIndex.value >= 0) {
     event.preventDefault();
-    selectOption(visibleOptions.value[activeIndex.value]!, event);
+    const option = visibleOptions.value[activeIndex.value];
+    if (option) selectOption(option, event);
   } else if (event.key === "Escape") {
     event.preventDefault();
     setOpen(false, "escape", event);
@@ -379,6 +399,10 @@ function onSearchKeydown(event: KeyboardEvent) {
 function onNativeChange(event: Event) {
   validationActive.value = true;
   const select = event.target as HTMLSelectElement;
+  const restoreAcceptedSelection = () => nextTick(() => {
+    for (const option of Array.from(select.options)) option.selected = selectedValues.value.includes(option.value);
+    updateValidity();
+  });
   if (multiple) {
     const next = Array.from(select.selectedOptions).map((option) => option.value);
     let canceled = false;
@@ -390,6 +414,7 @@ function onNativeChange(event: Event) {
       },
     });
     if (!canceled) model.value = next;
+    restoreAcceptedSelection();
     updateValidity();
     return;
   }
@@ -408,6 +433,7 @@ function onNativeChange(event: Event) {
     if (!canceled) model.value = nullableValue;
     updateValidity();
   }
+  restoreAcceptedSelection();
 }
 
 function onDocumentPointerDown(event: PointerEvent) {
@@ -676,95 +702,97 @@ onBeforeUnmount(() => {
 </template>
 
 <style>
-.akaza-select {
-  position: relative;
-  display: inline-block;
-}
+@layer akaza-reset {
+  .akaza-select {
+    position: relative;
+    display: inline-block;
+  }
 
-.akaza-select-native {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
-  pointer-events: none;
-}
+  .akaza-select-native {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+  }
 
-.akaza-select-content {
-  position: absolute;
-  z-index: var(--akaza-z-select, calc(var(--akaza-z-layer-base, 1200) + var(--akaza-layer-order, 0) + 1));
-  min-width: 100%;
-}
+  .akaza-select-content {
+    position: absolute;
+    z-index: var(--akaza-z-select, calc(var(--akaza-z-layer-base, 1200) + var(--akaza-layer-order, 0) + 1));
+    min-width: 100%;
+  }
 
-.akaza-select-search-input {
-  box-sizing: border-box;
-  width: 100%;
-}
+  .akaza-select-search-input {
+    box-sizing: border-box;
+    width: 100%;
+  }
 
-.akaza-select-viewport {
-  max-height: min(16rem, 60vh);
-  overflow: auto;
-}
+  .akaza-select-viewport {
+    max-height: min(16rem, 60vh);
+    overflow: auto;
+  }
 
-.akaza-select-content[data-akaza-side="bottom"] {
-  top: calc(100% + var(--akaza-select-side-offset, 6px));
-}
+  .akaza-select-content[data-akaza-side="bottom"] {
+    top: calc(100% + var(--akaza-select-side-offset, 6px));
+  }
 
-.akaza-select-content[data-akaza-side="top"] {
-  bottom: calc(100% + var(--akaza-select-side-offset, 6px));
-}
+  .akaza-select-content[data-akaza-side="top"] {
+    bottom: calc(100% + var(--akaza-select-side-offset, 6px));
+  }
 
-.akaza-select-content[data-akaza-side="right"] {
-  left: calc(100% + var(--akaza-select-side-offset, 6px));
-  top: 0;
-}
+  .akaza-select-content[data-akaza-side="right"] {
+    left: calc(100% + var(--akaza-select-side-offset, 6px));
+    top: 0;
+  }
 
-.akaza-select-content[data-akaza-side="left"] {
-  right: calc(100% + var(--akaza-select-side-offset, 6px));
-  top: 0;
-}
+  .akaza-select-content[data-akaza-side="left"] {
+    right: calc(100% + var(--akaza-select-side-offset, 6px));
+    top: 0;
+  }
 
-.akaza-select-content[data-akaza-align="center"] {
-  left: 50%;
-  transform: translateX(-50%);
-}
+  .akaza-select-content[data-akaza-align="center"] {
+    left: 50%;
+    transform: translateX(-50%);
+  }
 
-.akaza-select-content[data-akaza-align="end"] {
-  right: 0;
-}
+  .akaza-select-content[data-akaza-align="end"] {
+    right: 0;
+  }
 
-.akaza-select-content[data-akaza-side="left"][data-akaza-align="end"],
-.akaza-select-content[data-akaza-side="right"][data-akaza-align="end"] {
-  top: auto;
-  bottom: 0;
-}
+  .akaza-select-content[data-akaza-side="left"][data-akaza-align="end"],
+  .akaza-select-content[data-akaza-side="right"][data-akaza-align="end"] {
+    top: auto;
+    bottom: 0;
+  }
 
-.akaza-select-enter-active,
-.akaza-select-leave-active {
-  transition:
-    opacity var(--akaza-select-duration, 120ms) ease-out,
-    scale var(--akaza-select-duration, 120ms) ease-out,
-    translate var(--akaza-select-duration, 120ms) ease-out;
-}
-
-.akaza-select-enter-from,
-.akaza-select-leave-to {
-  opacity: 0;
-  scale: 0.98;
-}
-
-.akaza-select-enter-from[data-akaza-side="bottom"],
-.akaza-select-leave-to[data-akaza-side="bottom"] { translate: 0 -4px; }
-.akaza-select-enter-from[data-akaza-side="top"],
-.akaza-select-leave-to[data-akaza-side="top"] { translate: 0 4px; }
-.akaza-select-enter-from[data-akaza-side="right"],
-.akaza-select-leave-to[data-akaza-side="right"] { translate: -4px 0; }
-.akaza-select-enter-from[data-akaza-side="left"],
-.akaza-select-leave-to[data-akaza-side="left"] { translate: 4px 0; }
-
-@media (prefers-reduced-motion: reduce) {
   .akaza-select-enter-active,
   .akaza-select-leave-active {
-    transition-duration: 0.01ms;
+    transition:
+      opacity var(--akaza-select-duration, 120ms) ease-out,
+      scale var(--akaza-select-duration, 120ms) ease-out,
+      translate var(--akaza-select-duration, 120ms) ease-out;
+  }
+
+  .akaza-select-enter-from,
+  .akaza-select-leave-to {
+    opacity: 0;
+    scale: 0.98;
+  }
+
+  .akaza-select-enter-from[data-akaza-side="bottom"],
+  .akaza-select-leave-to[data-akaza-side="bottom"] { translate: 0 -4px; }
+  .akaza-select-enter-from[data-akaza-side="top"],
+  .akaza-select-leave-to[data-akaza-side="top"] { translate: 0 4px; }
+  .akaza-select-enter-from[data-akaza-side="right"],
+  .akaza-select-leave-to[data-akaza-side="right"] { translate: -4px 0; }
+  .akaza-select-enter-from[data-akaza-side="left"],
+  .akaza-select-leave-to[data-akaza-side="left"] { translate: 4px 0; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .akaza-select-enter-active,
+    .akaza-select-leave-active {
+      transition-duration: 0.01ms;
+    }
   }
 }
 </style>

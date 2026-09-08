@@ -36,16 +36,9 @@ const computedValueText = computed(() =>
   ?? getValueLabel?.(formattedValue.value, clampedValue.value),
 );
 const state = computed(() => {
-  if (low !== undefined && clampedValue.value < low) return "low";
-  if (high !== undefined && clampedValue.value > high) return "high";
-  if (optimum !== undefined) {
-    const belowLow = low !== undefined && optimum < low && clampedValue.value < low;
-    const aboveHigh = high !== undefined && optimum > high && clampedValue.value > high;
-    const normal = (low === undefined || clampedValue.value >= low)
-      && (high === undefined || clampedValue.value <= high);
-    if (belowLow || aboveHigh || normal) return "optimum";
-  }
-  return "normal";
+  const region = (amount: number) => low !== undefined && amount < low ? "low" : high !== undefined && amount > high ? "high" : "normal";
+  const current = region(clampedValue.value);
+  return optimum !== undefined && region(optimum) === current ? "optimum" : current;
 });
 const rootStyle = computed(() => ({
   "--akaza-meter-percentage": `${percentage.value}%`,
@@ -56,7 +49,7 @@ const rootStyle = computed(() => ({
   <div
     role="meter"
     :aria-label="ariaLabel"
-    :aria-labelledby="ariaLabelledby ?? (label ? labelId : undefined)"
+    :aria-labelledby="ariaLabelledby ?? (label || $slots.label ? labelId : undefined)"
     :aria-valuemin="min"
     :aria-valuemax="max"
     :aria-valuenow="clampedValue"
@@ -96,14 +89,16 @@ const rootStyle = computed(() => ({
 </template>
 
 <style>
-.akaza-meter-track {
-  display: block;
-  overflow: hidden;
-}
+@layer akaza-reset {
+  .akaza-meter-track {
+    display: block;
+    overflow: hidden;
+  }
 
-.akaza-meter-indicator {
-  display: block;
-  width: var(--akaza-meter-percentage);
-  height: 100%;
+  .akaza-meter-indicator {
+    display: block;
+    width: var(--akaza-meter-percentage);
+    height: 100%;
+  }
 }
 </style>

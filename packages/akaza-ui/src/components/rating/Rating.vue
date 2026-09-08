@@ -3,6 +3,7 @@ import type { ComponentPublicInstance } from "vue";
 import type { RatingProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
 import { computed, inject, nextTick, onBeforeUnmount, onMounted, onUpdated, ref, useId } from "vue";
+import { useFormReset } from "../../utils/useFormReset";
 import { fieldContextKey } from "../field/context";
 
 const {
@@ -83,15 +84,16 @@ function normalize(value: number): number {
   if (!Number.isFinite(value)) return 0;
   const clamped = Math.min(safeLength.value, Math.max(0, value));
   if (clamped === 0) return 0;
-  return round(Math.round(clamped / safeStep.value) * safeStep.value);
+  return values.value.reduce((nearest, candidate) =>
+    Math.abs(candidate - clamped) < Math.abs(nearest - clamped) ? candidate : nearest, 0);
 }
 
 function stepsForItem(item: number): number[] {
   const itemValues: number[] = [];
-  for (let fraction = safeStep.value; fraction < 1; fraction += safeStep.value) {
-    itemValues.push(round(item - 1 + fraction));
+  for (let index = Math.floor((item - 1) / safeStep.value) + 1; round(index * safeStep.value) <= item; index++) {
+    itemValues.push(round(index * safeStep.value));
   }
-  itemValues.push(item);
+  if (item === safeLength.value && itemValues[itemValues.length - 1] !== item) itemValues.push(item);
   return itemValues;
 }
 
@@ -110,6 +112,15 @@ function createDetails(reason: string, event?: Event) {
 function valueLabel(value: number): string {
   return getValueLabel?.(value, safeLength.value) ?? `${value} of ${safeLength.value}`;
 }
+
+useFormReset(() => hiddenRef.value, () => {
+  model.value = initialValue;
+  touched.value = false;
+  validationActive.value = false;
+  nativeInvalid.value = false;
+  hoveredValue.value = null;
+  focusedValue.value = null;
+});
 
 function updateValidity(reveal = validationActive.value) {
   const input = hiddenRef.value;

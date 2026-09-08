@@ -163,48 +163,50 @@ defineExpose({ open, close, toggle, titleId, descriptionId });
 </template>
 
 <style>
-.akaza-dialog-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: var(--akaza-z-overlay, calc(var(--akaza-z-layer-base, 1200) + var(--akaza-layer-order, 0)));
-}
+@layer akaza-reset {
+  .akaza-dialog-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: var(--akaza-z-overlay, calc(var(--akaza-z-layer-base, 1200) + var(--akaza-layer-order, 0)));
+  }
 
-.akaza-dialog-content {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  translate: -50% -50%;
-  z-index: var(--akaza-z-overlay-content, calc(var(--akaza-z-layer-base, 1200) + var(--akaza-layer-order, 0) + 1));
-}
+  .akaza-dialog-content {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    translate: -50% -50%;
+    z-index: var(--akaza-z-overlay-content, calc(var(--akaza-z-layer-base, 1200) + var(--akaza-layer-order, 0) + 1));
+  }
 
-.akaza-dialog-content[data-akaza-fullscreen] {
-  top: 0;
-  left: 0;
-  translate: 0;
-  width: 100%;
-  height: 100%;
-}
+  .akaza-dialog-content[data-akaza-fullscreen] {
+    top: 0;
+    left: 0;
+    translate: 0;
+    width: 100%;
+    height: 100%;
+  }
 
-.akaza-dialog-overlay-enter-active,
-.akaza-dialog-overlay-leave-active {
-  transition: opacity var(--akaza-dialog-duration, 100ms) ease-out;
-}
+  .akaza-dialog-overlay-enter-active,
+  .akaza-dialog-overlay-leave-active {
+    transition: opacity var(--akaza-dialog-duration, 100ms) ease-out;
+  }
 
-.akaza-dialog-overlay-enter-from,
-.akaza-dialog-overlay-leave-to {
-  opacity: 0;
-}
+  .akaza-dialog-overlay-enter-from,
+  .akaza-dialog-overlay-leave-to {
+    opacity: 0;
+  }
 
-.akaza-dialog-enter-active,
-.akaza-dialog-leave-active {
-  transition:
-    opacity var(--akaza-dialog-duration, 100ms) ease-out,
-    transform var(--akaza-dialog-duration, 100ms) ease-out;
-}
+  .akaza-dialog-enter-active,
+  .akaza-dialog-leave-active {
+    transition:
+      opacity var(--akaza-dialog-duration, 100ms) ease-out,
+      transform var(--akaza-dialog-duration, 100ms) ease-out;
+  }
 
-.akaza-dialog-enter-from,
-.akaza-dialog-leave-to {
-  opacity: 0;
-  transform: scale(0.95);
+  .akaza-dialog-enter-from,
+  .akaza-dialog-leave-to {
+    opacity: 0;
+    transform: scale(0.95);
+  }
 }
 </style>

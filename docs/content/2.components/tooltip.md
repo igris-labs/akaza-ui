@@ -122,6 +122,12 @@ const open = ref(false);
 </template>
 ```
 
+## Hover, SSR, and layers
+
+The transparent hit area bridges the positioning gap while moving from trigger to tooltip content. Escape dismisses immediately, independently of `closeDelay`. Delay props remain reactive after mount.
+
+Open tooltips do not install browser listeners during SSR. Client tooltips participate in the shared popup layer order and modal ownership. Bind the slot's `triggerProps` to the actual focusable trigger so `aria-describedby` reaches the correct element.
+
 ## API Reference
 
 ### Props

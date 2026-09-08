@@ -103,6 +103,16 @@ Inside [Field](/components/field), Rating inherits label, name, required, disabl
 </template>
 ```
 
+## Fractional values
+
+Rendering, normalization, keyboard navigation, and submission use the same legal value grid. Arbitrary steps such as `0.3` are supported; the terminal maximum remains selectable even when the step does not divide it evenly. An accepted nonzero value corresponds to a rendered checked radio.
+
+Default star content is replaceable through `#empty` and `#filled`. Provide visual sizes and colors through `ui`; custom artwork belongs in those slots.
+
+### Native Form Reset
+
+An uncanceled native form reset restores the initial model value and clears interaction validation state. Cancel the form's `reset` event to keep the current value. Reset does not emit a user `value-change` action. Controlled consumers must accept the emitted model update.
+
 ## API Reference
 
 ### Model

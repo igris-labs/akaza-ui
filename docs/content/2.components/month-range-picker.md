@@ -86,6 +86,10 @@ Hard boundaries also disable paging when no month on the target page can be sele
 />
 ```
 
+## Calendar-aware pages
+
+Year-sized month pages use calendar-year arithmetic, including leap-month years. Labels follow the value calendar and locale rather than assuming Gregorian dates.
+
 ## API Reference
 
 ### Models

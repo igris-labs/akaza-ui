@@ -12,21 +12,24 @@ const {
 } = defineProps<ProgressProps>();
 
 const model = defineModel<number | null>({ default: null });
+const lower = computed(() => Number.isFinite(min) ? min : 0);
+const upper = computed(() => Number.isFinite(max) && max > lower.value ? max : lower.value + 100);
+const value = computed(() => model.value === null || !Number.isFinite(model.value)
+  ? null
+  : Math.min(upper.value, Math.max(lower.value, model.value)));
 
 const state = computed(() => {
-  if (model.value === null) return "indeterminate";
-  return model.value >= max ? "complete" : "loading";
+  if (value.value === null) return "indeterminate";
+  return value.value >= upper.value ? "complete" : "loading";
 });
 
 const percentage = computed(() => {
-  if (model.value === null) return null;
-  const range = max - min;
-  if (range <= 0) return 0;
-  return Math.min(100, Math.max(0, ((model.value - min) / range) * 100));
+  if (value.value === null) return null;
+  return ((value.value - lower.value) / (upper.value - lower.value)) * 100;
 });
 
 const ariaValueText = computed(() => {
-  if (getValueLabel) return getValueLabel(model.value, max);
+  if (getValueLabel) return getValueLabel(value.value, upper.value);
   return undefined;
 });
 </script>
@@ -35,9 +38,9 @@ const ariaValueText = computed(() => {
   <div
     role="progressbar"
     :aria-label="ariaLabel"
-    :aria-valuemin="min"
-    :aria-valuemax="max"
-    :aria-valuenow="model ?? undefined"
+    :aria-valuemin="lower"
+    :aria-valuemax="upper"
+    :aria-valuenow="value ?? undefined"
     :aria-valuetext="ariaValueText"
     :class="ui?.root"
     :data-akaza-state="state"
@@ -52,10 +55,10 @@ const ariaValueText = computed(() => {
     >
       <slot
         name="indicator"
-        :value="model"
+        :value="value"
         :percentage="percentage"
-        :max="max"
-        :min="min"
+        :max="upper"
+        :min="lower"
         :state="state"
       />
     </div>
@@ -63,8 +66,10 @@ const ariaValueText = computed(() => {
 </template>
 
 <style>
-.akaza-progress-indicator {
-  height: 100%;
-  width: 100%;
+@layer akaza-reset {
+  .akaza-progress-indicator {
+    height: 100%;
+    width: 100%;
+  }
 }
 </style>

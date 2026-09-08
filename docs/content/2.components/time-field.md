@@ -130,6 +130,10 @@ Passing a `ZonedDateTime` preserves its date and zone when editing time fields. 
 
 Canceled updates restore segment text to the accepted model.
 
+## Reactive validation
+
+Native validity tracks controlled values and reactive time constraints without an extra keystroke. Validation feedback remains interaction-driven. Native reset restores the initial time/segments and clears interaction state unless the reset event is canceled.
+
 ## API Reference
 
 ### Models

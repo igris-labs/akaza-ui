@@ -173,6 +173,14 @@ Change events fire before state updates. Call `details.cancel()` to keep the cur
 </template>
 ```
 
+## Virtualized focus
+
+Entry focus reveals a far-away selected option once. Manual scrolling afterward is not forced back to that selection. If the active row leaves the virtual window, its missing id is not left in `aria-activedescendant`; keyboard navigation reveals the next active row again.
+
+### Native Form Reset
+
+An uncanceled native form reset restores the initial model value and clears interaction validation state. Cancel the form's `reset` event to keep the current value. Reset does not emit a user `value-change` action. Controlled consumers must accept the emitted model update.
+
 ## API Reference
 
 ### Models

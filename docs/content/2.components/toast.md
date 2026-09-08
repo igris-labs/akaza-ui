@@ -114,7 +114,7 @@ await toast.promise(api.publish(), {
 
 ### Scoped manager for SSR
 
-Default manager is a convenient client-side singleton. Create and provide a scoped manager for SSR or independent notification regions.
+The default manager is isolated per server-rendered Vue app and shared on the client. Create and provide a scoped manager when you need an explicitly owned queue or independent notification regions.
 
 ```vue
 <script setup lang="ts">
@@ -128,6 +128,12 @@ const manager = provideToastManager(createToastManager({ duration: 6000 }));
   <Toast :manager="manager" />
 </template>
 ```
+
+## SSR and ownership
+
+The default queue is isolated per Vue application during server rendering. Call `useToast()` in component setup, then use the returned manager in event handlers. Server calls outside setup require an explicit manager; they do not fall back to process-global user data. An explicitly provided manager still takes precedence, and browser calls retain a shared default queue.
+
+Viewport padding is application styling. For example, pass `ui.viewport: 'w-[min(100vw,24rem)] p-4'` to keep notifications inset from screen edges.
 
 ## API Reference
 

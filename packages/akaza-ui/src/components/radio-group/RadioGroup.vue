@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import type { RadioGroupProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
+import { computed, useTemplateRef } from "vue";
+import { useCheckableField } from "../../utils/useCheckableField";
 
 const {
   options,
@@ -25,6 +27,11 @@ const emit = defineEmits<{
 }>();
 
 const model = defineModel<string>({ default: "" });
+const validationRef = useTemplateRef<HTMLInputElement>("validationRef");
+const bridge = useCheckableField(model, validationRef, () => focusItem(getRovingIndex()), computed(() => model.value !== ""));
+const effectiveDisabled = computed(() => disabled || bridge.field?.disabled.value || false);
+const effectiveRequired = computed(() => required || bridge.field?.required.value || false);
+const effectiveName = computed(() => name ?? bridge.field?.name.value);
 
 function getValue(option: any): string {
   if (valueKey) return String(option[valueKey]);
@@ -44,7 +51,7 @@ function getDescription(option: any): string | undefined {
 }
 
 function isItemDisabled(option: any): boolean {
-  if (disabled) return true;
+  if (effectiveDisabled.value) return true;
   if (getItemDisabled) return getItemDisabled(option);
   return option?.disabled === true;
 }
@@ -65,12 +72,12 @@ function getRovingIndex(): number {
 }
 
 function getTabIndex(index: number): 0 | -1 {
-  if (disabled) return -1;
+  if (effectiveDisabled.value) return -1;
   return index === getRovingIndex() ? 0 : -1;
 }
 
 function select(option: any, event?: Event) {
-  if (isItemDisabled(option)) return;
+  if (isItemDisabled(option) || validationRef.value?.matches(":disabled")) return;
   const value = getValue(option);
   let canceled = false;
   emit("value-change", value, {
@@ -79,6 +86,7 @@ function select(option: any, event?: Event) {
     cancel: () => { canceled = true; },
   });
   if (!canceled) model.value = value;
+  if (!canceled) bridge.onChange();
 }
 
 function handleKeyDown(event: KeyboardEvent, index: number) {
@@ -138,27 +146,43 @@ function handleKeyDown(event: KeyboardEvent, index: number) {
   <component
     :is="as"
     role="radiogroup"
+    v-bind="bridge.attrs.value"
+    :aria-invalid="bridge.invalid.value || undefined"
+    :aria-describedby="bridge.field?.describedBy.value"
     :aria-label="ariaLabel ?? legend"
-    :aria-labelledby="ariaLabelledby"
+    :aria-labelledby="ariaLabelledby ?? bridge.field?.labelledBy.value"
     :aria-orientation="orientation"
-    :aria-required="required || undefined"
+    :aria-required="effectiveRequired || undefined"
     :data-akaza-orientation="orientation"
-    :data-akaza-disabled="disabled || undefined"
+    :data-akaza-disabled="effectiveDisabled || undefined"
     :class="ui?.root"
     class="akaza-radio-group"
+    @focusin="bridge.onFocus"
+    @focusout="!($event.currentTarget as HTMLElement).contains($event.relatedTarget as Node | null) && bridge.onBlur()"
   >
+    <input
+      ref="validationRef"
+      type="text"
+      :value="model"
+      :required="effectiveRequired"
+      :disabled="effectiveDisabled"
+      tabindex="-1"
+      aria-hidden="true"
+      class="akaza-radio-group-input"
+      :class="ui?.input"
+      @invalid="bridge.onInvalid"
+    >
     <slot name="legend" :legend="legend">
       <span v-if="legend" :class="ui?.legend" class="akaza-radio-group-legend">{{ legend }}</span>
     </slot>
 
     <template v-for="(option, index) in options" :key="getValue(option)">
       <input
-        v-if="name"
+        v-if="effectiveName"
         type="radio"
-        :name="name"
+        :name="effectiveName"
         :value="getValue(option)"
         :checked="model === getValue(option)"
-        :required="required"
         :disabled="isItemDisabled(option)"
         aria-hidden="true"
         tabindex="-1"
@@ -167,6 +191,7 @@ function handleKeyDown(event: KeyboardEvent, index: number) {
       >
 
       <button
+        :id="index === getRovingIndex() ? bridge.field?.inputId.value : undefined"
         :ref="(el) => setItemRef(el as HTMLElement | null, index)"
         type="button"
         role="radio"
@@ -206,12 +231,14 @@ function handleKeyDown(event: KeyboardEvent, index: number) {
 </template>
 
 <style>
-.akaza-radio-group-input {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  opacity: 0;
-  pointer-events: none;
-  margin: 0;
+@layer akaza-reset {
+  .akaza-radio-group-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+    margin: 0;
+  }
 }
 </style>

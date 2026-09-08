@@ -244,10 +244,13 @@ function validationError(): string {
   return "";
 }
 
+const nativeError = computed(validationError);
+watch(nativeError, () => updateValidity(), { flush: "post" });
+
 function updateValidity(reveal = validationActive.value) {
   const input = hiddenRef.value;
   if (!input) return;
-  input.setCustomValidity(validationError());
+  input.setCustomValidity(nativeError.value);
   validity.value = input.validity;
   validationMessage.value = input.validationMessage;
   nativeInvalid.value = reveal && !input.validity.valid;
@@ -375,7 +378,9 @@ function onInvalid(event: Event) {
   focusSegment(firstSegment.value);
 }
 
-function onFormReset() {
+async function onFormReset(event: Event) {
+  await nextTick();
+  if (event.defaultPrevented) return;
   model.value = initialValue;
   syncSegments(initialValue);
   touched.value = false;
@@ -398,6 +403,7 @@ onBeforeUnmount(() => {
 });
 
 defineExpose({
+  validationState: computed(() => ({ invalid: Boolean(nativeError.value) && isFilled.value, filled: isFilled.value })),
   clear,
   focus: () => focusSegment(firstSegment.value),
   setValue,

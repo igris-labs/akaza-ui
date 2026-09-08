@@ -125,6 +125,10 @@ const items = [
 </script>
 ```
 
+## Reactive styling and nested menus
+
+Changes to `ui`, radio values, and close-on-select settings remain reactive in nested panels. Item values containing quotes or brackets are treated as data, not interpolated into CSS selectors. Stateful label slots retain component identity during ordinary updates.
+
 ## API Reference
 
 ### Props

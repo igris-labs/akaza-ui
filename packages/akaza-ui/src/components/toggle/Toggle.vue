@@ -36,6 +36,7 @@ function onKeydown(event: KeyboardEvent) {
     :type="as === 'button' ? 'button' : undefined"
     :role="as === 'button' ? undefined : 'button'"
     :aria-pressed="model"
+    :aria-disabled="disabled || undefined"
     :aria-label="ariaLabel"
     :data-akaza-state="model ? 'on' : 'off'"
     :data-akaza-disabled="disabled || undefined"

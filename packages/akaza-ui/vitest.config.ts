@@ -17,7 +17,7 @@ export default defineConfig({
       provider: "v8",
       reporter: ["text", "json", "html"],
       include: ["src/**/*.{ts,vue}"],
-      exclude: ["src/index.ts", "src/**/index.ts"],
+      exclude: ["src/index.ts"],
       thresholds: {
         statements: 75,
         branches: 60,

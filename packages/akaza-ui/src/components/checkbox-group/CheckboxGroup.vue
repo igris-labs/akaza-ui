@@ -2,8 +2,10 @@
 import type { CheckboxGroupOption, CheckboxGroupProps, CheckboxGroupValue } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
 import type { CheckboxUi, CheckboxValue } from "../checkbox";
-import { computed } from "vue";
+import { computed, provide, useTemplateRef } from "vue";
+import { useCheckableField } from "../../utils/useCheckableField";
 import { Checkbox } from "../checkbox";
+import { fieldContextKey } from "../field/context";
 
 const {
   options,
@@ -30,8 +32,14 @@ const emit = defineEmits<{
 }>();
 
 const model = defineModel<CheckboxGroupValue[]>({ default: () => [] });
+const rootRef = useTemplateRef<HTMLElement>("rootRef");
+const validationRef = useTemplateRef<HTMLInputElement>("validationRef");
+const bridge = useCheckableField(model, validationRef, () => rootRef.value?.querySelector<HTMLButtonElement>('button:not(:disabled)')?.focus(), computed(() => model.value.length > 0));
+const effectiveDisabled = computed(() => disabled || bridge.field?.disabled.value || false);
+const effectiveRequired = computed(() => required || bridge.field?.required.value || false);
+const effectiveName = computed(() => name ?? bridge.field?.name.value);
+provide(fieldContextKey, null);
 
-const hasValue = computed(() => model.value.length > 0);
 const optionValues = computed(() => allValues ?? options.map((option) => getValue(option)));
 const enabledOptionValues = computed(() =>
   optionValues.value.filter((value) => {
@@ -62,9 +70,10 @@ function getDescription(option: CheckboxGroupOption): string | undefined {
 }
 
 function getCheckboxProps(option: CheckboxGroupOption) {
-  const props: { name?: string; description?: string; ui?: CheckboxUi } = {};
+  const props: { id?: string; name?: string; description?: string; ui?: CheckboxUi } = {};
+  if (option === options.find(item => !isItemDisabled(item)) && bridge.field) props.id = bridge.field.inputId.value;
   const description = getDescription(option);
-  if (name) props.name = name;
+  if (effectiveName.value) props.name = effectiveName.value;
   if (description) props.description = description;
   if (ui?.checkbox) props.ui = ui.checkbox;
   return props;
@@ -78,7 +87,7 @@ function getParentCheckboxProps() {
 }
 
 function isItemDisabled(option: CheckboxGroupOption): boolean {
-  return disabled || Boolean(option[disabledKey]);
+  return effectiveDisabled.value || Boolean(option[disabledKey]);
 }
 
 function isChecked(option: CheckboxGroupOption): boolean {
@@ -105,12 +114,14 @@ function setOption(option: CheckboxGroupOption, checked: boolean, details: Akaza
     return;
   }
   model.value = next;
+  bridge.onChange();
 }
 
 function setAll(value: CheckboxValue, details: AkazaChangeEventDetails) {
-  if (disabled) return;
+  if (effectiveDisabled.value || validationRef.value?.matches(":disabled")) return;
   const checked = value === true;
-  const targetValues = checked ? enabledOptionValues.value : [];
+  const retained = model.value.filter(item => !enabledOptionValues.value.includes(item));
+  const targetValues = checked ? [...retained, ...enabledOptionValues.value] : retained;
   let canceled = false;
   emit("value-change", targetValues, {
     reason: details.reason,
@@ -124,21 +135,40 @@ function setAll(value: CheckboxValue, details: AkazaChangeEventDetails) {
     return;
   }
   model.value = targetValues;
+  bridge.onChange();
 }
 </script>
 
 <template>
   <div
+    ref="rootRef"
+    v-bind="bridge.attrs.value"
+    :aria-invalid="bridge.invalid.value || undefined"
+    :aria-describedby="bridge.field?.describedBy.value"
     role="group"
     :aria-label="ariaLabel ?? legend"
-    :aria-labelledby="ariaLabelledby"
-    :aria-required="required || undefined"
+    :aria-labelledby="ariaLabelledby ?? bridge.field?.labelledBy.value"
+    :aria-required="effectiveRequired || undefined"
     :class="ui?.root"
     :data-akaza-orientation="orientation"
-    :data-akaza-disabled="disabled || undefined"
-    :data-disabled="disabled || undefined"
+    :data-akaza-disabled="effectiveDisabled || undefined"
+    :data-disabled="effectiveDisabled || undefined"
     class="akaza-checkbox-group"
+    @focusin="bridge.onFocus"
+    @focusout="!rootRef?.contains($event.relatedTarget as Node | null) && bridge.onBlur()"
   >
+    <input
+      ref="validationRef"
+      type="text"
+      :value="model.length ? 'selected' : ''"
+      :required="effectiveRequired"
+      :disabled="effectiveDisabled"
+      tabindex="-1"
+      aria-hidden="true"
+      class="akaza-checkbox-group-input"
+      :class="ui?.input"
+      @invalid="bridge.onInvalid"
+    >
     <div
       v-if="legend"
       :class="ui?.legend"
@@ -160,7 +190,7 @@ function setAll(value: CheckboxValue, details: AkazaChangeEventDetails) {
         :model-value="parentState"
         :true-value="true"
         :false-value="false"
-        :disabled="disabled"
+        :disabled="effectiveDisabled"
         :label="parentLabel"
         v-bind="getParentCheckboxProps()"
         @value-change="setAll"
@@ -172,7 +202,7 @@ function setAll(value: CheckboxValue, details: AkazaChangeEventDetails) {
     </div>
 
     <div
-      v-for="(option, index) in options"
+      v-for="option in options"
       :key="String(getValue(option))"
       :class="ui?.item"
       class="akaza-checkbox-group-item"
@@ -192,7 +222,6 @@ function setAll(value: CheckboxValue, details: AkazaChangeEventDetails) {
           :model-value="isChecked(option) ? getValue(option) : false"
           :true-value="getValue(option)"
           :false-value="false"
-          :required="required && !hasValue && index === 0"
           :disabled="isItemDisabled(option)"
           :label="getLabel(option)"
           v-bind="getCheckboxProps(option)"
@@ -211,13 +240,21 @@ function setAll(value: CheckboxValue, details: AkazaChangeEventDetails) {
 </template>
 
 <style>
-.akaza-checkbox-group {
-  display: grid;
-  gap: 0.5rem;
-}
+@layer akaza-reset {
+  .akaza-checkbox-group-input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    opacity: 0;
+    pointer-events: none;
+  }
+  .akaza-checkbox-group {
+    display: grid;
+  }
 
-.akaza-checkbox-group[data-akaza-orientation="horizontal"] {
-  display: flex;
-  flex-wrap: wrap;
+  .akaza-checkbox-group[data-akaza-orientation="horizontal"] {
+    display: flex;
+    flex-wrap: wrap;
+  }
 }
 </style>

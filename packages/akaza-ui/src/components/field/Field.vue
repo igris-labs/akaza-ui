@@ -179,8 +179,9 @@ provide(fieldContextKey, {
 </template>
 
 <style>
-.akaza-field {
-  display: grid;
-  gap: 0.375rem;
+@layer akaza-reset {
+  .akaza-field {
+    display: grid;
+  }
 }
 </style>

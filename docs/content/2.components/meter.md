@@ -108,6 +108,10 @@ Slots receive value, formatted value, percentage, and state where relevant.
 </template>
 ```
 
+### Region State
+
+Values below `low` use `low`; values above `high` use `high`; values between the thresholds use `normal`. When `optimum` is supplied, the region containing it uses `optimum` instead. These describe regions, not prescribed success or error colors. Provide finite, ordered bounds and thresholds.
+
 ## API Reference
 
 ### Props

@@ -125,25 +125,27 @@ function handleKeydown(event: KeyboardEvent) {
 </template>
 
 <style>
-.akaza-button .sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
+@layer akaza-reset {
+  .akaza-button .sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
 
-.akaza-button-spinner {
-  animation: akaza-button-spin 1s linear infinite;
-}
+  .akaza-button-spinner {
+    animation: akaza-button-spin 1s linear infinite;
+  }
 
-@keyframes akaza-button-spin {
-  to {
-    transform: rotate(360deg);
+  @keyframes akaza-button-spin {
+    to {
+      transform: rotate(360deg);
+    }
   }
 }
 </style>

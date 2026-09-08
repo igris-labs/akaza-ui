@@ -112,6 +112,10 @@ Selection and page updates emit cancelable details before mutating their models.
 />
 ```
 
+## Calendar-aware pages
+
+Previous/next move by calendar year, not a fixed twelve months. This includes calendars with leap months, such as Hebrew. Visible month/year labels use the value's calendar and the requested locale.
+
 ## API Reference
 
 ### Models

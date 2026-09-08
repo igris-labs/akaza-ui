@@ -2,6 +2,7 @@
 import type { EditableProps, EditableState } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
 import { computed, inject, nextTick, onBeforeUnmount, onMounted, onUpdated, ref, useId } from "vue";
+import { useFormReset } from "../../utils/useFormReset";
 import { fieldContextKey } from "../field/context";
 
 const {
@@ -85,6 +86,15 @@ function createDetails(reason: string, event?: Event) {
   };
   return { details, canceled: () => canceled };
 }
+
+useFormReset(() => hiddenRef.value, () => {
+  model.value = initialValue;
+  touched.value = false;
+  validationActive.value = false;
+  nativeInvalid.value = false;
+  draft.value = initialValue ?? "";
+  editing.value = startWithEditMode;
+});
 
 function updateValidity(reveal = validationActive.value) {
   const input = hiddenRef.value;
@@ -191,6 +201,7 @@ function onInputPointerUp(event: PointerEvent) {
 }
 
 function onInputKeydown(event: KeyboardEvent) {
+  if (event.isComposing) return;
   if (event.key === "Escape") {
     event.preventDefault();
     cancel(event);

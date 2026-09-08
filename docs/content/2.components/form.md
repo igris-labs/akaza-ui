@@ -137,6 +137,12 @@ Use the default slot state to show submitted, invalid, or success feedback.
 </template>
 ```
 
+## Submit buttons and canceled reset
+
+Submission details include the clicked submit button's name/value in `formData`, allowing actions such as save versus publish. Disabled and unnamed controls follow native submission rules.
+
+Cancel a native reset event with `event.preventDefault()` to keep control models and interaction state unchanged. Reset is not a cancelable value-change operation.
+
 ## API Reference
 
 ### Props

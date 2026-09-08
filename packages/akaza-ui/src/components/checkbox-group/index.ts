@@ -15,6 +15,8 @@ export interface CheckboxGroupOption {
 
 export interface CheckboxGroupUi {
   root?: string;
+  /** Native validation proxy; keep visually hidden. */
+  input?: string;
   legend?: string;
   parentItem?: string;
   item?: string;

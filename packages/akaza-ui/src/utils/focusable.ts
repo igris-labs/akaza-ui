@@ -13,6 +13,10 @@ const FOCUSABLE_SELECTORS = [
 
 export function getFocusableElements(container: HTMLElement): HTMLElement[] {
   return Array.from(container.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTORS)).filter((el) => {
+    if (el.tabIndex < 0 || el.matches(":disabled") || el.closest('[inert], [hidden], [aria-hidden="true"]')) return false;
+    for (let parent = el.parentElement; parent; parent = parent.parentElement) {
+      if (window.getComputedStyle(parent).display === "none") return false;
+    }
     const style = window.getComputedStyle(el);
     return (
       !el.closest('[aria-hidden="true"]') &&

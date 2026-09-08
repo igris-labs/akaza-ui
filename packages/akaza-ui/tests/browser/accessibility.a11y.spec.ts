@@ -2,13 +2,12 @@ import AxeBuilder from "@axe-core/playwright";
 import { expect, test } from "@playwright/test";
 import { openPlayground } from "./helpers";
 
-async function expectNoSeriousViolations(page: import("@playwright/test").Page) {
+async function expectNoViolations(page: import("@playwright/test").Page) {
   await page.waitForTimeout(200);
   const results = await new AxeBuilder({ page })
-    .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
+    .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa", "wcag22aa"])
     .analyze();
-  const violations = results.violations.filter(({ impact }) =>
-    impact === "serious" || impact === "critical");
+  const violations = results.violations;
   expect(violations.map(({ id, impact, nodes }) => ({
     id,
     impact,
@@ -16,43 +15,53 @@ async function expectNoSeriousViolations(page: import("@playwright/test").Page) 
   }))).toEqual([]);
 }
 
-test("playground has no serious or critical accessibility violations", async ({ page }) => {
+test("playground has no automated WCAG accessibility violations", async ({ page }) => {
   await openPlayground(page);
 
-  await expectNoSeriousViolations(page);
+  await expectNoViolations(page);
 });
 
-test("open collection and overlay states have no serious accessibility violations", async ({ page }) => {
+test("open select has no automated WCAG accessibility violations", async ({ page }) => {
   await openPlayground(page);
 
   await page.locator("#select").getByRole("combobox", { name: "Plan", exact: true }).click();
   await expect(page.locator(".akaza-select-content")).toBeVisible();
-  await expectNoSeriousViolations(page);
-  await page.keyboard.press("Escape");
+  await expectNoViolations(page);
+});
 
+test("open date range picker has no automated WCAG accessibility violations", async ({ page }) => {
+  await openPlayground(page);
   await page.locator("#date-range-picker").getByRole("button", { name: "Choose date range" }).first().click();
   await expect(page.locator(".akaza-date-range-picker-content")).toBeVisible();
-  await expectNoSeriousViolations(page);
-  await page.keyboard.press("Escape");
+  await expectNoViolations(page);
+});
 
+test("open date field calendar has no automated WCAG accessibility violations", async ({ page }) => {
+  await openPlayground(page);
   await page.locator("#date-field").getByRole("button", { name: "Choose date" }).click();
   await expect(page.locator(".akaza-date-field-calendar-content")).toBeVisible();
-  await expectNoSeriousViolations(page);
-  await page.keyboard.press("Escape");
+  await expectNoViolations(page);
+});
 
+test("open menu has no automated WCAG accessibility violations", async ({ page }) => {
+  await openPlayground(page);
   await page.locator("#menu").getByRole("button", { name: "Actions" }).click();
   await expect(page.locator(".akaza-menu-content").first()).toBeVisible();
-  await expectNoSeriousViolations(page);
-  await page.keyboard.press("Escape");
+  await expectNoViolations(page);
+});
 
+test("open dialog has no automated WCAG accessibility violations", async ({ page }) => {
+  await openPlayground(page);
   await page.locator("#dialog").getByRole("button", { name: "Open", exact: true }).first().click();
   await expect(page.getByRole("dialog").first()).toBeVisible();
-  await expectNoSeriousViolations(page);
-  await page.keyboard.press("Escape");
+  await expectNoViolations(page);
+});
 
+test("open toast has no automated WCAG accessibility violations", async ({ page }) => {
+  await openPlayground(page);
   await page.locator("#toast").getByRole("button", { name: "Warning" }).click();
   await expect(page.locator(".akaza-toast").last()).toBeVisible();
-  await expectNoSeriousViolations(page);
+  await expectNoViolations(page);
 });
 
 test("non-interactive primitives expose their required semantics", async ({ page }) => {

@@ -83,7 +83,7 @@ onKeyStroke(["ArrowDown", "ArrowUp", "ArrowRight", "ArrowLeft", "Home", "End"], 
   if (!rootRef.value) return;
   const triggers = Array.from(
     rootRef.value.querySelectorAll<HTMLElement>(".akaza-accordion-trigger:not([disabled])"),
-  );
+  ).filter(trigger => trigger.closest(".akaza-accordion") === rootRef.value);
   if (!triggers.includes(document.activeElement as HTMLElement)) return;
 
   const isVertical = orientation === "vertical";
@@ -201,46 +201,35 @@ onKeyStroke(["ArrowDown", "ArrowUp", "ArrowRight", "ArrowLeft", "Home", "End"], 
 
 <style>
 @layer akaza-reset {
-  .akaza-accordion-trigger {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    background: none;
-    border: none;
-    padding: 0;
-    cursor: pointer;
-    text-align: left;
-  }
 
-  .akaza-accordion-trigger:disabled,
-  .akaza-accordion-trigger[data-akaza-disabled] {
-    cursor: not-allowed;
-    opacity: 0.5;
-  }
+    .akaza-accordion-trigger {
+      background: none;
+      border: none;
+      padding: 0;
+    }
 
   .akaza-accordion-icon {
-    flex-shrink: 0;
-    transition: transform 0.2s ease;
-  }
+      flex-shrink: 0;
+      transition: transform 0.2s ease;
+    }
 
   .akaza-accordion-icon[data-akaza-state="open"] {
-    transform: rotate(180deg);
+      transform: rotate(180deg);
+    }
+
+  .akaza-accordion-content {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.15s ease-out;
   }
-}
 
-.akaza-accordion-content {
-  display: grid;
-  grid-template-rows: 0fr;
-  transition: grid-template-rows 0.15s ease-out;
-}
+  .akaza-accordion-content[data-akaza-state="open"] {
+    grid-template-rows: 1fr;
+  }
 
-.akaza-accordion-content[data-akaza-state="open"] {
-  grid-template-rows: 1fr;
-}
-
-.akaza-accordion-content-inner {
-  min-height: 0;
-  overflow: hidden;
+  .akaza-accordion-content-inner {
+    min-height: 0;
+    overflow: hidden;
+  }
 }
 </style>

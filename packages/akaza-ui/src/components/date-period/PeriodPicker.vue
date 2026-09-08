@@ -97,9 +97,7 @@ const itemRefs = new Map<string, HTMLButtonElement>();
 const safeColumns = computed(() => Math.max(1, Math.floor(columns)));
 const safeItemsPerPage = computed(() => Math.max(1, Math.floor(itemsPerPage)));
 const placeholder = computed(() => normalize(placeholderModel.value ?? internalPlaceholder.value));
-const pageStart = computed(() => kind === "month"
-  ? placeholder.value.set({ month: 1, day: 1 })
-  : placeholder.value.set({ month: 1, day: 1 }));
+const pageStart = computed(() => placeholder.value.set({ month: 1, day: 1 }));
 const selectedValues = computed(() => {
   if (Array.isArray(model.value)) return model.value;
   if (isRange(model.value)) return [model.value.start, model.value.end].filter(Boolean) as CalendarDateValue[];
@@ -188,7 +186,7 @@ function addPeriod(value: CalendarDateValue, amount: number): CalendarDateValue 
 }
 
 function format(value: CalendarDateValue, options: Intl.DateTimeFormatOptions): string {
-  return new Intl.DateTimeFormat(locale, options).format(toCalendarDate(value).toDate(getLocalTimeZone()));
+  return new Intl.DateTimeFormat(locale, { ...options, calendar: value.calendar.identifier }).format(toCalendarDate(value).toDate(getLocalTimeZone()));
 }
 
 function formatLabel(value: CalendarDateValue): string {
@@ -359,11 +357,11 @@ function selectValue(value: CalendarDateValue, event?: Event): boolean {
 }
 
 function getPreviousPage(): CalendarDateValue {
-  return normalize(resolvePrevPage?.(placeholder.value) ?? addPeriod(pageStart.value, kind === "month" ? -12 : -safeItemsPerPage.value));
+  return normalize(resolvePrevPage?.(placeholder.value) ?? (kind === "month" ? pageStart.value.subtract({ years: 1 }) : addPeriod(pageStart.value, -safeItemsPerPage.value)));
 }
 
 function getNextPage(): CalendarDateValue {
-  return normalize(resolveNextPage?.(placeholder.value) ?? addPeriod(pageStart.value, kind === "month" ? 12 : safeItemsPerPage.value));
+  return normalize(resolveNextPage?.(placeholder.value) ?? (kind === "month" ? pageStart.value.add({ years: 1 }) : addPeriod(pageStart.value, safeItemsPerPage.value)));
 }
 
 function canNavigate(value: CalendarDateValue): boolean {

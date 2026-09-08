@@ -3,6 +3,7 @@ import type { ComponentPublicInstance } from "vue";
 import type { TagsInputProps, TagsInputValue } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
 import { computed, inject, nextTick, onBeforeUnmount, onMounted, onUpdated, ref, useId } from "vue";
+import { useFormReset } from "../../utils/useFormReset";
 import { fieldContextKey } from "../field/context";
 
 const {
@@ -98,6 +99,15 @@ function equal(a: TagsInputValue, b: TagsInputValue): boolean {
 function valuesEqual(a: TagsInputValue[], b: TagsInputValue[]): boolean {
   return a.length === b.length && a.every((value, index) => equal(value, b[index]!));
 }
+
+useFormReset(() => hiddenRef.value, () => {
+  model.value = Array.isArray(initialValue) ? [...initialValue] : initialValue;
+  touched.value = false;
+  validationActive.value = false;
+  nativeInvalid.value = false;
+  inputModel.value = "";
+  activeIndex.value = -1;
+});
 
 function updateValidity(reveal = validationActive.value) {
   const input = hiddenRef.value;
@@ -229,6 +239,7 @@ function onInput(event: Event) {
 }
 
 function onInputKeydown(event: KeyboardEvent) {
+  if (event.isComposing) return;
   if (isDisabled.value || readOnly) return;
   if (event.key === "Enter" || isDelimiterKey(event.key)) {
     if (!inputModel.value) return;

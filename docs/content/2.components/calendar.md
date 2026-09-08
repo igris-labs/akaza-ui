@@ -197,6 +197,12 @@ Both selection and visible-month changes emit cancelable details before updating
 />
 ```
 
+## Controlled pages and initial focus
+
+The initial focus target follows the displayed placeholder rather than assuming today's month is visible. Controlled paging keeps one eligible day as the grid tab stop without moving DOM focus merely because props changed. Pages with no enabled days have no day tab stop; retain accessible navigation controls.
+
+Date formatters are reused per component and follow the value's calendar as well as the requested locale.
+
 ## API Reference
 
 ### Models

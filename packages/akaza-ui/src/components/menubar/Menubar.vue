@@ -297,10 +297,10 @@ function onRadioSelect(item: MenuItem, event: Event) {
 }
 
 provide(MENU_CONTEXT_KEY, {
-  dir,
-  ui,
-  radioValues,
-  closeOnSelect,
+  get dir() { return dir; },
+  get ui() { return ui; },
+  get radioValues() { return radioValues; },
+  get closeOnSelect() { return closeOnSelect; },
   closeMenu: close,
   onItemSelect,
   onCheckboxSelect,
@@ -389,40 +389,42 @@ onUnmounted(() => {
 </template>
 
 <style>
-.akaza-menubar {
-  position: relative;
-  display: inline-flex;
-  isolation: isolate;
-}
+@layer akaza-reset {
+  .akaza-menubar {
+    position: relative;
+    display: inline-flex;
+    isolation: isolate;
+  }
 
-.akaza-menubar-content {
-  position: absolute;
-  z-index: var(--akaza-z-menubar, 1000);
-}
+  .akaza-menubar-content {
+    position: absolute;
+    z-index: var(--akaza-z-menubar, 1000);
+  }
 
-.akaza-menubar-enter-active,
-.akaza-menubar-leave-active {
-  transition:
-    opacity var(--akaza-menubar-duration, 120ms) ease-out,
-    scale var(--akaza-menubar-duration, 120ms) ease-out,
-    translate var(--akaza-menubar-duration, 120ms) ease-out;
-}
-
-.akaza-menubar-enter-from,
-.akaza-menubar-leave-to {
-  opacity: 0;
-  scale: 0.98;
-}
-
-.akaza-menubar-enter-from[data-akaza-side="bottom"],
-.akaza-menubar-leave-to[data-akaza-side="bottom"] { translate: 0 -4px; }
-.akaza-menubar-enter-from[data-akaza-side="top"],
-.akaza-menubar-leave-to[data-akaza-side="top"] { translate: 0 4px; }
-
-@media (prefers-reduced-motion: reduce) {
   .akaza-menubar-enter-active,
   .akaza-menubar-leave-active {
-    transition-duration: 0.01ms;
+    transition:
+      opacity var(--akaza-menubar-duration, 120ms) ease-out,
+      scale var(--akaza-menubar-duration, 120ms) ease-out,
+      translate var(--akaza-menubar-duration, 120ms) ease-out;
+  }
+
+  .akaza-menubar-enter-from,
+  .akaza-menubar-leave-to {
+    opacity: 0;
+    scale: 0.98;
+  }
+
+  .akaza-menubar-enter-from[data-akaza-side="bottom"],
+  .akaza-menubar-leave-to[data-akaza-side="bottom"] { translate: 0 -4px; }
+  .akaza-menubar-enter-from[data-akaza-side="top"],
+  .akaza-menubar-leave-to[data-akaza-side="top"] { translate: 0 4px; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .akaza-menubar-enter-active,
+    .akaza-menubar-leave-active {
+      transition-duration: 0.01ms;
+    }
   }
 }
 </style>

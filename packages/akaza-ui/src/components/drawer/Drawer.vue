@@ -90,7 +90,6 @@ const insetValue = computed(() =>
 
 const drawerStyle = computed(() => ({
   "--akaza-drawer-inset": insetValue.value,
-  borderRadius: inset && Number(inset) !== 0 ? "12px" : undefined,
 }));
 
 // ─── Swipe helpers ────────────────────────────────────────────────────────────
@@ -303,81 +302,74 @@ defineExpose({ open, close, toggle, titleId, descriptionId });
 </template>
 
 <style>
-/* Positioning by side + inset.
-   transform uses the CSS variable as single source of truth.
-   CSS transition handles: enter, leave, and snap-back animations.
-   JS hooks (onEnter/onLeave) manipulate the variable to trigger transitions. */
+@layer akaza-reset {
+  /* Positioning by side + inset.
+     transform uses the CSS variable as single source of truth.
+     CSS transition handles: enter, leave, and snap-back animations.
+     JS hooks (onEnter/onLeave) manipulate the variable to trigger transitions. */
 
-.akaza-drawer {
-  position: fixed;
-  display: flex;
-  flex-direction: column;
-  z-index: var(--akaza-z-overlay-content, calc(var(--akaza-z-layer-base, 1200) + var(--akaza-layer-order, 0) + 1));
-}
+  .akaza-drawer {
+    position: fixed;
+    display: flex;
+    flex-direction: column;
+    z-index: var(--akaza-z-overlay-content, calc(var(--akaza-z-layer-base, 1200) + var(--akaza-layer-order, 0) + 1));
+  }
 
-.akaza-drawer-overlay {
-  position: fixed;
-  inset: 0;
-  z-index: var(--akaza-z-overlay, calc(var(--akaza-z-layer-base, 1200) + var(--akaza-layer-order, 0)));
-}
+  .akaza-drawer-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: var(--akaza-z-overlay, calc(var(--akaza-z-layer-base, 1200) + var(--akaza-layer-order, 0)));
+  }
 
-.akaza-drawer[data-akaza-side="right"] {
-  top: var(--akaza-drawer-inset, 0px);
-  right: var(--akaza-drawer-inset, 0px);
-  bottom: var(--akaza-drawer-inset, 0px);
-  transform: translateX(var(--drawer-swipe-movement-x, 0px));
-  transition: transform 300ms cubic-bezier(0.32, 0.72, 0, 1);
-}
+  .akaza-drawer[data-akaza-side="right"] {
+    top: var(--akaza-drawer-inset, 0px);
+    right: var(--akaza-drawer-inset, 0px);
+    bottom: var(--akaza-drawer-inset, 0px);
+    transform: translateX(var(--drawer-swipe-movement-x, 0px));
+    transition: transform 300ms cubic-bezier(0.32, 0.72, 0, 1);
+  }
 
-.akaza-drawer[data-akaza-side="left"] {
-  top: var(--akaza-drawer-inset, 0px);
-  left: var(--akaza-drawer-inset, 0px);
-  bottom: var(--akaza-drawer-inset, 0px);
-  transform: translateX(var(--drawer-swipe-movement-x, 0px));
-  transition: transform 300ms cubic-bezier(0.32, 0.72, 0, 1);
-}
+  .akaza-drawer[data-akaza-side="left"] {
+    top: var(--akaza-drawer-inset, 0px);
+    left: var(--akaza-drawer-inset, 0px);
+    bottom: var(--akaza-drawer-inset, 0px);
+    transform: translateX(var(--drawer-swipe-movement-x, 0px));
+    transition: transform 300ms cubic-bezier(0.32, 0.72, 0, 1);
+  }
 
-.akaza-drawer[data-akaza-side="top"] {
-  top: var(--akaza-drawer-inset, 0px);
-  left: var(--akaza-drawer-inset, 0px);
-  right: var(--akaza-drawer-inset, 0px);
-  transform: translateY(var(--drawer-swipe-movement-y, 0px));
-  transition: transform 300ms cubic-bezier(0.32, 0.72, 0, 1);
-}
+  .akaza-drawer[data-akaza-side="top"] {
+    top: var(--akaza-drawer-inset, 0px);
+    left: var(--akaza-drawer-inset, 0px);
+    right: var(--akaza-drawer-inset, 0px);
+    transform: translateY(var(--drawer-swipe-movement-y, 0px));
+    transition: transform 300ms cubic-bezier(0.32, 0.72, 0, 1);
+  }
 
-.akaza-drawer[data-akaza-side="bottom"] {
-  bottom: var(--akaza-drawer-inset, 0px);
-  left: var(--akaza-drawer-inset, 0px);
-  right: var(--akaza-drawer-inset, 0px);
-  transform: translateY(var(--drawer-swipe-movement-y, 0px));
-  transition: transform 300ms cubic-bezier(0.32, 0.72, 0, 1);
-}
+  .akaza-drawer[data-akaza-side="bottom"] {
+    bottom: var(--akaza-drawer-inset, 0px);
+    left: var(--akaza-drawer-inset, 0px);
+    right: var(--akaza-drawer-inset, 0px);
+    transform: translateY(var(--drawer-swipe-movement-y, 0px));
+    transition: transform 300ms cubic-bezier(0.32, 0.72, 0, 1);
+  }
 
-/* Disable transition while pointer is dragging */
-.akaza-drawer[data-swiping] {
-  transition: none !important;
-  user-select: none;
-}
+  /* Disable transition while pointer is dragging */
+  .akaza-drawer[data-swiping] {
+    transition: none !important;
+    user-select: none;
+  }
 
-/* Overlay fade */
-.akaza-drawer-overlay-enter-active,
-.akaza-drawer-overlay-leave-active {
-  transition: opacity 0.3s ease;
-}
+  /* Overlay fade */
+  .akaza-drawer-overlay-enter-active,
+  .akaza-drawer-overlay-leave-active {
+    transition: opacity 0.3s ease;
+  }
 
-.akaza-drawer-overlay-enter-from,
-.akaza-drawer-overlay-leave-to {
-  opacity: 0;
-}
+  .akaza-drawer-overlay-enter-from,
+  .akaza-drawer-overlay-leave-to {
+    opacity: 0;
+  }
 
-/* Auto-rendered title/description */
-.akaza-drawer-title {
-  font-size: 1rem;
-  font-weight: 600;
-}
-
-.akaza-drawer-description {
-  font-size: 0.875rem;
-  margin-bottom: 12px;
+  /* Auto-rendered title/description */
 }
 </style>

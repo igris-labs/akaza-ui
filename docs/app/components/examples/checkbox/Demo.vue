@@ -7,8 +7,12 @@ const marketing = ref(false);
 const updates = ref<boolean | "indeterminate">("indeterminate");
 
 const checkboxUi = {
-  root: "checkbox-box",
-  indicator: "checkbox-indicator",
+  wrapper: "flex items-start gap-3",
+  root: "flex size-4 shrink-0 items-center justify-center rounded border border-neutral-400 bg-white transition-colors dark:border-neutral-600 dark:bg-neutral-800 data-[akaza-state=checked]:border-neutral-900 data-[akaza-state=checked]:bg-neutral-900 data-[akaza-state=indeterminate]:bg-neutral-900 dark:data-[akaza-state=checked]:border-white dark:data-[akaza-state=checked]:bg-white dark:data-[akaza-state=indeterminate]:bg-white",
+  indicator: "flex items-center justify-center",
+  text: "flex flex-col gap-0.5",
+  label: "text-sm font-medium text-neutral-900 dark:text-neutral-100",
+  description: "text-xs text-neutral-600 dark:text-neutral-400",
 };
 </script>
 
@@ -85,36 +89,3 @@ const checkboxUi = {
     </Checkbox>
   </div>
 </template>
-
-<style scoped>
-@reference "../../../assets/css/main.css";
-
-:deep(.akaza-checkbox-wrapper) {
-  @apply flex cursor-pointer items-start gap-3;
-}
-
-:deep(.checkbox-box) {
-  @apply flex size-4 items-center justify-center rounded border border-neutral-400 bg-white text-transparent transition-colors dark:border-neutral-600 dark:bg-neutral-800;
-}
-
-:deep(.checkbox-box[data-akaza-state="checked"]),
-:deep(.checkbox-box[data-akaza-state="indeterminate"]) {
-  @apply border-neutral-900 bg-neutral-900 text-white dark:border-white dark:bg-white dark:text-neutral-900;
-}
-
-:deep(.checkbox-indicator) {
-  @apply flex items-center justify-center;
-}
-
-:deep(.akaza-checkbox-text) {
-  @apply flex flex-col gap-0.5;
-}
-
-:deep(.akaza-checkbox-label) {
-  @apply text-sm font-medium text-neutral-900 dark:text-neutral-100;
-}
-
-:deep(.akaza-checkbox-description) {
-  @apply text-xs text-neutral-600 dark:text-neutral-400;
-}
-</style>

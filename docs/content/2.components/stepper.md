@@ -8,9 +8,9 @@ navigation:
     color: success
 ---
 
-`Stepper` represents progress through a multi-step process. It renders an accessible ordered list, connects each trigger to a panel, supports linear or free navigation, and exposes controls and state without requiring nested part components.
+`Stepper` represents progress through a multi-step process. It renders an ordered list, connects each trigger to a panel, and supports linear or free navigation.
 
-Use it for onboarding, checkout, setup, and other bounded workflows. Stepper coordinates navigation; application code still owns validation and persistence for each step.
+Stepper coordinates navigation. Application code owns step validation and persistence.
 
 ## Anatomy
 

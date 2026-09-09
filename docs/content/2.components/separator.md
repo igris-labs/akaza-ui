@@ -7,7 +7,7 @@ navigation:
 
 A horizontal or vertical dividing line. When `decorative` is false (default), it renders as `role="separator"` with an appropriate `aria-orientation` attribute.
 
-Use it when a break is part of the page structure. Use `decorative` when the line is visual only and should be ignored by assistive tech.
+Set `decorative` when assistive technology should ignore the separator.
 
 ## Anatomy
 

@@ -8,9 +8,9 @@ navigation:
     color: success
 ---
 
-`DateField` splits a date into focusable day, month, and year spinbutton segments. It handles locale order, keyboard stepping, complete-date validation, ISO paste, Field state, native form submission, and optional visual selection through Calendar while keeping one Vue-native component API.
+`DateField` splits a date into day, month, and year spinbutton segments. It supports locale order, keyboard stepping, validation, ISO paste, native form submission, and an optional Calendar.
 
-Use it when users need to type an exact date. Enable `showCalendar` when the same control should also offer visual date selection.
+Use Date Field for exact date entry. Set `showCalendar` to add visual date selection.
 
 ::callout{icon="i-lucide-package"}
 Date values come from `@internationalized/date`. Install it beside Akaza UI when application code creates or transforms dates: `pnpm add akaza-ui @internationalized/date`.
@@ -27,7 +27,7 @@ Date values come from `@internationalized/date`. Install it beside Akaza UI when
 - **`#calendar`**: Replaces the built-in Calendar while retaining popup positioning and dismissal.
 - **hidden input**: Generated native form control carrying the ISO date string and validity.
 
-Date Field owns segment markup because editing, focus movement, labels, and spinbutton values must remain synchronized. Use `ui.segment` and state attributes for complete visual control.
+Date Field generates segment markup to coordinate editing, focus, labels, and spinbutton values. Style segments with `ui.segment` and state attributes.
 
 ## Usage
 
@@ -120,11 +120,11 @@ Use `v-model:calendar-open` when popup state must be controlled. Use `#calendar`
 
 ### Paste a date
 
-Paste a date containing three numeric groups into any segment. ISO year-first values such as `2026-11-24` are recognized independently of visible locale order.
+Paste a date containing three numeric groups into any segment. The component recognizes ISO year-first values such as `2026-11-24` regardless of the visible locale order.
 
 ### Native form submission
 
-Provide `name` directly or inherit it from `Field`. A complete value submits as an ISO calendar date.
+Set `name` on the component or inherit it from `Field`. A complete value submits as an ISO calendar date.
 
 ```vue
 <form @submit.prevent="submit">
@@ -199,7 +199,7 @@ The optional calendar registers as a logical popup branch when used inside an Ak
 | `ariaDescribedby` | `string` | Field description/error IDs | External description relationship. |
 | `ui` | `DateFieldUi` | — | Classes for generated structural parts. |
 
-Date Field currently handles calendar dates through day granularity. Time segments belong to the planned `TimeField` contract instead of overloading this component early.
+Date Field accepts calendar dates at day granularity. Use [Time Field](/components/time-field) for clock values.
 
 ### Emits
 

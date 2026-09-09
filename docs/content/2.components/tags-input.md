@@ -8,9 +8,9 @@ navigation:
     color: success
 ---
 
-`TagsInput` is an unstyled token editor. It converts text into removable values, supports keyboard navigation and batch paste, validates duplicates and limits, accepts object values, and submits every tag through native forms.
+`TagsInput` converts text into removable values. It supports keyboard navigation, batch paste, duplicate rules, object values, and native forms.
 
-Use it for labels, recipients, keywords, or other short repeated values. Use [Combobox](/components/combobox) when values must come from a suggestion list.
+Use [Combobox](/components/combobox) when values must come from suggestions.
 
 ## Anatomy
 
@@ -160,7 +160,7 @@ Inside [Field](/components/field), TagsInput inherits `id`, `name`, required/dis
 
 ### Native Form Reset
 
-An uncanceled native form reset restores the initial model value and clears interaction validation state. Cancel the form's `reset` event to keep the current value. Reset does not emit a user `value-change` action. Controlled consumers must accept the emitted model update.
+A native form reset restores the initial model and clears interaction state. Calling `preventDefault()` on the reset event preserves the current value. Reset updates `v-model` without emitting `value-change`.
 
 ## API Reference
 

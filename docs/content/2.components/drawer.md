@@ -180,7 +180,7 @@ Use `#header` when the drawer needs custom title actions.
 | `body` | `akaza-drawer-body` | — |
 | `footer` | `akaza-drawer-footer` | — |
 
-`Drawer` renders trigger slot content plus teleported overlay/content. Use `ui` keys instead of relying on plain `class` fallthrough. The `handle` slot is fully owned by your markup.
+`Drawer` renders trigger slot content plus a teleported overlay and panel. Use `ui` keys instead of plain `class` fallthrough. Your markup supplies the `handle` slot.
 
 ### Keyboard
 

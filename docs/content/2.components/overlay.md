@@ -8,9 +8,9 @@ navigation:
     color: warning
 ---
 
-`OverlayProvider` renders overlay components created with `useOverlay`. Mount one provider near your app root, then open dialogs, drawers, or custom overlay components from anywhere.
+`OverlayProvider` renders components created with `useOverlay`. Mount one provider near the app root.
 
-Use it for flows that need to open an overlay outside the current template: command palettes, confirmation dialogs, onboarding drawers, or route-level actions.
+The composable opens dialogs, drawers, and custom overlays outside the current template.
 
 ## Anatomy
 

@@ -5,9 +5,9 @@ navigation:
   icon: i-lucide-clipboard-check
 ---
 
-`Form` wraps a native form and emits typed submit details: the original submit event, `FormData`, submitted values, and validity state. Pass `errors` to show server-side errors through matching [Field](/components/field) names.
+`Form` wraps a native form and emits the submit event, `FormData`, parsed values, and validity state. Its `errors` prop connects server errors to [Field](/components/field) by name.
 
-Use it when you want native form behavior with Vue-friendly submit payloads and field-level server errors.
+Use Form when you need its typed submit details or error context. Native form behavior remains available.
 
 ## Anatomy
 
@@ -88,7 +88,7 @@ function submit(details: FormSubmitDetails) {
 
 ### Server errors
 
-Pass errors keyed by field name. Matching `Field` components display them automatically and mark themselves invalid. Clear or withhold the error entry when the message should no longer be visible.
+Pass errors keyed by field name. Matching `Field` components display the message and become invalid. Remove the error entry when the message should no longer be visible.
 
 ```vue
 <script setup lang="ts">

@@ -5,7 +5,7 @@ navigation:
   icon: i-lucide-circle-user
 ---
 
-Displays a user or entity image with graceful fallback to initials or an icon when the image is unavailable or still loading.
+Avatar displays an image and falls back to initials or an icon while loading or after an error.
 
 ## Anatomy
 

@@ -97,7 +97,7 @@ await toast.promise(api.publish(), {
 
 ### Custom content
 
-`#toast` owns all inner markup. Root role, live-region attrs, swipe handlers, type/state attrs, and queue metadata remain intact. Notification metadata and the guarded default action lifecycle are exposed directly to custom content.
+`#toast` replaces the inner markup but keeps the library-owned root. The root retains its role, live-region attributes, swipe handlers, state attributes, and queue metadata. Slot props provide the notification, action, and close handlers.
 
 ```vue
 <Toast>
@@ -114,7 +114,7 @@ await toast.promise(api.publish(), {
 
 ### Scoped manager for SSR
 
-The default manager is isolated per server-rendered Vue app and shared on the client. Create and provide a scoped manager when you need an explicitly owned queue or independent notification regions.
+During server rendering, each Vue application receives its own default manager. The browser uses a shared default manager. Provide a scoped manager for a separate queue or notification region.
 
 ```vue
 <script setup lang="ts">
@@ -131,7 +131,7 @@ const manager = provideToastManager(createToastManager({ duration: 6000 }));
 
 ## SSR and ownership
 
-The default queue is isolated per Vue application during server rendering. Call `useToast()` in component setup, then use the returned manager in event handlers. Server calls outside setup require an explicit manager; they do not fall back to process-global user data. An explicitly provided manager still takes precedence, and browser calls retain a shared default queue.
+Call `useToast()` during component setup and use the returned manager in event handlers. Server calls outside setup require a manager because Akaza UI does not store toast data in process-global state. A provided manager takes precedence over the default manager.
 
 Viewport padding is application styling. For example, pass `ui.viewport: 'w-[min(100vw,24rem)] p-4'` to keep notifications inset from screen edges.
 
@@ -229,7 +229,7 @@ Viewport padding is application styling. For example, pass `ui.viewport: 'w-[min
 | `close` | `akaza-toast-close` | — |
 | `action` | `akaza-toast-action` | — |
 
-Toast geometry follows its viewport edge. Bottom positions enter from below and expand upward; top positions enter from above and expand downward. A new toast slides in while existing toasts move and scale behind it in the same transition. Collapsed toasts expose only a scaled edge while content behind the frontmost toast fades out. The stack uses a `500ms` eased transform, with separate `150ms` height and `250ms` content transitions. Override the duration variables as needed. Active swipe tracking remains immediate, and reduced-motion preference shortens all transitions automatically.
+Bottom-positioned toasts enter from below and stack upward. Top-positioned toasts enter from above and stack downward. New toasts move existing items back in the same transition. The transform lasts `500ms`; height uses `150ms` and inner content uses `250ms`. The CSS variables in the table control these durations. Reduced-motion mode shortens the transitions.
 
 ### Keyboard
 

@@ -2,8 +2,8 @@
 import { Accordion } from 'akaza-ui'
 
 const items = [
-  { value: 'a', label: 'What is Akaza UI?', content: 'A headless Vue component library with a Vue-native slots API. Zero default styles.' },
-  { value: 'b', label: 'Is it styled?', content: 'No — bring your own CSS, Tailwind, or any design system. Full control over every pixel.' },
+  { value: 'a', label: 'What is Akaza UI?', content: 'A headless Vue component library with a Vue-native slots API.' },
+  { value: 'b', label: 'Is it styled?', content: 'Package CSS covers behavior and layout mechanics. You supply the visual styles.' },
   { value: 'c', label: 'Is it accessible?', content: 'Yes, fully WAI-ARIA compliant with keyboard navigation and screen reader support built in.' },
 ]
 </script>

@@ -5,7 +5,7 @@ navigation:
   icon: i-lucide-message-square
 ---
 
-A non-modal floating panel positioned relative to a trigger. Use it for tooltips with rich content, pickers, or contextual forms. Unlike [Dialog](/components/dialog), it doesn't trap focus.
+Popover positions a non-modal panel next to its trigger. It supports rich hints, pickers, and contextual forms without trapping focus.
 
 ## Anatomy
 

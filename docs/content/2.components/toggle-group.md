@@ -5,9 +5,9 @@ navigation:
   icon: i-lucide-list-checks
 ---
 
-`ToggleGroup` manages a set of pressed buttons. It supports single or multiple selection, roving focus, form hidden values, item slots, and cancelable changes.
+`ToggleGroup` manages pressed buttons with single or multiple selection, roving focus, form values, item slots, and cancelable changes.
 
-Use it for segmented controls, toolbars, and mutually exclusive or multi-select button groups. Use [Checkbox Group](/components/checkbox-group) when the choices are form-like checkboxes with labels and descriptions.
+Use Toggle Group for segmented controls and button groups. Use [Checkbox Group](/components/checkbox-group) for choices with form labels and descriptions.
 
 ## Anatomy
 
@@ -122,7 +122,7 @@ When `name` is provided, selected values are submitted with the form. Multiple m
 
 Within `Field`, the group inherits name, required, disabled, label, and description metadata. An unnamed required group still participates in native validation. Invalid submission focuses an enabled toggle; disabled groups do not serialize selected values.
 
-An uncanceled native form reset restores the initial model value and clears interaction validation state. Cancel the form's `reset` event to keep the current value. Reset does not emit a user `value-change` action. Controlled consumers must accept the emitted model update.
+A native form reset restores the initial model and clears interaction state. Calling `preventDefault()` on the reset event preserves the current value. Reset updates `v-model` without emitting `value-change`.
 
 ## API Reference
 

@@ -8,9 +8,9 @@ navigation:
     color: success
 ---
 
-`DateRangeField` combines two segmented date inputs under one range model. It coordinates locale order, partial entry, range constraints, Field state, cancelable changes, and two native form values without exposing a nested part-component API.
+`DateRangeField` combines two segmented date inputs under one range model. It supports locale order, partial entry, range constraints, Field state, cancelable changes, and two native form values.
 
-Use it when users should type exact start and end dates. Use [Date Range Picker](/components/date-range-picker) when the same range also needs visual calendar selection.
+Use Date Range Field for typed start and end dates. [Date Range Picker](/components/date-range-picker) adds calendar selection.
 
 ::callout{icon="i-lucide-package"}
 Date values come from `@internationalized/date`. Install it beside Akaza UI when application code creates or transforms dates: `pnpm add akaza-ui @internationalized/date`.
@@ -74,7 +74,7 @@ Wrap Date Range Field in `Field` to inherit label, description, required, disabl
 </Field>
 ```
 
-The default form names become `travel.start` and `travel.end`. Override them independently with `startName` and `endName`.
+The default form names become `travel.start` and `travel.end`. Use `startName` and `endName` to override either name.
 
 ### Range constraints
 
@@ -132,7 +132,7 @@ Read-only segments stay focusable for inspection. Disabled segments leave the ta
 
 ## Reactive validation
 
-Range and endpoint validation react to controlled values and constraints without an extra keystroke. Partial endpoint drafts participate in aggregate validity directly; styling attributes are not used as the source of truth. Changing required/min/max/unavailable or range-length constraints updates native validity. Canceled native resets leave endpoint drafts unchanged.
+Controlled value and constraint changes update native validity. Partial endpoints count toward range validity. A canceled form reset keeps both drafts.
 
 ## API Reference
 

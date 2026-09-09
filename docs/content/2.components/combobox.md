@@ -5,7 +5,7 @@ navigation:
   icon: i-lucide-search
 ---
 
-`Combobox` combines a text input with a `role="listbox"` popup. Users type to filter options, move through suggestions with the keyboard, and select from a known set. Use [Select](/components/select) when no text input is needed.
+`Combobox` combines a text input with a `role="listbox"` popup. Users can filter options, navigate suggestions, and select a value. Use [Select](/components/select) without text input.
 
 Popup placement flips when preferred side lacks room, clamps to viewport, and follows anchor/content resize and ancestor scrolling.
 
@@ -141,13 +141,13 @@ Object values use identity by default. Supply `isEqual` when values are recreate
 
 ## Async results and composition
 
-When results are replaced or reordered, the active option is reconciled by value identity. Removed or disabled options cannot be selected through a stale index; no-results/loading states do not expose missing active-descendant targets. IME confirmation Enter does not select an option prematurely.
+Result updates preserve the active option by value. If that option disappears, Combobox clears its active target. Enter during IME composition does not select an option.
 
 Custom option slots retain component identity during ordinary updates, preserving local state and focus.
 
 ### Native Form Reset
 
-An uncanceled native form reset restores the initial model value and clears interaction validation state. Cancel the form's `reset` event to keep the current value. Reset does not emit a user `value-change` action. Controlled consumers must accept the emitted model update.
+A native form reset restores the initial model and clears interaction state. Calling `preventDefault()` on the reset event preserves the current value. Reset updates `v-model` without emitting `value-change`.
 
 ## API Reference
 
@@ -265,7 +265,7 @@ An uncanceled native form reset restores the initial model value and clears inte
 | `optionDescription` | `akaza-combobox-option-description` | — |
 | `create` | `akaza-combobox-create` | — |
 
-Popup entry and exit use a subtle side-aware structural transition. Override `--akaza-combobox-duration` to change its `120ms` duration. Reduced-motion preference shortens it automatically.
+Popup transitions follow their placement side and last `120ms`. Set `--akaza-combobox-duration` to change the duration. Reduced-motion mode removes the visible transition.
 
 ### Keyboard
 

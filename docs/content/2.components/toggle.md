@@ -5,7 +5,7 @@ navigation:
   icon: i-lucide-toggle-right
 ---
 
-A single button that toggles between pressed and unpressed states. Use it for toolbar actions, view toggles, or any binary UI control that doesn't need a label (see [Switch](/components/switch) for a labeled toggle field).
+Toggle renders one button with pressed and unpressed states. Use [Switch](/components/switch) when the control needs a visible field label.
 
 ## Anatomy
 
@@ -63,7 +63,7 @@ Use `Toggle` inside toolbars for independent on/off controls.
 
 ### Using the `state` prop
 
-`state` is `"on"` or `"off"` — useful for data-attribute-driven styling.
+`state` is `"on"` or `"off"` for data-attribute-driven styling.
 
 ```vue
 <template>

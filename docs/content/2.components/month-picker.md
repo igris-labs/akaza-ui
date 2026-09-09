@@ -8,9 +8,9 @@ navigation:
     color: success
 ---
 
-`MonthPicker` presents one year at a time as an accessible month grid. It handles roving focus, year paging, locale labels, constraints, single or multiple selection, and cancelable updates.
+`MonthPicker` displays one year at a time as a month grid. It supports roving focus, year paging, locale labels, constraints, and single or multiple selection.
 
-Use it when day precision is unnecessary, such as billing periods, reporting months, or publication schedules. One flat component generates all structural parts; slots and `ui` expose customization without a nested part tree.
+Use Month Picker for values that do not need a day. Slots and `ui` style its generated parts.
 
 ::callout{icon="i-lucide-package"}
 Values use `@internationalized/date`. Install it beside Akaza UI when application code creates dates: `pnpm add akaza-ui @internationalized/date`.

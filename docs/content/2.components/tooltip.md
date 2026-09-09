@@ -8,7 +8,7 @@ navigation:
     color: warning
 ---
 
-A small informational popup that appears on hover and focus. Does not trap focus. Use it to provide supplemental context for icon buttons or truncated text.
+Tooltip shows supplemental text on hover or focus without trapping focus. It suits icon buttons and truncated text.
 
 ## Anatomy
 
@@ -124,7 +124,7 @@ const open = ref(false);
 
 ## Hover, SSR, and layers
 
-The transparent hit area bridges the positioning gap while moving from trigger to tooltip content. Escape dismisses immediately, independently of `closeDelay`. Delay props remain reactive after mount.
+The transparent hit area bridges the gap between the trigger and tooltip content. Escape ignores `closeDelay` and closes the tooltip. Delay props remain reactive after mount.
 
 Open tooltips do not install browser listeners during SSR. Client tooltips participate in the shared popup layer order and modal ownership. Bind the slot's `triggerProps` to the actual focusable trigger so `aria-describedby` reaches the correct element.
 

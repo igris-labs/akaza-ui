@@ -7,7 +7,7 @@ navigation:
 
 `Slider` is an unstyled slider for one value or multiple thumbs. It renders a track, filled range, and `role="slider"` thumbs with pointer dragging, keyboard stepping, hidden form input support, and CSS variables for styling.
 
-Use it when users can choose an approximate value by dragging. Use [Number Field](/components/number-field) when exact typed input matters.
+Use Slider for pointer-based range input. Use [Number Field](/components/number-field) for exact typed values.
 
 ## Anatomy
 
@@ -120,7 +120,7 @@ Disabling the slider disables all serialization inputs, including each range val
 
 ### Native Form Reset
 
-An uncanceled native form reset restores the initial model value and clears interaction validation state. Cancel the form's `reset` event to keep the current value. Reset does not emit a user `value-change` action. Controlled consumers must accept the emitted model update.
+A native form reset restores the initial model and clears interaction state. Calling `preventDefault()` on the reset event preserves the current value. Reset updates `v-model` without emitting `value-change`.
 
 ## API Reference
 

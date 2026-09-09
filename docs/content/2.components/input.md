@@ -5,15 +5,15 @@ navigation:
   icon: i-lucide-text-cursor-input
 ---
 
-`Input` is an unstyled native input. Use it alone, or place it inside [Field](/components/field) to inherit `id`, `name`, `required`, `disabled`, invalid state, native validation messages, and `aria-describedby`.
+`Input` renders a native input with Akaza state attributes and [Field](/components/field) integration.
 
-Use it for text-like native input types when you want Akaza state attrs and Field integration without losing normal browser behavior.
+It preserves native text editing, validation, and form behavior.
 
 ## Anatomy
 
 - **`ui.root`**: Native `<input>` element. Direct `class` also applies here.
 
-`Input` intentionally has one structural part. It does not wrap the native element, so all native attributes and browser validation stay direct.
+`Input` has one structural part and does not wrap the native element.
 
 ## Usage
 

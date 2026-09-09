@@ -8,7 +8,7 @@ navigation:
     color: warning
 ---
 
-An alert dialog interrupts the user with important content and blocks interaction with the rest of the page until dismissed. Focus is trapped inside and screen readers announce it as an alert.
+Alert Dialog blocks page interaction, traps focus, and uses `role="alertdialog"`.
 
 Use this for destructive or irreversible actions. For non-critical dialogs, use [Dialog](/components/dialog) instead.
 
@@ -178,6 +178,6 @@ const dialog = ref();
 | Key | Behavior |
 |-----|----------|
 | `Tab` / `Shift + Tab` | Cycles through focusable controls inside open alert dialog. |
-| `Escape` | Does not close alert dialog. User must explicitly choose an action. |
+| `Escape` | Does not close the alert dialog. The user must choose an action. |
 
 Opening moves focus inside. Closing restores focus to previous element. Backdrop activation does not dismiss it.

@@ -1,6 +1,6 @@
 ---
 title: Data Table
-description: Native semantic tables with sorting, filtering, selection, pagination, expansion, resizing, and complete cell control.
+description: Semantic tables with sorting, filtering, selection, pagination, expansion, and resizing.
 navigation:
   icon: i-lucide-table-2
   badge:
@@ -8,9 +8,9 @@ navigation:
     color: success
 ---
 
-`DataTable` turns typed column definitions and row data into a semantic HTML table. Akaza owns the accessible structure and interaction state; your application owns the data, markup inside cells, and every visual decision.
+`DataTable` renders typed columns and row data as a semantic HTML table. Akaza manages structure and interaction state. Your application supplies data, cell content, and styles.
 
-Use it for application tables that need sorting, filtering, selection, pagination, grouped headers, expandable details, pinned columns, or user-controlled layout. It deliberately renders a native `table`, not an ARIA data grid, so ordinary table reading remains predictable for screen readers.
+It supports sorting, filtering, selection, pagination, grouped headers, expandable rows, and pinned columns. It renders a native `table` and keeps standard table reading behavior for screen readers.
 
 ## Anatomy
 
@@ -28,7 +28,7 @@ Use it for application tables that need sorting, filtering, selection, paginatio
 - **`#loading`**, **`#error`**, **`#empty`**: Complete table-body states.
 - **`#expansion-trigger`**, **`#reorder-handle`**, **`#column-reorder-handle`**, **`#resize-handle`**: Interaction control content.
 
-The component generates the native table, grouped headers, rows, cells, controls, state rows, paginator, live result count, semantic classes, and data attributes. Generic `#header` and `#cell` slots preserve built-in controls. A column-specific slot replaces that column part completely, which gives full control but makes you responsible for any selection, sorting, expansion, or reorder control you replace.
+Data Table generates the native table structure, controls, state rows, paginator, and result count. Generic `#header` and `#cell` slots keep built-in controls. A column slot replaces that part, including any selection, sorting, expansion, or reorder control it contained.
 
 ## Usage
 
@@ -288,7 +288,7 @@ Set `rowHeader: true` on the identifying column to render its body cells as nati
 
 ### Column layout
 
-Sizing, order, visibility, and pinning are controlled independently. Pointer and keyboard interactions update the same models.
+Sizing, order, visibility, and pinning use separate models. Pointer and keyboard input update those models.
 
 ```vue
 <DataTable
@@ -310,7 +310,7 @@ Sizing, order, visibility, and pinning are controlled independently. Pointer and
 </DataTable>
 ```
 
-Column sizes are pixel values and the native table uses fixed layout. `expand` resizing changes total table width; `fit` transfers accepted width to an adjacent column and preserves the total. Pinned body/footer cells use a lower stacking layer than sticky pinned headers. Consumer `min-width` or `width` CSS can intentionally override these constraints.
+Column sizes use pixels and a fixed table layout. `expand` changes total table width. `fit` transfers width to an adjacent column. Pinned headers sit above pinned body and footer cells. Consumer `min-width` and `width` rules can override calculated sizes.
 
 Row reorder is available only for flat, unsorted rows. Sorting or hierarchical depth disables native reorder buttons and controller moves, avoiding ambiguous source order. Filtered and paginated moves still operate on stable row keys in the full supplied array.
 
@@ -473,7 +473,7 @@ Every model emits its `update:*` event after an accepted change. The paired `*-c
 | `moveColumn(id, targetId, event?)`, `moveRow(id, targetId, event?)` | Reorders by stable IDs. |
 | `reset(event?)` | Atomically restores model defaults and definition-level visibility/pinning. Returns `false` when canceled. |
 
-The component instance also exposes `getColumn`, `getRow`, `setFilter`, `clearFilter`, `setGlobalFilter`, `setPage`, `setPageSize`, and `reset` directly.
+The component instance exposes `getColumn`, `getRow`, `setFilter`, `clearFilter`, `setGlobalFilter`, `setPage`, `setPageSize`, and `reset`.
 
 ### UI Options
 

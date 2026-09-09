@@ -5,7 +5,7 @@ navigation:
   icon: i-lucide-circle-dot
 ---
 
-A set of mutually exclusive options. Keyboard navigation follows the roving tabindex pattern — arrow keys move between options and selection follows focus.
+A set of mutually exclusive options. Keyboard navigation uses roving tabindex: arrow keys move between options and selection follows focus.
 
 ## Anatomy
 
@@ -59,7 +59,7 @@ const options = [
 
 ### Custom item rendering
 
-The `#item` slot is rendered inside each radio button — provide the visual content only. The button itself handles click and keyboard selection.
+The `#item` slot renders inside each radio button. Provide only the visual content; the button handles pointer and keyboard selection.
 
 ```vue
 <template>

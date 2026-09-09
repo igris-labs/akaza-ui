@@ -8,9 +8,9 @@ navigation:
     color: success
 ---
 
-`DateRangePicker` composes Date Range Field and Calendar into one flat Vue component. Users can type either endpoint or select a range visually while constraints, form state, cancelable events, popup dismissal, and styling hooks stay synchronized.
+`DateRangePicker` combines Date Range Field and Calendar. Users can type either endpoint or select a range from the popup.
 
-Use it for booking, reporting, scheduling, and other workflows where both exact entry and calendar selection matter. Use [Date Range Field](/components/date-range-field) when a popup is unnecessary.
+Use [Date Range Field](/components/date-range-field) when you do not need a calendar popup.
 
 ::callout{icon="i-lucide-package"}
 Date values come from `@internationalized/date`. Install it beside Akaza UI when application code creates or transforms dates: `pnpm add akaza-ui @internationalized/date`.
@@ -29,7 +29,7 @@ Date values come from `@internationalized/date`. Install it beside Akaza UI when
 - **`#previous`**, **`#heading`**, **`#next`**, **`#weekday`**, **`#day`**, **`#footer`**: Customize built-in Calendar content.
 - **`#close`**: Optional close-button content, rendered when slot or `closeLabel` exists.
 
-Date Range Picker remains one public component. It does not require Root, Trigger, Content, Positioner, Field, and Calendar sub-components to assemble a standard picker.
+Date Range Picker exposes one component with slots for its generated parts.
 
 ## Usage
 

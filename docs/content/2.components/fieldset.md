@@ -5,9 +5,9 @@ navigation:
   icon: i-lucide-group
 ---
 
-`Fieldset` groups related controls with native `<fieldset>` and `<legend>` semantics while keeping styling fully controlled by you.
+`Fieldset` groups related controls with native `<fieldset>` and `<legend>` semantics.
 
-Use it when multiple controls answer one larger question: billing details, notification channels, preference groups, or grouped consent.
+Use Fieldset when several controls answer one question, such as notification channels or grouped consent.
 
 ## Anatomy
 

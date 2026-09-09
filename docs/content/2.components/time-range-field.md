@@ -8,9 +8,9 @@ navigation:
     color: success
 ---
 
-`TimeRangeField` composes two Time Field behaviors under one range model and one aggregate validity state. It coordinates locale order, granularity, hour cycle, constraints, partial input, Field integration, cancelable updates, and separate start/end form values.
+`TimeRangeField` combines two Time Field controls under one range model and validity state. It supports locale order, granularity, constraints, partial input, Field integration, and separate form values.
 
-Use it for schedules, availability windows, operating hours, and appointments where end time must be on or after start time.
+The end time must be equal to or later than the start time.
 
 ## Anatomy
 
@@ -222,4 +222,4 @@ Each endpoint uses Time Field keyboard behavior:
 | `Tab` / `Shift + Tab` | Uses native order across both endpoints and surrounding controls. |
 | `A` / `P` | Sets focused endpoint day period. |
 
-Mouse and touch edit native inputs and day-period buttons directly. No hover-only action is required.
+Mouse and touch edit the native inputs and day-period buttons. The component does not require hover input.

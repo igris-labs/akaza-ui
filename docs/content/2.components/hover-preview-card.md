@@ -5,7 +5,7 @@ navigation:
   icon: i-lucide-id-card
 ---
 
-`HoverPreviewCard` opens rich hover/focus content after a delay. Use it for link previews, user cards, repository cards, or entity summaries. If the content needs click-to-open behavior, use [Popover](/components/popover) instead.
+`HoverPreviewCard` opens preview content from hover or focus after a delay. Use [Popover](/components/popover) for click-to-open content.
 
 Preview content has no role by default. Add `ariaLabel` only when content includes interactive controls and needs dialog semantics.
 
@@ -136,7 +136,7 @@ Focus may move from trigger into teleported content without closing it. `forceMo
 | `content` | `akaza-hover-preview-card-content` | `data-akaza-state`, `data-akaza-side`, `data-akaza-align`, `aria-hidden`, `inert` when force-mounted closed, `--akaza-hover-preview-card-duration` |
 | `arrow` | `akaza-hover-preview-card-arrow` | — |
 
-Popup entry and exit use a subtle side-aware structural transition. Override `--akaza-hover-preview-card-duration` to change its `120ms` duration. Reduced-motion preference shortens it automatically.
+Popup transitions follow their placement side and last `120ms`. Set `--akaza-hover-preview-card-duration` to change the duration. Reduced-motion mode removes the visible transition.
 
 ### Keyboard
 

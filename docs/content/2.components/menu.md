@@ -47,7 +47,7 @@ const items = [
 
 ### Grouped items with separators
 
-Pass an array of arrays — Akaza UI inserts separators automatically between groups.
+Pass an array of arrays. Akaza UI inserts separators between groups.
 
 ```vue
 <script setup lang="ts">

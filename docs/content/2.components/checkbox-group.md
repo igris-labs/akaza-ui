@@ -5,13 +5,13 @@ navigation:
   icon: i-lucide-list-checks
 ---
 
-`CheckboxGroup` manages an array model for multiple checkbox options. It keeps Akaza's items-based API while using [Checkbox](/components/checkbox) for each item, including optional parent checkbox behavior.
+`CheckboxGroup` manages an array model and renders one [Checkbox](/components/checkbox) per option. It can include a parent select-all checkbox.
 
-Use it when users can choose zero, one, or many values from a known option list.
+Use Checkbox Group for multiple choices from a known list.
 
 ## Anatomy
 
-- **`#item`**: Replaces the whole item row when you need full control.
+- **`#item`**: Replaces one item row.
 - **`#indicator`**: Indicator content for child checkboxes.
 - **`#parent-indicator`**: Indicator content for the optional select-all parent checkbox.
 - **`#[option.slot]`**: Per-option label override when an option has a `slot` key.
@@ -168,9 +168,9 @@ function keepOne(value: CheckboxGroupValue[], details: AkazaChangeEventDetails) 
 
 ## Group validation
 
-The group has its own native validation proxy. An enabled required empty group is invalid even when its first option is disabled, or when no name is supplied. Invalid submission focuses the first enabled visible checkbox. If no options are enabled, explicitly disable the group or remove `required`; an enabled required empty group remains invalid.
+The group uses one native validation proxy. A required empty group remains invalid when its first option is disabled or no name is set. Invalid submission focuses the first enabled checkbox. Disable the group or remove `required` when no option is enabled.
 
-Field metadata and validation belong to the group, not independently to every child checkbox. Parent select-all changes only enabled values and preserves disabled selected values. Native reset restores the initial group selection unless canceled.
+Field metadata and validation apply to the group. Parent select-all changes enabled values and preserves disabled selections. Native reset restores the initial selection unless canceled.
 
 ## API Reference
 
@@ -253,4 +253,4 @@ Field metadata and validation belong to the group, not independently to every ch
 | `Tab` / `Shift + Tab` | Moves through parent and enabled child checkboxes in document order. |
 | `Enter` / `Space` | Toggles focused checkbox. Parent control selects or clears allowed values. |
 
-Each checkbox remains independently focusable; group does not replace native tab order with roving focus.
+Each checkbox remains in the native tab order. The group does not use roving focus.

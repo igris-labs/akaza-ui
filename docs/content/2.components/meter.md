@@ -5,9 +5,9 @@ navigation:
   icon: i-lucide-gauge
 ---
 
-`Meter` displays a read-only value inside a known range. Use it for gauges like storage usage, quota, battery level, or health scores. It renders `role="meter"` with value ARIA metadata and exposes label, value, track, and indicator parts.
+`Meter` renders a read-only bounded value with `role="meter"` and ARIA value metadata. Its slots expose the label, value, track, and indicator.
 
-Use `Meter` for known bounded values. Use [Progress](/components/progress) for task completion, and [Slider](/components/slider) when the user can change the value.
+Use [Progress](/components/progress) for task completion and [Slider](/components/slider) for editable values.
 
 ## Anatomy
 

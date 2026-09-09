@@ -8,9 +8,9 @@ navigation:
     color: success
 ---
 
-`PinInput` is an unstyled fixed-length text control rendered as individual cells. It distributes typed or pasted characters, manages focus, supports numeric OTP metadata and masking, and submits one canonical string to native forms.
+`PinInput` renders a fixed-length text value as individual cells. It distributes typed or pasted characters, manages focus, supports OTP metadata and masking, and submits one string.
 
-Use it for short verification codes and PINs. Use [Input](/components/input) for unrestricted text.
+Use [Input](/components/input) for unrestricted text.
 
 ## Anatomy
 
@@ -143,7 +143,7 @@ Use the `#cell` slot's positional values for partial-entry UI, not indexes into 
 
 ### Native Form Reset
 
-An uncanceled native form reset restores the initial model value and clears interaction validation state. Cancel the form's `reset` event to keep the current value. Reset does not emit a user `value-change` action. Controlled consumers must accept the emitted model update.
+A native form reset restores the initial model and clears interaction state. Calling `preventDefault()` on the reset event preserves the current value. Reset updates `v-model` without emitting `value-change`.
 
 ## API Reference
 

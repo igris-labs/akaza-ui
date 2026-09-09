@@ -177,4 +177,4 @@ Without `allowNonContiguousRanges`, blocked interior years reject the range. End
 | `Shift + PageUp` / `Shift + PageDown` | Moves ten pages. |
 | `Enter` / `Space` | Sets range start or completes range end. |
 
-Hover previews pending ranges for pointer users. Keyboard focus provides the same preview; touch users select endpoints directly.
+Pointer hover and keyboard focus preview a pending range. Touch input selects each endpoint.

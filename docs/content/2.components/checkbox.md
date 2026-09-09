@@ -5,7 +5,7 @@ navigation:
   icon: i-lucide-square-check
 ---
 
-An accessible checkbox with support for custom checked indicators, labels, descriptions, indeterminate state, and form integration.
+Checkbox renders a labeled control with checked, unchecked, and indeterminate states. It supports native forms and custom indicators.
 
 ## Anatomy
 

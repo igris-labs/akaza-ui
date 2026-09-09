@@ -88,6 +88,20 @@ test("modal surfaces trap focus, dismiss correctly, and restore focus", async ({
   await expect(drawerTrigger).toBeFocused();
 });
 
+test("fullscreen dialog fills the visual viewport", async ({ page }) => {
+  await section(page, "dialog").getByRole("button", { name: "Open fullscreen" }).click();
+  const dialog = page.getByRole("dialog", { name: "Fullscreen dialog" });
+  await expect(dialog).toBeVisible();
+  const viewport = page.viewportSize();
+  expect(viewport).not.toBeNull();
+  await expect.poll(async () => dialog.boundingBox()).toEqual({
+    x: 0,
+    y: 0,
+    width: viewport!.width,
+    height: viewport!.height,
+  });
+});
+
 test("nested dialogs isolate the background and dismiss only the top layer", async ({ page }) => {
   const dialogSection = section(page, "dialog");
   await dialogSection.getByRole("button", { name: "Open outer" }).click();

@@ -8,9 +8,9 @@ navigation:
     color: success
 ---
 
-`TimeField` renders locale-ordered hour, minute, second, and day-period controls. It handles 12/24-hour cycles, keyboard stepping, paste, granularity, step snapping, constraints, Field state, cancelable changes, and native form submission.
+`TimeField` renders locale-ordered hour, minute, second, and day-period controls. It supports 12/24-hour cycles, keyboard editing, paste, constraints, Field state, and native forms.
 
-Use it when users need precise, editable clock values. Akaza keeps one flat component: generated segment behavior stays intact while `ui`, semantic classes, data attributes, and focused slots control presentation.
+Use Time Field for editable clock values. Style generated segments through `ui`, semantic classes, data attributes, and slots.
 
 ::callout{icon="i-lucide-package"}
 `TimeValue` is `Time | CalendarDateTime | ZonedDateTime` from `@internationalized/date`. Install it beside Akaza UI when application code creates values: `pnpm add akaza-ui @internationalized/date`.

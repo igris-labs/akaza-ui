@@ -47,7 +47,7 @@ const page = shallowRef<CalendarDateValue>(new CalendarDate(2024, 1, 1));
 
 ### Page size and columns
 
-`yearsPerPage` controls paging distance and visible item count. `columns` controls visual keyboard rows independently.
+`yearsPerPage` controls paging distance and visible item count. `columns` controls the number of keyboard rows.
 
 ```vue
 <YearPicker :years-per-page="9" :columns="3" />

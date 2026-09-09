@@ -5,7 +5,7 @@ navigation:
   icon: i-lucide-loader
 ---
 
-An accessible progress bar with ARIA role `progressbar`. Supports determinate values, indeterminate state (when value is `null`), and both horizontal and vertical orientations.
+Progress renders `role="progressbar"` with determinate or indeterminate state. It supports horizontal and vertical orientations.
 
 ## Anatomy
 

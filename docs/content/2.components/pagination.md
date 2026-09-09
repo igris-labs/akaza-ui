@@ -10,7 +10,7 @@ navigation:
 
 `Pagination` calculates a compact page range from total items and page size, then renders semantic navigation with current-page metadata, optional ellipses, and boundary controls. Controls can be buttons or real links.
 
-Use it when content is split into numbered pages. Keep data fetching and URL synchronization in application code through `v-model` and `getPageHref`.
+Application code handles data fetching and URL state through `v-model` and `getPageHref`.
 
 ## Anatomy
 

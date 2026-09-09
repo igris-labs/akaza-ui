@@ -8,9 +8,9 @@ navigation:
     color: success
 ---
 
-`Editable` switches between a static preview and a text input while keeping draft and committed values separate. It supports focus, click, or double-click activation; blur or Enter submission; cancellation; multiline input; and native forms.
+`Editable` switches between a preview and a text input. It keeps draft and committed values separate and supports native forms.
 
-Use it for names, titles, labels, and short content that should be edited in place. Use [Input](/components/input) when the control should always remain editable.
+Use Editable for in-place text editing. Use [Input](/components/input) for a control that stays editable.
 
 ## Anatomy
 
@@ -109,7 +109,7 @@ The preview slot exposes an explicit action. Keep interaction on the generated p
 
 ### Native Form Reset
 
-An uncanceled native form reset restores the initial model value and clears interaction validation state. Cancel the form's `reset` event to keep the current value. Reset does not emit a user `value-change` action. Controlled consumers must accept the emitted model update.
+A native form reset restores the initial model and clears interaction state. Calling `preventDefault()` on the reset event preserves the current value. Reset updates `v-model` without emitting `value-change`.
 
 ## API Reference
 

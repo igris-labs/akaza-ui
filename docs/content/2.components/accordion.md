@@ -8,7 +8,7 @@ navigation:
     color: warning
 ---
 
-A vertically stacked list of items that can be expanded or collapsed. Supports single or multiple open items and full keyboard navigation.
+Accordion displays expandable sections with single or multiple selection and keyboard navigation.
 
 ## Anatomy
 
@@ -35,8 +35,8 @@ import { Accordion } from "akaza-ui";
 
 const items = [
   { value: "a", label: "What is Akaza UI?", content: "A headless Vue component library with a Vue-native slots API." },
-  { value: "b", label: "Is it styled?", content: "No — bring your own CSS, Tailwind, or any design system." },
-  { value: "c", label: "Is it accessible?", content: "Yes, fully WAI-ARIA compliant with keyboard navigation built in." },
+  { value: "b", label: "Is it styled?", content: "No. Bring your own CSS, Tailwind, or design system." },
+  { value: "c", label: "Does it support keyboard input?", content: "Yes. Use arrow, Home, End, Enter, and Space keys." },
 ];
 </script>
 
@@ -64,7 +64,7 @@ const items = [
 
 ### Custom trigger and icon
 
-The `#trigger` slot is rendered inside the trigger button — use it to customise the label content. Style the button itself with `ui.trigger`. Use `#icon` to override the chevron indicator.
+The `#trigger` slot renders inside the trigger button. Style the button with `ui.trigger`, and replace its chevron with `#icon`.
 
 ```vue
 <template>

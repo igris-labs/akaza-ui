@@ -5,11 +5,11 @@ navigation:
   icon: i-lucide-list-filter
 ---
 
-`Select` renders a trigger and a `role="listbox"` popup. It supports single or multiple values, labels, separators, typeahead, cancelable changes, and [Field](/components/field) metadata without a nested subcomponent tree.
+`Select` renders a trigger and a `role="listbox"` popup. It supports single or multiple values, grouped options, typeahead, cancelable changes, and [Field](/components/field) metadata.
 
 Popup placement flips when preferred side lacks room, clamps to viewport, and follows anchor/content resize and ancestor scrolling.
 
-Use it when the user must choose from a known list. Use `autocomplete` when the same select needs lightweight filtering. Use [Combobox](/components/combobox) when the text input itself is the primary interaction.
+Use `autocomplete` to filter the list. Use [Combobox](/components/combobox) when the text input is the main control.
 
 ## Anatomy
 
@@ -164,7 +164,7 @@ Autocomplete results may change while the popup is open. The active option follo
 
 ### Native Form Reset
 
-An uncanceled native form reset restores the initial model value and clears interaction validation state. Cancel the form's `reset` event to keep the current value. Reset does not emit a user `value-change` action. Controlled consumers must accept the emitted model update.
+A native form reset restores the initial model and clears interaction state. Calling `preventDefault()` on the reset event preserves the current value. Reset updates `v-model` without emitting `value-change`.
 
 ## API Reference
 
@@ -278,7 +278,7 @@ An uncanceled native form reset restores the initial model value and clears inte
 
 Plain `class` applies to the root wrapper. Use `ui.trigger`, `ui.content`, and `ui.option` for internal parts.
 
-Popup entry and exit use a subtle side-aware structural transition. Override `--akaza-select-duration` to change its `120ms` duration. Reduced-motion preference shortens it automatically.
+Popup transitions follow their placement side and last `120ms`. Set `--akaza-select-duration` to change the duration. Reduced-motion mode removes the visible transition.
 
 Native `data-akaza-invalid` appears after interaction or invalid submit. Controlled invalid state from the `invalid` prop or parent `Field` appears immediately.
 

@@ -5,7 +5,7 @@ navigation:
   icon: i-lucide-toggle-left
 ---
 
-An accessible on/off toggle. Renders as a `role="switch"` button and supports custom `v-model` values, labels, descriptions, and fully custom track/thumb rendering via slots.
+Switch renders a `role="switch"` button with custom model values, labels, descriptions, and track/thumb slots.
 
 ## Anatomy
 

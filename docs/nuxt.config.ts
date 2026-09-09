@@ -57,7 +57,7 @@ export default defineNuxtConfig({
     title: "Akaza UI",
     description: "Headless, accessible Vue components with a Vue-native slots API.",
     full: {
-      title: "Akaza UI — Full Documentation",
+      title: "Akaza UI Documentation",
       description:
         "Complete documentation for Akaza UI, including getting started and all component APIs.",
     },

@@ -8,9 +8,9 @@ navigation:
     color: success
 ---
 
-`Listbox` is an unstyled, always-visible selection primitive. It supports single or multiple values, disabled and grouped rows, typeahead, range selection, filtering, object values, native form submission, and optional virtualization.
+`Listbox` displays a persistent list for single or multiple selection. It supports grouped rows, typeahead, range selection, filtering, object values, native forms, and virtualization.
 
-Use it when the list itself should remain visible. Use [Select](/components/select) when selection belongs in a popup, or [Combobox](/components/combobox) when users type into the selecting control.
+Use [Select](/components/select) for a popup or [Combobox](/components/combobox) for text input with suggestions.
 
 ## Anatomy
 
@@ -175,11 +175,11 @@ Change events fire before state updates. Call `details.cancel()` to keep the cur
 
 ## Virtualized focus
 
-Entry focus reveals a far-away selected option once. Manual scrolling afterward is not forced back to that selection. If the active row leaves the virtual window, its missing id is not left in `aria-activedescendant`; keyboard navigation reveals the next active row again.
+Initial focus scrolls a distant selected option into view. Manual scrolling remains under user control. Listbox removes `aria-activedescendant` while its active virtual row is unmounted.
 
 ### Native Form Reset
 
-An uncanceled native form reset restores the initial model value and clears interaction validation state. Cancel the form's `reset` event to keep the current value. Reset does not emit a user `value-change` action. Controlled consumers must accept the emitted model update.
+A native form reset restores the initial model and clears interaction state. Calling `preventDefault()` on the reset event preserves the current value. Reset updates `v-model` without emitting `value-change`.
 
 ## API Reference
 

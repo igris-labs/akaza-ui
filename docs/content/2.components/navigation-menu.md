@@ -5,7 +5,7 @@ navigation:
   icon: i-lucide-navigation
 ---
 
-`NavigationMenu` is for application or documentation navigation, not command menus. It renders semantic `nav` markup, top-level triggers/links, and collision-aware flyout content from an items array.
+`NavigationMenu` renders semantic `nav` markup, top-level links or triggers, and flyout content from an items array. Use [Menu](/components/menu) for commands.
 
 ## Anatomy
 
@@ -165,7 +165,7 @@ Use `#item` for richer content while the component keeps generated list and link
 | `label` | `akaza-navigation-menu-label` | — |
 | `description` | `akaza-navigation-menu-description` | — |
 
-Flyout entry and exit use a subtle side-aware structural transition. Trigger switching uses direction-aware simultaneous panels and viewport resizing. Override `--akaza-navigation-menu-duration`, `--akaza-navigation-menu-panel-duration`, `--akaza-navigation-menu-resize-duration`, or `--akaza-navigation-menu-slide-distance`; classes passed through `ui` can replace transitions entirely. Reduced-motion preference shortens every internal transition automatically.
+Flyouts use side-aware transitions. Switching triggers animates both panels and resizes the viewport. Change motion with `--akaza-navigation-menu-duration`, `--akaza-navigation-menu-panel-duration`, `--akaza-navigation-menu-resize-duration`, and `--akaza-navigation-menu-slide-distance`. Classes passed through `ui` can replace these transitions. Reduced-motion mode removes visible movement.
 
 ### Keyboard
 

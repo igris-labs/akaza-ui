@@ -8,9 +8,9 @@ navigation:
     color: success
 ---
 
-`Calendar` renders an accessible date grid and owns date navigation, selection, locale formatting, constraints, and roving focus. It uses `@internationalized/date` values, so calendar arithmetic does not depend on JavaScript `Date` parsing or local midnight behavior.
+`Calendar` renders a date grid with navigation, selection, locale formatting, constraints, and roving focus. It uses `@internationalized/date` values and avoids JavaScript `Date` parsing and local-midnight conversions.
 
-Use it when users select dates directly from a visible month. Calendar stays flat: one component generates structural parts while slots expose labels, dates, state, and actions for custom UI.
+Use Calendar for date selection from a visible month. Slots expose labels, dates, state, and actions from one component.
 
 ::callout{icon="i-lucide-package"}
 Date values come from `@internationalized/date`. Install it beside Akaza UI when application code creates or transforms dates: `pnpm add akaza-ui @internationalized/date`.
@@ -199,7 +199,7 @@ Both selection and visible-month changes emit cancelable details before updating
 
 ## Controlled pages and initial focus
 
-The initial focus target follows the displayed placeholder rather than assuming today's month is visible. Controlled paging keeps one eligible day as the grid tab stop without moving DOM focus merely because props changed. Pages with no enabled days have no day tab stop; retain accessible navigation controls.
+The initial focus target follows the displayed placeholder instead of assuming today's month is visible. Controlled paging keeps one eligible day as the grid tab stop without moving DOM focus when props change. Pages with no enabled days have no day tab stop, so keep the navigation controls accessible.
 
 Date formatters are reused per component and follow the value's calendar as well as the requested locale.
 

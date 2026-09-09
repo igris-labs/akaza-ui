@@ -142,7 +142,7 @@ Plain items without `children` are commands. Bind default `v-model` to control t
 | `content` | `akaza-menubar-content`, `akaza-menu-content` | `data-akaza-state`, `data-akaza-side`, `data-akaza-align`, `--akaza-menubar-anchor-width`, `--akaza-menubar-anchor-height`, `--akaza-menubar-available-width`, `--akaza-menubar-available-height`, `--akaza-menubar-transform-origin`, `--akaza-menubar-duration` |
 | menu parts | `akaza-menu-*` | Same as Menu. |
 
-Popup entry and exit use a subtle side-aware structural transition. Override `--akaza-menubar-duration` to change its `120ms` duration. Reduced-motion preference shortens it automatically.
+Popup transitions follow their placement side and last `120ms`. Set `--akaza-menubar-duration` to change the duration. Reduced-motion mode removes the visible transition.
 
 ### Keyboard
 

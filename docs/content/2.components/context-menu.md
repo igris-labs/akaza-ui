@@ -5,7 +5,7 @@ navigation:
   icon: i-lucide-mouse-pointer-2
 ---
 
-`ContextMenu` uses the same item model as [Menu](/components/menu), but opens from a `contextmenu` event and positions the panel at the pointer. Use it for file lists, canvases, editors, tables, and other surfaces where secondary actions belong near the clicked target.
+`ContextMenu` uses the [Menu](/components/menu) item model. It opens from a `contextmenu` event and positions the panel at the pointer.
 
 ## Anatomy
 
@@ -152,9 +152,9 @@ const menu = ref<InstanceType<typeof ContextMenu>>();
 | `content` | `akaza-context-menu-content`, `akaza-menu-content` | `data-akaza-state`, `data-akaza-side`, `data-akaza-align`, `--akaza-context-menu-duration` |
 | menu parts | `akaza-menu-*` | Same as Menu. |
 
-The generated root uses `display: contents`, so it does not change trigger-surface layout. Use `ui.content` for the visible popup; override `ui.root` display only when a real wrapper box is intentional.
+The generated root uses `display: contents`, so it does not change the trigger surface layout. Use `ui.content` for the popup. Override `ui.root` when you need a wrapper box.
 
-Popup entry and exit use a subtle side-aware structural transition. Override `--akaza-context-menu-duration` to change its `120ms` duration. Reduced-motion preference shortens it automatically.
+Popup transitions follow their placement side and last `120ms`. Set `--akaza-context-menu-duration` to change the duration. Reduced-motion mode removes the visible transition.
 
 ### Keyboard
 

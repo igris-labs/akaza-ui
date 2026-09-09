@@ -5,7 +5,7 @@ navigation:
   icon: i-lucide-chevrons-down-up
 ---
 
-A single collapsible region controlled by a trigger. Use this for inline toggleable content like a filter panel, "show more" section, or expandable code block.
+Collapsible controls one expandable region, such as a filter panel, "show more" section, or code block.
 
 For a list of collapsible items with headings, see [Accordion](/components/accordion).
 
@@ -48,7 +48,7 @@ import { Collapsible } from "akaza-ui";
 
 ### With animated icon
 
-The `#trigger` slot is rendered inside the trigger button — use `ui.trigger` to style the button, and `#icon` to replace the default chevron.
+The `#trigger` slot renders inside the trigger button. Use `ui.trigger` to style the button and `#icon` to replace the default chevron.
 
 ```vue
 <template>

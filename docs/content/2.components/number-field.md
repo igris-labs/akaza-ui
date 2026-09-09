@@ -7,7 +7,7 @@ navigation:
 
 `NumberField` is an unstyled spinbutton control. It combines a native number input with increment/decrement buttons, optional scrub area, wheel and keyboard stepping, min/max/step constraints, cancelable changes, commit events, and [Field](/components/field) integration.
 
-Use it for exact numeric input. For approximate values over a range, use [Slider](/components/slider). For read-only values, use [Meter](/components/meter).
+Use Number Field for exact numeric input, [Slider](/components/slider) for range input, and [Meter](/components/meter) for read-only values.
 
 ## Anatomy
 

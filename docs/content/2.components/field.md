@@ -5,9 +5,9 @@ navigation:
   icon: i-lucide-text-cursor-input
 ---
 
-`Field` links a label, description, error message, and a control. Akaza inputs inside it inherit accessibility props and report focused, filled, dirty, touched, valid, and invalid state attributes.
+`Field` links one control to its label, description, and error message. Akaza controls inherit its form and ARIA metadata and report interaction state.
 
-Use it around one form control when you want labels, help text, errors, and native validity to stay wired without manual ids.
+Wrap one control in each Field. Use [Fieldset](/components/fieldset) for a group.
 
 ## Anatomy
 
@@ -16,7 +16,7 @@ Use it around one form control when you want labels, help text, errors, and nati
 - **`#description`**: Custom help text included in `aria-describedby`.
 - **`#error`**: Custom validation or server error content included in `aria-describedby`.
 
-Akaza form controls consume `Field` context automatically. For native or custom controls, use the default slot's `controlProps`.
+Akaza form controls read `Field` context. For native or custom controls, use the default slot's `controlProps`.
 
 ## Usage
 

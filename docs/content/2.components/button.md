@@ -5,7 +5,7 @@ navigation:
   icon: i-lucide-mouse-pointer-click
 ---
 
-An accessible button element with built-in support for disabled, loading, and async click states. Renders as `<button>` by default but can be any element or component.
+Button adds disabled and loading state to a native `<button>`. The `as` prop can render another element or component.
 
 ## Anatomy
 
@@ -45,7 +45,7 @@ Use `disabled` for actions that cannot currently run.
 
 ### Async loading
 
-Use `loading-auto` to automatically show a spinner while the `@click` handler's Promise is pending.
+Set `loading-auto` to show a spinner while the `@click` handler's Promise is pending.
 
 ```vue
 <script setup lang="ts">
@@ -86,7 +86,7 @@ Use `as` to render a different root while keeping Akaza button state hooks.
 
 ### Focusable when disabled
 
-Keeps the button in the tab order while disabled — useful for showing tooltips on disabled buttons.
+Keeps the button in the tab order while disabled. This allows a disabled button to trigger a tooltip.
 
 ```vue
 <template>
@@ -105,7 +105,7 @@ Keeps the button in the tab order while disabled — useful for showing tooltips
 | `disabled` | `boolean` | `false` | Disables the button. |
 | `focusableWhenDisabled` | `boolean` | `false` | Keep button focusable while disabled. |
 | `loading` | `boolean` | `false` | Show the loading state manually. |
-| `loadingAuto` | `boolean` | `false` | Automatically show loading while the `@click` handler's Promise resolves. |
+| `loadingAuto` | `boolean` | `false` | Shows loading while the `@click` handler's Promise resolves. |
 | `ui` | `ButtonUi` | — | Classes for root and default loading parts. |
 
 ### Slots
@@ -117,7 +117,7 @@ Keeps the button in the tab order while disabled — useful for showing tooltips
 
 ### Native Events
 
-`Button` forwards native button events to the root element. Use `@click` directly; when `loading-auto` is set and the handler returns a Promise, the button enters loading state until it settles.
+`Button` forwards native button events to the root element. Bind `@click` as usual. With `loading-auto`, a Promise returned by the handler keeps the button in its loading state until the Promise settles.
 
 ### UI Options
 

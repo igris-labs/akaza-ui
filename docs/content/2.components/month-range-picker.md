@@ -10,7 +10,7 @@ navigation:
 
 `MonthRangePicker` selects inclusive ranges at month precision. First activation sets an anchor; hover or keyboard focus previews a pending range; second activation commits normalized start and end values.
 
-Use it for reporting windows, subscriptions, fiscal periods, and other workflows where days are irrelevant. It shares Month Picker's flat DOM and styling contract.
+Use Month Range Picker for ranges that do not need day precision. It shares Month Picker's DOM and styling hooks.
 
 ## Anatomy
 

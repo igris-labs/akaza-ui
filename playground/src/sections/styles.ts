@@ -1,604 +1,610 @@
-export const sectionTitle = "text-lg font-semibold mb-1";
-export const sectionDescription = "text-sm mb-8 text-muted-foreground";
-export const sectionDescriptionTight = "text-sm mb-6 text-muted-foreground";
-export const exampleStack = "space-y-10";
-export const exampleTitle = "text-sm font-medium mb-3";
-export const exampleBlock = "mb-8";
-export const exampleLabel = "mb-3";
-export const exampleLabelTitle = "block text-sm font-medium text-foreground";
+export const sectionTitle = 'mb-1 text-lg font-semibold text-foreground'
+export const sectionDescription = 'mb-6 max-w-3xl text-[13px] leading-5 text-muted-foreground'
+export const sectionDescriptionTight = 'mb-5 max-w-3xl text-[13px] leading-5 text-muted-foreground'
+export const exampleStack = 'space-y-8'
+export const exampleTitle = 'mb-2 text-sm font-medium text-foreground'
+export const exampleBlock = 'mb-6'
+export const exampleLabel = 'mb-2'
+export const exampleLabelTitle = 'block text-sm font-medium text-foreground'
 export const exampleLabelDescription =
-  "text-xs text-muted-foreground [&_code]:rounded [&_code]:bg-muted [&_code]:px-1 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-xs [&_code]:text-foreground";
-export const canvas = "rounded-lg border border-border bg-accent p-6";
+  'text-xs text-muted-foreground [&_code]:rounded [&_code]:bg-muted [&_code]:px-1 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-xs [&_code]:text-foreground'
+export const canvas = 'rounded-lg border border-border bg-card p-4'
 export const canvasRow =
-  "rounded-lg border border-border bg-accent p-6 flex flex-wrap items-center gap-4";
-export const canvasCol = "rounded-lg border border-border bg-accent p-6 space-y-4";
-export const canvasGrid = "rounded-lg border border-border bg-accent p-6 grid gap-4";
+  'flex flex-wrap items-center gap-3 rounded-lg border border-border bg-card p-4'
+export const canvasCol = 'space-y-3 rounded-lg border border-border bg-card p-4'
+export const canvasGrid = 'grid gap-3 rounded-lg border border-border bg-card p-4'
 
 export const buttonPrimary =
-  "inline-flex h-9 items-center justify-center gap-2 rounded-md bg-primary px-3 text-sm font-medium text-primary-foreground no-underline transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50 data-[akaza-loading]:cursor-wait data-[akaza-loading]:opacity-75";
+  'inline-flex h-8 items-center justify-center gap-2 rounded-md border border-black/15 bg-[linear-gradient(to_bottom,#303030,#202020)] px-3 text-[13px] font-medium text-white no-underline shadow-[0_1px_1px_rgba(0,0,0,0.14),0_2px_4px_rgba(0,0,0,0.10)] transition-[background,box-shadow,transform] duration-150 hover:bg-[linear-gradient(to_bottom,#3a3a3a,#252525)] hover:shadow-[0_1px_1px_rgba(0,0,0,0.16),0_3px_6px_rgba(0,0,0,0.12)] active:translate-y-px active:shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 disabled:active:translate-y-0 data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50 data-[akaza-disabled]:active:translate-y-0 data-[akaza-loading]:cursor-wait data-[akaza-loading]:opacity-75 dark:border-white/20 dark:bg-[linear-gradient(to_bottom,#ffffff,#e7e7e9)] dark:text-[#202020] dark:hover:bg-[linear-gradient(to_bottom,#ffffff,#f3f3f4)]'
 export const buttonGhost =
-  "inline-flex h-9 items-center justify-center gap-2 rounded-md border border-border bg-background px-3 text-sm font-medium text-foreground no-underline transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50 data-[akaza-loading]:cursor-wait data-[akaza-loading]:opacity-75";
+  'inline-flex h-8 items-center justify-center gap-2 rounded-md border border-border bg-background px-3 text-[13px] font-medium text-foreground no-underline transition-colors duration-150 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50 data-[akaza-loading]:cursor-wait data-[akaza-loading]:opacity-75'
 export const buttonDestructive =
-  "inline-flex h-9 items-center justify-center gap-2 rounded-md bg-destructive px-3 text-sm font-medium text-white no-underline transition-opacity hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50 data-[akaza-loading]:cursor-wait data-[akaza-loading]:opacity-75";
+  'inline-flex h-8 items-center justify-center gap-2 rounded-md border border-destructive bg-destructive px-3 text-[13px] font-medium text-destructive-foreground no-underline transition-opacity duration-150 hover:opacity-90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-destructive/30 disabled:pointer-events-none disabled:opacity-50 data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50 data-[akaza-loading]:cursor-wait data-[akaza-loading]:opacity-75'
 export const buttonLink =
-  "inline-flex h-9 items-center justify-center gap-2 rounded-md px-0 text-sm font-medium text-primary underline underline-offset-4 transition-opacity hover:opacity-80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50 data-[akaza-loading]:cursor-wait data-[akaza-loading]:opacity-75";
+  'inline-flex h-8 items-center justify-center gap-2 rounded-md px-0 text-[13px] font-medium text-foreground underline underline-offset-4 transition-opacity duration-150 hover:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50 data-[akaza-loading]:cursor-wait data-[akaza-loading]:opacity-75'
 export const codePill =
-  "inline-flex w-max max-w-full items-center rounded-md bg-muted px-2 py-1 font-mono text-xs text-foreground";
-export const eventLog = "flex flex-col gap-1";
+  'inline-flex w-max max-w-full items-center rounded-md bg-muted px-2 py-1 font-mono text-xs text-foreground'
+export const eventLog = 'flex flex-col gap-1'
 export const eventEntry =
-  "w-max max-w-full rounded-md bg-muted px-2 py-1 font-mono text-xs text-muted-foreground";
-export const inlineCode = "rounded bg-muted px-1 py-0.5 font-mono text-xs text-foreground";
-export const footerActions = "flex flex-wrap justify-end gap-2";
+  'w-max max-w-full rounded-md bg-muted px-2 py-1 font-mono text-xs text-muted-foreground'
+export const inlineCode = 'rounded bg-muted px-1 py-0.5 font-mono text-xs text-foreground'
+export const footerActions = 'flex flex-wrap justify-end gap-2'
 
 export const inputControl =
-  "block h-9 w-full max-w-sm rounded-md border border-input bg-background px-3 text-sm text-foreground shadow-sm outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50 data-[invalid]:border-destructive data-[akaza-invalid]:border-destructive";
+  'block h-9 w-full max-w-sm rounded-md border border-input bg-background px-3 text-[13px] text-foreground outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-muted-foreground hover:border-border focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 data-[invalid]:border-destructive data-[akaza-invalid]:border-destructive'
 export const selectUi = {
-  root: "w-full max-w-sm",
+  root: 'w-full max-w-sm',
   trigger:
-    "group flex h-9 w-full items-center justify-between rounded-md border border-input bg-background px-3 text-left text-sm text-foreground shadow-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background data-[akaza-invalid]:border-destructive data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50",
-  placeholder: "text-muted-foreground",
-  icon: "ml-2 text-muted-foreground transition-transform group-data-[akaza-state=open]:rotate-180",
-  content: "rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-lg",
-  viewport: "max-h-64 overflow-auto",
+    'group flex h-9 w-full items-center justify-between rounded-md border border-input bg-background px-3 text-left text-[13px] text-foreground outline-none transition-[border-color,box-shadow] duration-150 hover:border-border focus-visible:ring-2 focus-visible:ring-ring data-[akaza-invalid]:border-destructive data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50',
+  placeholder: 'text-muted-foreground',
+  icon: 'ml-2 text-muted-foreground transition-transform group-data-[akaza-state=open]:rotate-180',
+  content: 'rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-lg',
+  viewport: 'max-h-64 overflow-auto',
   groupLabel:
-    "px-2.5 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground",
-  separator: "my-1 h-px bg-border",
+    'px-2.5 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground',
+  separator: 'my-1 h-px bg-border',
   option:
-    "flex cursor-pointer items-start gap-2 rounded-sm px-2.5 py-2 text-sm outline-none transition-colors data-[akaza-highlighted]:bg-accent data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50",
-  indicator: "mt-0.5 w-4 shrink-0 text-primary",
-  optionText: "grid gap-0.5",
-  optionLabel: "font-medium text-foreground",
-  optionDescription: "text-xs text-muted-foreground",
-};
+    'flex cursor-pointer items-start gap-2 rounded-sm px-2.5 py-2 text-sm outline-none transition-colors data-[akaza-highlighted]:bg-accent data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50',
+  indicator: 'mt-0.5 w-4 shrink-0 text-primary',
+  optionText: 'grid gap-0.5',
+  optionLabel: 'font-medium text-foreground',
+  optionDescription: 'text-xs text-muted-foreground',
+}
 export const numberFieldUi = {
-  root: "h-9 overflow-hidden rounded-md border border-input bg-background shadow-sm data-[akaza-invalid]:border-destructive data-[akaza-disabled]:opacity-50",
+  root: 'h-9 overflow-hidden rounded-md border border-input bg-background data-[akaza-invalid]:border-destructive data-[akaza-disabled]:opacity-50',
   scrubArea:
-    "flex h-full cursor-ew-resize select-none items-center border-r border-border px-3 text-xs font-medium text-muted-foreground transition-colors data-[akaza-scrubbing]:text-foreground",
+    'flex h-full cursor-ew-resize select-none items-center border-r border-border px-3 text-xs font-medium text-muted-foreground transition-colors data-[akaza-scrubbing]:text-foreground',
   decrement:
-    "flex h-full w-9 items-center justify-center border-r border-border text-sm text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-40",
+    'flex h-full w-9 items-center justify-center border-r border-border text-sm text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-40',
   input:
-    "h-full w-20 border-0 bg-transparent px-3 text-center text-sm text-foreground outline-none [appearance:textfield] placeholder:text-muted-foreground disabled:cursor-not-allowed [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none",
+    'h-full w-20 border-0 bg-transparent px-3 text-center text-sm text-foreground outline-none [appearance:textfield] placeholder:text-muted-foreground disabled:cursor-not-allowed [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none',
   increment:
-    "flex h-full w-9 items-center justify-center border-l border-border text-sm text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-40",
-};
+    'flex h-full w-9 items-center justify-center border-l border-border text-sm text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-40',
+}
 export const sliderUi = {
-  root: "h-6 w-full max-w-sm",
-  track: "h-2 w-full overflow-hidden rounded-full bg-muted-foreground/20",
-  range: "h-full rounded-full bg-primary",
+  root: 'h-6 w-full max-w-sm',
+  track: 'h-2 w-full overflow-hidden rounded-full bg-muted-foreground/20',
+  range: 'h-full rounded-full bg-primary',
   thumb:
-    "size-5 rounded-full border-2 border-primary bg-background shadow-sm outline-none transition-transform focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background data-[akaza-dragging]:scale-110 data-[akaza-disabled]:opacity-50",
-};
+    'size-5 rounded-full border-2 border-primary bg-background shadow-sm outline-none transition-[border-color,box-shadow] duration-150 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background data-[akaza-dragging]:ring-2 data-[akaza-dragging]:ring-ring data-[akaza-disabled]:opacity-50',
+}
 export const sliderVerticalUi = {
-  root: "h-40 w-6",
-  track: "h-full w-2 overflow-hidden rounded-full bg-muted-foreground/20",
-  range: "w-full rounded-full bg-primary",
+  root: 'h-40 w-6',
+  track: 'h-full w-2 overflow-hidden rounded-full bg-muted-foreground/20',
+  range: 'w-full rounded-full bg-primary',
   thumb:
-    "size-5 rounded-full border-2 border-primary bg-background shadow-sm outline-none transition-transform focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background data-[akaza-dragging]:scale-110",
-};
+    'size-5 rounded-full border-2 border-primary bg-background shadow-sm outline-none transition-[border-color,box-shadow] duration-150 focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background data-[akaza-dragging]:ring-2 data-[akaza-dragging]:ring-ring',
+}
 export const toggleGroupUi = {
-  root: "gap-1 rounded-lg border border-border bg-muted p-1",
-  item: "inline-flex h-8 items-center justify-center rounded-md px-3 text-sm font-medium text-muted-foreground transition-colors hover:bg-background hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-state=on]:bg-background data-[akaza-state=on]:text-foreground data-[akaza-state=on]:shadow-sm data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50",
-};
+  root: 'gap-1 rounded-lg border border-border bg-muted p-1',
+  item: 'inline-flex h-8 items-center justify-center rounded-md px-3 text-[13px] font-medium text-muted-foreground transition-colors duration-150 hover:bg-background hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-state=on]:bg-background data-[akaza-state=on]:text-foreground data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50',
+}
 export const toggleGroupCardUi = {
-  root: "grid max-w-md gap-2",
-  item: "flex w-full items-start justify-between rounded-lg border border-border bg-background p-3 text-left text-sm transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-state=on]:border-primary data-[akaza-state=on]:bg-primary/5 data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50",
-  label: "font-medium text-foreground",
-  description: "mt-1 text-xs text-muted-foreground",
-};
+  root: 'grid max-w-md gap-2',
+  item: 'flex w-full items-start justify-between rounded-lg border border-border bg-background p-3 text-left text-sm transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-state=on]:border-primary data-[akaza-state=on]:bg-primary/5 data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50',
+  label: 'font-medium text-foreground',
+  description: 'mt-1 text-xs text-muted-foreground',
+}
 export const listboxUi = {
-  root: "grid w-full max-w-sm gap-2",
+  root: 'grid w-full max-w-sm gap-2',
   filter:
-    "h-9 w-full rounded-md border border-input bg-background px-3 text-sm text-foreground shadow-sm outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:cursor-not-allowed disabled:opacity-50",
+    'h-9 w-full rounded-md border border-input bg-background px-3 text-[13px] text-foreground outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-muted-foreground hover:border-border focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50',
   content:
-    "max-h-64 rounded-md border border-border bg-background p-1 text-foreground shadow-sm outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background data-[akaza-invalid]:border-destructive data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50",
-  virtualWrapper: "min-w-full",
-  empty: "px-3 py-6 text-center text-sm text-muted-foreground",
+    'max-h-64 rounded-md border border-border bg-background p-1 text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-invalid]:border-destructive data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50',
+  virtualWrapper: 'min-w-full',
+  empty: 'px-3 py-6 text-center text-sm text-muted-foreground',
   groupLabel:
-    "px-2.5 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground",
-  separator: "my-1 h-px bg-border",
+    'px-2.5 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground',
+  separator: 'my-1 h-px bg-border',
   option:
-    "flex cursor-pointer items-start gap-2 rounded-sm px-2.5 py-2 text-sm outline-none transition-colors data-[akaza-highlighted]:bg-accent data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50",
-  indicator: "mt-0.5 w-4 shrink-0 text-primary",
-  optionText: "grid gap-0.5",
-  optionLabel: "font-medium text-foreground",
-  optionDescription: "text-xs text-muted-foreground",
-};
+    'flex cursor-pointer items-start gap-2 rounded-sm px-2.5 py-2 text-sm outline-none transition-colors data-[akaza-highlighted]:bg-accent data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50',
+  indicator: 'mt-0.5 w-4 shrink-0 text-primary',
+  optionText: 'grid gap-0.5',
+  optionLabel: 'font-medium text-foreground',
+  optionDescription: 'text-xs text-muted-foreground',
+}
 export const pinInputUi = {
-  root: "gap-2 data-[akaza-disabled]:opacity-50",
+  root: 'gap-2 data-[akaza-disabled]:opacity-50',
   input:
-    "size-11 rounded-md border border-input bg-background text-center font-mono text-lg text-foreground shadow-sm outline-none transition-colors focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background data-[akaza-invalid]:border-destructive data-[akaza-invalid]:ring-destructive/30 disabled:cursor-not-allowed",
-};
+    'size-11 rounded-md border border-input bg-background text-center font-mono text-lg text-foreground outline-none transition-[border-color,box-shadow] duration-150 focus-visible:ring-2 focus-visible:ring-ring data-[akaza-invalid]:border-destructive data-[akaza-invalid]:ring-destructive/30 disabled:cursor-not-allowed',
+}
 export const tagsInputUi = {
-  root: "min-h-10 w-full max-w-md items-center gap-1.5 rounded-md border border-input bg-background p-1.5 shadow-sm transition-colors data-[akaza-focused]:ring-2 data-[akaza-focused]:ring-ring data-[akaza-focused]:ring-offset-1 data-[akaza-focused]:ring-offset-background data-[akaza-invalid]:border-destructive data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50",
-  item: "inline-flex h-7 items-center gap-1 rounded-md bg-muted px-2 text-xs font-medium text-foreground outline-none data-[akaza-highlighted]:ring-2 data-[akaza-highlighted]:ring-ring",
-  itemText: "max-w-40 truncate",
+  root: 'min-h-10 w-full max-w-md items-center gap-1.5 rounded-md border border-input bg-background p-1.5 transition-[border-color,box-shadow] duration-150 data-[akaza-focused]:ring-2 data-[akaza-focused]:ring-ring data-[akaza-invalid]:border-destructive data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50',
+  item: 'inline-flex h-7 items-center gap-1 rounded-md bg-muted px-2 text-xs font-medium text-foreground outline-none data-[akaza-highlighted]:ring-2 data-[akaza-highlighted]:ring-ring',
+  itemText: 'max-w-40 truncate',
   delete:
-    "grid size-4 place-items-center rounded text-muted-foreground transition-colors hover:bg-background hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none",
+    'grid size-4 place-items-center rounded text-muted-foreground transition-colors hover:bg-background hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none',
   input:
-    "h-7 min-w-24 flex-1 border-0 bg-transparent px-1 text-sm text-foreground outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed",
+    'h-7 min-w-24 flex-1 border-0 bg-transparent px-1 text-sm text-foreground outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed',
   clear:
-    "h-7 rounded-md px-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-};
+    'h-7 rounded-md px-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+}
 export const editableUi = {
-  root: "grid w-full max-w-md gap-2",
-  area: "min-w-0",
+  root: 'grid w-full max-w-md gap-2',
+  area: 'min-w-0',
   preview:
-    "min-h-9 w-full rounded-md border border-transparent bg-transparent px-3 py-2 text-left text-sm text-foreground outline-none transition-colors hover:bg-muted focus-visible:border-input focus-visible:ring-2 focus-visible:ring-ring data-[akaza-empty]:text-muted-foreground",
+    'min-h-9 w-full rounded-md border border-transparent bg-transparent px-3 py-2 text-left text-sm text-foreground outline-none transition-colors hover:bg-muted focus-visible:border-input focus-visible:ring-2 focus-visible:ring-ring data-[akaza-empty]:text-muted-foreground',
   input:
-    "min-h-9 w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground shadow-sm outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
-  actions: "flex flex-wrap gap-2",
+    'min-h-9 w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring',
+  actions: 'flex flex-wrap gap-2',
   edit: buttonGhost,
   submit: buttonPrimary,
   cancel: buttonGhost,
-};
+}
 export const ratingUi = {
-  root: "gap-1 text-3xl leading-none data-[akaza-disabled]:opacity-50",
-  item: "size-8",
-  base: "text-muted-foreground/35",
-  fill: "text-primary",
-  fillIcon: "text-3xl leading-none",
+  root: 'gap-1 text-3xl leading-none data-[akaza-disabled]:opacity-50',
+  item: 'size-8',
+  base: 'text-muted-foreground/35',
+  fill: 'text-primary',
+  fillIcon: 'text-3xl leading-none',
   radio:
-    "rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed",
-};
+    'rounded-sm outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:cursor-not-allowed',
+}
 export const stepperUi = {
-  root: "grid w-full gap-5",
-  list: "flex w-full items-start",
-  item: "relative flex min-w-0 flex-1 items-start last:flex-none",
+  root: 'grid w-full gap-5',
+  list: 'flex w-full items-start',
+  item: 'relative flex min-w-0 flex-1 items-start last:flex-none',
   trigger:
-    "group flex min-w-0 items-start gap-3 rounded-md text-left outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-45",
+    'group flex min-w-0 items-start gap-3 rounded-md text-left outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-45',
   indicator:
-    "grid size-8 shrink-0 place-items-center rounded-full border border-border bg-background text-xs font-semibold text-muted-foreground transition-colors group-data-[akaza-state=active]:border-primary group-data-[akaza-state=active]:bg-primary group-data-[akaza-state=active]:text-primary-foreground group-data-[akaza-state=completed]:border-primary group-data-[akaza-state=completed]:text-primary",
-  text: "hidden min-w-0 gap-0.5 sm:grid",
-  title: "truncate text-sm font-medium text-foreground",
-  description: "text-xs text-muted-foreground",
-  optional: "text-[11px] text-muted-foreground",
-  separator: "mx-3 mt-4 h-px min-w-4 flex-1 bg-border data-[akaza-state=completed]:bg-primary",
-  panels: "rounded-lg border border-border bg-background p-4",
-  panel: "text-sm text-muted-foreground",
-  controls: "flex justify-between gap-2",
+    'grid size-8 shrink-0 place-items-center rounded-full border border-border bg-background text-xs font-semibold text-muted-foreground transition-colors group-data-[akaza-state=active]:border-primary group-data-[akaza-state=active]:bg-primary group-data-[akaza-state=active]:text-primary-foreground group-data-[akaza-state=completed]:border-primary group-data-[akaza-state=completed]:text-primary',
+  text: 'hidden min-w-0 gap-0.5 sm:grid',
+  title: 'truncate text-sm font-medium text-foreground',
+  description: 'text-xs text-muted-foreground',
+  optional: 'text-[11px] text-muted-foreground',
+  separator: 'mx-3 mt-4 h-px min-w-4 flex-1 bg-border data-[akaza-state=completed]:bg-primary',
+  panels: 'rounded-lg border border-border bg-background p-4',
+  panel: 'text-sm text-muted-foreground',
+  controls: 'flex justify-between gap-2',
   previous: buttonGhost,
   next: buttonPrimary,
-};
+}
 export const stepperVerticalUi = {
   ...stepperUi,
-  list: "flex w-full flex-col gap-0",
-  item: "relative flex min-w-0 pb-6 last:pb-0",
-  text: "grid min-w-0 gap-0.5",
+  list: 'flex w-full flex-col gap-0',
+  item: 'relative flex min-w-0 pb-6 last:pb-0',
+  text: 'grid min-w-0 gap-0.5',
   separator:
-    "absolute left-4 top-9 h-[calc(100%-2.25rem)] w-px -translate-x-1/2 bg-border data-[akaza-state=completed]:bg-primary",
-};
+    'absolute left-4 top-9 h-[calc(100%-2.25rem)] w-px -translate-x-1/2 bg-border data-[akaza-state=completed]:bg-primary',
+}
 export const paginationUi = {
-  root: "max-w-full overflow-x-auto",
-  list: "w-max items-center gap-1",
-  item: "shrink-0",
+  root: 'max-w-full overflow-x-auto',
+  list: 'w-max items-center gap-1',
+  item: 'shrink-0',
   first: buttonGhost,
   previous: buttonGhost,
-  page: "grid size-9 place-items-center rounded-md border border-transparent text-sm font-medium text-muted-foreground no-underline transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-state=active]:border-primary data-[akaza-state=active]:bg-primary data-[akaza-state=active]:text-primary-foreground disabled:pointer-events-none disabled:opacity-50",
-  ellipsis: "grid size-9 place-items-center text-sm text-muted-foreground",
+  page: 'grid size-9 place-items-center rounded-md border border-transparent text-sm font-medium text-muted-foreground no-underline transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-state=active]:border-primary data-[akaza-state=active]:bg-primary data-[akaza-state=active]:text-primary-foreground disabled:pointer-events-none disabled:opacity-50',
+  ellipsis: 'grid size-9 place-items-center text-sm text-muted-foreground',
   next: buttonGhost,
   last: buttonGhost,
-};
+}
 export const dataTableUi = {
-  root: "grid min-w-0 gap-3",
-  toolbar: "flex flex-wrap items-center justify-between gap-3",
-  viewport: "max-w-full rounded-lg border border-border bg-background",
-  table: "text-left text-sm text-foreground",
-  caption: "sr-only",
-  thead: "bg-muted",
-  headerRow: "border-b border-border",
-  headerCell: "relative h-10 border-b border-border bg-muted px-3 text-xs font-medium text-muted-foreground",
-  headerContent: "flex min-w-0 items-center gap-2",
-  sortTrigger: "flex min-w-0 flex-1 items-center gap-1.5 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring",
-  sortIndicator: "w-3 shrink-0 text-foreground",
-  resizeHandle: "w-2 translate-x-1/2 outline-none after:absolute after:inset-y-2 after:left-1/2 after:w-px after:-translate-x-1/2 after:bg-border hover:after:bg-primary focus-visible:after:w-0.5 focus-visible:after:bg-primary",
-  columnReorderHandle: "ml-auto shrink-0 cursor-grab rounded px-1 text-muted-foreground outline-none hover:bg-background focus-visible:ring-2 focus-visible:ring-ring",
-  tbody: "divide-y divide-border",
-  row: "bg-background transition-colors hover:bg-muted/60 data-[akaza-selected]:bg-primary/5",
-  cell: "bg-inherit px-3 py-3 align-middle",
-  cellContent: "min-w-0",
-  selectionControl: "size-4 accent-primary",
-  expansionTrigger: "grid size-7 place-items-center rounded-md border border-border bg-background text-sm outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-35",
-  reorderHandle: "cursor-grab rounded px-1 text-muted-foreground outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring",
-  expandedRow: "bg-muted/40",
-  expandedCell: "border-t border-border px-5 py-4 text-sm text-muted-foreground",
-  loadingCell: "h-28 px-4 text-center text-sm text-muted-foreground",
-  errorCell: "h-28 px-4 text-center text-sm text-destructive",
-  emptyCell: "h-28 px-4 text-center text-sm text-muted-foreground",
-  footerCell: "border-t border-border bg-muted px-3 py-2 text-sm font-medium text-foreground",
-  pagination: "flex justify-end",
-  paginationRoot: "max-w-full overflow-x-auto",
-  paginationList: "w-max items-center gap-1",
-  paginationItem: "shrink-0",
+  root: 'grid min-w-0 gap-3',
+  toolbar: 'flex flex-wrap items-center justify-between gap-3',
+  viewport: 'max-w-full rounded-lg border border-border bg-background',
+  table: 'text-left text-sm text-foreground',
+  caption: 'sr-only',
+  thead: 'bg-muted',
+  headerRow: 'border-b border-border',
+  headerCell:
+    'relative h-10 border-b border-border bg-muted px-3 text-xs font-medium text-muted-foreground',
+  headerContent: 'flex min-w-0 items-center gap-2',
+  sortTrigger:
+    'flex min-w-0 flex-1 items-center gap-1.5 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring',
+  sortIndicator: 'w-3 shrink-0 text-foreground',
+  resizeHandle:
+    'w-2 translate-x-1/2 outline-none after:absolute after:inset-y-2 after:left-1/2 after:w-px after:-translate-x-1/2 after:bg-border hover:after:bg-primary focus-visible:after:w-0.5 focus-visible:after:bg-primary',
+  columnReorderHandle:
+    'ml-auto shrink-0 cursor-grab rounded px-1 text-muted-foreground outline-none hover:bg-background focus-visible:ring-2 focus-visible:ring-ring',
+  tbody: 'divide-y divide-border',
+  row: 'bg-background transition-colors hover:bg-muted/60 data-[akaza-selected]:bg-primary/5',
+  cell: 'bg-inherit px-3 py-2 align-middle',
+  cellContent: 'min-w-0',
+  selectionControl: 'size-4 accent-primary',
+  expansionTrigger:
+    'grid size-7 place-items-center rounded-md border border-border bg-background text-sm outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring disabled:opacity-35',
+  reorderHandle:
+    'cursor-grab rounded px-1 text-muted-foreground outline-none hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring',
+  expandedRow: 'bg-muted/40',
+  expandedCell: 'border-t border-border px-5 py-4 text-sm text-muted-foreground',
+  loadingCell: 'h-28 px-4 text-center text-sm text-muted-foreground',
+  errorCell: 'h-28 px-4 text-center text-sm text-destructive',
+  emptyCell: 'h-28 px-4 text-center text-sm text-muted-foreground',
+  footerCell: 'border-t border-border bg-muted px-3 py-2 text-sm font-medium text-foreground',
+  pagination: 'flex justify-end',
+  paginationRoot: 'max-w-full overflow-x-auto',
+  paginationList: 'w-max items-center gap-1',
+  paginationItem: 'shrink-0',
   paginationFirst: buttonGhost,
   paginationPrevious: buttonGhost,
   paginationPage: paginationUi.page,
   paginationEllipsis: paginationUi.ellipsis,
   paginationNext: buttonGhost,
   paginationLast: buttonGhost,
-};
+}
 export const calendarUi = {
-  root: "w-fit max-w-full rounded-lg border border-border bg-background p-3 text-foreground shadow-sm",
-  header: "mb-3 flex items-center justify-between gap-3",
+  root: 'w-fit max-w-full rounded-lg border border-border bg-background p-3 text-foreground',
+  header: 'mb-3 flex items-center justify-between gap-3',
   previous:
-    "grid size-9 place-items-center rounded-md border border-border bg-background text-lg text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-40",
-  heading: "min-w-0 text-center text-sm font-semibold text-foreground",
-  next: "grid size-9 place-items-center rounded-md border border-border bg-background text-lg text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-40",
-  grids: "flex max-w-full flex-wrap gap-5 overflow-x-auto",
-  grid: "w-full min-w-64 table-fixed",
-  gridHead: "text-muted-foreground",
-  gridBody: "text-foreground",
-  gridRow: "h-9",
-  headCell: "size-9 text-center text-[11px] font-medium",
-  cell: "size-9 p-0 text-center",
+    'grid size-9 place-items-center rounded-md border border-border bg-background text-lg text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-40',
+  heading: 'min-w-0 text-center text-sm font-semibold text-foreground',
+  next: 'grid size-9 place-items-center rounded-md border border-border bg-background text-lg text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-40',
+  grids: 'flex max-w-full flex-wrap gap-4 overflow-x-auto',
+  grid: 'w-full min-w-64 table-fixed',
+  gridHead: 'text-muted-foreground',
+  gridBody: 'text-foreground',
+  gridRow: 'h-9',
+  headCell: 'size-9 text-center text-[11px] font-medium',
+  cell: 'size-9 p-0 text-center',
   cellTrigger:
-    "grid size-9 place-items-center rounded-md text-sm outline-none transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring data-[akaza-selected]:bg-primary data-[akaza-selected]:text-primary-foreground data-[akaza-in-range]:!bg-primary/15 data-[akaza-in-range]:!text-foreground data-[akaza-range-start]:!bg-primary data-[akaza-range-start]:!text-primary-foreground data-[akaza-range-end]:!bg-primary data-[akaza-range-end]:!text-primary-foreground data-[akaza-highlighted]:bg-primary/10 data-[akaza-today]:ring-1 data-[akaza-today]:ring-inset data-[akaza-today]:ring-border data-[akaza-outside-view]:text-muted-foreground data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:text-muted-foreground data-[akaza-unavailable]:text-muted-foreground data-[akaza-unavailable]:line-through",
-  footer: "mt-3 border-t border-border pt-3 text-xs text-muted-foreground",
-};
+    'grid size-9 place-items-center rounded-md text-sm outline-none transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring data-[akaza-selected]:bg-primary data-[akaza-selected]:text-primary-foreground data-[akaza-in-range]:!bg-primary/15 data-[akaza-in-range]:!text-foreground data-[akaza-range-start]:!bg-primary data-[akaza-range-start]:!text-primary-foreground data-[akaza-range-end]:!bg-primary data-[akaza-range-end]:!text-primary-foreground data-[akaza-highlighted]:bg-primary/10 data-[akaza-today]:ring-1 data-[akaza-today]:ring-inset data-[akaza-today]:ring-border data-[akaza-outside-view]:text-muted-foreground data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:text-muted-foreground data-[akaza-unavailable]:text-muted-foreground data-[akaza-unavailable]:line-through',
+  footer: 'mt-3 border-t border-border pt-3 text-xs text-muted-foreground',
+}
 export const periodPickerUi = {
-  root: "w-full max-w-sm rounded-lg border border-border bg-background p-3 text-foreground shadow-sm",
-  header: "mb-3 flex items-center justify-between gap-3",
+  root: 'w-full max-w-sm rounded-lg border border-border bg-background p-3 text-foreground',
+  header: 'mb-3 flex items-center justify-between gap-3',
   previous:
-    "grid size-9 place-items-center rounded-md border border-border bg-background text-lg text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-40",
-  heading: "min-w-0 text-center text-sm font-semibold text-foreground",
-  next: "grid size-9 place-items-center rounded-md border border-border bg-background text-lg text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-40",
-  grid: "grid gap-2",
-  gridRow: "gap-2",
-  cell: "min-w-0",
+    'grid size-9 place-items-center rounded-md border border-border bg-background text-lg text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-40',
+  heading: 'min-w-0 text-center text-sm font-semibold text-foreground',
+  next: 'grid size-9 place-items-center rounded-md border border-border bg-background text-lg text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-40',
+  grid: 'grid gap-2',
+  gridRow: 'gap-2',
+  cell: 'min-w-0',
   cellTrigger:
-    "h-9 w-full rounded-md px-2 text-sm outline-none transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring data-[akaza-selected]:bg-primary data-[akaza-selected]:text-primary-foreground data-[akaza-in-range]:!bg-primary/15 data-[akaza-in-range]:!text-foreground data-[akaza-range-start]:!bg-primary data-[akaza-range-start]:!text-primary-foreground data-[akaza-range-end]:!bg-primary data-[akaza-range-end]:!text-primary-foreground data-[akaza-highlighted]:bg-primary/10 data-[akaza-today]:ring-1 data-[akaza-today]:ring-inset data-[akaza-today]:ring-border data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:text-muted-foreground data-[akaza-unavailable]:text-muted-foreground data-[akaza-unavailable]:line-through",
-  footer: "mt-3 border-t border-border pt-3 text-xs text-muted-foreground",
-};
+    'h-9 w-full rounded-md px-2 text-sm outline-none transition-colors hover:bg-muted focus-visible:ring-2 focus-visible:ring-ring data-[akaza-selected]:bg-primary data-[akaza-selected]:text-primary-foreground data-[akaza-in-range]:!bg-primary/15 data-[akaza-in-range]:!text-foreground data-[akaza-range-start]:!bg-primary data-[akaza-range-start]:!text-primary-foreground data-[akaza-range-end]:!bg-primary data-[akaza-range-end]:!text-primary-foreground data-[akaza-highlighted]:bg-primary/10 data-[akaza-today]:ring-1 data-[akaza-today]:ring-inset data-[akaza-today]:ring-border data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:text-muted-foreground data-[akaza-unavailable]:text-muted-foreground data-[akaza-unavailable]:line-through',
+  footer: 'mt-3 border-t border-border pt-3 text-xs text-muted-foreground',
+}
 export const dateFieldUi = {
-  root: "h-9 w-full max-w-sm rounded-md border border-input bg-background px-2 text-foreground shadow-sm transition-colors data-[akaza-focused]:ring-2 data-[akaza-focused]:ring-ring data-[akaza-focused]:ring-offset-1 data-[akaza-focused]:ring-offset-background data-[akaza-invalid]:border-destructive data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50",
-  segments: "min-w-0 flex-1",
+  root: 'h-9 w-full max-w-sm rounded-md border border-input bg-background px-2 text-foreground transition-[border-color,box-shadow] duration-150 data-[akaza-focused]:ring-2 data-[akaza-focused]:ring-ring data-[akaza-invalid]:border-destructive data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50',
+  segments: 'min-w-0 flex-1',
   segment:
-    "rounded-sm px-0.5 text-sm tabular-nums text-foreground caret-transparent outline-none placeholder:text-muted-foreground focus:bg-muted focus:text-foreground data-[akaza-invalid]:text-destructive",
-  literal: "text-sm text-muted-foreground",
+    'rounded-sm px-0.5 text-sm tabular-nums text-foreground caret-transparent outline-none placeholder:text-muted-foreground focus:bg-muted focus:text-foreground data-[akaza-invalid]:text-destructive',
+  literal: 'text-sm text-muted-foreground',
   calendarTrigger:
-    "ml-auto inline-flex h-7 shrink-0 items-center justify-center rounded px-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
+    'ml-auto inline-flex h-7 shrink-0 items-center justify-center rounded px-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50',
   calendarContent:
-    "rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-lg",
+    'rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-lg',
   calendar: calendarUi,
-  hiddenInput: "",
-};
+  hiddenInput: '',
+}
 const dateRangeEndpointUi = {
   ...dateFieldUi,
-  root: "h-7 min-w-0 flex-1 border-0 bg-transparent px-0 text-foreground shadow-none data-[akaza-focused]:ring-0 data-[akaza-invalid]:text-destructive data-[akaza-disabled]:opacity-50",
-  segments: "min-w-0 flex-1",
-};
+  root: 'h-7 min-w-0 flex-1 border-0 bg-transparent px-0 text-foreground shadow-none data-[akaza-focused]:ring-0 data-[akaza-invalid]:text-destructive data-[akaza-disabled]:opacity-50',
+  segments: 'min-w-0 flex-1',
+}
 export const dateRangeFieldUi = {
-  root: "h-9 w-full max-w-xl gap-2 rounded-md border border-input bg-background px-3 text-foreground shadow-sm transition-colors data-[akaza-focused]:ring-2 data-[akaza-focused]:ring-ring data-[akaza-focused]:ring-offset-1 data-[akaza-focused]:ring-offset-background data-[akaza-invalid]:border-destructive data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50",
-  start: "min-w-0 flex-1",
+  root: 'h-9 w-full max-w-xl gap-2 rounded-md border border-input bg-background px-3 text-foreground transition-[border-color,box-shadow] duration-150 data-[akaza-focused]:ring-2 data-[akaza-focused]:ring-ring data-[akaza-invalid]:border-destructive data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50',
+  start: 'min-w-0 flex-1',
   startField: dateRangeEndpointUi,
-  separator: "shrink-0 text-sm text-muted-foreground",
-  end: "min-w-0 flex-1",
+  separator: 'shrink-0 text-sm text-muted-foreground',
+  end: 'min-w-0 flex-1',
   endField: dateRangeEndpointUi,
-  hiddenInput: "",
-};
+  hiddenInput: '',
+}
 export const dateRangePickerUi = {
-  root: "w-full max-w-xl gap-1",
+  root: 'w-full max-w-xl gap-1',
   field: {
     ...dateRangeFieldUi,
-    root: "h-9 min-w-0 flex-1 gap-2 rounded-md border border-input bg-background px-3 text-foreground shadow-sm transition-colors data-[akaza-focused]:ring-2 data-[akaza-focused]:ring-ring data-[akaza-focused]:ring-offset-1 data-[akaza-focused]:ring-offset-background data-[akaza-invalid]:border-destructive data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50",
+    root: 'h-9 min-w-0 flex-1 gap-2 rounded-md border border-input bg-background px-3 text-foreground transition-[border-color,box-shadow] duration-150 data-[akaza-focused]:ring-2 data-[akaza-focused]:ring-ring data-[akaza-invalid]:border-destructive data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50',
   },
   trigger:
-    "inline-flex size-9 shrink-0 items-center justify-center rounded-md border border-border bg-background text-sm text-muted-foreground shadow-sm transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50",
-  content: "rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-lg",
+    'inline-flex size-9 shrink-0 items-center justify-center rounded-md border border-border bg-background text-sm text-muted-foreground transition-colors duration-150 hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50',
+  content: 'rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-lg',
   calendar: calendarUi,
   close:
-    "mt-1 inline-flex h-8 w-full items-center justify-center rounded-md text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-};
+    'mt-1 inline-flex h-8 w-full items-center justify-center rounded-md text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+}
 export const timeFieldUi = {
-  root: "h-9 w-full max-w-sm gap-2 rounded-md border border-input bg-background px-3 text-foreground shadow-sm transition-colors data-[akaza-focused]:ring-2 data-[akaza-focused]:ring-ring data-[akaza-focused]:ring-offset-1 data-[akaza-focused]:ring-offset-background data-[akaza-invalid]:border-destructive data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50",
-  segments: "min-w-0 flex-1",
+  root: 'h-9 w-full max-w-sm gap-2 rounded-md border border-input bg-background px-3 text-foreground transition-[border-color,box-shadow] duration-150 data-[akaza-focused]:ring-2 data-[akaza-focused]:ring-ring data-[akaza-invalid]:border-destructive data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50',
+  segments: 'min-w-0 flex-1',
   segment:
-    "rounded-sm px-0.5 text-sm tabular-nums text-foreground caret-transparent outline-none placeholder:text-muted-foreground focus:bg-muted focus:text-foreground data-[akaza-invalid]:text-destructive",
-  literal: "text-sm text-muted-foreground",
+    'rounded-sm px-0.5 text-sm tabular-nums text-foreground caret-transparent outline-none placeholder:text-muted-foreground focus:bg-muted focus:text-foreground data-[akaza-invalid]:text-destructive',
+  literal: 'text-sm text-muted-foreground',
   dayPeriod:
-    "shrink-0 rounded-sm px-1 text-xs font-medium text-muted-foreground outline-none transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none",
-  timeZone: "shrink-0 text-xs text-muted-foreground",
-  hiddenInput: "",
-};
+    'shrink-0 rounded-sm px-1 text-xs font-medium text-muted-foreground outline-none transition-colors hover:bg-muted hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none',
+  timeZone: 'shrink-0 text-xs text-muted-foreground',
+  hiddenInput: '',
+}
 const timeRangeEndpointUi = {
   ...timeFieldUi,
-  root: "h-7 min-w-0 flex-1 border-0 bg-transparent px-0 text-foreground shadow-none data-[akaza-focused]:ring-0 data-[akaza-invalid]:text-destructive data-[akaza-disabled]:opacity-50",
-};
+  root: 'h-7 min-w-0 flex-1 border-0 bg-transparent px-0 text-foreground shadow-none data-[akaza-focused]:ring-0 data-[akaza-invalid]:text-destructive data-[akaza-disabled]:opacity-50',
+}
 export const timeRangeFieldUi = {
-  root: "h-9 w-full max-w-xl gap-2 rounded-md border border-input bg-background px-3 text-foreground shadow-sm transition-colors data-[akaza-focused]:ring-2 data-[akaza-focused]:ring-ring data-[akaza-focused]:ring-offset-1 data-[akaza-focused]:ring-offset-background data-[akaza-invalid]:border-destructive data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50",
-  start: "min-w-0 flex-1",
+  root: 'h-9 w-full max-w-xl gap-2 rounded-md border border-input bg-background px-3 text-foreground transition-[border-color,box-shadow] duration-150 data-[akaza-focused]:ring-2 data-[akaza-focused]:ring-ring data-[akaza-invalid]:border-destructive data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50',
+  start: 'min-w-0 flex-1',
   startField: timeRangeEndpointUi,
-  separator: "shrink-0 text-sm text-muted-foreground",
-  end: "min-w-0 flex-1",
+  separator: 'shrink-0 text-sm text-muted-foreground',
+  end: 'min-w-0 flex-1',
   endField: timeRangeEndpointUi,
-  hiddenInput: "",
-};
+  hiddenInput: '',
+}
 export const meterUi = {
-  root: "grid w-full max-w-sm grid-cols-2 gap-y-2",
-  label: "text-sm font-medium text-foreground",
-  value: "text-right text-sm text-muted-foreground",
-  track: "col-span-2 h-2 overflow-hidden rounded-full bg-muted-foreground/20",
+  root: 'grid w-full max-w-sm grid-cols-2 gap-y-2',
+  label: 'text-sm font-medium text-foreground',
+  value: 'text-right text-sm text-muted-foreground',
+  track: 'col-span-2 h-2 overflow-hidden rounded-full bg-muted-foreground/20',
   indicator:
-    "rounded-full bg-primary transition-[width] duration-300 data-[akaza-state=low]:bg-destructive data-[akaza-state=high]:bg-destructive",
-};
-export const fieldLabel = "text-sm font-semibold text-foreground";
-export const fieldDescription = "text-xs text-muted-foreground";
-export const fieldError = "text-xs text-destructive";
-export const fieldRow = "flex flex-wrap items-center gap-2";
-export const stateRow = "mt-3 flex flex-wrap items-center gap-2";
+    'rounded-full bg-primary transition-[width] duration-300 data-[akaza-state=low]:bg-destructive data-[akaza-state=high]:bg-destructive',
+}
+export const fieldLabel = 'text-sm font-semibold text-foreground'
+export const fieldDescription = 'text-xs text-muted-foreground'
+export const fieldError = 'text-xs text-destructive'
+export const fieldRow = 'flex flex-wrap items-center gap-2'
+export const stateRow = 'mt-3 flex flex-wrap items-center gap-2'
 
 export const fieldsetRoot =
-  "min-w-0 rounded-lg border border-border p-4 data-[invalid]:border-destructive data-[akaza-invalid]:border-destructive data-[disabled]:opacity-60 data-[akaza-disabled]:opacity-60";
-export const fieldsetLegend = "px-1 text-sm font-semibold text-foreground";
-export const fieldsetDescription = "mb-4 text-xs text-muted-foreground";
-export const fieldsetContent = "grid gap-4";
+  'min-w-0 rounded-lg border border-border p-4 data-[invalid]:border-destructive data-[akaza-invalid]:border-destructive data-[disabled]:opacity-60 data-[akaza-disabled]:opacity-60'
+export const fieldsetLegend = 'px-1 text-sm font-semibold text-foreground'
+export const fieldsetDescription = 'mb-4 text-xs text-muted-foreground'
+export const fieldsetContent = 'grid gap-4'
 
 export const checkboxUi = {
-  wrapper: "gap-3",
-  text: "flex flex-col gap-0.5",
-  root: "mt-0.5 size-4 rounded border border-border bg-background text-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background data-[akaza-state=checked]:border-primary data-[akaza-state=checked]:bg-primary data-[akaza-state=indeterminate]:border-primary data-[akaza-state=indeterminate]:bg-primary data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50",
-  indicator: "grid place-items-center text-primary-foreground [&_svg]:size-3",
-  label: "text-sm font-medium leading-none text-foreground",
-  description: "mt-1 block text-xs leading-relaxed text-muted-foreground",
-};
-export const checkboxLabelBold = "text-sm font-semibold leading-none text-foreground";
-export const checkboxLabelMuted = "text-sm font-medium leading-none text-muted-foreground";
-export const linkInline = "font-medium text-primary underline underline-offset-2";
+  wrapper: 'gap-3',
+  text: 'flex flex-col gap-0.5',
+  root: 'mt-0.5 size-4 rounded border border-border bg-background text-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background data-[akaza-state=checked]:border-primary data-[akaza-state=checked]:bg-primary data-[akaza-state=indeterminate]:border-primary data-[akaza-state=indeterminate]:bg-primary data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50',
+  indicator: 'grid place-items-center text-primary-foreground [&_svg]:size-3',
+  label: 'text-sm font-medium leading-none text-foreground',
+  description: 'mt-1 block text-xs leading-relaxed text-muted-foreground',
+}
+export const checkboxLabelBold = 'text-sm font-semibold leading-none text-foreground'
+export const checkboxLabelMuted = 'text-sm font-medium leading-none text-muted-foreground'
+export const linkInline = 'font-medium text-primary underline underline-offset-2'
 export const checkboxCustomUi = {
-  wrapper: "gap-3 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2",
-  text: "flex flex-col gap-0.5",
-  root: "mt-0.5 size-5 rounded-md border-2 border-primary bg-background text-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background data-[akaza-state=checked]:bg-primary data-[akaza-state=indeterminate]:bg-primary",
-  indicator: "grid place-items-center text-primary-foreground [&_svg]:size-3",
-  label: "text-sm font-semibold text-primary",
-  description: "mt-1 block text-xs text-muted-foreground",
-};
+  wrapper: 'gap-3 rounded-lg border border-primary/20 bg-primary/5 px-3 py-2',
+  text: 'flex flex-col gap-0.5',
+  root: 'mt-0.5 size-5 rounded-md border-2 border-primary bg-background text-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background data-[akaza-state=checked]:bg-primary data-[akaza-state=indeterminate]:bg-primary',
+  indicator: 'grid place-items-center text-primary-foreground [&_svg]:size-3',
+  label: 'text-sm font-semibold text-primary',
+  description: 'mt-1 block text-xs text-muted-foreground',
+}
 
 export const checkboxGroupUi = {
-  root: "grid max-w-md gap-3",
-  legend: "text-sm font-semibold text-foreground",
-  parentItem: "border-b border-border pb-3",
-  item: "rounded-md transition-colors data-[akaza-disabled]:opacity-50",
+  root: 'grid max-w-md gap-3',
+  legend: 'text-sm font-semibold text-foreground',
+  parentItem: 'border-b border-border pb-3',
+  item: 'rounded-md transition-colors data-[akaza-disabled]:opacity-50',
   checkbox: checkboxUi,
-};
+}
 
 export const radioItem =
-  "group inline-flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-state=checked]:text-primary data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50";
+  'group inline-flex items-center gap-2 rounded-md px-2 py-1.5 text-sm text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-state=checked]:text-primary data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50'
 export const radioCard =
-  "group flex w-full items-start gap-3 rounded-md border border-border bg-background p-3 text-left text-sm transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-state=checked]:border-primary data-[akaza-state=checked]:bg-primary/5 data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50";
+  'group flex w-full items-start gap-3 rounded-md border border-border bg-background p-3 text-left text-sm transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-state=checked]:border-primary data-[akaza-state=checked]:bg-primary/5 data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50'
 export const radioDot =
-  "size-4 rounded-full border-2 border-border bg-background shadow-[inset_0_0_0_3px_var(--background)] group-data-[akaza-state=checked]:border-primary group-data-[akaza-state=checked]:bg-primary";
+  'size-4 rounded-full border-2 border-border bg-background shadow-[inset_0_0_0_3px_var(--background)] group-data-[akaza-state=checked]:border-primary group-data-[akaza-state=checked]:bg-primary'
 export const radioChip =
-  "inline-flex cursor-pointer items-center justify-center rounded-md border border-border bg-background px-3 py-1.5 text-sm text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-state=checked]:border-primary data-[akaza-state=checked]:bg-primary data-[akaza-state=checked]:text-primary-foreground";
+  'inline-flex cursor-pointer items-center justify-center rounded-md border border-border bg-background px-3 py-1.5 text-sm text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-state=checked]:border-primary data-[akaza-state=checked]:bg-primary data-[akaza-state=checked]:text-primary-foreground'
 
 export const switchUi = {
-  wrapper: "gap-3",
-  text: "flex flex-col gap-0.5",
-  root: "relative inline-flex h-6 w-11 shrink-0 items-center rounded-full bg-muted-foreground/30 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background data-[akaza-state=checked]:bg-primary data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50",
+  wrapper: 'gap-3',
+  text: 'flex flex-col gap-0.5',
+  root: 'relative inline-flex h-6 w-11 shrink-0 items-center rounded-full bg-muted-foreground/30 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background data-[akaza-state=checked]:bg-primary data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50',
   thumb:
-    "grid size-5 translate-x-0.5 place-items-center rounded-full bg-background text-[10px] shadow-sm transition-transform data-[akaza-state=checked]:translate-x-5",
+    'grid size-5 translate-x-0.5 place-items-center rounded-full bg-background text-[10px] shadow-sm transition-transform data-[akaza-state=checked]:translate-x-5',
   label: fieldLabel,
   description: fieldDescription,
-};
+}
 
 export const switchUiWide = {
   ...switchUi,
-  root: "relative inline-flex h-7 w-14 shrink-0 items-center rounded-full bg-muted-foreground/30 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background data-[akaza-state=checked]:bg-primary data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50",
+  root: 'relative inline-flex h-7 w-14 shrink-0 items-center rounded-full bg-muted-foreground/30 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background data-[akaza-state=checked]:bg-primary data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50',
   thumb:
-    "grid size-6 translate-x-0.5 place-items-center rounded-full bg-background text-[11px] shadow-sm transition-transform data-[akaza-state=checked]:translate-x-7",
-};
+    'grid size-6 translate-x-0.5 place-items-center rounded-full bg-background text-[11px] shadow-sm transition-transform data-[akaza-state=checked]:translate-x-7',
+}
 
 export const toggleRoot =
-  "inline-flex h-9 items-center justify-center rounded-md border border-border bg-background px-3 text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background data-[akaza-state=on]:border-primary data-[akaza-state=on]:bg-primary data-[akaza-state=on]:text-primary-foreground data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50";
+  'inline-flex h-8 items-center justify-center rounded-md border border-border bg-background px-3 text-[13px] font-medium text-foreground transition-colors duration-150 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-state=on]:border-primary data-[akaza-state=on]:bg-primary data-[akaza-state=on]:text-primary-foreground data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50'
 export const toggleIcon =
-  "inline-flex size-9 items-center justify-center rounded-md border border-border bg-background p-0 text-muted-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background data-[akaza-state=on]:border-primary data-[akaza-state=on]:bg-primary data-[akaza-state=on]:text-primary-foreground data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50";
+  'inline-flex size-8 items-center justify-center rounded-md border border-border bg-background p-0 text-muted-foreground transition-colors duration-150 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-state=on]:border-primary data-[akaza-state=on]:bg-primary data-[akaza-state=on]:text-primary-foreground data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50'
 export const toggleSubtle =
-  "inline-flex h-9 items-center justify-center rounded-md border border-border bg-background px-3 text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background data-[akaza-state=on]:border-primary data-[akaza-state=on]:bg-accent data-[akaza-state=on]:text-accent-foreground data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50";
+  'inline-flex h-8 items-center justify-center rounded-md border border-border bg-background px-3 text-[13px] font-medium text-foreground transition-colors duration-150 hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-state=on]:border-primary data-[akaza-state=on]:bg-accent data-[akaza-state=on]:text-accent-foreground data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50'
 
-export const progressTrack = "h-2 w-full overflow-hidden rounded-full bg-muted";
+export const progressTrack = 'h-2 w-full overflow-hidden rounded-full bg-muted'
 export const progressBar =
-  "!h-full !w-[var(--akaza-progress-percentage,0%)] rounded-full bg-primary transition-[width,height] duration-200";
-export const progressTrackVertical = "h-32 w-2 overflow-hidden rounded-full bg-muted";
+  '!h-full !w-[var(--akaza-progress-percentage,0%)] rounded-full bg-primary transition-[width,height] duration-200'
+export const progressTrackVertical = 'h-32 w-2 overflow-hidden rounded-full bg-muted'
 export const progressBarVertical =
-  "!h-[var(--akaza-progress-percentage,0%)] !w-full rounded-full bg-primary transition-[width,height] duration-200";
+  '!h-[var(--akaza-progress-percentage,0%)] !w-full rounded-full bg-primary transition-[width,height] duration-200'
 
 export const tabsUi = {
-  list: "flex border-b border-border",
-  tab: "px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-state=active]:text-foreground data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-40",
-  indicator: "h-0.5 bg-primary",
-  panels: "mt-4",
+  list: 'flex border-b border-border',
+  tab: 'px-3 py-2 text-sm font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-state=active]:text-foreground data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-40',
+  indicator: 'h-0.5 bg-primary',
+  panels: 'mt-4',
   panel:
-    "text-sm text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-};
+    'text-sm text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+}
 
 export const tabsPillUi = {
-  list: "inline-flex gap-1 rounded-lg bg-muted p-1",
-  tab: "relative rounded-md text-sm font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-state=active]:text-foreground data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-40",
-  indicator: "hidden",
-  panels: "mt-4",
+  list: 'inline-flex gap-1 rounded-lg bg-muted p-1',
+  tab: 'relative rounded-md text-sm font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-state=active]:text-foreground data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-40',
+  indicator: 'hidden',
+  panels: 'mt-4',
   panel:
-    "text-sm text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-};
+    'text-sm text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+}
 
 export const tabsVerticalUi = {
-  root: "flex gap-6",
-  list: "flex w-40 shrink-0 flex-col border-r border-border",
-  tab: "px-3 py-2 text-left text-sm font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-state=active]:text-foreground data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-40",
-  indicator: "w-0.5 bg-primary",
-  panels: "flex-1",
+  root: 'flex gap-6',
+  list: 'flex w-40 shrink-0 flex-col border-r border-border',
+  tab: 'px-3 py-2 text-left text-sm font-medium text-muted-foreground transition-colors hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-state=active]:text-foreground data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-40',
+  indicator: 'w-0.5 bg-primary',
+  panels: 'flex-1',
   panel:
-    "pt-1 text-sm text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-};
+    'pt-1 text-sm text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+}
 
 export const tooltipContent =
-  "rounded-md bg-foreground px-2.5 py-1.5 text-xs font-medium text-background shadow-md [&_.akaza-tooltip-arrow]:bg-foreground";
+  'rounded-md bg-foreground px-2.5 py-1.5 text-xs font-medium text-background shadow-md [&_.akaza-tooltip-arrow]:bg-foreground'
 export const popoverContent =
-  "min-w-[200px] rounded-lg border border-border bg-popover p-4 text-popover-foreground shadow-lg";
+  'min-w-[200px] rounded-lg border border-border bg-popover p-4 text-popover-foreground shadow-lg'
 export const menuUi = {
   content:
-    "min-w-44 rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-lg",
+    'min-w-44 rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-lg',
   submenuContent:
-    "min-w-40 rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-lg",
-  item: "flex w-full cursor-pointer items-center gap-2 rounded-md bg-transparent px-2.5 py-1.5 text-left text-sm text-popover-foreground outline-none transition-colors hover:bg-accent focus:bg-accent data-[akaza-highlighted]:bg-accent data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-40",
-  separator: "my-1 h-px bg-border",
+    'min-w-40 rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-lg',
+  item: 'flex w-full cursor-pointer items-center gap-2 rounded-md bg-transparent px-2.5 py-1.5 text-left text-sm text-popover-foreground outline-none transition-colors hover:bg-accent focus:bg-accent data-[akaza-highlighted]:bg-accent data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-40',
+  separator: 'my-1 h-px bg-border',
   label:
-    "px-2.5 pb-1 pt-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground",
-};
+    'px-2.5 pb-1 pt-1.5 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground',
+}
 
 export const contextMenuUi = {
   ...menuUi,
   content:
-    "min-w-48 rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-lg",
-};
+    'min-w-48 rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-lg',
+}
 
 export const menubarUi = {
-  root: "gap-1 rounded-lg border border-border bg-muted p-1",
+  root: 'gap-1 rounded-lg border border-border bg-muted p-1',
   trigger:
-    "rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-background hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-state=open]:bg-background data-[akaza-state=open]:text-foreground data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50",
+    'rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-background hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-state=open]:bg-background data-[akaza-state=open]:text-foreground data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50',
   content:
-    "min-w-48 rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-lg",
+    'min-w-48 rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-lg',
   submenuContent:
-    "min-w-40 rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-lg",
+    'min-w-40 rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-lg',
   item: menuUi.item,
   separator: menuUi.separator,
   label: menuUi.label,
-};
+}
 
 export const navigationMenuUi = {
-  root: "w-full max-w-2xl",
-  list: "gap-1 rounded-lg border border-border bg-muted p-1",
-  item: "relative",
+  root: 'w-full max-w-2xl',
+  list: 'gap-1 rounded-lg border border-border bg-muted p-1',
+  item: 'relative',
   trigger:
-    "rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-background hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-state=open]:bg-background data-[akaza-state=open]:text-foreground",
-  link: "inline-flex rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground no-underline transition-colors hover:bg-background hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50",
-  indicator: "bottom-0 h-0.5 rounded-full bg-primary transition-[left,width]",
+    'rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-background hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-state=open]:bg-background data-[akaza-state=open]:text-foreground',
+  link: 'inline-flex rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground no-underline transition-colors hover:bg-background hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50',
+  indicator: 'bottom-0 h-0.5 rounded-full bg-primary transition-[left,width]',
   content:
-    "w-full rounded-lg border border-border bg-popover p-2 text-popover-foreground shadow-lg",
-  viewport: "w-full",
-  contentList: "grid gap-1 sm:grid-cols-2",
-  contentItem: "min-w-0",
+    'w-full rounded-lg border border-border bg-popover p-2 text-popover-foreground shadow-lg',
+  viewport: 'w-full',
+  contentList: 'grid gap-1 sm:grid-cols-2',
+  contentItem: 'min-w-0',
   contentLink:
-    "grid gap-1 rounded-md p-3 text-sm no-underline transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-disabled]:pointer-events-none data-[akaza-disabled]:opacity-50",
-  label: "font-medium text-foreground",
-  description: "text-xs leading-relaxed text-muted-foreground",
-};
+    'grid gap-1 rounded-md p-3 text-sm no-underline transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-disabled]:pointer-events-none data-[akaza-disabled]:opacity-50',
+  label: 'font-medium text-foreground',
+  description: 'text-xs leading-relaxed text-muted-foreground',
+}
 
 export const toolbarUi = {
-  root: "max-w-full gap-1 overflow-x-auto rounded-lg border border-border bg-muted p-1",
-  group: "gap-1",
+  root: 'max-w-full gap-1 overflow-x-auto rounded-lg border border-border bg-muted p-1',
+  group: 'gap-1',
   button:
-    "inline-flex h-8 min-w-8 items-center justify-center rounded-md px-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-background hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-state=on]:bg-background data-[akaza-state=on]:text-foreground data-[akaza-state=on]:shadow-sm data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50",
-  link: "inline-flex h-8 items-center justify-center rounded-md px-2.5 text-sm font-medium text-muted-foreground no-underline transition-colors hover:bg-background hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+    'inline-flex h-8 min-w-8 items-center justify-center rounded-md px-2.5 text-[13px] font-medium text-muted-foreground transition-colors duration-150 hover:bg-background hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-state=on]:bg-background data-[akaza-state=on]:text-foreground data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50',
+  link: 'inline-flex h-8 items-center justify-center rounded-md px-2.5 text-sm font-medium text-muted-foreground no-underline transition-colors hover:bg-background hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
   input:
-    "h-8 w-28 rounded-md border border-input bg-background px-2 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring",
+    'h-8 w-28 rounded-md border border-input bg-background px-2 text-sm text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring',
   separator:
-    "mx-1 h-5 w-px bg-border data-[akaza-orientation=horizontal]:h-px data-[akaza-orientation=horizontal]:w-5",
-  label: "leading-none",
-};
+    'mx-1 h-5 w-px bg-border data-[akaza-orientation=horizontal]:h-px data-[akaza-orientation=horizontal]:w-5',
+  label: 'leading-none',
+}
 
 export const comboboxUi = {
-  root: "flex w-full max-w-sm flex-wrap items-center gap-1",
+  root: 'flex w-full max-w-sm flex-wrap items-center gap-1',
   input:
-    "block h-9 min-w-36 flex-1 rounded-md border border-input bg-background px-3 text-sm text-foreground shadow-sm outline-none placeholder:text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background data-[akaza-invalid]:border-destructive data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50",
-  tags: "flex flex-wrap gap-1",
-  tag: "inline-flex h-8 items-center gap-1 rounded-md bg-muted px-2 text-xs font-medium text-foreground",
-  tagLabel: "leading-none",
+    'block h-9 min-w-36 flex-1 rounded-md border border-input bg-background px-3 text-[13px] text-foreground outline-none transition-[border-color,box-shadow] duration-150 placeholder:text-muted-foreground hover:border-border focus-visible:ring-2 focus-visible:ring-ring data-[akaza-invalid]:border-destructive data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50',
+  tags: 'flex flex-wrap gap-1',
+  tag: 'inline-flex h-8 items-center gap-1 rounded-md bg-muted px-2 text-xs font-medium text-foreground',
+  tagLabel: 'leading-none',
   remove:
-    "inline-flex size-5 items-center justify-center rounded text-muted-foreground hover:bg-background hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+    'inline-flex size-5 items-center justify-center rounded text-muted-foreground hover:bg-background hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
   clear:
-    "inline-flex size-9 items-center justify-center rounded-md border border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-  hiddenInput: "sr-only",
-  content: "rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-lg",
-  viewport: "max-h-64 overflow-auto",
-  empty: "px-2.5 py-2 text-sm text-muted-foreground",
-  loading: "px-2.5 py-2 text-sm text-muted-foreground",
+    'inline-flex size-9 items-center justify-center rounded-md border border-border bg-background text-muted-foreground hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+  hiddenInput: 'sr-only',
+  content: 'rounded-md border border-border bg-popover p-1 text-popover-foreground shadow-lg',
+  viewport: 'max-h-64 overflow-auto',
+  empty: 'px-2.5 py-2 text-sm text-muted-foreground',
+  loading: 'px-2.5 py-2 text-sm text-muted-foreground',
   groupLabel:
-    "px-2.5 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground",
-  separator: "my-1 h-px bg-border",
+    'px-2.5 pb-1 pt-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground',
+  separator: 'my-1 h-px bg-border',
   option:
-    "flex cursor-pointer items-start gap-2 rounded-sm px-2.5 py-2 text-sm outline-none transition-colors data-[akaza-highlighted]:bg-accent data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50",
-  indicator: "mt-0.5 w-4 shrink-0 text-primary",
-  optionText: "grid gap-0.5",
-  optionLabel: "font-medium text-foreground",
-  optionDescription: "text-xs text-muted-foreground",
+    'flex cursor-pointer items-start gap-2 rounded-sm px-2.5 py-2 text-sm outline-none transition-colors data-[akaza-highlighted]:bg-accent data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50',
+  indicator: 'mt-0.5 w-4 shrink-0 text-primary',
+  optionText: 'grid gap-0.5',
+  optionLabel: 'font-medium text-foreground',
+  optionDescription: 'text-xs text-muted-foreground',
   create:
-    "cursor-pointer rounded-sm px-2.5 py-2 text-sm font-medium text-primary transition-colors hover:bg-accent",
-};
+    'cursor-pointer rounded-sm px-2.5 py-2 text-sm font-medium text-primary transition-colors hover:bg-accent',
+}
 
 export const toastUi = {
-  viewport: "w-[min(100dvw,24rem)] p-4",
+  viewport: 'w-[min(100dvw,24rem)] p-4',
   toast:
-    "relative grid gap-1 rounded-lg border border-border bg-popover p-4 pr-10 text-popover-foreground shadow-lg data-[akaza-type=error]:border-destructive/60 data-[akaza-type=warning]:border-primary/60",
-  title: "text-sm font-semibold text-foreground",
-  description: "text-sm text-muted-foreground",
+    'relative grid gap-1 rounded-lg border border-border bg-popover p-4 pr-10 text-popover-foreground shadow-lg data-[akaza-type=error]:border-destructive/60 data-[akaza-type=warning]:border-primary/60',
+  title: 'text-sm font-semibold text-foreground',
+  description: 'text-sm text-muted-foreground',
   close:
-    "absolute right-2 top-2 inline-flex size-6 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+    'absolute right-2 top-2 inline-flex size-6 items-center justify-center rounded-md text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
   action:
-    "mt-2 inline-flex h-8 w-max items-center rounded-md border border-border bg-background px-2.5 text-xs font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
-};
+    'mt-2 inline-flex h-8 w-max items-center rounded-md border border-border bg-background px-2.5 text-xs font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
+}
 
 export const hoverPreviewCardUi = {
   trigger:
-    "inline-flex rounded-md text-sm font-medium text-primary underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring",
+    'inline-flex rounded-md text-sm font-medium text-primary underline underline-offset-4 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
   content:
-    "w-72 rounded-lg border border-border bg-popover p-4 text-popover-foreground shadow-lg [&_.akaza-hover-preview-card-arrow]:bg-popover",
-  arrow: "border-border",
-};
+    'w-72 rounded-lg border border-border bg-popover p-4 text-popover-foreground shadow-lg [&_.akaza-hover-preview-card-arrow]:bg-popover',
+  arrow: 'border-border',
+}
 
-export const dialogOverlay = "fixed inset-0 bg-black/50 backdrop-blur-[2px]";
-export const dialogOverlayInner = "fixed inset-0 bg-black/40 backdrop-blur-[1px]";
+export const dialogOverlay = 'fixed inset-0 bg-black/50'
+export const dialogOverlayInner = 'fixed inset-0 bg-black/40'
 export const dialogContent =
-  "flex max-h-[90dvh] w-[min(90dvw,480px)] flex-col overflow-hidden rounded-xl border border-border bg-card text-card-foreground shadow-2xl [&_.akaza-dialog-body]:flex-1 [&_.akaza-dialog-body]:overflow-y-auto [&_.akaza-dialog-body]:p-5 [&_.akaza-dialog-description]:mb-3 [&_.akaza-dialog-description]:text-sm [&_.akaza-dialog-description]:text-muted-foreground [&_.akaza-dialog-footer]:border-t [&_.akaza-dialog-footer]:border-border [&_.akaza-dialog-footer]:p-4 [&_.akaza-dialog-header]:border-b [&_.akaza-dialog-header]:border-border [&_.akaza-dialog-header]:p-4 [&_.akaza-dialog-title]:text-base [&_.akaza-dialog-title]:font-semibold [&_.akaza-dialog-title]:text-foreground";
-export const dialogContentInner = dialogContent;
-export const dialogContentFullscreen = `${dialogContent} h-[100dvh] max-h-none w-screen max-w-none rounded-none border-0`;
+  'flex max-h-[90dvh] w-[min(90dvw,480px)] flex-col overflow-hidden rounded-xl border border-border bg-card text-card-foreground shadow-2xl [&_.akaza-dialog-body]:flex-1 [&_.akaza-dialog-body]:overflow-y-auto [&_.akaza-dialog-body]:p-5 [&_.akaza-dialog-description]:mb-3 [&_.akaza-dialog-description]:text-sm [&_.akaza-dialog-description]:text-muted-foreground [&_.akaza-dialog-footer]:border-t [&_.akaza-dialog-footer]:border-border [&_.akaza-dialog-footer]:p-4 [&_.akaza-dialog-header]:border-b [&_.akaza-dialog-header]:border-border [&_.akaza-dialog-header]:p-4 [&_.akaza-dialog-title]:text-base [&_.akaza-dialog-title]:font-semibold [&_.akaza-dialog-title]:text-foreground'
+export const dialogContentInner = dialogContent
+export const dialogContentFullscreen = `${dialogContent} h-[100dvh] max-h-none w-screen max-w-none rounded-none border-0`
 export const alertDialogContent =
-  "flex w-[min(90dvw,440px)] flex-col overflow-hidden rounded-xl border border-border bg-card text-card-foreground shadow-2xl [&_.akaza-alert-dialog-body]:px-5 [&_.akaza-alert-dialog-body]:pb-5 [&_.akaza-alert-dialog-body]:pt-3 [&_.akaza-alert-dialog-description]:m-0 [&_.akaza-alert-dialog-description]:text-sm [&_.akaza-alert-dialog-description]:leading-relaxed [&_.akaza-alert-dialog-description]:text-muted-foreground [&_.akaza-alert-dialog-footer]:border-t [&_.akaza-alert-dialog-footer]:border-border [&_.akaza-alert-dialog-footer]:bg-muted [&_.akaza-alert-dialog-footer]:p-4 [&_.akaza-alert-dialog-header]:px-5 [&_.akaza-alert-dialog-header]:pt-5 [&_.akaza-alert-dialog-title]:text-base [&_.akaza-alert-dialog-title]:font-semibold [&_.akaza-alert-dialog-title]:text-foreground";
-export const alertDialogCompactContent = `${alertDialogContent} w-[min(90dvw,340px)]`;
-export const dialogBodyText = "m-0 text-sm leading-relaxed text-muted-foreground";
+  'flex w-[min(90dvw,440px)] flex-col overflow-hidden rounded-xl border border-border bg-card text-card-foreground shadow-2xl [&_.akaza-alert-dialog-body]:px-5 [&_.akaza-alert-dialog-body]:pb-5 [&_.akaza-alert-dialog-body]:pt-3 [&_.akaza-alert-dialog-description]:m-0 [&_.akaza-alert-dialog-description]:text-sm [&_.akaza-alert-dialog-description]:leading-relaxed [&_.akaza-alert-dialog-description]:text-muted-foreground [&_.akaza-alert-dialog-footer]:border-t [&_.akaza-alert-dialog-footer]:border-border [&_.akaza-alert-dialog-footer]:bg-muted [&_.akaza-alert-dialog-footer]:p-4 [&_.akaza-alert-dialog-header]:px-5 [&_.akaza-alert-dialog-header]:pt-5 [&_.akaza-alert-dialog-title]:text-base [&_.akaza-alert-dialog-title]:font-semibold [&_.akaza-alert-dialog-title]:text-foreground'
+export const alertDialogCompactContent = `${alertDialogContent} w-[min(90dvw,340px)]`
+export const dialogBodyText = 'm-0 text-sm leading-relaxed text-muted-foreground'
 
-export const drawerOverlay = "fixed inset-0 bg-black/50 backdrop-blur-[2px]";
-export const drawerOverlayReactive = `${drawerOverlay} opacity-[calc(1-var(--drawer-swipe-progress,0))]`;
+export const drawerOverlay = 'fixed inset-0 bg-black/50'
+export const drawerOverlayReactive = `${drawerOverlay} opacity-[calc(1-var(--drawer-swipe-progress,0))]`
 export const drawerPanel =
-  "overflow-hidden border border-border bg-card text-card-foreground shadow-2xl [&_.akaza-drawer-body]:flex-1 [&_.akaza-drawer-body]:overflow-y-auto [&_.akaza-drawer-body]:p-5 [&_.akaza-drawer-description]:text-sm [&_.akaza-drawer-description]:text-muted-foreground [&_.akaza-drawer-footer]:shrink-0 [&_.akaza-drawer-footer]:border-t [&_.akaza-drawer-footer]:border-border [&_.akaza-drawer-footer]:p-4 [&_.akaza-drawer-header]:shrink-0 [&_.akaza-drawer-header]:border-b [&_.akaza-drawer-header]:border-border [&_.akaza-drawer-header]:p-4 [&_.akaza-drawer-title]:text-base [&_.akaza-drawer-title]:font-semibold [&_.akaza-drawer-title]:text-foreground";
-export const drawerPanelRight = `${drawerPanel} w-[min(90dvw,360px)] shadow-[-4px_0_24px_rgba(0,0,0,0.15)]`;
-export const drawerPanelLeft = `${drawerPanel} w-[min(90dvw,360px)] shadow-[4px_0_24px_rgba(0,0,0,0.15)]`;
-export const drawerPanelBottom = `${drawerPanel} max-h-[60dvh] rounded-t-xl border-b-0`;
-export const drawerPanelTop = `${drawerPanel} max-h-[60dvh] rounded-b-xl border-t-0`;
-export const drawerHandle = "mx-auto mb-1 mt-3 h-1 w-12 rounded-full bg-muted-foreground/40";
+  'overflow-hidden border border-border bg-card text-card-foreground shadow-2xl [&_.akaza-drawer-body]:flex-1 [&_.akaza-drawer-body]:overflow-y-auto [&_.akaza-drawer-body]:p-5 [&_.akaza-drawer-description]:text-sm [&_.akaza-drawer-description]:text-muted-foreground [&_.akaza-drawer-footer]:shrink-0 [&_.akaza-drawer-footer]:border-t [&_.akaza-drawer-footer]:border-border [&_.akaza-drawer-footer]:p-4 [&_.akaza-drawer-header]:shrink-0 [&_.akaza-drawer-header]:border-b [&_.akaza-drawer-header]:border-border [&_.akaza-drawer-header]:p-4 [&_.akaza-drawer-title]:text-base [&_.akaza-drawer-title]:font-semibold [&_.akaza-drawer-title]:text-foreground'
+export const drawerPanelRight = `${drawerPanel} w-[min(90dvw,360px)] shadow-[-4px_0_24px_rgba(0,0,0,0.15)]`
+export const drawerPanelLeft = `${drawerPanel} w-[min(90dvw,360px)] shadow-[4px_0_24px_rgba(0,0,0,0.15)]`
+export const drawerPanelBottom = `${drawerPanel} max-h-[60dvh] rounded-t-xl border-b-0`
+export const drawerPanelTop = `${drawerPanel} max-h-[60dvh] rounded-b-xl border-t-0`
+export const drawerHandle = 'mx-auto mb-1 mt-3 h-1 w-12 rounded-full bg-muted-foreground/40'
 
 export const avatarRoot =
-  "relative inline-flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted text-muted-foreground";
-export const avatarImage = "block size-full object-cover";
+  'relative inline-flex size-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-muted text-muted-foreground'
+export const avatarImage = 'block size-full object-cover'
 export const avatarFallback =
-  "flex size-full select-none items-center justify-center text-sm font-semibold";
-export const avatarPrimary = `${avatarRoot} !bg-primary text-primary-foreground`;
-export const avatarMuted = `${avatarRoot} bg-muted text-muted-foreground`;
+  'flex size-full select-none items-center justify-center text-sm font-semibold'
+export const avatarPrimary = `${avatarRoot} !bg-primary text-primary-foreground`
+export const avatarMuted = `${avatarRoot} bg-muted text-muted-foreground`
 
 export const collapsibleUi = {
-  root: "w-full max-w-md overflow-hidden rounded-lg border border-border bg-background",
+  root: 'w-full max-w-md overflow-hidden rounded-lg border border-border bg-background',
   trigger:
-    "flex w-full items-center justify-between px-4 py-3 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50 [&_.akaza-collapsible-icon]:text-muted-foreground",
-  content: "border-t border-border px-4 py-3 text-sm leading-relaxed text-muted-foreground",
-};
+    'flex w-full items-center justify-between px-4 py-3 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50 [&_.akaza-collapsible-icon]:text-muted-foreground',
+  content: 'border-t border-border px-4 py-3 text-sm leading-relaxed text-muted-foreground',
+}
 
 export const collapsibleCustomUi = {
-  root: "w-full max-w-md overflow-hidden rounded-lg border-2 border-primary bg-primary/5",
+  root: 'w-full max-w-md overflow-hidden rounded-lg border-2 border-primary bg-primary/5',
   trigger:
-    "flex w-full items-center justify-between px-4 py-3 text-left text-sm font-semibold text-primary transition-colors hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset",
-  content: "border-t border-primary/20 px-4 py-3 text-sm leading-relaxed text-muted-foreground",
-};
+    'flex w-full items-center justify-between px-4 py-3 text-left text-sm font-semibold text-primary transition-colors hover:bg-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset',
+  content: 'border-t border-primary/20 px-4 py-3 text-sm leading-relaxed text-muted-foreground',
+}
 
 export const accordionRoot =
-  "w-full max-w-md overflow-hidden rounded-lg border border-border bg-background";
+  'w-full max-w-md overflow-hidden rounded-lg border border-border bg-background'
 export const accordionUi = {
-  item: "border-b border-border last:border-b-0",
+  item: 'border-b border-border last:border-b-0',
   trigger:
-    "flex w-full items-center justify-between px-4 py-3 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset data-[akaza-state=open]:bg-muted data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50",
-  icon: "text-muted-foreground",
-  content: "px-4 pb-4 pt-1 text-sm leading-relaxed text-muted-foreground",
-};
+    'flex w-full items-center justify-between px-4 py-3 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset data-[akaza-state=open]:bg-muted data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50',
+  icon: 'text-muted-foreground',
+  content: 'px-4 pb-4 pt-1 text-sm leading-relaxed text-muted-foreground',
+}
 export const accordionCustomUi = {
-  item: "mb-2 overflow-hidden rounded-md border border-border last:mb-0",
+  item: 'mb-2 overflow-hidden rounded-md border border-border last:mb-0',
   trigger:
-    "flex w-full items-center justify-between px-3.5 py-2.5 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset",
-  icon: "text-primary",
-  content: "px-3.5 pb-3 text-sm leading-relaxed text-muted-foreground",
-};
+    'flex w-full items-center justify-between px-3.5 py-2.5 text-left text-sm font-medium text-foreground transition-colors hover:bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset',
+  icon: 'text-primary',
+  content: 'px-3.5 pb-3 text-sm leading-relaxed text-muted-foreground',
+}

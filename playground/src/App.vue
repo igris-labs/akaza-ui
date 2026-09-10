@@ -1,212 +1,212 @@
 <script setup lang="ts">
-import type { ComboboxModelValue } from 'akaza-ui'
-import { ref } from 'vue'
-import { Combobox, OverlayProvider, Separator } from 'akaza-ui'
-import ButtonSection from './sections/button/ButtonSection.vue'
-import ToggleSection from './sections/toggle/ToggleSection.vue'
-import SwitchSection from './sections/switch/SwitchSection.vue'
-import CheckboxSection from './sections/checkbox/CheckboxSection.vue'
-import CheckboxGroupSection from './sections/checkbox-group/CheckboxGroupSection.vue'
-import RadioGroupSection from './sections/radio-group/RadioGroupSection.vue'
-import FieldSection from './sections/field/FieldSection.vue'
-import FieldsetSection from './sections/fieldset/FieldsetSection.vue'
-import FormSection from './sections/form/FormSection.vue'
-import InputSection from './sections/input/InputSection.vue'
-import SelectSection from './sections/select/SelectSection.vue'
-import ListboxSection from './sections/listbox/ListboxSection.vue'
-import MonthPickerSection from './sections/month-picker/MonthPickerSection.vue'
-import MonthRangePickerSection from './sections/month-range-picker/MonthRangePickerSection.vue'
-import ComboboxSection from './sections/combobox/ComboboxSection.vue'
-import PinInputSection from './sections/pin-input/PinInputSection.vue'
-import TagsInputSection from './sections/tags-input/TagsInputSection.vue'
-import EditableSection from './sections/editable/EditableSection.vue'
-import RatingSection from './sections/rating/RatingSection.vue'
-import StepperSection from './sections/stepper/StepperSection.vue'
-import NumberFieldSection from './sections/number-field/NumberFieldSection.vue'
-import CalendarSection from './sections/calendar/CalendarSection.vue'
-import DataTableSection from './sections/data-table/DataTableSection.vue'
-import DateFieldSection from './sections/date-field/DateFieldSection.vue'
-import DateRangeFieldSection from './sections/date-range-field/DateRangeFieldSection.vue'
-import DateRangePickerSection from './sections/date-range-picker/DateRangePickerSection.vue'
-import SliderSection from './sections/slider/SliderSection.vue'
-import AvatarSection from './sections/avatar/AvatarSection.vue'
-import SeparatorSection from './sections/separator/SeparatorSection.vue'
-import MeterSection from './sections/meter/MeterSection.vue'
-import ProgressSection from './sections/progress/ProgressSection.vue'
-import CollapsibleSection from './sections/collapsible/CollapsibleSection.vue'
-import AccordionSection from './sections/accordion/AccordionSection.vue'
-import TooltipSection from './sections/tooltip/TooltipSection.vue'
-import PopoverSection from './sections/popover/PopoverSection.vue'
-import DialogSection from './sections/dialog/DialogSection.vue'
-import AlertDialogSection from './sections/alert-dialog/AlertDialogSection.vue'
-import DrawerSection from './sections/drawer/DrawerSection.vue'
-import MenuSection from './sections/menu/MenuSection.vue'
-import ContextMenuSection from './sections/context-menu/ContextMenuSection.vue'
-import MenubarSection from './sections/menubar/MenubarSection.vue'
-import NavigationMenuSection from './sections/navigation-menu/NavigationMenuSection.vue'
-import TabsSection from './sections/tabs/TabsSection.vue'
-import ToggleGroupSection from './sections/toggle-group/ToggleGroupSection.vue'
-import ToolbarSection from './sections/toolbar/ToolbarSection.vue'
-import ToastSection from './sections/toast/ToastSection.vue'
-import TimeFieldSection from './sections/time-field/TimeFieldSection.vue'
-import TimeRangeFieldSection from './sections/time-range-field/TimeRangeFieldSection.vue'
-import HoverPreviewCardSection from './sections/hover-preview-card/HoverPreviewCardSection.vue'
-import PaginationSection from './sections/pagination/PaginationSection.vue'
-import OverlaySection from './sections/overlay/OverlaySection.vue'
-import YearPickerSection from './sections/year-picker/YearPickerSection.vue'
-import YearRangePickerSection from './sections/year-range-picker/YearRangePickerSection.vue'
+import type { ComboboxModelValue } from "akaza-ui";
+import { ref } from "vue";
+import { Combobox, OverlayProvider, Separator } from "akaza-ui";
+import ButtonSection from "./sections/button/ButtonSection.vue";
+import ToggleSection from "./sections/toggle/ToggleSection.vue";
+import SwitchSection from "./sections/switch/SwitchSection.vue";
+import CheckboxSection from "./sections/checkbox/CheckboxSection.vue";
+import CheckboxGroupSection from "./sections/checkbox-group/CheckboxGroupSection.vue";
+import RadioGroupSection from "./sections/radio-group/RadioGroupSection.vue";
+import FieldSection from "./sections/field/FieldSection.vue";
+import FieldsetSection from "./sections/fieldset/FieldsetSection.vue";
+import FormSection from "./sections/form/FormSection.vue";
+import InputSection from "./sections/input/InputSection.vue";
+import SelectSection from "./sections/select/SelectSection.vue";
+import ListboxSection from "./sections/listbox/ListboxSection.vue";
+import MonthPickerSection from "./sections/month-picker/MonthPickerSection.vue";
+import MonthRangePickerSection from "./sections/month-range-picker/MonthRangePickerSection.vue";
+import ComboboxSection from "./sections/combobox/ComboboxSection.vue";
+import PinInputSection from "./sections/pin-input/PinInputSection.vue";
+import TagsInputSection from "./sections/tags-input/TagsInputSection.vue";
+import EditableSection from "./sections/editable/EditableSection.vue";
+import RatingSection from "./sections/rating/RatingSection.vue";
+import StepperSection from "./sections/stepper/StepperSection.vue";
+import NumberFieldSection from "./sections/number-field/NumberFieldSection.vue";
+import CalendarSection from "./sections/calendar/CalendarSection.vue";
+import DataTableSection from "./sections/data-table/DataTableSection.vue";
+import DateFieldSection from "./sections/date-field/DateFieldSection.vue";
+import DateRangeFieldSection from "./sections/date-range-field/DateRangeFieldSection.vue";
+import DateRangePickerSection from "./sections/date-range-picker/DateRangePickerSection.vue";
+import SliderSection from "./sections/slider/SliderSection.vue";
+import AvatarSection from "./sections/avatar/AvatarSection.vue";
+import SeparatorSection from "./sections/separator/SeparatorSection.vue";
+import MeterSection from "./sections/meter/MeterSection.vue";
+import ProgressSection from "./sections/progress/ProgressSection.vue";
+import CollapsibleSection from "./sections/collapsible/CollapsibleSection.vue";
+import AccordionSection from "./sections/accordion/AccordionSection.vue";
+import TooltipSection from "./sections/tooltip/TooltipSection.vue";
+import PopoverSection from "./sections/popover/PopoverSection.vue";
+import DialogSection from "./sections/dialog/DialogSection.vue";
+import AlertDialogSection from "./sections/alert-dialog/AlertDialogSection.vue";
+import DrawerSection from "./sections/drawer/DrawerSection.vue";
+import MenuSection from "./sections/menu/MenuSection.vue";
+import ContextMenuSection from "./sections/context-menu/ContextMenuSection.vue";
+import MenubarSection from "./sections/menubar/MenubarSection.vue";
+import NavigationMenuSection from "./sections/navigation-menu/NavigationMenuSection.vue";
+import TabsSection from "./sections/tabs/TabsSection.vue";
+import ToggleGroupSection from "./sections/toggle-group/ToggleGroupSection.vue";
+import ToolbarSection from "./sections/toolbar/ToolbarSection.vue";
+import ToastSection from "./sections/toast/ToastSection.vue";
+import TimeFieldSection from "./sections/time-field/TimeFieldSection.vue";
+import TimeRangeFieldSection from "./sections/time-range-field/TimeRangeFieldSection.vue";
+import HoverPreviewCardSection from "./sections/hover-preview-card/HoverPreviewCardSection.vue";
+import PaginationSection from "./sections/pagination/PaginationSection.vue";
+import OverlaySection from "./sections/overlay/OverlaySection.vue";
+import YearPickerSection from "./sections/year-picker/YearPickerSection.vue";
+import YearRangePickerSection from "./sections/year-range-picker/YearRangePickerSection.vue";
 
-const isDark = ref(false)
-const selectedComponent = ref(window.location.hash.slice(1))
-const searchQuery = ref('')
+const isDark = ref(false);
+const selectedComponent = ref(window.location.hash.slice(1));
+const searchQuery = ref("");
 
 function toggleTheme() {
-  isDark.value = !isDark.value
-  document.documentElement.classList.toggle('dark', isDark.value)
+  isDark.value = !isDark.value;
+  document.documentElement.classList.toggle("dark", isDark.value);
 }
 
 const sections = [
-  { id: 'disclosure', label: 'Disclosure', items: ['accordion', 'collapsible'] },
+  { id: "disclosure", label: "Disclosure", items: ["accordion", "collapsible"] },
   {
-    id: 'display',
-    label: 'Display',
-    items: ['avatar', 'data-table', 'meter', 'progress', 'separator', 'toast'],
+    id: "display",
+    label: "Display",
+    items: ["avatar", "data-table", "meter", "progress", "separator", "toast"],
   },
   {
-    id: 'inputs',
-    label: 'Inputs',
+    id: "inputs",
+    label: "Inputs",
     items: [
-      'button',
-      'calendar',
-      'checkbox',
-      'checkbox-group',
-      'combobox',
-      'date-field',
-      'date-range-field',
-      'date-range-picker',
-      'editable',
-      'field',
-      'fieldset',
-      'form',
-      'input',
-      'listbox',
-      'month-picker',
-      'month-range-picker',
-      'number-field',
-      'pin-input',
-      'radio-group',
-      'rating',
-      'select',
-      'slider',
-      'stepper',
-      'switch',
-      'tags-input',
-      'time-field',
-      'time-range-field',
-      'toggle',
-      'toggle-group',
-      'year-picker',
-      'year-range-picker',
+      "button",
+      "calendar",
+      "checkbox",
+      "checkbox-group",
+      "combobox",
+      "date-field",
+      "date-range-field",
+      "date-range-picker",
+      "editable",
+      "field",
+      "fieldset",
+      "form",
+      "input",
+      "listbox",
+      "month-picker",
+      "month-range-picker",
+      "number-field",
+      "pin-input",
+      "radio-group",
+      "rating",
+      "select",
+      "slider",
+      "stepper",
+      "switch",
+      "tags-input",
+      "time-field",
+      "time-range-field",
+      "toggle",
+      "toggle-group",
+      "year-picker",
+      "year-range-picker",
     ],
   },
   {
-    id: 'navigation',
-    label: 'Navigation',
-    items: ['menubar', 'navigation-menu', 'pagination', 'tabs', 'toolbar'],
+    id: "navigation",
+    label: "Navigation",
+    items: ["menubar", "navigation-menu", "pagination", "tabs", "toolbar"],
   },
   {
-    id: 'overlay',
-    label: 'Overlay',
+    id: "overlay",
+    label: "Overlay",
     items: [
-      'alert-dialog',
-      'context-menu',
-      'dialog',
-      'drawer',
-      'hover-preview-card',
-      'menu',
-      'popover',
-      'tooltip',
+      "alert-dialog",
+      "context-menu",
+      "dialog",
+      "drawer",
+      "hover-preview-card",
+      "menu",
+      "popover",
+      "tooltip",
     ],
   },
-  { id: 'programmatic', label: 'Programmatic', items: ['overlay'] },
-]
+  { id: "programmatic", label: "Programmatic", items: ["overlay"] },
+];
 
 const pageSections = [
-  { id: 'accordion', component: AccordionSection },
-  { id: 'alert-dialog', component: AlertDialogSection },
-  { id: 'avatar', component: AvatarSection },
-  { id: 'button', component: ButtonSection },
-  { id: 'calendar', component: CalendarSection },
-  { id: 'checkbox', component: CheckboxSection },
-  { id: 'checkbox-group', component: CheckboxGroupSection },
-  { id: 'collapsible', component: CollapsibleSection },
-  { id: 'combobox', component: ComboboxSection },
-  { id: 'context-menu', component: ContextMenuSection },
-  { id: 'data-table', component: DataTableSection },
-  { id: 'date-field', component: DateFieldSection },
-  { id: 'date-range-field', component: DateRangeFieldSection },
-  { id: 'date-range-picker', component: DateRangePickerSection },
-  { id: 'dialog', component: DialogSection },
-  { id: 'drawer', component: DrawerSection },
-  { id: 'editable', component: EditableSection },
-  { id: 'field', component: FieldSection },
-  { id: 'fieldset', component: FieldsetSection },
-  { id: 'form', component: FormSection },
-  { id: 'hover-preview-card', component: HoverPreviewCardSection },
-  { id: 'input', component: InputSection },
-  { id: 'listbox', component: ListboxSection },
-  { id: 'menu', component: MenuSection },
-  { id: 'menubar', component: MenubarSection },
-  { id: 'meter', component: MeterSection },
-  { id: 'month-picker', component: MonthPickerSection },
-  { id: 'month-range-picker', component: MonthRangePickerSection },
-  { id: 'navigation-menu', component: NavigationMenuSection },
-  { id: 'number-field', component: NumberFieldSection },
-  { id: 'overlay', component: OverlaySection },
-  { id: 'pagination', component: PaginationSection },
-  { id: 'pin-input', component: PinInputSection },
-  { id: 'popover', component: PopoverSection },
-  { id: 'progress', component: ProgressSection },
-  { id: 'radio-group', component: RadioGroupSection },
-  { id: 'rating', component: RatingSection },
-  { id: 'select', component: SelectSection },
-  { id: 'separator', component: SeparatorSection },
-  { id: 'slider', component: SliderSection },
-  { id: 'stepper', component: StepperSection },
-  { id: 'switch', component: SwitchSection },
-  { id: 'tabs', component: TabsSection },
-  { id: 'tags-input', component: TagsInputSection },
-  { id: 'time-field', component: TimeFieldSection },
-  { id: 'time-range-field', component: TimeRangeFieldSection },
-  { id: 'toast', component: ToastSection },
-  { id: 'toggle', component: ToggleSection },
-  { id: 'toggle-group', component: ToggleGroupSection },
-  { id: 'toolbar', component: ToolbarSection },
-  { id: 'tooltip', component: TooltipSection },
-  { id: 'year-picker', component: YearPickerSection },
-  { id: 'year-range-picker', component: YearRangePickerSection },
-]
+  { id: "accordion", component: AccordionSection },
+  { id: "alert-dialog", component: AlertDialogSection },
+  { id: "avatar", component: AvatarSection },
+  { id: "button", component: ButtonSection },
+  { id: "calendar", component: CalendarSection },
+  { id: "checkbox", component: CheckboxSection },
+  { id: "checkbox-group", component: CheckboxGroupSection },
+  { id: "collapsible", component: CollapsibleSection },
+  { id: "combobox", component: ComboboxSection },
+  { id: "context-menu", component: ContextMenuSection },
+  { id: "data-table", component: DataTableSection },
+  { id: "date-field", component: DateFieldSection },
+  { id: "date-range-field", component: DateRangeFieldSection },
+  { id: "date-range-picker", component: DateRangePickerSection },
+  { id: "dialog", component: DialogSection },
+  { id: "drawer", component: DrawerSection },
+  { id: "editable", component: EditableSection },
+  { id: "field", component: FieldSection },
+  { id: "fieldset", component: FieldsetSection },
+  { id: "form", component: FormSection },
+  { id: "hover-preview-card", component: HoverPreviewCardSection },
+  { id: "input", component: InputSection },
+  { id: "listbox", component: ListboxSection },
+  { id: "menu", component: MenuSection },
+  { id: "menubar", component: MenubarSection },
+  { id: "meter", component: MeterSection },
+  { id: "month-picker", component: MonthPickerSection },
+  { id: "month-range-picker", component: MonthRangePickerSection },
+  { id: "navigation-menu", component: NavigationMenuSection },
+  { id: "number-field", component: NumberFieldSection },
+  { id: "overlay", component: OverlaySection },
+  { id: "pagination", component: PaginationSection },
+  { id: "pin-input", component: PinInputSection },
+  { id: "popover", component: PopoverSection },
+  { id: "progress", component: ProgressSection },
+  { id: "radio-group", component: RadioGroupSection },
+  { id: "rating", component: RatingSection },
+  { id: "select", component: SelectSection },
+  { id: "separator", component: SeparatorSection },
+  { id: "slider", component: SliderSection },
+  { id: "stepper", component: StepperSection },
+  { id: "switch", component: SwitchSection },
+  { id: "tabs", component: TabsSection },
+  { id: "tags-input", component: TagsInputSection },
+  { id: "time-field", component: TimeFieldSection },
+  { id: "time-range-field", component: TimeRangeFieldSection },
+  { id: "toast", component: ToastSection },
+  { id: "toggle", component: ToggleSection },
+  { id: "toggle-group", component: ToggleGroupSection },
+  { id: "toolbar", component: ToolbarSection },
+  { id: "tooltip", component: TooltipSection },
+  { id: "year-picker", component: YearPickerSection },
+  { id: "year-range-picker", component: YearRangePickerSection },
+];
 
 const componentOptions = pageSections.map(({ id }) => ({
   value: id,
-  label: id.split('-').join(' '),
-}))
+  label: id.split("-").join(" "),
+}));
 
 const componentSearchUi = {
-  root: 'block w-36 sm:w-56',
+  root: "block w-36 sm:w-56",
   input:
-    'h-10 w-full rounded-md border border-input bg-background px-8 text-[13px] text-foreground capitalize outline-none transition-[border-color,box-shadow] duration-150 placeholder:normal-case placeholder:text-muted-foreground hover:border-border focus-visible:ring-2 focus-visible:ring-ring sm:h-8',
-  content: 'rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-lg',
-  viewport: 'max-h-72 overflow-auto',
-  empty: 'px-2 py-1.5 text-xs text-muted-foreground',
+    "h-10 w-full rounded-md border border-input bg-background px-8 text-[13px] text-foreground capitalize outline-none transition-[border-color,box-shadow] duration-150 placeholder:normal-case placeholder:text-muted-foreground hover:border-border focus-visible:ring-2 focus-visible:ring-ring sm:h-8",
+  content: "rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-lg",
+  viewport: "max-h-72 overflow-auto",
+  empty: "px-2 py-1.5 text-xs text-muted-foreground",
   option:
-    'flex cursor-pointer items-center rounded-sm px-2 py-1.5 text-xs outline-none transition-colors data-[akaza-highlighted]:bg-accent',
-  indicator: 'hidden',
-  optionLabel: 'font-medium capitalize text-foreground',
-}
+    "flex cursor-pointer items-center rounded-sm px-2 py-1.5 text-xs outline-none transition-colors data-[akaza-highlighted]:bg-accent",
+  indicator: "hidden",
+  optionLabel: "font-medium capitalize text-foreground",
+};
 
 function openComponent(value: ComboboxModelValue) {
-  if (typeof value === 'string' && value) window.location.hash = value
+  if (typeof value === "string" && value) window.location.hash = value;
 }
 </script>
 
@@ -282,7 +282,7 @@ function openComponent(value: ComboboxModelValue) {
           >
             <path d="M20.5 14.1A8.5 8.5 0 0 1 9.9 3.5 8.5 8.5 0 1 0 20.5 14.1Z" />
           </svg>
-          <span class="hidden sm:inline">{{ isDark ? 'Light' : 'Dark' }}</span>
+          <span class="hidden sm:inline ml-1">{{ isDark ? "Light" : "Dark" }}</span>
         </button>
       </div>
     </header>
@@ -306,7 +306,7 @@ function openComponent(value: ComboboxModelValue) {
                   :aria-current="selectedComponent === item ? 'location' : undefined"
                   @click="selectedComponent = item"
                 >
-                  {{ item.replace('-', ' ') }}
+                  {{ item.replace("-", " ") }}
                 </a>
               </li>
             </ul>

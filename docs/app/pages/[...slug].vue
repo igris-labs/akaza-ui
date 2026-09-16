@@ -61,21 +61,23 @@ const links = computed(() => {
 
 <template>
   <UPage v-if="page">
-    <UPageHeader :title="page.title" :description="page.description" :headline="headline">
-      <template #links>
-        <UButton v-for="(link, index) in page.links" :key="index" v-bind="link" />
+    <div class="lg:px-16">
+      <UPageHeader :title="page.title" :description="page.description" :headline="headline">
+        <template #links>
+          <UButton v-for="(link, index) in page.links" :key="index" v-bind="link" />
 
-        <PageHeaderLinks />
-      </template>
-    </UPageHeader>
+          <PageHeaderLinks />
+        </template>
+      </UPageHeader>
 
-    <UPageBody>
-      <ContentRenderer v-if="page" :value="page" />
+      <UPageBody>
+        <ContentRenderer v-if="page" :value="page" />
 
-      <USeparator v-if="surround?.length" />
+        <USeparator v-if="surround?.length" />
 
-      <UContentSurround :surround="surround" />
-    </UPageBody>
+        <UContentSurround :surround="surround" />
+      </UPageBody>
+    </div>
 
     <template v-if="page?.body?.toc?.links?.length" #right>
       <UContentToc :title="toc?.title" :links="page.body?.toc?.links">
@@ -90,7 +92,7 @@ const links = computed(() => {
 
             <USeparator type="dashed" />
 
-            <div class="border-default/70 py-2">
+            <div v-if="false" class="border-default/70 py-2">
               <NuxtLink
                 to="https://rahulv.dev/?connect&referrer=akaza-ui"
                 target="_blank"

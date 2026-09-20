@@ -75,7 +75,8 @@ const permissionOptions: CheckboxGroupOption[] = [
 ];
 
 const fieldUi = {
-  root: "min-w-0",
+  root: "grid min-w-0 gap-1.5",
+  control: "min-w-0",
   label: "text-sm font-medium text-neutral-950 dark:text-neutral-50",
   required: "ml-0.5 text-red-600 dark:text-red-400",
   description: "text-xs leading-5 text-neutral-600 dark:text-neutral-400",
@@ -118,30 +119,35 @@ const numberUi = {
 };
 
 const checkboxUi = {
-  root: "border-neutral-300 text-neutral-900 data-[akaza-state=checked]:bg-neutral-900 data-[akaza-state=checked]:text-white dark:border-neutral-700 dark:text-neutral-100 dark:data-[akaza-state=checked]:bg-white dark:data-[akaza-state=checked]:text-neutral-950",
+  wrapper: "min-w-0 gap-3",
+  root: "mt-0.5 size-4 shrink-0 border border-neutral-400 bg-white p-0 text-neutral-950 outline-none transition-colors focus-visible:ring-2 focus-visible:ring-neutral-900/30 disabled:cursor-not-allowed disabled:opacity-40 data-[akaza-state=checked]:border-neutral-950 data-[akaza-state=checked]:bg-neutral-950 data-[akaza-state=checked]:text-white data-[akaza-state=indeterminate]:border-neutral-950 data-[akaza-state=indeterminate]:bg-neutral-950 data-[akaza-state=indeterminate]:text-white dark:border-neutral-600 dark:bg-black dark:text-white dark:focus-visible:ring-white/30 dark:data-[akaza-state=checked]:border-white dark:data-[akaza-state=checked]:bg-white dark:data-[akaza-state=checked]:text-black dark:data-[akaza-state=indeterminate]:border-white dark:data-[akaza-state=indeterminate]:bg-white dark:data-[akaza-state=indeterminate]:text-black",
+  indicator: "size-3",
+  text: "min-w-0 gap-0.5",
   label: "text-sm font-medium text-neutral-950 dark:text-neutral-50",
   description: "text-xs leading-5 text-neutral-600 dark:text-neutral-400",
 };
 
 const checkboxGroupUi = {
   root: "grid min-w-0 gap-2",
-  item: "rounded-none border border-neutral-300 p-3 data-[akaza-state=checked]:border-neutral-900 dark:border-neutral-800 dark:data-[akaza-state=checked]:border-neutral-100",
+  parentItem: "px-1 py-1",
+  item: "rounded-none border border-neutral-300 p-3 transition-colors hover:bg-neutral-50 data-[akaza-state=checked]:border-neutral-900 data-[akaza-state=checked]:bg-neutral-50 dark:border-neutral-800 dark:hover:bg-neutral-900 dark:data-[akaza-state=checked]:border-neutral-100 dark:data-[akaza-state=checked]:bg-neutral-900",
   checkbox: checkboxUi,
 };
 
 const sliderUi = {
-  root: "h-6 w-full",
-  track: "h-2 w-full rounded-none bg-neutral-200 dark:bg-neutral-800",
+  root: "h-6 w-full cursor-pointer",
+  track: "h-1.5 w-full overflow-hidden rounded-none bg-neutral-200 dark:bg-neutral-800",
   range: "h-full rounded-none bg-neutral-900 dark:bg-white",
   thumb:
-    "size-5 rounded-none border-2 border-neutral-900 bg-white outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 dark:border-white dark:bg-black dark:focus-visible:ring-white",
+    "size-4 rounded-none border-2 border-neutral-900 bg-white outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 dark:border-white dark:bg-black dark:focus-visible:ring-white",
 };
 
 const switchUi = {
-  wrapper: "items-start",
-  root: "relative h-5 w-9 rounded-none bg-neutral-200 transition data-[akaza-state=checked]:bg-neutral-900 dark:bg-neutral-800 dark:data-[akaza-state=checked]:bg-white",
+  wrapper: "min-w-0 items-start gap-3",
+  root: "relative h-5 w-9 shrink-0 rounded-none border-0 bg-neutral-200 p-0 outline-none transition-colors focus-visible:ring-2 focus-visible:ring-neutral-900/30 disabled:cursor-not-allowed disabled:opacity-40 data-[akaza-state=checked]:bg-neutral-900 dark:bg-neutral-800 dark:focus-visible:ring-white/30 dark:data-[akaza-state=checked]:bg-white",
   thumb:
     "absolute left-0.5 top-0.5 size-4 rounded-none bg-white transition-transform data-[akaza-state=checked]:translate-x-4 dark:bg-black",
+  text: "min-w-0 gap-0.5",
   label: "text-sm font-medium text-neutral-950 dark:text-neutral-50",
   description: "text-xs leading-5 text-neutral-600 dark:text-neutral-400",
 };
@@ -420,7 +426,7 @@ function onFormSubmit(values: FormValues, details: FormSubmitDetails) {
                 v-model="ownerName"
                 :class="inputClass"
                 autocomplete="name"
-                placeholder="Riya Shah"
+                placeholder="John Doe"
                 @blur="markInteracted('ownerName')"
                 @value-change="onFieldValueChange('ownerName')"
               />

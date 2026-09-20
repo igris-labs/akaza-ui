@@ -57,6 +57,7 @@ describe("selection controls", () => {
     }));
 
     expect(wrapper.get(".akaza-checkbox-group-parent").attributes("data-akaza-state")).toBe("indeterminate");
+    expect(wrapper.findAll(".akaza-checkbox-indicator svg")).toHaveLength(2);
     await wrapper.findAll("[role='checkbox']")[0]!.trigger("click");
     expect((wrapper.vm as unknown as { value: string[] }).value).toEqual(["read", "write"]);
     expect(wrapper.get(".akaza-checkbox-group-parent").attributes("data-akaza-state")).toBe("checked");

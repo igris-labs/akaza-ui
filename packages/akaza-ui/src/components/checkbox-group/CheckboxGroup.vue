@@ -195,7 +195,7 @@ function setAll(value: CheckboxValue, details: AkazaChangeEventDetails) {
         v-bind="getParentCheckboxProps()"
         @value-change="setAll"
       >
-        <template #indicator="{ checked }">
+        <template v-if="$slots['parent-indicator']" #indicator="{ checked }">
           <slot name="parent-indicator" :checked="checked" />
         </template>
       </Checkbox>
@@ -227,7 +227,7 @@ function setAll(value: CheckboxValue, details: AkazaChangeEventDetails) {
           v-bind="getCheckboxProps(option)"
           @value-change="(value: CheckboxValue, details: AkazaChangeEventDetails) => setOption(option, value === getValue(option), details)"
         >
-          <template #indicator="{ checked }">
+          <template v-if="$slots.indicator" #indicator="{ checked }">
             <slot name="indicator" :option="option" :checked="checked" />
           </template>
           <template v-if="option.slot && $slots[option.slot]" #label>
@@ -245,7 +245,12 @@ function setAll(value: CheckboxValue, details: AkazaChangeEventDetails) {
     position: absolute;
     width: 1px;
     height: 1px;
-    opacity: 0;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
     pointer-events: none;
   }
   .akaza-checkbox-group {

@@ -13,7 +13,9 @@ const items = [
     <Accordion
       :items="items"
       collapsible
-      :ui="{ trigger: 'px-4 py-3.5 transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/60' }"
+      :ui="{
+        trigger: 'flex w-full items-center justify-between px-4 py-3.5 text-left transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/60',
+      }"
     >
       <template #trigger="{ item }">
         <span class="text-sm font-medium text-neutral-900 dark:text-neutral-100">{{ item.label }}</span>

@@ -3,9 +3,6 @@ title: Rating
 description: Accessible rating input with fractional values, hover preview, keyboard navigation, and forms.
 navigation:
   icon: i-lucide-star
-  badge:
-    label: NEW
-    color: success
 ---
 
 `Rating` is a radio-group control for bounded scores. It supports fractional steps, hover previews, clearable values, RTL, vertical navigation, native validation, and custom slots.

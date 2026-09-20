@@ -3,9 +3,6 @@ title: Listbox
 description: Standalone selectable list with single, multiple, filtered, and virtualized modes.
 navigation:
   icon: i-lucide-list-checks
-  badge:
-    label: NEW
-    color: success
 ---
 
 `Listbox` displays a persistent list for single or multiple selection. It supports grouped rows, typeahead, range selection, filtering, object values, native forms, and virtualization.

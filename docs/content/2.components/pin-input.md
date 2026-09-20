@@ -3,9 +3,6 @@ title: Pin / OTP Input
 description: Multi-cell input for verification codes, PINs, and fixed-length tokens.
 navigation:
   icon: i-lucide-binary
-  badge:
-    label: NEW
-    color: success
 ---
 
 `PinInput` renders a fixed-length text value as individual cells. It distributes typed or pasted characters, manages focus, supports OTP metadata and masking, and submits one string.

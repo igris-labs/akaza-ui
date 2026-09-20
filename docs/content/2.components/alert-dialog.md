@@ -3,9 +3,6 @@ title: Alert Dialog
 description: A modal dialog that interrupts the user and requires a response.
 navigation:
   icon: i-lucide-triangle-alert
-  badge:
-    label: UPDATED
-    color: warning
 ---
 
 Alert Dialog blocks page interaction, traps focus, and uses `role="alertdialog"`.

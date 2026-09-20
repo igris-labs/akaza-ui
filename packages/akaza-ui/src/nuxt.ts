@@ -40,6 +40,7 @@ const COMPONENTS: Array<{ name: string; export: string }> = [
   { name: "Rating", export: "Rating" },
   { name: "Separator", export: "Separator" },
   { name: "Select", export: "Select" },
+  { name: "Sidebar", export: "Sidebar" },
   { name: "Slider", export: "Slider" },
   { name: "Stepper", export: "Stepper" },
   { name: "Switch", export: "Switch" },
@@ -52,6 +53,7 @@ const COMPONENTS: Array<{ name: string; export: string }> = [
   { name: "Tooltip", export: "Tooltip" },
   { name: "Toast", export: "Toast" },
   { name: "Toolbar", export: "Toolbar" },
+  { name: "Tree", export: "Tree" },
   { name: "YearPicker", export: "YearPicker" },
   { name: "YearRangePicker", export: "YearRangePicker" },
 ];

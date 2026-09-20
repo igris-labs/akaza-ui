@@ -3,9 +3,6 @@ title: Stepper
 description: Multi-step progress and navigation with linear rules, roving focus, and associated panels.
 navigation:
   icon: i-lucide-list-ordered
-  badge:
-    label: NEW
-    color: success
 ---
 
 `Stepper` represents progress through a multi-step process. It renders an ordered list, connects each trigger to a panel, and supports linear or free navigation.

@@ -3,9 +3,6 @@ title: Pagination
 description: Accessible page navigation with ranges, ellipses, boundary controls, and optional links.
 navigation:
   icon: i-lucide-ellipsis
-  badge:
-    label: NEW
-    color: success
 ---
 
 `Pagination` calculates a compact page range from total items and page size, then renders semantic navigation with current-page metadata, optional ellipses, and boundary controls. Controls can be buttons or real links.

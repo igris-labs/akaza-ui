@@ -31,6 +31,7 @@ import DateRangePickerSection from "./sections/date-range-picker/DateRangePicker
 import SliderSection from "./sections/slider/SliderSection.vue";
 import AvatarSection from "./sections/avatar/AvatarSection.vue";
 import SeparatorSection from "./sections/separator/SeparatorSection.vue";
+import SidebarSection from "./sections/sidebar/SidebarSection.vue";
 import MeterSection from "./sections/meter/MeterSection.vue";
 import ProgressSection from "./sections/progress/ProgressSection.vue";
 import CollapsibleSection from "./sections/collapsible/CollapsibleSection.vue";
@@ -47,6 +48,7 @@ import NavigationMenuSection from "./sections/navigation-menu/NavigationMenuSect
 import TabsSection from "./sections/tabs/TabsSection.vue";
 import ToggleGroupSection from "./sections/toggle-group/ToggleGroupSection.vue";
 import ToolbarSection from "./sections/toolbar/ToolbarSection.vue";
+import TreeSection from "./sections/tree/TreeSection.vue";
 import ToastSection from "./sections/toast/ToastSection.vue";
 import TimeFieldSection from "./sections/time-field/TimeFieldSection.vue";
 import TimeRangeFieldSection from "./sections/time-range-field/TimeRangeFieldSection.vue";
@@ -109,10 +111,11 @@ const sections = [
       "year-range-picker",
     ],
   },
+  { id: "layout", label: "Layout", items: ["sidebar"] },
   {
     id: "navigation",
     label: "Navigation",
-    items: ["menubar", "navigation-menu", "pagination", "tabs", "toolbar"],
+    items: ["menubar", "navigation-menu", "pagination", "tabs", "toolbar", "tree"],
   },
   {
     id: "overlay",
@@ -171,6 +174,7 @@ const pageSections = [
   { id: "rating", component: RatingSection },
   { id: "select", component: SelectSection },
   { id: "separator", component: SeparatorSection },
+  { id: "sidebar", component: SidebarSection },
   { id: "slider", component: SliderSection },
   { id: "stepper", component: StepperSection },
   { id: "switch", component: SwitchSection },
@@ -182,6 +186,7 @@ const pageSections = [
   { id: "toggle", component: ToggleSection },
   { id: "toggle-group", component: ToggleGroupSection },
   { id: "toolbar", component: ToolbarSection },
+  { id: "tree", component: TreeSection },
   { id: "tooltip", component: TooltipSection },
   { id: "year-picker", component: YearPickerSection },
   { id: "year-range-picker", component: YearRangePickerSection },

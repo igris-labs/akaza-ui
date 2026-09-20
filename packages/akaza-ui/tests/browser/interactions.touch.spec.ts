@@ -96,6 +96,16 @@ test("tap selects collection items and disclosures", async ({ page }) => {
   await tap(page, listboxOption);
   await expect(listboxOption).toHaveAttribute("aria-selected", "true");
 
+  const tree = section(page, "tree").getByRole("tree", { name: "Project files" }).first();
+  const treeBranch = tree.getByRole("treeitem").filter({ hasText: "src" }).first();
+  await tap(page, treeBranch.locator(".akaza-tree-row"));
+  await expect(treeBranch).toHaveAttribute("aria-expanded", "false");
+  await tap(page, treeBranch.locator(".akaza-tree-row"));
+  await expect(treeBranch).toHaveAttribute("aria-expanded", "true");
+  const treeItem = tree.getByRole("treeitem").filter({ hasText: "package.json" });
+  await tap(page, treeItem.locator(".akaza-tree-row"));
+  await expect(treeItem).toHaveAttribute("aria-selected", "true");
+
   const collapsible = section(page, "collapsible").locator(".akaza-collapsible-trigger").first();
   await tap(page, collapsible);
   await expect(collapsible).toHaveAttribute("aria-expanded", "true");
@@ -148,6 +158,14 @@ test("tap operates navigation composites and long press opens context menu", asy
   await expect(products).toHaveAttribute("aria-expanded", "true");
   await tap(page, products);
   await expect(products).toHaveAttribute("aria-expanded", "false");
+
+  const verticalNavigation = section(page, "navigation-menu")
+    .locator('.akaza-navigation-menu[data-akaza-content-mode="inline"]');
+  const workspace = verticalNavigation.getByRole("button", { name: "Workspace", exact: true });
+  await tap(page, workspace);
+  await expect(workspace).toHaveAttribute("aria-expanded", "false");
+  await tap(page, workspace);
+  await expect(workspace).toHaveAttribute("aria-expanded", "true");
 
   const menubar = section(page, "menubar").getByRole("menubar", { name: "Editor menu" });
   const file = menubar.getByRole("menuitem", { name: "File", exact: true });
@@ -217,6 +235,17 @@ test("tap opens and closes overlay controls without hover", async ({ page }) => 
   await expect(preview).toBeHidden();
 });
 
+test("tap opens and closes the mobile sidebar", async ({ page }) => {
+  const sidebarSection = section(page, "sidebar");
+  const open = sidebarSection.getByRole("button", { name: "Open mobile sidebar" });
+
+  await tap(page, open);
+  const sidebar = page.getByRole("dialog", { name: "Mobile navigation" });
+  await expect(sidebar).toBeVisible();
+  await tap(page, sidebar.getByRole("button", { name: "Close navigation" }));
+  await expect(sidebar).toBeHidden();
+});
+
 test("touch pointer position updates slider value", async ({ page }) => {
   const sliderRoot = section(page, "slider").locator(".akaza-slider").first();
   const track = sliderRoot.locator(".akaza-slider-track");
@@ -244,8 +273,13 @@ test("touch drag updates slider and dismisses a swipe-enabled drawer", async ({ 
   await expect(drawer).toBeHidden();
 });
 
-test("touch drag resizes and reorders data table rows", async ({ browserName, page }) => {
+test("touch drag resizes sidebar and data table columns, then reorders rows", async ({ browserName, page }) => {
   if (browserName !== "chromium") return;
+
+  const sidebarResize = section(page, "sidebar").getByRole("separator", { name: "Resize sidebar" }).first();
+  const initialSidebarSize = Number(await sidebarResize.getAttribute("aria-valuenow"));
+  await dragTouch(page, sidebarResize, 32, 0);
+  expect(Number(await sidebarResize.getAttribute("aria-valuenow"))).toBeGreaterThan(initialSidebarSize);
 
   const table = section(page, "data-table").getByRole("table", { name: "Workspace members" });
   const resize = table.locator('th[data-akaza-column="name"] .akaza-data-table-resize-handle');

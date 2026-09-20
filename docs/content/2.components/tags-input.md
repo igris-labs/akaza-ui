@@ -3,9 +3,6 @@ title: Tags Input
 description: Tokenized text input with keyboard editing, paste handling, validation, and form submission.
 navigation:
   icon: i-lucide-tags
-  badge:
-    label: NEW
-    color: success
 ---
 
 `TagsInput` converts text into removable values. It supports keyboard navigation, batch paste, duplicate rules, object values, and native forms.

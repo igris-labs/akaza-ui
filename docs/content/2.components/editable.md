@@ -3,9 +3,6 @@ title: Editable
 description: Inline text editing with preview, draft, submit, cancel, and native form behavior.
 navigation:
   icon: i-lucide-square-pen
-  badge:
-    label: NEW
-    color: success
 ---
 
 `Editable` switches between a preview and a text input. It keeps draft and committed values separate and supports native forms.

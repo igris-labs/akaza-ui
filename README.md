@@ -118,6 +118,7 @@ No manual CSS import or component registration needed.
 | `Rating`           | Rating input with fractional values, hover preview, and form support       |
 | `Select`           | Listbox select with keyboard navigation, typeahead, and form submission    |
 | `Separator`        | Horizontal or vertical divider, decorative or semantic                     |
+| `Sidebar`          | Responsive sidebar with collapse, resizing, and mobile dialog behavior      |
 | `Slider`           | Slider with pointer drag, keyboard step, and ARIA value metadata           |
 | `Stepper`          | Multi-step progress and navigation with linear rules and panels            |
 | `Switch`           | Binary toggle with WAI-ARIA switch role                                    |
@@ -128,6 +129,7 @@ No manual CSS import or component registration needed.
 | `ToggleGroup`      | Single or multiple pressed values with roving focus                        |
 | `Toolbar`          | Command strip with roving focus across controls                            |
 | `Tooltip`          | Hover/focus tooltip with auto-positioning and delay                        |
+| `Tree`             | Hierarchical selection with lazy loading, propagation, and virtualization  |
 | `HoverPreviewCard` | Hover/focus rich preview for links and entities                            |
 
 ## Usage

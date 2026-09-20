@@ -12,11 +12,13 @@
 | Dialog                       | `role="dialog"`, `aria-modal`, focus trap, Teleport to body                |
 | Alert Dialog                 | Extends Dialog; `role="alertdialog"`, requires explicit confirm/cancel     |
 | Drawer                       | Side-anchored Dialog variant (top/right/bottom/left), focus trap           |
+| Sidebar                      | Persistent desktop navigation with collapse, resizing, and modal mobile behavior |
 | Menu                         | trigger + content slots, items-based API, roving focus                     |
 | Context Menu                 | Right-click triggered Menu, positions at pointer                           |
 | Menubar                      | Horizontal menu strip, `role="menubar"`, arrow key nav across menus        |
 | Navigation Menu              | Top-level nav with flyout submenus, semantic `nav` root                    |
 | Toolbar                      | `role="toolbar"`, roving focus across buttons and controls                 |
+| Tree                         | Hierarchical selection, lazy children, propagation, typeahead, and virtualization |
 | Tabs                         | `role="tablist"`, arrow key nav, animated indicator, items-based API       |
 | Checkbox                     | `aria-checked`, indeterminate state, `data-akaza-state`                    |
 | Radio Group                  | `role="radiogroup"`, roving tabindex, items-based API                      |
@@ -58,6 +60,15 @@
 | Time Field                   | Segmented time input, 12/24-hour cycles, granularity, steps, validation, and native forms |
 | Time Range Field             | Coordinated time endpoints, aggregate validation, constraints, and native form values |
 
+### Next — Application Shell
+
+| Deliverable            | Notes |
+| ---------------------- | ----- |
+| App Layout             | Flat, optional `header`, `left`, default content, `right`, and `footer` slots. Coordinate fixed/sticky/overlay regions, content offsets, safe viewport sizing, and semantic landmarks without requiring nested public layout sub-components or an encoded layout string. Compose `Sidebar`; do not duplicate its behavior. |
+| Layout Builder (docs)  | Quasar-inspired visual configurator for choosing header, footer, left/right sidebars, fixed/sticky/overlay behavior, desktop collapse mode, mobile dialog behavior, and widths. Live preview plus generated Vue markup and props. Documentation tool only; no builder runtime in the package. |
+
+App Layout should compose the shipped `Sidebar`. Persistence and route handling remain consumer-owned so application-shell primitives have no Vue Router or storage coupling.
+
 ### Planned — Color Primitives
 
 | Component           | Notes                                   |
@@ -74,7 +85,6 @@
 | --------------- | --------------------------------------------------------------- |
 | Aspect Ratio    | Fixed-ratio layout wrapper                                      |
 | Splitter        | Resizable panel group                                           |
-| Tree            | Hierarchical tree view with keyboard navigation                 |
 | Visually Hidden | Accessible hidden content utility                               |
 | Label           | Standalone label primitive for non-Field usage                  |
 | Scroll Area     | Custom scrollbar, keyboard scrollable, cross-browser consistent |

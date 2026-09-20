@@ -103,6 +103,43 @@ export const listboxUi = {
   optionLabel: 'font-medium text-foreground',
   optionDescription: 'text-xs text-muted-foreground',
 }
+export const treeUi = {
+  root: 'w-full max-w-lg',
+  viewport:
+    'rounded-md border border-border bg-background p-1 text-foreground data-[akaza-disabled]:opacity-50',
+  virtualWrapper: 'min-w-full',
+  item:
+    'outline-none focus-visible:[&_.akaza-tree-selection]:ring-1 focus-visible:[&_.akaza-tree-selection]:ring-inset focus-visible:[&_.akaza-tree-selection]:ring-ring/60 data-[akaza-disabled]:opacity-45',
+  row: 'min-h-9 cursor-pointer',
+  content: 'min-h-9 gap-1 rounded-sm px-2 max-sm:min-h-11',
+  selection:
+    'rounded-sm transition-colors duration-150 hover:bg-muted/60 data-[akaza-selected]:bg-accent',
+  toggle:
+    'grid size-7 shrink-0 place-items-center rounded-sm text-sm text-muted-foreground outline-none hover:bg-muted hover:text-foreground focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none max-sm:size-11',
+  leafSpacer: 'me-1',
+  toggleIcon: 'text-lg leading-none',
+  indicator: 'grid size-5 shrink-0 place-items-center text-primary',
+  icon: 'grid size-5 shrink-0 place-items-center text-muted-foreground',
+  text: 'min-w-0 flex-1',
+  label: 'truncate text-[13px] font-medium text-foreground',
+  trailing: 'ml-auto shrink-0 text-xs text-muted-foreground',
+  loading:
+    'py-2 pr-2 text-xs text-muted-foreground [padding-inline-start:calc(var(--akaza-tree-indent-offset)_+_2rem)]',
+  empty: 'px-3 py-8 text-center text-sm text-muted-foreground',
+}
+export const sidebarUi = {
+  root: 'h-full',
+  panel:
+    'border-r border-border bg-shell text-foreground data-[akaza-side=right]:border-r-0 data-[akaza-side=right]:border-l',
+  header: 'flex h-12 shrink-0 items-center gap-2 border-b border-border px-2',
+  body: 'p-2',
+  footer: 'shrink-0 border-t border-border p-2',
+  resizeHandle:
+    'outline-none after:absolute after:inset-y-0 after:left-1/2 after:w-px after:-translate-x-1/2 after:bg-transparent hover:after:bg-border focus-visible:after:bg-ring data-[akaza-resizing]:after:bg-primary',
+  mobileOverlay: 'bg-black/45',
+  mobileContent: 'bg-shell text-foreground shadow-xl ring-1 ring-border',
+  mobileWrapper: 'h-full',
+}
 export const pinInputUi = {
   root: 'gap-2 data-[akaza-disabled]:opacity-50',
   input:
@@ -258,7 +295,7 @@ export const dateFieldUi = {
   root: 'h-9 w-full max-w-sm rounded-md border border-input bg-background px-2 text-foreground transition-[border-color,box-shadow] duration-150 data-[akaza-focused]:ring-2 data-[akaza-focused]:ring-ring data-[akaza-invalid]:border-destructive data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50',
   segments: 'min-w-0 flex-1',
   segment:
-    'rounded-sm px-0.5 text-sm tabular-nums text-foreground caret-transparent outline-none placeholder:text-muted-foreground focus:bg-muted focus:text-foreground data-[akaza-invalid]:text-destructive',
+    'min-h-6 rounded-sm px-0.5 text-sm tabular-nums text-foreground caret-transparent outline-none placeholder:text-muted-foreground focus:bg-muted focus:text-foreground data-[akaza-invalid]:text-destructive',
   literal: 'text-sm text-muted-foreground',
   calendarTrigger:
     'ml-auto inline-flex h-7 shrink-0 items-center justify-center rounded px-2 text-xs font-medium text-muted-foreground transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50',
@@ -473,8 +510,8 @@ export const navigationMenuUi = {
   list: 'gap-1 rounded-lg border border-border bg-muted p-1',
   item: 'relative',
   trigger:
-    'rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-background hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-state=open]:bg-background data-[akaza-state=open]:text-foreground',
-  link: 'inline-flex rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground no-underline transition-colors hover:bg-background hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50',
+    'rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-background hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-active]:bg-background data-[akaza-active]:text-foreground data-[akaza-state=open]:bg-background data-[akaza-state=open]:text-foreground',
+  link: 'inline-flex rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground no-underline transition-colors hover:bg-background hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-state=active]:bg-background data-[akaza-state=active]:text-foreground data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50',
   indicator: 'bottom-0 h-0.5 rounded-full bg-primary transition-[left,width]',
   content:
     'w-full rounded-lg border border-border bg-popover p-2 text-popover-foreground shadow-lg',
@@ -482,7 +519,7 @@ export const navigationMenuUi = {
   contentList: 'grid gap-1 sm:grid-cols-2',
   contentItem: 'min-w-0',
   contentLink:
-    'grid gap-1 rounded-md p-3 text-sm no-underline transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-disabled]:pointer-events-none data-[akaza-disabled]:opacity-50',
+    'grid gap-1 rounded-md p-3 text-sm no-underline transition-colors hover:bg-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-state=active]:bg-accent data-[akaza-disabled]:pointer-events-none data-[akaza-disabled]:opacity-50',
   label: 'font-medium text-foreground',
   description: 'text-xs leading-relaxed text-muted-foreground',
 }

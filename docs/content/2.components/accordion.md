@@ -3,9 +3,6 @@ title: Accordion
 description: A set of collapsible sections with headings.
 navigation:
   icon: i-lucide-layout-panel-top
-  badge:
-    label: UPDATED
-    color: warning
 ---
 
 Accordion displays expandable sections with single or multiple selection and keyboard navigation.

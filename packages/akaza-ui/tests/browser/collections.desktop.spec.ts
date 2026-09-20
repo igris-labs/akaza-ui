@@ -73,6 +73,115 @@ test("virtualized listbox preserves manual pointer scrolling", async ({ page }) 
   expect(await listbox.evaluate((element) => element.scrollTop)).toBeLessThan(bottom - 100);
 });
 
+test("tree supports disclosure, roving focus, selection, and lazy children", async ({ page }) => {
+  const treeSection = section(page, "tree");
+  const tree = treeSection.getByRole("tree", { name: "Project files" }).first();
+  const source = tree.getByRole("treeitem").filter({ hasText: "src" }).first();
+  await expect(source).toHaveAttribute("aria-expanded", "true");
+
+  await source.locator(".akaza-tree-row").click();
+  await expect(source).toHaveAttribute("aria-expanded", "false");
+  await source.locator(".akaza-tree-row").click();
+  await expect(source).toHaveAttribute("aria-expanded", "true");
+  await source.getByRole("button", { name: "Collapse src" }).click();
+  await expect(source).toHaveAttribute("aria-expanded", "false");
+  await source.focus();
+  await source.press("ArrowRight");
+  await expect(source).toHaveAttribute("aria-expanded", "true");
+  await source.press("ArrowRight");
+  await expect(tree.getByRole("treeitem").filter({ hasText: "components" })).toBeFocused();
+
+  const packageItem = tree.getByRole("treeitem").filter({ hasText: "package.json" });
+  await packageItem.locator(".akaza-tree-row").click();
+  await expect(packageItem).toHaveAttribute("aria-selected", "true");
+  await expect(treeSection.getByText("activate: package, reason: pointer", { exact: true })).toBeVisible();
+
+  const permissions = treeSection.getByRole("tree", { name: "Workspace permissions" });
+  const editPermission = permissions.getByRole("treeitem").filter({ hasText: "Edit records" });
+  const deployPermission = permissions.getByRole("treeitem").filter({ hasText: "Deploy releases" });
+  await editPermission.locator(".akaza-tree-row").click();
+  await deployPermission.locator(".akaza-tree-row").click({ modifiers: ["Shift"] });
+  await expect(editPermission).toHaveAttribute("aria-selected", "true");
+  await expect(deployPermission).toHaveAttribute("aria-selected", "true");
+
+  const remote = treeSection.getByRole("tree", { name: "Remote services" });
+  await remote.getByRole("button", { name: "Expand Remote services" }).click();
+  await expect(remote.getByRole("status")).toContainText("Fetching children");
+  await expect(remote.getByRole("treeitem").filter({ hasText: "Users API" })).toBeVisible();
+
+  const virtual = treeSection.getByRole("tree", { name: "Virtualized results" });
+  await virtual.scrollIntoViewIfNeeded();
+  await virtual.getByRole("treeitem", { name: "Result 1", exact: true }).focus();
+  const pageScroll = await page.evaluate(() => window.scrollY);
+  await page.keyboard.press("End");
+  await expect(virtual.getByRole("treeitem", { name: "Result 1000" })).toBeFocused();
+  expect(await page.evaluate(() => window.scrollY)).toBeGreaterThanOrEqual(pageScroll - 1);
+});
+
+test("tree preserves nested indentation and scopes hover to its highlight mode", async ({ page }) => {
+  const treeSection = section(page, "tree");
+  const projectTree = treeSection.getByRole("tree", { name: "Project files" }).first();
+  const rootContent = projectTree.getByRole("treeitem").filter({ hasText: "src" }).first().locator(".akaza-tree-content");
+  const nestedBranch = projectTree.getByRole("treeitem").filter({ hasText: "components" });
+  const nestedContent = nestedBranch.locator(".akaza-tree-content");
+  const rootX = await rootContent.evaluate(element => element.getBoundingClientRect().x);
+  const nestedX = await nestedContent.evaluate(element => element.getBoundingClientRect().x);
+  expect(nestedX - rootX).toBe(16);
+  const branchLabelX = await nestedBranch.locator(".akaza-tree-label").evaluate(element => element.getBoundingClientRect().x);
+  const leaf = projectTree.getByRole("treeitem").filter({ hasText: "Button.vue" });
+  const leafLabelX = await leaf.locator(".akaza-tree-label").evaluate(element => element.getBoundingClientRect().x);
+  expect(leafLabelX - branchLabelX).toBe(16);
+  await expect(leaf.locator(".akaza-tree-toggle-spacer")).toHaveCSS("visibility", "hidden");
+
+  const modes = [
+    ["Full row selection", ".akaza-tree-row"],
+    ["Indented row selection", ".akaza-tree-content"],
+    ["Label only selection", ".akaza-tree-label"],
+  ] as const;
+  const highlightParts = modes.map(([, selector]) => selector);
+
+  for (const [name, highlightedPart] of modes) {
+    await page.mouse.move(0, 0);
+    const item = treeSection.getByRole("tree", { name }).getByRole("treeitem").filter({ hasText: "Button.vue" });
+    const initial = await Promise.all(highlightParts.map(selector => item.locator(selector)
+      .evaluate(element => getComputedStyle(element).backgroundColor)));
+    await item.locator(".akaza-tree-label").hover();
+    await expect.poll(() => item.locator(highlightedPart)
+      .evaluate(element => getComputedStyle(element).backgroundColor))
+      .not.toBe(initial[highlightParts.indexOf(highlightedPart)]);
+    const current = await Promise.all(highlightParts.map(selector => item.locator(selector)
+      .evaluate(element => getComputedStyle(element).backgroundColor)));
+    highlightParts.forEach((selector, index) => {
+      if (selector !== highlightedPart) expect(current[index]).toBe(initial[index]);
+    });
+  }
+});
+
+test("sidebar collapses and resizes with accessible controls", async ({ page }) => {
+  const sidebarSection = section(page, "sidebar");
+  const sidebar = sidebarSection.locator(".akaza-sidebar-root").first();
+  const resizeHandle = sidebar.getByRole("separator", { name: "Resize sidebar" });
+  const navigation = sidebar.getByRole("navigation", { name: "Workspace" });
+
+  await navigation.getByRole("button", { name: "Orders" }).click();
+  await expect(navigation.getByRole("button", { name: "Orders" })).toHaveAttribute("data-akaza-state", "active");
+  await expect(navigation.getByRole("button", { name: "Overview" })).toHaveAttribute("data-akaza-state", "inactive");
+
+  await expect(sidebar).toHaveAttribute("data-akaza-state", "expanded");
+  await sidebar.getByRole("button", { name: "Collapse sidebar" }).click();
+  await expect(sidebar).toHaveAttribute("data-akaza-state", "collapsed");
+  await sidebar.getByRole("button", { name: "Expand sidebar" }).click();
+  await expect(sidebar).toHaveAttribute("data-akaza-state", "expanded");
+
+  await resizeHandle.focus();
+  await resizeHandle.press("Shift+ArrowRight");
+  await expect(resizeHandle).toHaveAttribute("aria-valuenow", "304");
+  await resizeHandle.press("Home");
+  await expect(resizeHandle).toHaveAttribute("aria-valuenow", "176");
+  await resizeHandle.dblclick();
+  await expect(resizeHandle).toHaveAttribute("aria-valuenow", "224");
+});
+
 test("data table composes sorting, filtering, selection, pagination, and expansion", async ({ page }) => {
   const dataTableSection = section(page, "data-table");
   const table = dataTableSection.getByRole("table", { name: "Workspace members" });
@@ -184,6 +293,31 @@ test("pagination, navigation menu, menubar, and toolbar support both modalities"
   await navProducts.focus();
   await page.keyboard.press("ArrowRight");
   await expect(navDocs).toBeFocused();
+
+  const verticalNavigation = section(page, "navigation-menu")
+    .locator('.akaza-navigation-menu[data-akaza-content-mode="inline"]');
+  const workspace = verticalNavigation.getByRole("button", { name: "Workspace", exact: true });
+  await expect(workspace).toHaveAttribute("aria-expanded", "true");
+  await workspace.focus();
+  await page.keyboard.press("ArrowRight");
+  await expect(verticalNavigation.getByRole("button", { name: "Members" })).toBeFocused();
+  await page.keyboard.press("ArrowDown");
+  const billing = verticalNavigation.getByRole("button", { name: "Billing" });
+  await expect(billing).toBeFocused();
+  await page.keyboard.press("Enter");
+  await expect(billing).toHaveAttribute("data-akaza-state", "active");
+  await expect(verticalNavigation.getByRole("button", { name: "Overview" })).toHaveAttribute("data-akaza-state", "inactive");
+
+  const collapsedNavigation = section(page, "navigation-menu")
+    .locator(".akaza-navigation-menu[data-akaza-collapsed]");
+  const collapsedOverview = collapsedNavigation.getByRole("button", { name: "Overview" });
+  await collapsedOverview.focus();
+  await expect(page.getByRole("tooltip", { name: "Overview" })).toBeVisible();
+  await page.keyboard.press("Escape");
+  await expect(page.getByRole("tooltip", { name: "Overview" })).toHaveCount(0);
+  await collapsedNavigation.getByRole("button", { name: "Workspace" }).click();
+  await expect(page.locator('.akaza-navigation-menu-content[data-akaza-side="right"]')).toBeVisible();
+  await page.keyboard.press("Escape");
 
   const menubar = section(page, "menubar").getByRole("menubar", { name: "Editor menu" });
   const file = menubar.getByRole("menuitem", { name: "File", exact: true });

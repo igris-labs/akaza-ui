@@ -119,6 +119,7 @@ No manual CSS import or component registration needed.
 | `Select`           | Listbox select with keyboard navigation, typeahead, and form submission    |
 | `Separator`        | Horizontal or vertical divider, decorative or semantic                     |
 | `Sidebar`          | Responsive sidebar with collapse, resizing, and mobile dialog behavior      |
+| `AppLayout`        | Application shell with region slots, scrolling, sticky bars, and overlay sides |
 | `Slider`           | Slider with pointer drag, keyboard step, and ARIA value metadata           |
 | `Stepper`          | Multi-step progress and navigation with linear rules and panels            |
 | `Switch`           | Binary toggle with WAI-ARIA switch role                                    |

@@ -7,7 +7,7 @@ navigation:
 
 `OverlayProvider` renders components created with `useOverlay`. Mount one provider near the app root.
 
-The composable opens dialogs, drawers, and custom overlays outside the current template.
+The composable opens dialogs, drawers, and custom overlays outside the current template. See [useOverlay](/composables/use-overlay) for creation options, instance methods, result lifecycles, and SSR ownership.
 
 ## Anatomy
 

@@ -30,6 +30,7 @@ const props = withDefaults(defineProps<SidebarProps>(), {
   resizable: false,
   transition: true,
   breakpoint: "(max-width: 767px)",
+  mobile: undefined,
   closeOnBackdropClick: true,
   closeOnNavigate: true,
   swipeToClose: true,
@@ -140,7 +141,13 @@ function changeOpen(next: boolean, reason: string, event?: Event) {
     ...(event && { event }),
     cancel: () => { canceled = true; },
   });
-  if (!canceled) openState.value = next;
+  if (!canceled) {
+    // Safari does not focus buttons on pointer activation; keep a modal return target.
+    if (next && event?.currentTarget instanceof HTMLElement) {
+      event.currentTarget.focus({ preventScroll: true });
+    }
+    openState.value = next;
+  }
 }
 
 function changeCollapsed(next: boolean, reason: string, event?: Event) {

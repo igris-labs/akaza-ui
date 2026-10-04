@@ -171,6 +171,8 @@ Viewport padding is application styling. For example, pass `ui.viewport: 'w-[min
 
 ### useToast
 
+See [useToast](/composables/use-toast) for manager scope, `createToastManager`, `provideToastManager`, all options, and lifecycle details. The table below summarizes the methods used by this component's examples.
+
 | Method | Signature | Description |
 |--------|-----------|-------------|
 | `toasts` | `ComputedRef<ToastItem[]>` | Current open/closing queue. |

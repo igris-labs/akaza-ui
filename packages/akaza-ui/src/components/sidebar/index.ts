@@ -34,7 +34,7 @@ export interface SidebarProps {
   resizable?: boolean;
   transition?: boolean;
   /** Force mobile or desktop rendering. When omitted, `breakpoint` is observed. */
-  mobile?: boolean;
+  mobile?: boolean | undefined;
   breakpoint?: string;
   closeOnBackdropClick?: boolean;
   closeOnNavigate?: boolean;

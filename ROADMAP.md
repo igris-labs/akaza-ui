@@ -13,6 +13,7 @@
 | Alert Dialog                 | Extends Dialog; `role="alertdialog"`, requires explicit confirm/cancel     |
 | Drawer                       | Side-anchored Dialog variant (top/right/bottom/left), focus trap           |
 | Sidebar                      | Persistent desktop navigation with collapse, resizing, and modal mobile behavior |
+| App Layout                   | Flat shell with spans, content/page scrolling, sticky regions, overlay sides, safe areas, and Sidebar composition |
 | Menu                         | trigger + content slots, items-based API, roving focus                     |
 | Context Menu                 | Right-click triggered Menu, positions at pointer                           |
 | Menubar                      | Horizontal menu strip, `role="menubar"`, arrow key nav across menus        |
@@ -60,12 +61,12 @@
 | Time Field                   | Segmented time input, 12/24-hour cycles, granularity, steps, validation, and native forms |
 | Time Range Field             | Coordinated time endpoints, aggregate validation, constraints, and native form values |
 
-### Next — Application Shell
+### Delivered — Application Shell
 
-| Deliverable            | Notes |
-| ---------------------- | ----- |
-| App Layout             | Flat, optional `header`, `left`, default content, `right`, and `footer` slots. Coordinate fixed/sticky/overlay regions, content offsets, safe viewport sizing, and semantic landmarks without requiring nested public layout sub-components or an encoded layout string. Compose `Sidebar`; do not duplicate its behavior. |
-| Layout Builder (docs)  | Quasar-inspired visual configurator for choosing header, footer, left/right sidebars, fixed/sticky/overlay behavior, desktop collapse mode, mobile dialog behavior, and widths. Live preview plus generated Vue markup and props. Documentation tool only; no builder runtime in the package. |
+| Deliverable           | Notes                                                                                                                                                                                                                                                                                     |
+| --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| App Layout            | `AppLayout`: optional `header`, `left`, default content, `right`, and `footer` slots; readable `layout` object; independent content or page scrolling; sticky regions; overlay sides; measured bar offsets; viewport/contained sizing; safe areas; skip-to-main link. Composes `Sidebar`. |
+| Layout Builder (docs) | Interactive App Layout docs preview with region toggles, spans, scrolling, sidebar placement, collapse modes, mobile dialog simulation, widths, and complete generated Vue markup. No builder runtime in the package.                                                                     |
 
 App Layout should compose the shipped `Sidebar`. Persistence and route handling remain consumer-owned so application-shell primitives have no Vue Router or storage coupling.
 

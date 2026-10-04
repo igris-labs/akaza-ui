@@ -1,6 +1,6 @@
 import type { ComputedRef, MaybeRefOrGetter, Ref } from "vue";
-import { useMediaQuery } from "@vueuse/core";
-import { computed, isRef, ref, toValue } from "vue";
+import { useMediaQuery, useMounted } from "@vueuse/core";
+import { computed, getCurrentInstance, isRef, ref, toValue } from "vue";
 
 export type SidebarState = "closed" | "collapsed" | "expanded" | "open";
 
@@ -39,19 +39,19 @@ export interface UseSidebarReturn {
   collapsed: Ref<boolean>;
   isMobile: ComputedRef<boolean>;
   state: ComputedRef<SidebarState>;
-  openMobile: () => void;
-  closeMobile: () => void;
-  toggleMobile: () => void;
-  expand: () => void;
-  collapse: () => void;
-  toggleCollapsed: () => void;
+  openMobile: SidebarControllerAction;
+  closeMobile: SidebarControllerAction;
+  toggleMobile: SidebarControllerAction;
+  expand: SidebarControllerAction;
+  collapse: SidebarControllerAction;
+  toggleCollapsed: SidebarControllerAction;
   /** Toggles mobile visibility or desktop collapse based on the current responsive state. */
-  toggle: () => void;
+  toggle: SidebarControllerAction;
 }
 
 export interface UseSidebarTargetReturn extends UseSidebarReturn {
   size: ComputedRef<number>;
-  resetSize: () => void;
+  resetSize: SidebarControllerAction;
 }
 
 function useSidebarTarget(target: SidebarTarget): UseSidebarTargetReturn {
@@ -74,22 +74,25 @@ function useSidebarTarget(target: SidebarTarget): UseSidebarTargetReturn {
     size,
     isMobile,
     state,
-    openMobile: () => controller.value?.openMobile(),
-    closeMobile: () => controller.value?.closeMobile(),
-    toggleMobile: () => controller.value?.toggleMobile(),
-    expand: () => controller.value?.expand(),
-    collapse: () => controller.value?.collapse(),
-    toggleCollapsed: () => controller.value?.toggleCollapsed(),
-    toggle: () => controller.value?.toggle(),
-    resetSize: () => controller.value?.resetSize(),
+    openMobile: (reasonOrEvent, event) => controller.value?.openMobile(reasonOrEvent, event),
+    closeMobile: (reasonOrEvent, event) => controller.value?.closeMobile(reasonOrEvent, event),
+    toggleMobile: (reasonOrEvent, event) => controller.value?.toggleMobile(reasonOrEvent, event),
+    expand: (reasonOrEvent, event) => controller.value?.expand(reasonOrEvent, event),
+    collapse: (reasonOrEvent, event) => controller.value?.collapse(reasonOrEvent, event),
+    toggleCollapsed: (reasonOrEvent, event) => controller.value?.toggleCollapsed(reasonOrEvent, event),
+    toggle: (reasonOrEvent, event) => controller.value?.toggle(reasonOrEvent, event),
+    resetSize: (reasonOrEvent, event) => controller.value?.resetSize(reasonOrEvent, event),
   };
 }
 
 function useSidebarState(options: UseSidebarOptions): UseSidebarReturn {
   const open = options.open ?? ref(false);
   const collapsed = options.collapsed ?? ref(false);
+  const inComponent = !!getCurrentInstance();
+  const mounted = useMounted();
   const mediaMatches = useMediaQuery(options.breakpoint ?? "(max-width: 767px)");
-  const isMobile = computed(() => toValue(options.mobile) ?? mediaMatches.value);
+  // Match server markup until hydration finishes; explicit overrides remain deterministic.
+  const isMobile = computed(() => toValue(options.mobile) ?? ((!inComponent || mounted.value) && mediaMatches.value));
   const state = computed<SidebarState>(() => {
     if (isMobile.value) return open.value ? "open" : "closed";
     return collapsed.value ? "collapsed" : "expanded";

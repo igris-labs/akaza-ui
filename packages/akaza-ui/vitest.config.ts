@@ -7,6 +7,7 @@ export default defineConfig({
   resolve: {
     alias: {
       "@": resolve(__dirname, "src"),
+      "akaza-ui": resolve(__dirname, "src/index.ts"),
     },
   },
   test: {

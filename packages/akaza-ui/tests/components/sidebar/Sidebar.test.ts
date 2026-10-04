@@ -8,6 +8,27 @@ import { Sidebar } from "@/components/sidebar";
 import { useSidebar } from "@/composables/sidebar";
 
 describe("sidebar", () => {
+  it("uses the breakpoint when mobile is omitted and respects an explicit override", async () => {
+    vi.stubGlobal("matchMedia", vi.fn(() => ({
+      matches: true,
+      media: "(max-width: 767px)",
+      addEventListener: vi.fn(),
+      removeEventListener: vi.fn(),
+    })));
+    const wrapper = mount(Sidebar);
+    try {
+      await nextTick();
+      expect(wrapper.attributes()).toHaveProperty("data-akaza-mobile");
+      await wrapper.setProps({ mobile: false });
+      expect(wrapper.attributes("data-akaza-mobile")).toBeUndefined();
+      await wrapper.setProps({ mobile: undefined });
+      expect(wrapper.attributes()).toHaveProperty("data-akaza-mobile");
+    } finally {
+      wrapper.unmount();
+      vi.unstubAllGlobals();
+    }
+  });
+
   it("supports controlled desktop collapse and native-event-safe slot actions", async () => {
     const wrapper = mount(defineComponent({
       components: { Sidebar },
@@ -180,6 +201,9 @@ describe("sidebar", () => {
     await wrapper.get(".toggle-first").trigger("click");
     expect(sidebars[0]?.attributes("data-akaza-state")).toBe("collapsed");
     expect(sidebars[1]?.attributes("data-akaza-state")).toBe("expanded");
+    const details = wrapper.findAllComponents(Sidebar)[0]?.emitted("collapsed-change")?.[0]?.[1] as AkazaChangeEventDetails;
+    expect(details.reason).toBe("trigger");
+    expect(details.event).toBeInstanceOf(MouseEvent);
 
     await wrapper.get(".toggle-second").trigger("click");
     expect(sidebars[0]?.attributes("data-akaza-state")).toBe("collapsed");

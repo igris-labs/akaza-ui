@@ -3,6 +3,7 @@ import { addComponent, defineNuxtModule } from "@nuxt/kit";
 const COMPONENTS: Array<{ name: string; export: string }> = [
   { name: "Accordion", export: "Accordion" },
   { name: "AlertDialog", export: "AlertDialog" },
+  { name: "AppLayout", export: "AppLayout" },
   { name: "Avatar", export: "Avatar" },
   { name: "Button", export: "Button" },
   { name: "Calendar", export: "Calendar" },

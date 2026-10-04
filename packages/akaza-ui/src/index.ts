@@ -1,5 +1,6 @@
 export * from "./components/accordion";
 export * from "./components/alert-dialog";
+export * from "./components/app-layout";
 export * from "./components/avatar";
 export * from "./components/button";
 export * from "./components/calendar";

@@ -454,6 +454,8 @@ Every model emits its `update:*` event after an accepted change. The paired `*-c
 
 `#toolbar`, cell/header contexts, `#pagination`, `useDataTable()`, and the exposed `table` property use the same Vue-native controller.
 
+See [useDataTable](/composables/use-data-table) for standalone setup, reactive inputs, model refs, options, callbacks, and rendering responsibilities. Creating a new composable does not connect it to an existing DataTable instance.
+
 | Member | Description |
 |--------|-------------|
 | `columns`, `headerGroups`, `rows`, `selectedRows` | Read-only computed table structures. |

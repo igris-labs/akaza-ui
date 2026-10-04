@@ -101,11 +101,13 @@ const selectUi = {
   content:
     "z-20 rounded-none border border-neutral-300 bg-white p-1 shadow-lg dark:border-neutral-800 dark:bg-black",
   viewport: "max-h-64 overflow-auto",
+  groupLabel: "px-2 py-1.5 text-xs font-semibold text-neutral-500 dark:text-neutral-400",
+  separator: "my-1 h-px bg-neutral-200 dark:bg-neutral-800",
   option:
     "flex cursor-pointer items-start gap-2 rounded-none px-2 py-1.5 text-sm text-neutral-950 data-[akaza-highlighted]:bg-neutral-100 data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-40 dark:text-neutral-50 dark:data-[akaza-highlighted]:bg-neutral-800",
   indicator: "w-4 text-neutral-900 dark:text-neutral-100",
   optionText: "grid gap-0.5",
-  optionDescription: "text-xs text-neutral-600",
+  optionDescription: "text-xs leading-5 text-neutral-600 dark:text-neutral-400",
 };
 
 const numberUi = {

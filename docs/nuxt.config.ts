@@ -17,6 +17,12 @@ export default defineNuxtConfig({
 
   css: ["~/assets/css/main.css"],
 
+  mdc: {
+    highlight: {
+      themes: ["github-light", "github-dark"],
+    },
+  },
+
   content: {
     build: {
       markdown: {
@@ -68,9 +74,19 @@ export default defineNuxtConfig({
         contentFilters: [{ field: "path", operator: "LIKE", value: "/getting-started%" }],
       },
       {
+        title: "Composables",
+        contentCollection: "docs",
+        contentFilters: [{ field: "path", operator: "LIKE", value: "/composables%" }],
+      },
+      {
         title: "Components",
         contentCollection: "docs",
         contentFilters: [{ field: "path", operator: "LIKE", value: "/components%" }],
+      },
+      {
+        title: "Builders",
+        contentCollection: "docs",
+        contentFilters: [{ field: "path", operator: "LIKE", value: "/builders%" }],
       },
     ],
   },

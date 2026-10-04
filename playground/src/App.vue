@@ -32,6 +32,7 @@ import SliderSection from "./sections/slider/SliderSection.vue";
 import AvatarSection from "./sections/avatar/AvatarSection.vue";
 import SeparatorSection from "./sections/separator/SeparatorSection.vue";
 import SidebarSection from "./sections/sidebar/SidebarSection.vue";
+import AppLayoutSection from "./sections/app-layout/AppLayoutSection.vue";
 import MeterSection from "./sections/meter/MeterSection.vue";
 import ProgressSection from "./sections/progress/ProgressSection.vue";
 import CollapsibleSection from "./sections/collapsible/CollapsibleSection.vue";
@@ -111,7 +112,7 @@ const sections = [
       "year-range-picker",
     ],
   },
-  { id: "layout", label: "Layout", items: ["sidebar"] },
+  { id: "layout", label: "Layout", items: ["app-layout", "sidebar"] },
   {
     id: "navigation",
     label: "Navigation",
@@ -137,6 +138,7 @@ const sections = [
 const pageSections = [
   { id: "accordion", component: AccordionSection },
   { id: "alert-dialog", component: AlertDialogSection },
+  { id: "app-layout", component: AppLayoutSection },
   { id: "avatar", component: AvatarSection },
   { id: "button", component: ButtonSection },
   { id: "calendar", component: CalendarSection },

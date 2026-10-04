@@ -59,7 +59,9 @@ No manual CSS import or component registration needed.
 
 ## Components
 
-`Accordion` · `AlertDialog` · `Avatar` · `Button` · `Calendar` · `Checkbox` · `CheckboxGroup` · `Collapsible` · `Combobox` · `ContextMenu` · `DataTable` · `DateField` · `DateRangeField` · `DateRangePicker` · `Dialog` · `Drawer` · `Editable` · `Field` · `Fieldset` · `Form` · `HoverPreviewCard` · `Input` · `Listbox` · `Menu` · `Menubar` · `Meter` · `NavigationMenu` · `NumberField` · `OverlayProvider` · `Pagination` · `PinInput` · `Popover` · `Progress` · `RadioGroup` · `Rating` · `Select` · `Separator` · `Sidebar` · `Slider` · `Stepper` · `Switch` · `Tabs` · `TagsInput` · `Toast` · `Toggle` · `ToggleGroup` · `Toolbar` · `Tooltip` · `Tree`
+`AppLayout` provides a flat application shell with optional header, left, content, right, and footer slots. Compose `Sidebar` for responsive navigation. A readable `layout` object controls spans and overlay sides; `scroll` selects content or page scrolling. Try the layout builder in the component docs for complete examples.
+
+`Accordion` · `AlertDialog` · `AppLayout` · `Avatar` · `Button` · `Calendar` · `Checkbox` · `CheckboxGroup` · `Collapsible` · `Combobox` · `ContextMenu` · `DataTable` · `DateField` · `DateRangeField` · `DateRangePicker` · `Dialog` · `Drawer` · `Editable` · `Field` · `Fieldset` · `Form` · `HoverPreviewCard` · `Input` · `Listbox` · `Menu` · `Menubar` · `Meter` · `NavigationMenu` · `NumberField` · `OverlayProvider` · `Pagination` · `PinInput` · `Popover` · `Progress` · `RadioGroup` · `Rating` · `Select` · `Separator` · `Sidebar` · `Slider` · `Stepper` · `Switch` · `Tabs` · `TagsInput` · `Toast` · `Toggle` · `ToggleGroup` · `Toolbar` · `Tooltip` · `Tree`
 
 ## Usage
 

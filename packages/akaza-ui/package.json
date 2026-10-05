@@ -1,6 +1,6 @@
 {
   "name": "akaza-ui",
-  "version": "0.0.8-alpha",
+  "version": "0.0.9-alpha",
   "description": "Vue-native headless UI primitives — accessible, unstyled, composable.",
   "keywords": [
     "a11y",

@@ -99,6 +99,7 @@ const menu = ref<InstanceType<typeof ContextMenu>>();
 |------|------|---------|-------------|
 | `items` | `MenuItem[] \| MenuItem[][]` | — | Flat or grouped menu item array. |
 | `disabled` | `boolean` | `false` | Prevents opening. |
+| `dir` | `"ltr" \| "rtl"` | `"ltr"` | Logical keyboard direction and preferred submenu side. |
 | `closeOnSelect` | `boolean` | `true` | Closes after normal item selection. |
 | `radioValues` | `Record<string, string>` | — | State for radio item groups. |
 | `sideOffset` | `number` | `4` | Gap in px from the pointer. |
@@ -156,6 +157,8 @@ The generated root uses `display: contents`, so it does not change the trigger s
 
 Popup transitions follow their placement side and last `120ms`. Set `--akaza-context-menu-duration` to change the duration. Reduced-motion mode removes the visible transition.
 
+Context menus join the shared floating-layer stack. `--akaza-z-layer-base` sets its base (default `1200`); `--akaza-z-context-menu` overrides the context panel's z-index. Nested panels use [Menu's collision positioning and styling hooks](/components/menu#styling-hooks), including `data-akaza-side` for their resolved side.
+
 ### Keyboard
 
 | Key | Behavior |
@@ -163,8 +166,8 @@ Popup transitions follow their placement side and last `120ms`. Set `--akaza-con
 | `ArrowDown` / `ArrowUp` | Move highlighted item. |
 | `Home` / `End` | Move to first/last enabled item. |
 | `Enter` / `Space` | Select or toggle highlighted item. |
-| `ArrowRight` / `ArrowLeft` | Open/close submenu. |
-| `Escape` | Close the context menu. |
+| `ArrowRight` / `ArrowLeft` | Open/close submenu; reversed in RTL, even after a visual collision flip. |
+| `Escape` | Close the current submenu level, or the context menu when at its root. |
 | `Shift+F10` / Context Menu key | Open at focused target. |
 
 Touch and pen users can open the menu with a long press. Moving more than 10px before delay cancels it.

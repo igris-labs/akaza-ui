@@ -13,6 +13,9 @@ interface FloatingPositionOptions {
   sideOffset?: MaybeRefOrGetter<number>;
   collisionPadding?: MaybeRefOrGetter<number>;
   matchWidth?: MaybeRefOrGetter<boolean>;
+  strategy?: "absolute" | "fixed";
+  /** Limit oversized popups to the viewport before choosing their coordinates. */
+  constrainSize?: boolean;
   cssVarPrefix: string;
 }
 
@@ -47,7 +50,7 @@ function transformOrigin(side: FloatingSide, align: FloatingAlign) {
 }
 
 export function useFloatingPosition(options: FloatingPositionOptions): FloatingPositionReturn {
-  const style = ref<CSSProperties>({ position: "absolute", top: "-9999px", left: "-9999px" });
+  const style = ref<CSSProperties>({ position: options.strategy ?? "absolute", top: "-9999px", left: "-9999px" });
   const actualSide = ref<FloatingSide>(toValue(options.side));
   const actualAlign = ref<FloatingAlign>(toValue(options.align));
   let listening = false;
@@ -63,10 +66,15 @@ export function useFloatingPosition(options: FloatingPositionOptions): FloatingP
     const referenceRect = reference.getBoundingClientRect();
     const measured = floating.getBoundingClientRect();
     // Collision geometry must not change with the popup's enter/leave scale.
-    const floatingRect = { width: floating.offsetWidth || measured.width, height: floating.offsetHeight || measured.height };
     const width = window.innerWidth;
     const height = window.innerHeight;
     const padding = toValue(options.collisionPadding ?? 8);
+    const availableWidth = Math.max(0, width - padding * 2);
+    const availableHeight = Math.max(0, height - padding * 2);
+    const floatingRect = {
+      width: Math.min(floating.offsetWidth || measured.width, options.constrainSize ? availableWidth : Infinity),
+      height: Math.min(floating.offsetHeight || measured.height, options.constrainSize ? availableHeight : Infinity),
+    };
     const offset = toValue(options.sideOffset ?? 0);
     const preferred = toValue(options.side);
     const alternate = opposite(preferred);
@@ -98,14 +106,15 @@ export function useFloatingPosition(options: FloatingPositionOptions): FloatingP
 
     const offsetParent = floating.offsetParent as HTMLElement | null;
     const parentRect = offsetParent?.getBoundingClientRect();
-    const localLeft = parentRect ? left - parentRect.left + offsetParent!.scrollLeft - offsetParent!.clientLeft : left + window.scrollX;
-    const localTop = parentRect ? top - parentRect.top + offsetParent!.scrollTop - offsetParent!.clientTop : top + window.scrollY;
+    const strategy = options.strategy ?? "absolute";
+    const localLeft = parentRect ? left - parentRect.left + offsetParent!.scrollLeft - offsetParent!.clientLeft : left + (strategy === "fixed" ? 0 : window.scrollX);
+    const localTop = parentRect ? top - parentRect.top + offsetParent!.scrollTop - offsetParent!.clientTop : top + (strategy === "fixed" ? 0 : window.scrollY);
     const prefix = options.cssVarPrefix;
 
     actualSide.value = side;
     actualAlign.value = align;
     style.value = {
-      position: "absolute",
+      position: strategy,
       top: `${localTop}px`,
       left: `${localLeft}px`,
       right: "auto",
@@ -113,10 +122,11 @@ export function useFloatingPosition(options: FloatingPositionOptions): FloatingP
       transform: "none",
       transformOrigin: transformOrigin(side, align),
       ...(toValue(options.matchWidth ?? false) && { width: `${referenceRect.width}px` }),
+      ...(options.constrainSize && { boxSizing: "border-box", maxWidth: `${availableWidth}px`, maxHeight: `${availableHeight}px`, overflow: "auto" }),
       [`--${prefix}-anchor-width`]: `${referenceRect.width}px`,
       [`--${prefix}-anchor-height`]: `${referenceRect.height}px`,
-      [`--${prefix}-available-width`]: `${Math.max(0, width - padding * 2)}px`,
-      [`--${prefix}-available-height`]: `${Math.max(0, height - padding * 2)}px`,
+      [`--${prefix}-available-width`]: `${availableWidth}px`,
+      [`--${prefix}-available-height`]: `${availableHeight}px`,
       [`--${prefix}-transform-origin`]: transformOrigin(side, align),
     } as CSSProperties;
   }

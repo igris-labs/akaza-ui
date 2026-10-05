@@ -12,6 +12,7 @@ import MenuPanel from "../menu/MenuPanel.vue";
 const {
   items,
   disabled = false,
+  dir = "ltr",
   closeOnSelect = true,
   radioValues,
   sideOffset = 4,
@@ -41,7 +42,8 @@ const actualAlign = ref<"start" | "end">("start");
 let previousFocus: HTMLElement | null = null;
 let longPressTimer: number | undefined;
 let pressStart: { x: number; y: number } | null = null;
-const { register, unregister } = useDismissableLayer((event?: KeyboardEvent) => close("escape", event));
+const { layerOrder, register, unregister } = useDismissableLayer((event?: KeyboardEvent) => close("escape", event));
+const layeredPositionStyle = computed(() => ({ ...positionStyle.value, "--akaza-layer-order": String(layerOrder.value) }));
 
 function normalizeItems(raw?: MenuItem[] | MenuItem[][]): MenuItem[][] {
   if (!raw?.length) return [];
@@ -207,7 +209,7 @@ function onRadioSelect(item: MenuItem, event: Event) {
 const slots = useSlots();
 
 provide(MENU_CONTEXT_KEY, {
-  dir: "ltr",
+  get dir() { return dir; },
   get ui() { return ui; },
   get radioValues() { return radioValues; },
   get closeOnSelect() { return closeOnSelect; },
@@ -252,6 +254,7 @@ defineExpose({ openAt, close });
 <template>
   <div
     :class="ui?.root"
+    :dir="dir"
     :data-akaza-state="model ? 'open' : 'closed'"
     :data-akaza-disabled="disabled || undefined"
     class="akaza-context-menu-root"
@@ -275,7 +278,7 @@ defineExpose({ openAt, close });
           :id="menuId"
           ref="contentRef"
           :class="ui?.content"
-          :style="positionStyle"
+          :style="layeredPositionStyle"
           data-akaza-state="open"
           :data-akaza-side="actualSide"
           :data-akaza-align="actualAlign"
@@ -296,7 +299,7 @@ defineExpose({ openAt, close });
   }
 
   .akaza-context-menu-content {
-    z-index: var(--akaza-z-context-menu, 1000);
+    z-index: var(--akaza-z-context-menu, calc(var(--akaza-z-layer-base, 1200) + var(--akaza-layer-order, 0) + 1));
   }
 
   .akaza-context-menu-enter-active,

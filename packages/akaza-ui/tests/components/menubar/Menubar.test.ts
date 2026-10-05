@@ -1,12 +1,31 @@
-import { mount } from "@vue/test-utils";
+import { flushPromises, mount } from "@vue/test-utils";
 import { describe, expect, it, vi } from "vitest";
 import { Menubar } from "@/components/menubar";
 
 describe("menubar", () => {
+  it("portals popup panels by default and supports inline rendering", async () => {
+    const wrapper = mount(Menubar, {
+      attachTo: document.body,
+      props: { items: [{ value: "file", label: "File", children: [{ label: "Open" }] }] },
+    });
+    try {
+      await wrapper.get(".akaza-menubar-trigger").trigger("click");
+      await flushPromises();
+      const popup = document.querySelector(".akaza-menubar-content");
+      expect(popup).not.toBeNull();
+      expect(wrapper.element.contains(popup)).toBe(false);
+      await wrapper.setProps({ teleport: false });
+      expect(wrapper.find(".akaza-menubar-content").exists()).toBe(true);
+    } finally {
+      wrapper.unmount();
+    }
+  });
+
   it("activates a top-level action with Enter", async () => {
     const onSelect = vi.fn();
     const wrapper = mount(Menubar, {
       props: {
+        teleport: false,
         items: [
           { value: "save", label: "Save", onSelect },
           { value: "edit", label: "Edit", children: [{ label: "Undo" }] },
@@ -24,6 +43,7 @@ describe("menubar", () => {
     const wrapper = mount(Menubar, {
       attachTo: document.body,
       props: {
+        teleport: false,
         items: [
           { value: "file", label: "File", children: [{ label: "Open" }] },
           { value: "disabled", label: "Disabled", disabled: true },
@@ -45,6 +65,7 @@ describe("menubar", () => {
     const wrapper = mount(Menubar, {
       attachTo: document.body,
       props: {
+        teleport: false,
         items: [
           { value: "file", label: "File", children: [{ label: "Open" }] },
           { value: "save", label: "Save" },

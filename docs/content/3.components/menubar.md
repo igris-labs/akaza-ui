@@ -97,6 +97,7 @@ Plain items without `children` are commands. Bind default `v-model` to control t
 | `items` | `MenubarItem[]` | required | Top-level menu items. Items with `children` open panels. |
 | `loop` | `boolean` | `true` | Left/right focus wraps. |
 | `dir` | `"ltr" \| "rtl"` | `"ltr"` | Reverses horizontal arrow behavior for RTL. |
+| `teleport` | `string \| false` | `"body"` | Popup target. Set `false` for inline panels; ancestor overflow and stacking then apply. |
 | `disabled` | `boolean` | `false` | Disables the menubar. |
 | `closeOnSelect` | `boolean` | `true` | Closes after normal item selection. |
 | `radioValues` | `Record<string, string>` | — | State for radio groups inside panels. |
@@ -145,6 +146,10 @@ Plain items without `children` are commands. Bind default `v-model` to control t
 Popup transitions follow their placement side and last `120ms`. Set `--akaza-menubar-duration` to change the duration. Reduced-motion mode removes the visible transition.
 
 ### Keyboard
+
+Submenus use [Menu's viewport collision positioning](/components/menu#submenus). Horizontal arrows follow `dir` even when a submenu flips visually. Opening a submenu does not switch the top-level menu.
+
+Menubar panels join the shared floating-layer stack and teleport to `body` by default so ancestor clipping and stacking contexts do not trap them. Set `--akaza-z-layer-base` (default `1200`) globally to change its base or set `--akaza-z-menubar` on the popup to override its z-index. Use `ui.content` for popup styles; descendant selectors from the menubar root do not cross Teleport. Nested panels share Menu's styling hooks.
 
 | Key | Behavior |
 |-----|----------|

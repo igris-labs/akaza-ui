@@ -114,6 +114,8 @@ const items = [
 
 Use `children` for nested actions that should open as a submenu.
 
+Submenus prefer the right side in LTR and the left side in RTL (`dir="rtl"`). They flip when that side has less room, stay 8px from viewport edges, and scroll if their content is taller than the viewport. Each nested level positions independently. Arrow keys follow `dir`, not the side chosen by collision detection.
+
 ```vue
 <script setup lang="ts">
 const items = [
@@ -143,6 +145,7 @@ Changes to `ui`, radio values, and close-on-select settings remain reactive in n
 | `radioValues` | `Record<string, string>` | — | `v-model:radio-values` — state for radio groups. |
 | `teleport` | `string \| false` | `false` | Teleport target for the menu. |
 | `as` | `string \| Component` | `"div"` | Root element tag. |
+| `dir` | `"ltr" \| "rtl"` | `"ltr"` | Logical keyboard direction and preferred submenu side. |
 | `ui` | `MenuUi` | — | CSS class overrides. |
 
 ### MenuItem
@@ -217,7 +220,9 @@ Changes to `ui`, radio values, and close-on-select settings remain reactive in n
 | `label` | `akaza-menu-label` | — |
 | `submenu` | `akaza-menu-submenu` | `data-akaza-state` |
 | `submenuTrigger` | `akaza-menu-submenu-trigger` | `data-akaza-state`, `data-akaza-disabled`, `data-akaza-highlighted` |
-| `submenuContent` | `akaza-menu-submenu-content` | `data-akaza-submenu` |
+| `submenuContent` | `akaza-menu-submenu-content` | `data-akaza-submenu`, `data-akaza-side`, `data-akaza-align` |
+
+Submenus expose `--akaza-menu-submenu-anchor-width`, `--akaza-menu-submenu-anchor-height`, `--akaza-menu-submenu-available-width`, `--akaza-menu-submenu-available-height`, and `--akaza-menu-submenu-transform-origin`. Use `data-akaza-side` for the resolved placement. Menus and their submenus use the shared floating-layer base, `--akaza-z-layer-base` (default `1200`); `--akaza-z-menu` overrides their z-index.
 
 ### Keyboard
 

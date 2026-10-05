@@ -12,6 +12,7 @@ import MenuPanel from "./MenuPanel.vue";
 
 const {
   as = "div",
+  dir = "ltr",
   items,
   side = "bottom",
   align = "start",
@@ -268,7 +269,7 @@ function onRadioSelect(item: MenuItem, event: Event) {
 const slots = useSlots();
 
 provide(MENU_CONTEXT_KEY, {
-  dir: "ltr",
+  get dir() { return dir; },
   get ui() { return ui; },
   get radioValues() { return radioValues; },
   get closeOnSelect() { return closeOnSelect; },
@@ -296,6 +297,7 @@ defineExpose({ open, close, toggle });
 <template>
   <div
     ref="rootRef"
+    :dir="dir"
     :class="ui?.root"
     :data-akaza-state="isOpen ? 'open' : 'closed'"
     class="akaza-menu-root"
@@ -370,15 +372,8 @@ defineExpose({ open, close, toggle });
   }
 
   .akaza-menu-submenu-content {
-    position: absolute;
-    left: 100%;
-    top: 0;
+    position: fixed;
     z-index: var(--akaza-z-menu, calc(var(--akaza-z-layer-base, 1200) + var(--akaza-layer-order, 0) + 2));
-  }
-
-  .akaza-menu-submenu-content[data-akaza-side="left"] {
-    right: 100%;
-    left: auto;
   }
 
   /* Transition */

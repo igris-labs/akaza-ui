@@ -43,6 +43,8 @@ export interface MenuUi {
 }
 
 export interface MenuProps {
+  /** Logical keyboard direction and preferred submenu side. @default 'ltr' */
+  dir?: "ltr" | "rtl";
   /** Root element tag */
   as?: string | Component;
   /** Menu items — flat array or grouped (array of arrays with auto-separators) */

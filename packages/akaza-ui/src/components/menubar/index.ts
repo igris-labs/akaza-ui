@@ -21,5 +21,7 @@ export interface MenubarProps {
   radioValues?: Record<string, string>;
   ariaLabel?: string;
   ariaLabelledby?: string;
+  /** Teleport popup panels out of ancestor stacking/overflow contexts. @default 'body' */
+  teleport?: string | false;
   ui?: MenubarUi;
 }

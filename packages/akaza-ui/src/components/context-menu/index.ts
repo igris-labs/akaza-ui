@@ -12,6 +12,8 @@ export interface ContextMenuProps {
   items?: MenuItem[] | MenuItem[][];
   /** Disable context-menu opening. */
   disabled?: boolean;
+  /** Logical keyboard direction and preferred submenu side. @default 'ltr' */
+  dir?: "ltr" | "rtl";
   /** Close the menu when an action item is selected. @default true */
   closeOnSelect?: boolean;
   /** Radio group state - keyed by radioGroup name. */

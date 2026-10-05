@@ -7,6 +7,7 @@ import { onClickOutside } from "@vueuse/core";
 import { computed, nextTick, onUnmounted, provide, ref, useId, useSlots, useTemplateRef, watch } from "vue";
 import { useDismissableLayer } from "../../utils/dismissableLayer";
 import { useFloatingPosition } from "../../utils/floatingPosition";
+import { useFocusBranch } from "../../utils/focusScope";
 import { MENU_CONTEXT_KEY } from "../menu/context";
 import MenuPanel from "../menu/MenuPanel.vue";
 
@@ -19,6 +20,7 @@ const {
   radioValues,
   ariaLabel,
   ariaLabelledby,
+  teleport = "body",
   ui,
 } = defineProps<MenubarProps>();
 
@@ -32,6 +34,7 @@ const emit = defineEmits<{
 
 const rootRef = useTemplateRef<HTMLElement>("rootRef");
 const contentRef = useTemplateRef<HTMLElement>("contentRef");
+useFocusBranch(contentRef);
 const triggerRefs = ref<Array<HTMLElement | null>>([]);
 const panelRef = useTemplateRef<InstanceType<typeof MenuPanel>>("panelRef");
 const openValue = defineModel<string | null>({ default: null });
@@ -40,7 +43,7 @@ const id = useId();
 const slots = useSlots() as Record<string, Slot | undefined>;
 let typeahead = "";
 let typeaheadTimer: number | undefined;
-const { register, unregister } = useDismissableLayer((event?: KeyboardEvent) => {
+const { layerOrder, register, unregister } = useDismissableLayer((event?: KeyboardEvent) => {
   const index = items.findIndex((item) => getItemValue(item) === openValue.value);
   close("escape", event);
   if (index >= 0) focusTrigger(index);
@@ -61,6 +64,7 @@ const { actualAlign, actualSide, style: contentStyle } = useFloatingPosition({
   sideOffset: 4,
   cssVarPrefix: "akaza-menubar",
 });
+const layeredContentStyle = computed(() => ({ ...contentStyle.value, "--akaza-layer-order": String(layerOrder.value) }));
 
 function normalizeItems(raw?: MenuItem[] | MenuItem[][]): MenuItem[][] {
   if (!raw?.length) return [];
@@ -365,26 +369,28 @@ onUnmounted(() => {
       </template>
     </button>
 
-    <Transition name="akaza-menubar">
-      <div
-        v-if="openValue && activeItem?.children"
-        :id="getContentId(items.indexOf(activeItem))"
-        ref="contentRef"
-        :style="contentStyle"
-        :class="ui?.content"
-        data-akaza-state="open"
-        :data-akaza-side="actualSide"
-        :data-akaza-align="actualAlign"
-        class="akaza-menubar-content akaza-menu-content"
-        @keydown="onContentKeydown"
-      >
-        <MenuPanel
-          ref="panelRef"
-          :items="activeGroups"
-          :aria-labelledby="getTriggerId(items.indexOf(activeItem))"
-        />
-      </div>
-    </Transition>
+    <Teleport :to="typeof teleport === 'string' ? teleport : 'body'" :disabled="teleport === false">
+      <Transition name="akaza-menubar">
+        <div
+          v-if="openValue && activeItem?.children"
+          :id="getContentId(items.indexOf(activeItem))"
+          ref="contentRef"
+          :style="layeredContentStyle"
+          :class="ui?.content"
+          data-akaza-state="open"
+          :data-akaza-side="actualSide"
+          :data-akaza-align="actualAlign"
+          class="akaza-menubar-content akaza-menu-content"
+          @keydown="onContentKeydown"
+        >
+          <MenuPanel
+            ref="panelRef"
+            :items="activeGroups"
+            :aria-labelledby="getTriggerId(items.indexOf(activeItem))"
+          />
+        </div>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
@@ -393,12 +399,11 @@ onUnmounted(() => {
   .akaza-menubar {
     position: relative;
     display: inline-flex;
-    isolation: isolate;
   }
 
   .akaza-menubar-content {
     position: absolute;
-    z-index: var(--akaza-z-menubar, 1000);
+    z-index: var(--akaza-z-menubar, calc(var(--akaza-z-layer-base, 1200) + var(--akaza-layer-order, 0) + 1));
   }
 
   .akaza-menubar-enter-active,

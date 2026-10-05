@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { MenuItem } from ".";
-import { inject, nextTick, onUnmounted, ref, useTemplateRef } from "vue";
+import { computed, inject, nextTick, onUnmounted, ref, useTemplateRef } from "vue";
+import { useFloatingPosition } from "../../utils/floatingPosition";
 import SlotContent from "../../utils/SlotContent";
 import { MENU_CONTEXT_KEY } from "./context";
 
@@ -20,6 +21,24 @@ function findSubmenu(value: string) {
     .find(element => element.dataset.akazaSubmenu === value)?.querySelector<HTMLElement>('[role="menu"]');
 }
 const activeSubmenu = ref<string | null>(null);
+const submenuContent = ref<HTMLElement | null>(null);
+const submenuTrigger = computed(() => Array.from(panelRef.value?.querySelectorAll<HTMLElement>(".akaza-menu-submenu-trigger") ?? [])
+  .find(element => element.dataset.akazaValue === activeSubmenu.value && element.closest('[role="menu"]') === panelRef.value) ?? null);
+const submenuPosition = useFloatingPosition({
+  reference: submenuTrigger,
+  floating: submenuContent,
+  active: () => activeSubmenu.value !== null,
+  side: () => ctx.dir === "rtl" ? "left" : "right",
+  align: "start",
+  strategy: "fixed",
+  constrainSize: true,
+  cssVarPrefix: "akaza-menu-submenu",
+});
+
+function setSubmenuContent(element: HTMLElement | null, value: string) {
+  if (element && activeSubmenu.value === value) submenuContent.value = element;
+  else if (!element && submenuContent.value?.dataset.akazaSubmenu === value) submenuContent.value = null;
+}
 
 // ── Focus / highlight ────────────────────────────────────────────────────────
 
@@ -77,6 +96,7 @@ function onPanelKeydown(e: KeyboardEvent) {
     e.preventDefault();
     const target = document.activeElement as HTMLElement;
     if (target?.getAttribute("aria-haspopup") === "menu") {
+      e.stopPropagation();
       const value = target.getAttribute("data-akaza-value");
       if (value) {
         activeSubmenu.value = value;
@@ -326,11 +346,14 @@ defineExpose({ panelRef, getItems, highlightItem });
               <template v-else>{{ item.label }}</template>
             </div>
 
-            <Transition name="akaza-menu">
+            <Transition name="akaza-menu" @after-enter="submenuPosition.update">
               <div
                 v-if="activeSubmenu === ctx.getItemValue(item)"
+                :ref="(el) => setSubmenuContent(el as HTMLElement | null, ctx.getItemValue(item))"
                 :data-akaza-submenu="ctx.getItemValue(item)"
-                :data-akaza-side="ctx.dir === 'rtl' ? 'left' : 'right'"
+                :data-akaza-side="submenuPosition.actualSide.value"
+                :data-akaza-align="submenuPosition.actualAlign.value"
+                :style="submenuPosition.style.value"
                 :class="ctx.ui?.submenuContent"
                 class="akaza-menu-content akaza-menu-submenu-content"
                 @keydown.stop="onSubmenuKeydown($event, item)"

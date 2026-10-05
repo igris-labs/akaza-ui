@@ -12,6 +12,8 @@ const props = withDefaults(defineProps<AppLayoutProps>(), {
   stickyHeader: false,
   stickyFooter: false,
   stickySides: false,
+  stickyLeft: undefined,
+  stickyRight: undefined,
   safeArea: true,
   skipLink: true,
   skipLabel: "Skip to content",
@@ -31,15 +33,25 @@ const layout = computed<Required<AppLayoutConfig>>(() => ({
   right: props.layout?.right ?? "inline",
 }));
 const slotProps = computed(() => ({ mainId: mainId.value, layout: layout.value, scroll: props.scroll }));
+function coversSide(span: AppLayoutConfig["header"], side: "left" | "right") {
+  return span === "full" || span === side;
+}
 // Slot availability can change without changing props; resolve grid areas on each render.
 function getRootStyle(): CSSProperties {
   const left = slots.left && layout.value.left === "inline" ? "left" : ".";
   const right = slots.right && layout.value.right === "inline" ? "right" : ".";
   const header = slots.header ? "header" : ".";
   const footer = slots.footer ? "footer" : ".";
-  const top = layout.value.header === "full" ? `${header} ${header} ${header}` : `${left} ${header} ${right}`;
-  const bottom = layout.value.footer === "full" ? `${footer} ${footer} ${footer}` : `${left} ${footer} ${right}`;
+  const top = `${coversSide(layout.value.header, "left") ? header : left} ${header} ${coversSide(layout.value.header, "right") ? header : right}`;
+  const bottom = `${coversSide(layout.value.footer, "left") ? footer : left} ${footer} ${coversSide(layout.value.footer, "right") ? footer : right}`;
+  const sideOffsets = Object.fromEntries((["left", "right"] as const).flatMap(side => [
+    [`--akaza-app-layout-${side}-top`, coversSide(layout.value.header, side) ? `${headerHeight.value}px` : "0px"],
+    [`--akaza-app-layout-${side}-bottom`, coversSide(layout.value.footer, side) ? `${footerHeight.value}px` : "0px"],
+    [`--akaza-app-layout-${side}-sticky-top`, props.stickyHeader && coversSide(layout.value.header, side) ? `${headerHeight.value}px` : "0px"],
+    [`--akaza-app-layout-${side}-sticky-bottom`, props.stickyFooter && coversSide(layout.value.footer, side) ? `${footerHeight.value}px` : "0px"],
+  ]));
   return {
+    ...sideOffsets,
     gridTemplateAreas: `"${top}" "${left} main ${right}" "${bottom}"`,
     "--akaza-app-layout-header-height": `${headerHeight.value}px`,
     "--akaza-app-layout-footer-height": `${footerHeight.value}px`,
@@ -92,7 +104,7 @@ defineExpose({ main: mainRef, focusMain });
       class="akaza-app-layout-left"
       data-akaza-side="left"
       :data-akaza-mode="layout.left"
-      :data-akaza-sticky="scroll === 'page' && stickySides && layout.left === 'inline' || undefined"
+      :data-akaza-sticky="scroll === 'page' && (stickyLeft ?? stickySides) && layout.left === 'inline' || undefined"
     >
       <slot name="left" v-bind="slotProps" />
     </div>
@@ -114,7 +126,7 @@ defineExpose({ main: mainRef, focusMain });
       class="akaza-app-layout-right"
       data-akaza-side="right"
       :data-akaza-mode="layout.right"
-      :data-akaza-sticky="scroll === 'page' && stickySides && layout.right === 'inline' || undefined"
+      :data-akaza-sticky="scroll === 'page' && (stickyRight ?? stickySides) && layout.right === 'inline' || undefined"
     >
       <slot name="right" v-bind="slotProps" />
     </div>
@@ -186,6 +198,18 @@ defineExpose({ main: mainRef, focusMain });
     min-width: 0;
     min-height: 0;
   }
+  .akaza-app-layout-left {
+    --akaza-app-layout-side-top: var(--akaza-app-layout-left-top);
+    --akaza-app-layout-side-bottom: var(--akaza-app-layout-left-bottom);
+    --akaza-app-layout-sticky-top: var(--akaza-app-layout-left-sticky-top);
+    --akaza-app-layout-sticky-bottom: var(--akaza-app-layout-left-sticky-bottom);
+  }
+  .akaza-app-layout-right {
+    --akaza-app-layout-side-top: var(--akaza-app-layout-right-top);
+    --akaza-app-layout-side-bottom: var(--akaza-app-layout-right-bottom);
+    --akaza-app-layout-sticky-top: var(--akaza-app-layout-right-sticky-top);
+    --akaza-app-layout-sticky-bottom: var(--akaza-app-layout-right-sticky-bottom);
+  }
   .akaza-app-layout-left { grid-area: left; }
   .akaza-app-layout-right { grid-area: right; }
   .akaza-app-layout-left[data-akaza-mode="overlay"],
@@ -211,7 +235,7 @@ defineExpose({ main: mainRef, focusMain });
     position: sticky;
     align-self: start;
     top: var(--akaza-app-layout-sticky-top);
-    height: calc(100dvh - var(--akaza-app-layout-sticky-top) - var(--akaza-app-layout-sticky-bottom));
+    height: calc(var(--akaza-app-layout-viewport-height, 100dvh) - var(--akaza-app-layout-sticky-top) - var(--akaza-app-layout-sticky-bottom));
   }
   .akaza-app-layout-skip-link:not(:focus) {
     position: absolute;

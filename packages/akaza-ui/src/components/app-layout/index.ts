@@ -2,7 +2,8 @@ import type { Component, VNodeChild } from "vue";
 
 export { default as AppLayout } from "./AppLayout.vue";
 
-export type AppLayoutSpan = "full" | "content";
+/** Columns covered by a bar: all, main only, or main plus one side slot. */
+export type AppLayoutSpan = "full" | "content" | "left" | "right";
 export type AppLayoutSideMode = "inline" | "overlay";
 export type AppLayoutScroll = "content" | "page";
 
@@ -37,6 +38,9 @@ export interface AppLayoutProps {
   stickyHeader?: boolean;
   stickyFooter?: boolean;
   stickySides?: boolean;
+  /** Override stickySides for one inline side in page scrolling mode. */
+  stickyLeft?: boolean | undefined;
+  stickyRight?: boolean | undefined;
   /** Apply device safe-area insets to the outer shell. */
   safeArea?: boolean;
   mainId?: string;

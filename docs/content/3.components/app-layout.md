@@ -80,6 +80,8 @@ The default arrangement is a full-width header, a middle row containing left / m
 | --- | --- |
 | `header: 'full'` / `footer: 'full'` | The bar spans the layout, including the sidebars. |
 | `header: 'content'` / `footer: 'content'` | The bar spans only main. Sidebars extend alongside it. |
+| `header: 'left'` / `footer: 'left'` | The bar spans left and main. The right sidebar extends alongside it. |
+| `header: 'right'` / `footer: 'right'` | The bar spans main and right. The left sidebar extends alongside it. |
 | `left: 'inline'` / `right: 'inline'` | The sidebar takes space beside main. |
 | `left: 'overlay'` / `right: 'overlay'` | The sidebar covers main without narrowing it. |
 | `scroll="content"` | Main scrolls independently inside the shell. |
@@ -114,9 +116,32 @@ Use `content` when sidebars should extend alongside the bars. `full` spans all t
 ```
 ::
 
+### Independent header and footer corners
+
+Choose `left` or `right` to span main plus only that side. Header and footer are independent, so either sidebar can extend alongside one bar, both bars, or neither. These values refer to the named left and right slots.
+
+::component-preview
+  :::examples-app-layout-example{variant="asymmetric"}
+  :::
+::
+
+::component-code
+```vue
+<AppLayout :layout="{ header: 'left', footer: 'right' }">
+  <template #header>Header above navigation and main</template>
+  <template #left><Sidebar aria-label="Navigation">Navigation</Sidebar></template>
+  <h1>Workspace</h1>
+  <template #right><Sidebar side="right" aria-label="Inspector">Inspector</Sidebar></template>
+  <template #footer>Footer below main and inspector</template>
+</AppLayout>
+```
+::
+
+For a right sidebar beside header, main, and footer, set both bars to `left`. For a left sidebar beside all three, set both to `right`.
+
 ### Page scrolling with sticky regions
 
-Set `scroll="page"` for document scrolling. Enable stickiness independently for header, footer, and side regions. Sticky side offsets track the rendered full-width bars, including changes to their heights. As with native CSS sticky positioning, the nearest scrolling ancestor determines where regions stick. Footer remains at its natural place at the end of the page until it reaches its sticky boundary.
+Set `scroll="page"` for document scrolling. Enable stickiness independently for header, footer, and side regions. `stickyLeft` and `stickyRight` override `stickySides` for each inline side. Sticky side offsets track only the bars that cover that side, including changes to their heights. As with native CSS sticky positioning, the nearest scrolling ancestor determines where regions stick. Footer remains at its natural place at the end of the page until it reaches its sticky boundary.
 
 The contained preview scrolls as a whole; its header stays visible. In a full-screen application, the document scrolls instead.
 
@@ -224,6 +249,8 @@ The default shell renders one `header`, `main`, and `footer`. Side wrappers are 
 | `stickyHeader` | `boolean` | `false` | Sticky header in page mode. |
 | `stickyFooter` | `boolean` | `false` | Sticky footer in page mode. |
 | `stickySides` | `boolean` | `false` | Sticky inline sides in page mode. |
+| `stickyLeft` | `boolean` | `stickySides` | Override stickiness for the inline left side in page mode. Explicit `false` disables it. |
+| `stickyRight` | `boolean` | `stickySides` | Override stickiness for the inline right side in page mode. Explicit `false` disables it. |
 | `safeArea` | `boolean` | `true` | Outer device safe-area padding. Consumer padding utilities can override it. |
 | `mainId` | `string` | Generated | Main ID and skip-link target. Keep explicit IDs unique. |
 | `mainLabel` | `string` | - | Accessible name on content element. |
@@ -235,8 +262,8 @@ The default shell renders one `header`, `main`, and `footer`. Side wrappers are 
 
 | Key | Values | Default | Description |
 | --- | --- | --- | --- |
-| `header` | `"full" \| "content"` | `"full"` | Span all columns or main column only. |
-| `footer` | `"full" \| "content"` | `"full"` | Span all columns or main column only. |
+| `header` | `"full" \| "content" \| "left" \| "right"` | `"full"` | All columns, main only, main plus left, or main plus right. |
+| `footer` | `"full" \| "content" \| "left" \| "right"` | `"full"` | All columns, main only, main plus left, or main plus right. |
 | `left` | `"inline" \| "overlay"` | `"inline"` | Reserve left width or cover main content. |
 | `right` | `"inline" \| "overlay"` | `"inline"` | Reserve right width or cover main content. |
 
@@ -271,13 +298,13 @@ Direct `class` and `ui.root` both style the single outer root. AppLayout supplie
 
 | UI key | CSS class | Data attributes |
 | --- | --- | --- |
-| `root` | `akaza-app-layout` | `data-akaza-scroll="content\|page"`, `data-akaza-viewport`, `data-akaza-safe-area`, `data-akaza-header="full\|content"`, `data-akaza-footer="full\|content"` |
+| `root` | `akaza-app-layout` | `data-akaza-scroll="content\|page"`, `data-akaza-viewport`, `data-akaza-safe-area`, `data-akaza-header="full\|content\|left\|right"`, `data-akaza-footer="full\|content\|left\|right"` |
 | `skipLink` | `akaza-app-layout-skip-link` | Native `:focus` / `:focus-visible`. |
-| `header` | `akaza-app-layout-header` | `data-akaza-span="full\|content"`, `data-akaza-sticky` |
+| `header` | `akaza-app-layout-header` | `data-akaza-span="full\|content\|left\|right"`, `data-akaza-sticky` |
 | `left` | `akaza-app-layout-left` | `data-akaza-side="left"`, `data-akaza-mode="inline\|overlay"`, `data-akaza-sticky` |
 | `main` | `akaza-app-layout-main` | Native `:focus` / `:focus-visible`. |
 | `right` | `akaza-app-layout-right` | `data-akaza-side="right"`, `data-akaza-mode="inline\|overlay"`, `data-akaza-sticky` |
-| `footer` | `akaza-app-layout-footer` | `data-akaza-span="full\|content"`, `data-akaza-sticky` |
+| `footer` | `akaza-app-layout-footer` | `data-akaza-span="full\|content\|left\|right"`, `data-akaza-sticky` |
 
 No exclusive interaction state exists on AppLayout, so there is no artificial `data-akaza-state`.
 
@@ -287,8 +314,13 @@ No exclusive interaction state exists on AppLayout, so there is no artificial `d
 | --- | --- |
 | `--akaza-app-layout-header-height` | Measured header border-box height. |
 | `--akaza-app-layout-footer-height` | Measured footer border-box height. |
-| `--akaza-app-layout-side-top`, `--akaza-app-layout-side-bottom` | Full-width bar offsets for overlay sides. |
-| `--akaza-app-layout-sticky-top`, `--akaza-app-layout-sticky-bottom` | Sticky full-width bar offsets for inline sides. |
+| `--akaza-app-layout-viewport-height` | `100dvh`. Height basis for sticky sides; set it to the parent's height for contained layouts. |
+| `--akaza-app-layout-left-top`, `--akaza-app-layout-right-top` | Header offset for each side; zero if header does not cover it. |
+| `--akaza-app-layout-left-bottom`, `--akaza-app-layout-right-bottom` | Footer offset for each side; zero if footer does not cover it. |
+| `--akaza-app-layout-left-sticky-top`, `--akaza-app-layout-right-sticky-top` | Header offset for each sticky side when that bar is sticky and covers the side. |
+| `--akaza-app-layout-left-sticky-bottom`, `--akaza-app-layout-right-sticky-bottom` | Footer offset for each sticky side when that bar is sticky and covers the side. |
+| `--akaza-app-layout-side-top`, `--akaza-app-layout-side-bottom` | On each side wrapper, aliases of its own overlay offsets. |
+| `--akaza-app-layout-sticky-top`, `--akaza-app-layout-sticky-bottom` | On each side wrapper, aliases of its own sticky offsets. |
 | `--akaza-app-layout-side-z-index` | `1` |
 | `--akaza-app-layout-bar-z-index` | `2` |
 | `--akaza-app-layout-skip-z-index` | `3` |

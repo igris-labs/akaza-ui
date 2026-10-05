@@ -1,3 +1,4 @@
+import type { AppLayoutSpan } from "@/components/app-layout";
 import { mount } from "@vue/test-utils";
 import { describe, expect, it } from "vitest";
 import { h, ref } from "vue";
@@ -5,6 +6,26 @@ import { AppLayout } from "@/components/app-layout";
 import { Sidebar } from "@/components/sidebar";
 
 describe("app layout", () => {
+  const spans: AppLayoutSpan[] = ["full", "content", "left", "right"];
+  it.each(spans.flatMap(header => spans.map(footer => ({ header, footer }))))("assigns corners independently for header=$header footer=$footer", ({ header, footer }) => {
+    const wrapper = mount(AppLayout, { props: { layout: { header, footer } }, slots: { header: "Header", left: "Left", right: "Right", footer: "Footer", default: "Main" } });
+    const covers = (span: AppLayoutSpan, side: "left" | "right") => span === "full" || span === side;
+    const expected = `"${covers(header, "left") ? "header" : "left"} header ${covers(header, "right") ? "header" : "right"}" "left main right" "${covers(footer, "left") ? "footer" : "left"} footer ${covers(footer, "right") ? "footer" : "right"}"`;
+    expect(wrapper.attributes("style")).toContain(expected);
+    expect(wrapper.get("header").attributes("data-akaza-span")).toBe(header);
+    expect(wrapper.get("footer").attributes("data-akaza-span")).toBe(footer);
+    wrapper.unmount();
+  });
+
+  it("lets either side override shared sticky behavior", async () => {
+    const wrapper = mount(AppLayout, { props: { scroll: "page", stickySides: true, stickyLeft: false }, slots: { left: "Left", right: "Right" } });
+    expect(wrapper.get(".akaza-app-layout-left").attributes("data-akaza-sticky")).toBeUndefined();
+    expect(wrapper.get(".akaza-app-layout-right").attributes("data-akaza-sticky")).toBeDefined();
+    await wrapper.setProps({ stickyLeft: true, stickyRight: false });
+    expect(wrapper.get(".akaza-app-layout-left").attributes("data-akaza-sticky")).toBeDefined();
+    expect(wrapper.get(".akaza-app-layout-right").attributes("data-akaza-sticky")).toBeUndefined();
+    wrapper.unmount();
+  });
   it("renders only supplied regions and gives each instance a unique main target", () => {
     const parent = mount({ render: () => h("div", [h(AppLayout, {}, () => "Content"), h(AppLayout)]) });
     const [first, second] = parent.findAllComponents(AppLayout);

@@ -46,3 +46,23 @@ test("page scrolling keeps its header sticky", async ({ page }) => {
   await frame.evaluate(element => { element.scrollTop = 400; });
   expect((await header.boundingBox())!.y).toBeCloseTo(before, 0);
 });
+
+test("asymmetric bars give each sidebar independent corners", async ({ page }) => {
+  await page.goto("/#app-layout");
+  const section = page.locator("#app-layout");
+  const root = section.getByTestId("app-layout-asymmetric").locator(".akaza-app-layout");
+  await root.scrollIntoViewIfNeeded();
+  const header = root.locator(".akaza-app-layout-header");
+  const footer = root.locator(".akaza-app-layout-footer");
+  const left = root.locator(".akaza-app-layout-left");
+  const right = root.locator(".akaza-app-layout-right");
+  await expect(header).toHaveAttribute("data-akaza-span", "left");
+  expect((await left.boundingBox())!.y).toBeCloseTo((await header.boundingBox())!.y + (await header.boundingBox())!.height, 0);
+  expect((await right.boundingBox())!.y).toBeCloseTo((await header.boundingBox())!.y, 0);
+  expect((await right.boundingBox())!.y + (await right.boundingBox())!.height).toBeCloseTo((await footer.boundingBox())!.y, 0);
+  await section.getByLabel("Swap which sidebar extends beside each bar").check();
+  await expect(header).toHaveAttribute("data-akaza-span", "right");
+  expect((await left.boundingBox())!.y).toBeCloseTo((await header.boundingBox())!.y, 0);
+  expect((await right.boundingBox())!.y).toBeCloseTo((await header.boundingBox())!.y + (await header.boundingBox())!.height, 0);
+  expect((await left.boundingBox())!.y + (await left.boundingBox())!.height).toBeCloseTo((await footer.boundingBox())!.y, 0);
+});

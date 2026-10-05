@@ -22,7 +22,7 @@ describe("public composable documentation", () => {
     const sections = readdirSync(contentRoot).filter(name => /^\d\./.test(name)).sort();
     expect(sections).toEqual(["1.getting-started", "2.composables", "3.components", "4.builders"]);
     expect(readFileSync(resolve(contentRoot, "3.components/.navigation.yml"), "utf8")).toContain("Components");
-    expect(readFileSync(resolve(contentRoot, "4.builders/layout-builder.md"), "utf8")).toContain(":::examples-app-layout-builder");
+    expect(readFileSync(resolve(contentRoot, "4.builders/layout-builder.md"), "utf8")).toContain("::examples-app-layout-builder");
   });
 
   it.each(pages)("provides compilable Vue snippets and an API reference for %s", (page) => {

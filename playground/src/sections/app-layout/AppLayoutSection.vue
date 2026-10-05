@@ -10,6 +10,7 @@ const selected = ref("overview");
 const rightCollapsed = ref(false);
 const contentHeader = ref(false);
 const overlay = ref(false);
+const oppositeCorners = ref(false);
 const config = computed<AppLayoutConfig>(() => ({
   header: contentHeader.value ? "content" : "full",
   left: overlay.value ? "overlay" : "inline",
@@ -78,6 +79,19 @@ const shellUi = {
               </Sidebar>
             </template>
             <template #footer>Ready. Scroll the workspace; surrounding regions stay in place.</template>
+          </AppLayout>
+        </div>
+      </div>
+      <div>
+        <h3 :class="exampleTitle">Independent header and footer corners</h3>
+        <label class="mb-3 flex items-center gap-2 text-sm text-foreground"><input v-model="oppositeCorners" type="checkbox"> Swap which sidebar extends beside each bar</label>
+        <div class="h-72 min-w-0" data-testid="app-layout-asymmetric">
+          <AppLayout :viewport="false" :layout="{ header: oppositeCorners ? 'right' : 'left', footer: oppositeCorners ? 'left' : 'right' }" main-as="div" main-label="Asymmetric layout preview" :ui="shellUi">
+            <template #header><span class="text-sm font-semibold">Header over {{ oppositeCorners ? 'right' : 'left' }} and main</span></template>
+            <template #left><Sidebar :mobile="false" :default-size="128" :ui="sidebarUi" aria-label="Left region"><p class="p-3 text-sm">Left sidebar</p></Sidebar></template>
+            <p class="text-sm text-muted-foreground">The bars choose their corners independently. Each side keeps its own width.</p>
+            <template #right><Sidebar side="right" :mobile="false" :default-size="128" :ui="sidebarUi" aria-label="Right region"><p class="p-3 text-sm">Right sidebar</p></Sidebar></template>
+            <template #footer>Footer under main and {{ oppositeCorners ? 'left' : 'right' }}</template>
           </AppLayout>
         </div>
       </div>

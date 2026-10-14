@@ -9,6 +9,8 @@ navigation:
 
 Use Slider for pointer-based range input. Use [Number Field](/components/number-field) for exact typed values.
 
+Load the [required structural CSS](/getting-started/installation#setup) before using Slider. The examples below use Tailwind for visual styling; the `ui` prop does not load either stylesheet.
+
 ## Anatomy
 
 - **`#range`**: Custom content inside the filled range.
@@ -33,7 +35,16 @@ const volume = ref(60);
 </script>
 
 <template>
-  <Slider v-model="volume" aria-label="Volume" />
+  <Slider
+    v-model="volume"
+    aria-label="Volume"
+    :ui="{
+      root: 'h-6 w-full max-w-xs',
+      track: 'h-2 w-full rounded-full bg-neutral-200 dark:bg-neutral-800',
+      range: 'h-full rounded-full bg-neutral-900 dark:bg-white',
+      thumb: 'size-5 rounded-full border-2 border-neutral-900 bg-white outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 dark:border-white dark:bg-neutral-950 dark:focus-visible:ring-white',
+    }"
+  />
 </template>
 ```
 ::
@@ -75,18 +86,52 @@ const price = ref([20, 80]);
 
 ### Vertical slider
 
-Use `orientation="vertical"` and give the root/track a visible height.
+Use `orientation="vertical"` and give the root a height. Style the track, range, and thumb as well: the vertical range needs a width, and the thumb needs explicit dimensions. Values increase from bottom to top.
+
+::component-preview
+  :::examples-slider-vertical
+  :::
+::
 
 ```vue
+<script setup lang="ts">
+import { Slider } from "akaza-ui";
+import { ref } from "vue";
+
+const volume = ref(60);
+</script>
+
 <template>
-  <Slider
-    v-model="volume"
-    orientation="vertical"
-    aria-label="Volume"
-    :ui="{ root: 'h-40 w-6', track: 'h-full w-2' }"
-  />
+  <div class="flex items-center gap-4">
+    <Slider
+      v-model="volume"
+      orientation="vertical"
+      aria-label="Volume"
+      :ui="{
+        root: 'h-40 w-6',
+        track: 'h-full w-2 rounded-full bg-neutral-200 dark:bg-neutral-800',
+        range: 'w-full rounded-full bg-neutral-900 dark:bg-white',
+        thumb: 'size-5 rounded-full border-2 border-neutral-900 bg-white outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 dark:border-white dark:bg-neutral-950 dark:focus-visible:ring-white',
+      }"
+    />
+    <span class="text-sm tabular-nums">Volume: {{ volume }}</span>
+  </div>
 </template>
 ```
+
+### Troubleshooting: a horizontal native slider appears
+
+Slider renders a native `<input type="range">` for form integration and custom thumbs for interaction. Package CSS hides the native input and positions the custom parts. If a browser-default horizontal slider appears, check that `akaza-ui/dist/akaza-ui.css` is loaded and that your CSS has not overridden `.akaza-slider-input` visibility or positioning. The native input's horizontal behavior can conflict with the component's vertical pointer calculations when it is visible.
+
+With Tailwind, import the stylesheet in your CSS entry after Tailwind, keeping the layer declaration first:
+
+```css [main.css]
+@layer akaza-reset;
+@import "tailwindcss";
+@import "akaza-ui/dist/akaza-ui.css";
+```
+
+Without Tailwind, import `akaza-ui/dist/akaza-ui.css` once from `main.ts`. The Nuxt module injects this stylesheet automatically. Without it, `orientation="vertical"` still updates ARIA and pointer calculations, but cannot supply the CSS layout. If the stylesheet is loaded and the slider is blank, check that Tailwind generated your `ui` classes and that track colors, range width, and thumb dimensions are set.
 
 ### Inverted direction
 

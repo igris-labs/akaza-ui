@@ -36,12 +36,13 @@ Import component styles once in your app entry point:
 import "akaza-ui/dist/akaza-ui.css";
 ```
 
-**If you use Tailwind CSS**, declare the `akaza-reset` layer before Tailwind to allow utility classes to override component base styles:
+**If you use Tailwind CSS**, put the Akaza import in your CSS entry instead of `main.ts`. Declare `akaza-reset` first so utility classes take precedence, then import Tailwind followed by Akaza:
 
 ```css
 /* main.css */
 @layer akaza-reset;
 @import "tailwindcss";
+@import "akaza-ui/dist/akaza-ui.css";
 ```
 
 ### Nuxt

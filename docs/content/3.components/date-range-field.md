@@ -3,9 +3,6 @@ title: Date Range Field
 description: Locale-ordered segmented start and end dates with aggregate validation, fixed endpoints, and native forms.
 navigation:
   icon: i-lucide-calendar-range
-  badge:
-    label: NEW
-    color: success
 ---
 
 `DateRangeField` combines two segmented date inputs under one range model. It supports locale order, partial entry, range constraints, Field state, cancelable changes, and two native form values.
@@ -97,7 +94,10 @@ Set `allowNonContiguousRanges` when unavailable interior dates may be skipped co
 Keep one known boundary read-only while users edit the other. The fixed endpoint is exposed through `data-akaza-fixed-date`.
 
 ```vue
-<DateRangeField v-model="range" fixed-date="start" />
+<DateRangeField
+  v-model="range"
+  fixed-date="start"
+/>
 ```
 
 ### Locale order and paste
@@ -105,7 +105,10 @@ Keep one known boundary read-only while users edit the other. The fixed endpoint
 Both endpoints use the same locale. For `en-GB`, visual and focus order is day, month, year. Paste a date with three numeric groups into either endpoint.
 
 ```vue
-<DateRangeField v-model="range" locale="en-GB" />
+<DateRangeField
+  v-model="range"
+  locale="en-GB"
+/>
 ```
 
 ### Cancel changes
@@ -115,9 +118,11 @@ Endpoint edits emit the complete proposed range before the model changes. Reason
 ```vue
 <DateRangeField
   v-model="range"
-  @value-change="(next, details) => {
-    if (next.end?.day === 20) details.cancel()
-  }"
+  @value-change="
+    (next, details) => {
+      if (next.end?.day === 20) details.cancel();
+    }
+  "
 />
 ```
 
@@ -126,8 +131,14 @@ Endpoint edits emit the complete proposed range before the model changes. Reason
 Read-only segments stay focusable for inspection. Disabled segments leave the tab sequence and both endpoint values are excluded from form submission.
 
 ```vue
-<DateRangeField :model-value="range" read-only />
-<DateRangeField :model-value="range" disabled />
+<DateRangeField
+  :model-value="range"
+  read-only
+/>
+<DateRangeField
+  :model-value="range"
+  disabled
+/>
 ```
 
 ## Reactive validation

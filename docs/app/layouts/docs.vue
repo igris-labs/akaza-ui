@@ -9,7 +9,8 @@ const navigation = inject<Ref<ContentNavigationItem[]>>('navigation')
     <UPage>
       <template #left>
         <UPageAside>
-          <UContentNavigation
+          <!-- Keep navigation icon prefetch scopes separate from page content. -->
+          <LazyUContentNavigation
             highlight
             :navigation="navigation"
           />

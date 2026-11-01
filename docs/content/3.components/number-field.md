@@ -34,7 +34,11 @@ const seats = ref<number | null>(3);
 </script>
 
 <template>
-  <NumberField v-model="seats" :min="1" :max="10" />
+  <NumberField
+    v-model="seats"
+    :min="1"
+    :max="10"
+  />
 </template>
 ```
 ::
@@ -54,7 +58,12 @@ const seats = ref<number | null>(3);
 </script>
 
 <template>
-  <NumberField v-model="seats" :min="1" :max="10" :step="1" />
+  <NumberField
+    v-model="seats"
+    :min="1"
+    :max="10"
+    :step="1"
+  />
 </template>
 ```
 
@@ -64,7 +73,12 @@ Decimals work with `step`. By default, values snap to the nearest step.
 
 ```vue
 <template>
-  <NumberField v-model="ratio" :min="0" :max="1" :step="0.05" />
+  <NumberField
+    v-model="ratio"
+    :min="0"
+    :max="1"
+    :step="0.05"
+  />
 </template>
 ```
 
@@ -74,7 +88,12 @@ Add `scrub-label` or `#scrub` to let pointer users drag horizontally to change t
 
 ```vue
 <template>
-  <NumberField v-model="amount" scrub-label="Drag" :min="0" :max="100" />
+  <NumberField
+    v-model="amount"
+    scrub-label="Drag"
+    :min="0"
+    :max="100"
+  />
 </template>
 ```
 
@@ -86,7 +105,7 @@ Add `scrub-label` or `#scrub` to let pointer users drag horizontally to change t
 <template>
   <NumberField
     v-model="quantity"
-    @value-change="(value) => draft = value"
+    @value-change="(value) => (draft = value)"
     @value-commit="(value) => save(value)"
   />
 </template>
@@ -98,8 +117,16 @@ Add `scrub-label` or `#scrub` to let pointer users drag horizontally to change t
 
 ```vue
 <template>
-  <Field label="CPU cores" name="cpu" required>
-    <NumberField v-model="cpu" :min="1" :max="16" />
+  <Field
+    label="CPU cores"
+    name="cpu"
+    required
+  >
+    <NumberField
+      v-model="cpu"
+      :min="1"
+      :max="16"
+    />
   </Field>
 </template>
 ```

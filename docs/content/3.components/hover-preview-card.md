@@ -32,11 +32,14 @@ import { HoverPreviewCard } from "akaza-ui";
 <template>
   <HoverPreviewCard>
     <template #trigger="{ triggerProps }">
-      <a href="/profile" v-bind="triggerProps">Ada Lovelace</a>
+      <a
+        href="/profile"
+        v-bind="triggerProps"
+      >
+        Ada Lovelace
+      </a>
     </template>
-    <template #content>
-      Profile preview
-    </template>
+    <template #content>Profile preview</template>
   </HoverPreviewCard>
 </template>
 ```
@@ -50,7 +53,10 @@ Use `openDelay` and `closeDelay` to tune hover behavior.
 
 ```vue
 <template>
-  <HoverPreviewCard :open-delay="300" :close-delay="100">
+  <HoverPreviewCard
+    :open-delay="300"
+    :close-delay="100"
+  >
     <template #trigger>Hover me</template>
     <template #content>Preview</template>
   </HoverPreviewCard>
@@ -75,7 +81,11 @@ Bind `v-model` when another interaction should own the card state.
 Focus may move from trigger into teleported content without closing it. `forceMount` keeps closed content in DOM with hidden, inert, and closed-state hooks for custom transitions.
 
 ```vue
-<HoverPreviewCard v-model="open" force-mount aria-label="Profile preview">
+<HoverPreviewCard
+  v-model="open"
+  force-mount
+  aria-label="Profile preview"
+>
   <template #trigger="{ triggerProps }">
     <button v-bind="triggerProps">Open profile preview</button>
   </template>
@@ -137,6 +147,18 @@ Focus may move from trigger into teleported content without closing it. `forceMo
 | `arrow` | `akaza-hover-preview-card-arrow` | — |
 
 Popup transitions follow their placement side and last `120ms`. Set `--akaza-hover-preview-card-duration` to change the duration. Reduced-motion mode removes the visible transition.
+
+### Positioning Variables
+
+The card and its arrow update together when the trigger, content, or viewport changes size. Placement can switch sides to fit the viewport.
+
+| Variable | Meaning |
+| --- | --- |
+| `--akaza-hover-preview-card-anchor-width` | Anchor width in pixels. |
+| `--akaza-hover-preview-card-anchor-height` | Anchor height in pixels. |
+| `--akaza-hover-preview-card-available-width` | Viewport width after collision padding. |
+| `--akaza-hover-preview-card-available-height` | Viewport height after collision padding. |
+| `--akaza-hover-preview-card-transform-origin` | Origin matching the resolved side and alignment. |
 
 ### Keyboard
 

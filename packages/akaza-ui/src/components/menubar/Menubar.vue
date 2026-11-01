@@ -5,11 +5,16 @@ import type { AkazaChangeEventDetails } from "../../types";
 import type { MenuItem } from "../menu";
 import { onClickOutside } from "@vueuse/core";
 import { computed, nextTick, onUnmounted, provide, ref, useId, useSlots, useTemplateRef, watch } from "vue";
+import { useTypeahead } from "../../composables/typeahead";
+import { createChangeDetails } from "../../utils/changeEvent";
 import { useDismissableLayer } from "../../utils/dismissableLayer";
 import { useFloatingPosition } from "../../utils/floatingPosition";
 import { useFocusBranch } from "../../utils/focusScope";
+import SlotContent from "../../utils/SlotContent";
+import { useRovingFocus } from "../../utils/useRovingFocus";
 import { MENU_CONTEXT_KEY } from "../menu/context";
 import MenuPanel from "../menu/MenuPanel.vue";
+import { getMenuItemValue as getItemValue, normalizeMenuItems as normalizeItems, useMenuActions } from "../menu/useMenuActions";
 
 const {
   items,
@@ -41,8 +46,7 @@ const openValue = defineModel<string | null>({ default: null });
 const activeTriggerIndex = ref(Math.max(0, items.findIndex((item) => !item.disabled)));
 const id = useId();
 const slots = useSlots() as Record<string, Slot | undefined>;
-let typeahead = "";
-let typeaheadTimer: number | undefined;
+const { push: pushTypeahead } = useTypeahead();
 const { layerOrder, register, unregister } = useDismissableLayer((event?: KeyboardEvent) => {
   const index = items.findIndex((item) => getItemValue(item) === openValue.value);
   close("escape", event);
@@ -66,14 +70,17 @@ const { actualAlign, actualSide, style: contentStyle } = useFloatingPosition({
 });
 const layeredContentStyle = computed(() => ({ ...contentStyle.value, "--akaza-layer-order": String(layerOrder.value) }));
 
-function normalizeItems(raw?: MenuItem[] | MenuItem[][]): MenuItem[][] {
-  if (!raw?.length) return [];
-  return Array.isArray(raw[0]) ? (raw as MenuItem[][]) : [raw as MenuItem[]];
-}
 
-function getItemValue(item: MenuItem): string {
-  return (item.value ?? item.label ?? "") as string;
-}
+
+const { onItemSelect, onCheckboxSelect, onRadioSelect, isRadioChecked } = useMenuActions({
+  closeOnSelect: () => closeOnSelect,
+  radioValues: () => radioValues,
+  close,
+  onSelect: (item, details) => emit("select", item, details),
+  onCheckChange: (item, checked, details) => emit("check-change", item, checked, details),
+  onRadioChange: (group, value, details) => emit("radio-change", group, value, details),
+  onRadioValuesChange: values => emit("update:radioValues", values),
+});
 
 function getTriggerId(index: number) {
   return `${id}-trigger-${index}`;
@@ -90,15 +97,9 @@ function setTriggerRef(el: HTMLElement | null, index: number) {
 function setOpen(value: string | null, reason: string, event?: Event) {
   if (disabled && value) return false;
   if (openValue.value === value) return true;
-  let canceled = false;
-  emit("open-change", value, {
-    reason,
-    ...(event && { event }),
-    cancel: () => {
-      canceled = true;
-    },
-  });
-  if (canceled) return false;
+  const changeEvent = createChangeDetails(reason, event);
+  emit("open-change", value, changeEvent.details);
+  if (changeEvent.canceled()) return false;
   openValue.value = value;
   return true;
 }
@@ -122,18 +123,10 @@ function focusTrigger(index: number) {
   triggerRefs.value[index]?.focus();
 }
 
+const roving = useRovingFocus({ items: () => items, isDisabled: item => Boolean(item.disabled), loop: () => loop });
+
 function getNextIndex(index: number, delta: number) {
-  const count = items.length;
-  let next = index;
-  for (let step = 0; step < count; step++) {
-    next += delta;
-    if (loop) next = (next + count) % count;
-    if (next < 0 || next >= count) return -1;
-    if (!items[next]?.disabled) {
-      return next;
-    }
-  }
-  return -1;
+  return roving.nextIndex(index, delta);
 }
 
 function move(index: number, delta: number) {
@@ -189,9 +182,7 @@ function onTriggerKeydown(event: KeyboardEvent, item: MenubarItem, index: number
     event.preventDefault();
     close("escape", event);
   } else if (event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey) {
-    typeahead += event.key.toLowerCase();
-    window.clearTimeout(typeaheadTimer);
-    typeaheadTimer = window.setTimeout(() => { typeahead = ""; }, 500);
+    const typeahead = pushTypeahead(event.key.toLowerCase());
     const next = items.findIndex((candidate) =>
       !candidate.disabled && candidate.label?.toLowerCase().startsWith(typeahead),
     );
@@ -228,13 +219,6 @@ function hasTriggerSlot(item: MenubarItem) {
   return Boolean(slots[item.slot ?? "trigger"]);
 }
 
-function getTriggerSlot(item: MenubarItem) {
-  return slots[item.slot ?? "trigger"]!({
-    item,
-    isOpen: openValue.value === getItemValue(item),
-  });
-}
-
 function getTriggerTabindex(item: MenubarItem, index: number) {
   if (item.disabled || disabled) return -1;
   const active = items[activeTriggerIndex.value];
@@ -252,53 +236,6 @@ watch(() => items.length, () => {
   }
 });
 
-function onItemSelect(item: MenuItem, event: Event) {
-  if (item.disabled) return;
-  let canceled = false;
-  emit("select", item, {
-    reason: "select",
-    event,
-    cancel: () => {
-      canceled = true;
-    },
-  });
-  if (canceled) return;
-  item.onSelect?.();
-  if (closeOnSelect) close("select", event);
-}
-
-function onCheckboxSelect(item: MenuItem, event: Event) {
-  if (item.disabled) return;
-  const next = !item.checked;
-  let canceled = false;
-  emit("check-change", item, next, {
-    reason: "select",
-    event,
-    cancel: () => {
-      canceled = true;
-    },
-  });
-  if (!canceled) item.onUpdateChecked?.(next);
-}
-
-function isRadioChecked(item: MenuItem): boolean {
-  return radioValues?.[item.radioGroup ?? ""] === item.value;
-}
-
-function onRadioSelect(item: MenuItem, event: Event) {
-  if (item.disabled) return;
-  const group = item.radioGroup ?? "";
-  const value = (item.value ?? "") as string;
-  let canceled = false;
-  emit("radio-change", group, value, {
-    reason: "select",
-    event,
-    cancel: () => {
-      canceled = true;
-    },
-  });
-  if (!canceled && radioValues) emit("update:radioValues", { ...radioValues, [group]: value });
-}
 
 provide(MENU_CONTEXT_KEY, {
   get dir() { return dir; },
@@ -325,7 +262,6 @@ watch(openValue, (open) => {
 }, { immediate: true });
 
 onUnmounted(() => {
-  window.clearTimeout(typeaheadTimer);
   unregister();
 });
 </script>
@@ -363,7 +299,7 @@ onUnmounted(() => {
       @keydown="onTriggerKeydown($event, item, index)"
       @mouseenter="openValue && item.children && openItem(item, 'hover', $event)"
     >
-      <component :is="() => getTriggerSlot(item)" v-if="hasTriggerSlot(item)" />
+      <SlotContent v-if="hasTriggerSlot(item)" :render="slots[item.slot ?? 'trigger']!" :scope="{ item, isOpen: openValue === getItemValue(item) }" />
       <template v-else>
         {{ item.label }}
       </template>

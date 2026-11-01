@@ -6,12 +6,64 @@ import { Menubar } from "@/components/menubar";
 import { Popover } from "@/components/popover";
 
 enableAutoUnmount(afterEach);
-afterEach(() => vi.restoreAllMocks());
+afterEach(() => {
+  vi.restoreAllMocks();
+  vi.useRealTimers();
+});
 
 const children = [{ value: "share", label: "Share", children: [{ label: "Email" }, { label: "Link" }] }];
 
 describe("menu submenu collisions", () => {
+  it("preserves slotted trigger DOM through opening and keyboard dismissal", async () => {
+    const wrapper = mount(Menu, {
+      props: { modelValue: true, items: children }, attachTo: document.body,
+      slots: { item: '<span class="stable-item">Share</span>' },
+    });
+    await flushPromises();
+    const row = wrapper.get(".akaza-menu-submenu");
+    const label = row.get(".stable-item").element;
+    await row.trigger("mouseenter");
+    expect(row.get(".stable-item").element).toBe(label);
+    await wrapper.get(".akaza-menu-submenu-content").trigger("keydown", { key: "ArrowLeft" });
+    expect(wrapper.find(".akaza-menu-submenu-content").exists()).toBe(false);
+    expect(row.get(".stable-item").element).toBe(label);
+    await wrapper.get(".akaza-menu-submenu-trigger").trigger("click");
+    expect(wrapper.find(".akaza-menu-submenu-content").exists()).toBe(true);
+  });
+
   for (const component of ["Menu", "ContextMenu", "Menubar"] as const) {
+    it.each(["ltr", "rtl"] as const)(`${component} keeps keyboard focus through pending hover dismissal in %s`, async (dir) => {
+      vi.useFakeTimers();
+      const wrapper = component === "Menu"
+        ? mount(Menu, { attachTo: document.body, props: { modelValue: true, items: children, dir } })
+        : component === "ContextMenu"
+          ? mount(ContextMenu, { attachTo: document.body, props: { modelValue: true, items: children, teleport: false, dir } })
+          : mount(Menubar, { attachTo: document.body, props: { modelValue: "file", items: [{ value: "file", label: "File", children }], dir, teleport: false } });
+      await wrapper.vm.$nextTick();
+      const row = wrapper.get(".akaza-menu-submenu");
+      const trigger = wrapper.get(".akaza-menu-submenu-trigger");
+      await row.trigger("mouseenter");
+      await row.trigger("mouseleave");
+      (trigger.element as HTMLElement).focus();
+      await trigger.trigger("keydown", { key: dir === "ltr" ? "ArrowRight" : "ArrowLeft" });
+      await vi.advanceTimersByTimeAsync(200);
+      const submenu = wrapper.get(".akaza-menu-submenu-content");
+      const first = submenu.get('[role="menuitem"]');
+      expect(document.activeElement).toBe(first.element);
+      expect(trigger.attributes("aria-expanded")).toBe("true");
+
+      await row.trigger("mouseleave");
+      await vi.advanceTimersByTimeAsync(200);
+      expect(document.activeElement).toBe(first.element);
+      expect(trigger.attributes("aria-expanded")).toBe("true");
+
+      (trigger.element as HTMLElement).focus();
+      await row.trigger("mouseleave");
+      await vi.advanceTimersByTimeAsync(200);
+      expect(wrapper.find(".akaza-menu-submenu-content").exists()).toBe(false);
+      expect(document.activeElement).toBe(trigger.element);
+    });
+
     it.each(["ltr", "rtl"] as const)(`${component} flips in %s without reversing logical keyboard navigation`, async (dir) => {
       let x = dir === "ltr" ? window.innerWidth - 40 : 8;
       vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function (this: HTMLElement) {

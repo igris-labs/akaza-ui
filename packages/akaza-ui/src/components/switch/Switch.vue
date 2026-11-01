@@ -2,6 +2,7 @@
 import type { SwitchProps, SwitchValue } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
 import { computed, useId, useSlots, useTemplateRef } from "vue";
+import { createChangeDetails } from "../../utils/changeEvent";
 import { useCheckableField } from "../../utils/useCheckableField";
 
 const {
@@ -43,9 +44,9 @@ const isChecked = computed(() => model.value === trueValue);
 function toggle(reason = "click", event?: Event) {
   if (effectiveDisabled.value || buttonRef.value?.matches(":disabled")) return;
   const nextValue = (isChecked.value ? falseValue : trueValue) as SwitchValue;
-  let canceled = false;
-  emit("value-change", nextValue, { reason, ...(event && { event }), cancel: () => { canceled = true; } });
-  if (canceled) return;
+  const changeEvent = createChangeDetails(reason, event);
+  emit("value-change", nextValue, changeEvent.details);
+  if (changeEvent.canceled()) return;
   model.value = nextValue;
   bridge.onChange();
 }

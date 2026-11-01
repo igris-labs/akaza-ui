@@ -51,7 +51,12 @@ Set `otp` on a numeric input. The first cell exposes `autocomplete="one-time-cod
 
 ```vue
 <template>
-  <PinInput v-model="code" :length="6" type="number" otp />
+  <PinInput
+    v-model="code"
+    :length="6"
+    type="number"
+    otp
+  />
 </template>
 ```
 
@@ -61,7 +66,13 @@ Set `mask` to render password cells while preserving the string model and submit
 
 ```vue
 <template>
-  <PinInput v-model="pin" :length="4" type="number" mask aria-label="Security PIN" />
+  <PinInput
+    v-model="pin"
+    :length="4"
+    type="number"
+    mask
+    aria-label="Security PIN"
+  />
 </template>
 ```
 
@@ -86,11 +97,17 @@ Use a regular expression or function for application-specific token rules. Numer
 
 ```vue
 <template>
-  <PinInput v-model="code" :length="6">
+  <PinInput
+    v-model="code"
+    :length="6"
+  >
     <template #cell="{ index, inputProps, isFilled }">
       <label>
         <span class="sr-only">Character {{ index + 1 }}</span>
-        <input v-bind="inputProps" :class="{ filled: isFilled }">
+        <input
+          v-bind="inputProps"
+          :class="{ filled: isFilled }"
+        />
       </label>
     </template>
   </PinInput>
@@ -103,7 +120,11 @@ Use a regular expression or function for application-specific token rules. Numer
 
 ```vue
 <template>
-  <PinInput v-model="code" :length="6" @complete="verifyCode" />
+  <PinInput
+    v-model="code"
+    :length="6"
+    @complete="verifyCode"
+  />
 </template>
 ```
 
@@ -113,8 +134,17 @@ Inside [Field](/components/field), PinInput inherits `id`, `name`, required/disa
 
 ```vue
 <template>
-  <Field label="Verification code" name="code" required>
-    <PinInput v-model="code" :length="6" type="number" otp />
+  <Field
+    label="Verification code"
+    name="code"
+    required
+  >
+    <PinInput
+      v-model="code"
+      :length="6"
+      type="number"
+      otp
+    />
   </Field>
 </template>
 ```

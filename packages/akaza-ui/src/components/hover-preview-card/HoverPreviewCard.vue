@@ -1,11 +1,14 @@
 <script setup lang="ts">
 import type { CSSProperties } from "vue";
-import type { HoverPreviewCardProps, HoverPreviewCardSide } from ".";
+import type { HoverPreviewCardProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
 import { onClickOutside } from "@vueuse/core";
-import { computed, nextTick, onUnmounted, ref, useId, useTemplateRef, watch } from "vue";
+import { computed, nextTick, onUnmounted, useId, useTemplateRef, watch } from "vue";
+import { createChangeDetails } from "../../utils/changeEvent";
 import { useDismissableLayer } from "../../utils/dismissableLayer";
+import { getFloatingArrowStyle, useFloatingPosition } from "../../utils/floatingPosition";
 import { useFocusBranch } from "../../utils/focusScope";
+import { useDelayedAction } from "../../utils/useDelayedAction";
 
 const {
   side = "bottom",
@@ -32,11 +35,20 @@ const rootRef = useTemplateRef<HTMLElement>("rootRef");
 const triggerRef = useTemplateRef<HTMLElement>("triggerRef");
 const contentRef = useTemplateRef<HTMLElement>("contentRef");
 useFocusBranch(contentRef);
-const posStyle = ref<Record<string, string>>({ top: "-9999px", left: "-9999px" });
-const arrowStyle = ref<Record<string, string>>({});
-const actualSide = ref<HoverPreviewCardSide>(side);
-let openTimer: number | undefined;
-let closeTimer: number | undefined;
+const { style: posStyle, actualSide, geometry } = useFloatingPosition({
+  reference: triggerRef,
+  floating: contentRef,
+  active: model,
+  side: () => side,
+  align: () => align,
+  sideOffset: () => sideOffset,
+  collisionPadding: 4,
+  fallbackSides: ["bottom", "top", "right", "left"],
+  strategy: () => teleport === false ? "absolute" : "fixed",
+  cssVarPrefix: "akaza-hover-preview-card",
+});
+const arrowStyle = computed(() => getFloatingArrowStyle(geometry.value, 8));
+const delayed = useDelayedAction();
 let lastPointerType = "mouse";
 let restoringFocus = false;
 const { layerOrder, register, unregister } = useDismissableLayer((event?: KeyboardEvent) => {
@@ -52,29 +64,23 @@ const { layerOrder, register, unregister } = useDismissableLayer((event?: Keyboa
 
 const contentStyle = computed<CSSProperties>(() => ({
   ...posStyle.value,
-  position: teleport === false ? "absolute" : "fixed",
+  transform: undefined,
+  transformOrigin: undefined,
 }));
 
 function setOpen(next: boolean, reason: string, event?: Event) {
   if (disabled && next) return;
   if (model.value === next) return;
-  let canceled = false;
-  emit("open-change", next, {
-    reason,
-    ...(event && { event }),
-    cancel: () => {
-      canceled = true;
-    },
-  });
-  if (!canceled) model.value = next;
+  const changeEvent = createChangeDetails(reason, event);
+  emit("open-change", next, changeEvent.details);
+  if (!changeEvent.canceled()) model.value = next;
 }
 
 function open(reason = "programmatic", event?: Event) {
   if (typeof window === "undefined") return;
-  window.clearTimeout(closeTimer);
-  window.clearTimeout(openTimer);
+  delayed.cancel();
   if (model.value) return;
-  openTimer = window.setTimeout(() => setOpen(true, reason, event), openDelay);
+  delayed.schedule(() => setOpen(true, reason, event), openDelay);
 }
 
 function close(reason = "programmatic", event?: Event) {
@@ -82,85 +88,14 @@ function close(reason = "programmatic", event?: Event) {
     setOpen(false, reason, event);
     return;
   }
-  window.clearTimeout(openTimer);
-  window.clearTimeout(closeTimer);
-  closeTimer = window.setTimeout(() => setOpen(false, reason, event), closeDelay);
+  delayed.schedule(() => setOpen(false, reason, event), closeDelay);
 }
 
 function closeImmediately(reason = "programmatic", event?: Event) {
-  if (typeof window !== "undefined") {
-    window.clearTimeout(openTimer);
-    window.clearTimeout(closeTimer);
-  }
+  delayed.cancel();
   setOpen(false, reason, event);
 }
 
-function computePosition() {
-  if (typeof window === "undefined" || !triggerRef.value || !contentRef.value) return;
-  const t = triggerRef.value.getBoundingClientRect();
-  const c = contentRef.value.getBoundingClientRect();
-  const vw = window.innerWidth;
-  const vh = window.innerHeight;
-  const candidates = [...new Set<HoverPreviewCardSide>([side, "bottom", "top", "right", "left"])];
-  let chosen = candidates[candidates.length - 1]!;
-
-  for (const item of candidates) {
-    if (item === "top" && t.top >= c.height + sideOffset) {
-      chosen = item;
-      break;
-    }
-    if (item === "bottom" && vh - t.bottom >= c.height + sideOffset) {
-      chosen = item;
-      break;
-    }
-    if (item === "right" && vw - t.right >= c.width + sideOffset) {
-      chosen = item;
-      break;
-    }
-    if (item === "left" && t.left >= c.width + sideOffset) {
-      chosen = item;
-      break;
-    }
-  }
-
-  let top = 0;
-  let left = 0;
-  if (chosen === "top") top = t.top - c.height - sideOffset;
-  else if (chosen === "bottom") top = t.bottom + sideOffset;
-  else if (chosen === "left") left = t.left - c.width - sideOffset;
-  else left = t.right + sideOffset;
-
-  if (chosen === "top" || chosen === "bottom") {
-    if (align === "start") left = t.left;
-    else if (align === "end") left = t.right - c.width;
-    else left = t.left + t.width / 2 - c.width / 2;
-  } else {
-    if (align === "start") top = t.top;
-    else if (align === "end") top = t.bottom - c.height;
-    else top = t.top + t.height / 2 - c.height / 2;
-  }
-
-  top = Math.max(4, Math.min(top, vh - c.height - 4));
-  left = Math.max(4, Math.min(left, vw - c.width - 4));
-  actualSide.value = chosen;
-  if (chosen === "top" || chosen === "bottom") {
-    const arrowLeft = Math.max(4, Math.min(t.left + t.width / 2 - left - 4, c.width - 12));
-    arrowStyle.value = {
-      left: `${arrowLeft}px`,
-      [chosen === "top" ? "bottom" : "top"]: "-4px",
-    };
-  } else {
-    const arrowTop = Math.max(4, Math.min(t.top + t.height / 2 - top - 4, c.height - 12));
-    arrowStyle.value = {
-      top: `${arrowTop}px`,
-      [chosen === "left" ? "right" : "left"]: "-4px",
-    };
-  }
-  posStyle.value =
-    teleport === false
-      ? { top: `${top - t.top}px`, left: `${left - t.left}px` }
-      : { top: `${top}px`, left: `${left}px` };
-}
 
 function containsTarget(target: EventTarget | null) {
   return target instanceof Node
@@ -197,27 +132,15 @@ function onTriggerClick(event: MouseEvent) {
   else open("trigger", event);
 }
 
-function addListeners() {
-  if (typeof window === "undefined") return;
-  window.addEventListener("scroll", computePosition, { passive: true, capture: true });
-  window.addEventListener("resize", computePosition, { passive: true });
-}
 
-function removeListeners() {
-  if (typeof window === "undefined") return;
-  window.removeEventListener("scroll", computePosition, { capture: true });
-  window.removeEventListener("resize", computePosition);
-}
-
-watch(model, async (open) => {
+watch(model, async (open, _previous, cleanup) => {
+  let canceled = false;
+  cleanup(() => { canceled = true; });
   if (open) {
     await nextTick();
-    register();
-    computePosition();
-    addListeners();
+    if (!canceled) register();
   } else {
     unregister();
-    removeListeners();
   }
 }, { immediate: true });
 
@@ -229,14 +152,7 @@ onClickOutside(rootRef, (event) => {
   if (model.value) setOpen(false, "outside-click", event);
 }, { ignore: [contentRef] });
 
-onUnmounted(() => {
-  if (typeof window !== "undefined") {
-    window.clearTimeout(openTimer);
-    window.clearTimeout(closeTimer);
-  }
-  unregister();
-  removeListeners();
-});
+onUnmounted(unregister);
 
 const triggerProps = computed(() => ({
   "aria-expanded": model.value,

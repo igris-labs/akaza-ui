@@ -41,9 +41,15 @@ Use `#indicator` to render your own fill element using the exposed `percentage`.
 
 ```vue
 <template>
-  <Progress v-model="value" class="progress-track">
+  <Progress
+    v-model="value"
+    class="progress-track"
+  >
     <template #indicator="{ percentage }">
-      <div class="progress-fill" :style="{ width: `${percentage}%` }" />
+      <div
+        class="progress-fill"
+        :style="{ width: `${percentage}%` }"
+      />
     </template>
   </Progress>
 </template>
@@ -59,7 +65,11 @@ const value = ref<number | null>(null);
 </script>
 
 <template>
-  <Progress v-model="value" aria-label="Loading…" class="progress-track" />
+  <Progress
+    v-model="value"
+    aria-label="Loading…"
+    class="progress-track"
+  />
 </template>
 ```
 
@@ -69,7 +79,11 @@ Use `min` and `max` when progress is measured on a scale other than 0 to 100.
 
 ```vue
 <template>
-  <Progress v-model="score" :min="0" :max="10" />
+  <Progress
+    v-model="score"
+    :min="0"
+    :max="10"
+  />
 </template>
 ```
 
@@ -92,7 +106,11 @@ Use vertical orientation when progress should match a vertical layout.
 
 ```vue
 <template>
-  <Progress v-model="value" orientation="vertical" class="progress-track-vertical" />
+  <Progress
+    v-model="value"
+    orientation="vertical"
+    class="progress-track-vertical"
+  />
 </template>
 ```
 

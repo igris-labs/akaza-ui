@@ -3,9 +3,6 @@ title: Tree
 description: Accessible hierarchical navigation and selection with lazy loading, propagation, typeahead, and virtualization.
 navigation:
   icon: i-lucide-folder-tree
-  badge:
-    label: NEW
-    color: success
 ---
 
 `Tree` renders nested data as one accessible tree view. Selection and expansion use stable item keys, so the data may be replaced after an API request without losing state.
@@ -88,12 +85,19 @@ const items = ref([{ id: "users", label: "Users", lazy: true }]);
 const expanded = ref<TreeKey[]>([]);
 const loadingKeys = ref<TreeKey[]>([]);
 
-async function onExpandedChange(_keys: TreeKey[], details: TreeExpandedChangeEventDetails<(typeof items.value)[number]>) {
+async function onExpandedChange(
+  _keys: TreeKey[],
+  details: TreeExpandedChangeEventDetails<(typeof items.value)[number]>,
+) {
   if (!details.expanded || !details.item.lazy) return;
   loadingKeys.value = [...loadingKeys.value, details.key];
-  const children = await fetch(`/api/tree/${details.key}`).then(response => response.json());
-  items.value = items.value.map(item => item.id === details.key ? { ...item, children } : item);
-  loadingKeys.value = loadingKeys.value.filter(key => key !== details.key);
+  const children = await fetch(`/api/tree/${details.key}`).then((response) =>
+    response.json(),
+  );
+  items.value = items.value.map((item) =>
+    item.id === details.key ? { ...item, children } : item,
+  );
+  loadingKeys.value = loadingKeys.value.filter((key) => key !== details.key);
 }
 </script>
 
@@ -102,7 +106,7 @@ async function onExpandedChange(_keys: TreeKey[], details: TreeExpandedChangeEve
     v-model:expanded="expanded"
     :items="items"
     item-key="id"
-    :has-children="item => item.lazy || Boolean(item.children?.length)"
+    :has-children="(item) => item.lazy || Boolean(item.children?.length)"
     :loading-keys="loadingKeys"
     @expanded-change="onExpandedChange"
   />
@@ -140,7 +144,7 @@ For leaf-only selection, resolve `selectableKey` from the item rather than addin
 <Tree
   :items="items"
   item-key="id"
-  :selectable-key="item => item.type === 'file'"
+  :selectable-key="(item) => item.type === 'file'"
 />
 ```
 
@@ -150,7 +154,10 @@ Use the granular slots for content that should keep the built-in row behavior. U
 
 ```vue
 <template>
-  <Tree :items="items" item-key="id">
+  <Tree
+    :items="items"
+    item-key="id"
+  >
     <template #icon="{ item, node }">
       <FolderOpenIcon v-if="item.type === 'folder' && node.isExpanded" />
       <FolderIcon v-else-if="item.type === 'folder'" />
@@ -158,7 +165,13 @@ Use the granular slots for content that should keep the built-in row behavior. U
     </template>
 
     <template #trailing="{ item }">
-      <button type="button" data-akaza-tree-ignore @click="rename(item)">Rename</button>
+      <button
+        type="button"
+        data-akaza-tree-ignore
+        @click="rename(item)"
+      >
+        Rename
+      </button>
     </template>
   </Tree>
 </template>
@@ -169,7 +182,10 @@ Interactive controls in a row do not activate or select the node. Add `data-akaz
 The data contract has no built-in description field. Render a title, description, or any other item content through `#label`:
 
 ```vue
-<Tree :items="items" item-key="id">
+<Tree
+  :items="items"
+  item-key="id"
+>
   <template #label="{ item }">
     <span class="grid">
       <span>{{ item.title }}</span>

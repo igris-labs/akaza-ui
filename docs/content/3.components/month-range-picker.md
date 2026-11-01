@@ -3,9 +3,6 @@ title: Month Range Picker
 description: Accessible month-level range selection with preview, limits, fixed endpoints, and constraints.
 navigation:
   icon: i-lucide-calendar-range
-  badge:
-    label: NEW
-    color: success
 ---
 
 `MonthRangePicker` selects inclusive ranges at month precision. First activation sets an anchor; hover or keyboard focus previews a pending range; second activation commits normalized start and end values.
@@ -40,7 +37,10 @@ const page = shallowRef<CalendarDateValue>(new CalendarDate(2026, 1, 1));
 </script>
 
 <template>
-  <MonthRangePicker v-model="range" v-model:placeholder="page" />
+  <MonthRangePicker
+    v-model="range"
+    v-model:placeholder="page"
+  />
 </template>
 ```
 ::
@@ -52,7 +52,10 @@ const page = shallowRef<CalendarDateValue>(new CalendarDate(2026, 1, 1));
 `maximumMonths` counts both endpoints. A value of `3` accepts March through May but rejects March through June.
 
 ```vue
-<MonthRangePicker v-model="range" :maximum-months="3" />
+<MonthRangePicker
+  v-model="range"
+  :maximum-months="3"
+/>
 ```
 
 ### Fixed endpoint
@@ -60,7 +63,10 @@ const page = shallowRef<CalendarDateValue>(new CalendarDate(2026, 1, 1));
 Keep one boundary stable while users choose the other. The fixed boundary must already exist in the model.
 
 ```vue
-<MonthRangePicker v-model="range" fixed-date="start" />
+<MonthRangePicker
+  v-model="range"
+  fixed-date="start"
+/>
 ```
 
 ### Non-contiguous ranges

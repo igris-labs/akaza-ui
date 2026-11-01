@@ -30,7 +30,10 @@ const checked = ref(false);
 </script>
 
 <template>
-  <Checkbox v-model="checked" label="Accept terms" />
+  <Checkbox
+    v-model="checked"
+    label="Accept terms"
+  />
 </template>
 ```
 ::
@@ -45,7 +48,18 @@ Use `#indicator` to render your own checkmark or icon.
 <template>
   <Checkbox v-model="checked">
     <template #indicator="{ checked }">
-      <svg v-if="checked" class="check-icon" .../>
+      <svg
+        v-if="checked"
+        class="check-icon"
+        viewBox="0 0 24 24"
+        width="16"
+        height="16"
+        fill="none"
+        stroke="currentColor"
+        aria-hidden="true"
+      >
+        <path d="m5 12 4 4L19 6" />
+      </svg>
     </template>
   </Checkbox>
 </template>

@@ -2,6 +2,7 @@
 import type { PaginationItem, PaginationProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
 import { computed } from "vue";
+import { createChangeDetails as createDetails } from "../../utils/changeEvent";
 
 const {
   total = 0,
@@ -73,17 +74,6 @@ function getRange(page: number, count: number, siblings: number, edges: boolean)
   return range(1, count);
 }
 
-function createDetails(reason: string, event?: Event) {
-  let canceled = false;
-  const details: AkazaChangeEventDetails = {
-    reason,
-    ...(event && { event }),
-    cancel: () => {
-      canceled = true;
-    },
-  };
-  return { details, canceled: () => canceled };
-}
 
 function goToPage(page: number, reason = "programmatic", event?: Event): boolean {
   if (disabled) return false;

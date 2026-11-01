@@ -44,6 +44,7 @@ import {
   useTable,
 } from "@tanstack/vue-table";
 import { computed, shallowRef, toValue, watch } from "vue";
+import { createChangeDetails as createDetails } from "../../utils/changeEvent";
 
 const dataTableFeatures = tableFeatures({
   columnFilteringFeature,
@@ -77,18 +78,6 @@ type EngineRow<T extends object> = Row<EngineFeatures, T>;
 interface EngineColumnMeta<T> {
   definition: DataTableColumn<T>;
   sourceIndex: number;
-}
-
-function createDetails(reason: string, event?: Event) {
-  let canceled = false;
-  const details: AkazaChangeEventDetails = {
-    reason,
-    ...(event && { event }),
-    cancel: () => {
-      canceled = true;
-    },
-  };
-  return { details, canceled: () => canceled };
 }
 
 function encodeRowKey(key: DataTableRowKey): string {

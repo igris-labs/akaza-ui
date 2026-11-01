@@ -39,7 +39,11 @@ const options = [
 </script>
 
 <template>
-  <CheckboxGroup v-model="value" :options="options" parent />
+  <CheckboxGroup
+    v-model="value"
+    :options="options"
+    parent
+  />
 </template>
 ```
 ::
@@ -63,7 +67,11 @@ const options = [
 </script>
 
 <template>
-  <CheckboxGroup v-model="value" legend="Notification channels" :options="options" />
+  <CheckboxGroup
+    v-model="value"
+    legend="Notification channels"
+    :options="options"
+  />
 </template>
 ```
 
@@ -96,7 +104,10 @@ const plans = [
 </script>
 
 <template>
-  <CheckboxGroup v-model="selected" :options="plans">
+  <CheckboxGroup
+    v-model="selected"
+    :options="plans"
+  >
     <template #pro="{ option }">
       <span class="font-medium">{{ option.label }}</span>
       <span class="ml-2 text-xs text-neutral-500">Recommended</span>
@@ -162,7 +173,11 @@ function keepOne(value: CheckboxGroupValue[], details: AkazaChangeEventDetails) 
 </script>
 
 <template>
-  <CheckboxGroup v-model="selected" :options="options" @value-change="keepOne" />
+  <CheckboxGroup
+    v-model="selected"
+    :options="options"
+    @value-change="keepOne"
+  />
 </template>
 ```
 

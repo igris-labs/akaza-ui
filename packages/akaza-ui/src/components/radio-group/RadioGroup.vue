@@ -2,7 +2,9 @@
 import type { RadioGroupProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
 import { computed, useTemplateRef } from "vue";
+import { createChangeDetails } from "../../utils/changeEvent";
 import { useCheckableField } from "../../utils/useCheckableField";
+import { useRovingFocus } from "../../utils/useRovingFocus";
 
 const {
   options,
@@ -56,6 +58,8 @@ function isItemDisabled(option: any): boolean {
   return option?.disabled === true;
 }
 
+const roving = useRovingFocus({ items: () => options, isDisabled: isItemDisabled, loop: () => loop });
+
 // Roving tabindex: only the selected (or first enabled) item has tabindex=0
 const itemEls: (HTMLElement | null)[] = [];
 function setItemRef(el: HTMLElement | null, index: number) {
@@ -79,14 +83,10 @@ function getTabIndex(index: number): 0 | -1 {
 function select(option: any, event?: Event) {
   if (isItemDisabled(option) || validationRef.value?.matches(":disabled")) return;
   const value = getValue(option);
-  let canceled = false;
-  emit("value-change", value, {
-    reason: event ? "select" : "programmatic",
-    ...(event && { event }),
-    cancel: () => { canceled = true; },
-  });
-  if (!canceled) model.value = value;
-  if (!canceled) bridge.onChange();
+  const changeEvent = createChangeDetails(event ? "select" : "programmatic", event);
+  emit("value-change", value, changeEvent.details);
+  if (!changeEvent.canceled()) model.value = value;
+  if (!changeEvent.canceled()) bridge.onChange();
 }
 
 function handleKeyDown(event: KeyboardEvent, index: number) {
@@ -106,34 +106,8 @@ function handleKeyDown(event: KeyboardEvent, index: number) {
   if (!isPrev && !isNext && !isHome && !isEnd) return;
   event.preventDefault();
 
-  const count = options.length;
-  let target = index;
-
-  if (isPrev) {
-    let candidate = loop ? (index - 1 + count) % count : index - 1;
-    let steps = 0;
-    while (candidate >= 0 && candidate < count && isItemDisabled(options[candidate]) && steps < count) {
-      candidate = loop ? (candidate - 1 + count) % count : candidate - 1;
-      steps++;
-    }
-    if (candidate >= 0 && candidate < count && !isItemDisabled(options[candidate])) target = candidate;
-  } else if (isNext) {
-    let candidate = loop ? (index + 1) % count : index + 1;
-    let steps = 0;
-    while (candidate >= 0 && candidate < count && isItemDisabled(options[candidate]) && steps < count) {
-      candidate = loop ? (candidate + 1) % count : candidate + 1;
-      steps++;
-    }
-    if (candidate >= 0 && candidate < count && !isItemDisabled(options[candidate])) target = candidate;
-  } else if (isHome) {
-    let candidate = 0;
-    while (candidate < count - 1 && isItemDisabled(options[candidate])) candidate++;
-    if (!isItemDisabled(options[candidate])) target = candidate;
-  } else if (isEnd) {
-    let candidate = count - 1;
-    while (candidate > 0 && isItemDisabled(options[candidate])) candidate--;
-    if (!isItemDisabled(options[candidate])) target = candidate;
-  }
+  const next = isHome ? roving.firstIndex.value : isEnd ? roving.lastIndex.value : roving.nextIndex(index, isPrev ? -1 : 1);
+  const target = next < 0 ? index : next;
 
   if (target !== index) {
     select(options[target], event);

@@ -2,7 +2,9 @@
 import type { ComponentPublicInstance } from "vue";
 import type { TagsInputProps, TagsInputValue } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
-import { computed, inject, nextTick, onBeforeUnmount, onMounted, onUpdated, ref, useId } from "vue";
+import { computed, inject, nextTick, onMounted, onUpdated, ref, useId } from "vue";
+import { createChangeDetails as createDetails } from "../../utils/changeEvent";
+import { useFieldControl } from "../../utils/useFieldControl";
 import { useFormReset } from "../../utils/useFormReset";
 import { fieldContextKey } from "../field/context";
 
@@ -56,9 +58,7 @@ const activeIndex = ref(-1);
 const focused = ref(false);
 const touched = ref(false);
 const validationActive = ref(false);
-const nativeInvalid = ref(false);
-const validationMessage = ref("");
-const validity = ref<ValidityState | null>(null);
+const { nativeInvalid, syncValidity, registerControl } = useFieldControl(field);
 
 const initialValue = [...model.value];
 const resolvedId = computed(() => id ?? field?.inputId.value ?? `akaza-tags-input-${autoId}`);
@@ -72,14 +72,11 @@ const isDirty = computed(() => !valuesEqual(model.value, initialValue));
 const isInvalid = computed(() => invalid || field?.invalid.value || nativeInvalid.value || false);
 const state = computed(() => isFilled.value ? "filled" : "empty");
 
-const unregister = field?.registerControl({
+registerControl({
   dirty: isDirty,
   touched,
   filled: isFilled,
   focused,
-  invalid: nativeInvalid,
-  validationMessage,
-  validity,
 });
 
 function valueLabel(value: TagsInputValue): string {
@@ -113,22 +110,9 @@ function updateValidity(reveal = validationActive.value) {
   const input = hiddenRef.value;
   if (!input) return;
   input.setCustomValidity(isRequired.value && !isFilled.value ? "Add at least one tag." : "");
-  validity.value = input.validity;
-  nativeInvalid.value = reveal && !input.validity.valid;
-  validationMessage.value = input.validationMessage;
+  syncValidity(input, reveal);
 }
 
-function createDetails(reason: string, event?: Event) {
-  let canceled = false;
-  const details: AkazaChangeEventDetails = {
-    reason,
-    ...(event && { event }),
-    cancel: () => {
-      canceled = true;
-    },
-  };
-  return { details, canceled: () => canceled };
-}
 
 function commitValue(value: TagsInputValue[], reason: string, event?: Event): boolean {
   if (isDisabled.value || readOnly) return false;
@@ -380,7 +364,6 @@ onMounted(() => {
   if (autoFocus) nextTick(() => inputRef.value?.focus());
 });
 onUpdated(updateValidity);
-onBeforeUnmount(() => unregister?.());
 </script>
 
 <template>

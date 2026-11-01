@@ -43,7 +43,11 @@ const options = [
 </script>
 
 <template>
-  <Combobox v-model="value" :options="options" placeholder="Search stack" />
+  <Combobox
+    v-model="value"
+    :options="options"
+    placeholder="Search stack"
+  />
 </template>
 ```
 ::
@@ -61,7 +65,11 @@ const search = ref("");
 </script>
 
 <template>
-  <Combobox v-model="value" v-model:search="search" :options="options" />
+  <Combobox
+    v-model="value"
+    v-model:search="search"
+    :options="options"
+  />
 </template>
 ```
 
@@ -71,7 +79,12 @@ Set `multiple` and bind `v-model` to an array. `clearable` adds a clear control;
 
 ```vue
 <template>
-  <Combobox v-model="skills" multiple clearable :options="skillOptions" />
+  <Combobox
+    v-model="skills"
+    multiple
+    clearable
+    :options="skillOptions"
+  />
 </template>
 ```
 
@@ -95,8 +108,15 @@ Place `Combobox` inside [Field](/components/field) to inherit label metadata and
 
 ```vue
 <template>
-  <Field label="Stack" name="stack" required>
-    <Combobox v-model="stack" :options="options" />
+  <Field
+    label="Stack"
+    name="stack"
+    required
+  >
+    <Combobox
+      v-model="stack"
+      :options="options"
+    />
   </Field>
 </template>
 ```
@@ -110,7 +130,7 @@ Creation is app-controlled: Akaza emits requested text and your app decides whet
   v-model="framework"
   creatable
   :options="options"
-  @create="value => options.push({ value, label: value })"
+  @create="(value) => options.push({ value, label: value })"
 />
 ```
 
@@ -124,7 +144,7 @@ Object values use identity by default. Supply `isEqual` when values are recreate
   name="assignee"
   :options="people"
   :is-equal="(a, b) => a.id === b.id"
-  :serialize-value="value => String(value.id)"
+  :serialize-value="(value) => String(value.id)"
 />
 ```
 
@@ -133,8 +153,16 @@ Object values use identity by default. Supply `isEqual` when values are recreate
 `readOnly` preserves a visible value without allowing changes. `loading` exposes `aria-busy` and the loading slot for async sources.
 
 ```vue
-<Combobox v-model="value" read-only :options="options" />
-<Combobox v-model="value" loading :options="remoteOptions">
+<Combobox
+  v-model="value"
+  read-only
+  :options="options"
+/>
+<Combobox
+  v-model="value"
+  loading
+  :options="remoteOptions"
+>
   <template #loading>Fetching teams…</template>
 </Combobox>
 ```

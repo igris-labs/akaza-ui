@@ -5,10 +5,13 @@ import type { CalendarDateValue, CalendarModelValue, CalendarProps } from "../ca
 import { getLocalTimeZone, toCalendarDate, today } from "@internationalized/date";
 import { onClickOutside } from "@vueuse/core";
 import { computed, inject, nextTick, onBeforeUnmount, onMounted, reactive, ref, useId, useTemplateRef, watch } from "vue";
-import { resolveAction } from "../../utils/changeEvent";
+import { createChangeDetails as createDetails, resolveAction } from "../../utils/changeEvent";
 import { useDismissableLayer } from "../../utils/dismissableLayer";
 import { useFloatingPosition } from "../../utils/floatingPosition";
 import { useFocusBranch } from "../../utils/focusScope";
+import { useFieldControl } from "../../utils/useFieldControl";
+import { useFormReset } from "../../utils/useFormReset";
+import { useSegmentFocus } from "../../utils/useSegmentFocus";
 import Calendar from "../calendar/Calendar.vue";
 import { fieldContextKey } from "../field/context";
 
@@ -54,17 +57,13 @@ const hiddenRef = useTemplateRef<HTMLInputElement>("hiddenRef");
 const calendarTriggerRef = useTemplateRef<HTMLButtonElement>("calendarTriggerRef");
 const calendarContentRef = useTemplateRef<HTMLElement>("calendarContentRef");
 useFocusBranch(calendarContentRef);
-const segmentRefs = new Map<DateFieldSegment, HTMLInputElement>();
 const values = reactive<Record<DateFieldSegment, string>>({ day: "", month: "", year: "" });
 const focusedSegment = ref<DateFieldSegment | null>(null);
 const touched = ref(false);
 const validationActive = ref(false);
-const nativeInvalid = ref(false);
-const validationMessage = ref("");
-const validity = ref<ValidityState | null>(null);
+const { nativeInvalid, syncValidity, registerControl } = useFieldControl(field);
 const initialValue = model.value;
 const calendarId = `${autoId}-calendar`;
-let formElement: HTMLFormElement | null = null;
 
 const resolvedId = computed(() => id ?? field?.inputId.value ?? `akaza-date-field-${autoId}`);
 const resolvedName = computed(() => name ?? field?.name.value);
@@ -111,14 +110,11 @@ const calendarPickerProps = computed<CalendarProps>(() => ({
   ...(ui?.calendar && { ui: ui.calendar }),
 }));
 
-const unregister = field?.registerControl({
+registerControl({
   dirty: isDirty,
   touched,
   filled: isFilled,
   focused: isFocused,
-  invalid: nativeInvalid,
-  validationMessage,
-  validity,
 });
 
 function getParts(): Array<{ type: DateFieldSegment | "literal"; value: string }> {
@@ -170,17 +166,6 @@ function syncSegments(value: CalendarDateValue | undefined) {
   values.year = String(date.year).padStart(4, "0");
 }
 
-function createDetails(reason: string, event?: Event) {
-  let canceled = false;
-  const details: AkazaChangeEventDetails = {
-    reason,
-    ...(event && { event }),
-    cancel: () => {
-      canceled = true;
-    },
-  };
-  return { details, canceled: () => canceled };
-}
 
 function setValue(value: CalendarDateValue | undefined, reason: string, event?: Event): boolean {
   if (isDisabled.value || readOnly) {
@@ -242,26 +227,12 @@ function updateValidity(reveal = validationActive.value) {
   const input = hiddenRef.value;
   if (!input) return;
   input.setCustomValidity(nativeError.value);
-  validity.value = input.validity;
-  validationMessage.value = input.validationMessage;
-  nativeInvalid.value = reveal && !input.validity.valid;
+  syncValidity(input, reveal);
 }
 
-function focusSegment(segment: DateFieldSegment) {
-  segmentRefs.get(segment)?.focus();
-}
-
-function moveFocus(segment: DateFieldSegment, delta: number) {
-  const segments = parts.value.filter(({ type }) => type !== "literal").map(({ type }) => type as DateFieldSegment);
-  const index = segments.indexOf(segment);
-  const next = segments[Math.min(segments.length - 1, Math.max(0, index + delta))];
-  if (next) focusSegment(next);
-}
-
-function setSegmentRef(element: unknown, segment: DateFieldSegment) {
-  if (element) segmentRefs.set(segment, element as HTMLInputElement);
-  else segmentRefs.delete(segment);
-}
+const { segmentRefs, setSegmentRef, focusSegment, moveFocus } = useSegmentFocus<DateFieldSegment>({
+  parts: () => parts.value.filter(part => part.type !== "literal").map(part => part.type as DateFieldSegment),
+});
 
 function onSegmentInput(segment: DateFieldSegment, event: Event) {
   validationActive.value = true;
@@ -400,16 +371,14 @@ function onInvalid(event: Event) {
   focusSegment(firstSegment.value as DateFieldSegment);
 }
 
-async function onFormReset(event: Event) {
-  await nextTick();
-  if (event.defaultPrevented) return;
+useFormReset(() => hiddenRef.value, () => {
   model.value = initialValue;
   syncSegments(initialValue);
   touched.value = false;
   validationActive.value = false;
   nativeInvalid.value = false;
   nextTick(() => updateValidity(false));
-}
+});
 
 // Controlled updates must replace stateful partial segment text.
 watch(model, syncSegments, { immediate: true });
@@ -424,14 +393,10 @@ onClickOutside(rootRef, (event) => {
 
 onMounted(() => {
   updateValidity(false);
-  formElement = hiddenRef.value?.form ?? null;
-  formElement?.addEventListener("reset", onFormReset);
 });
 
 onBeforeUnmount(() => {
-  formElement?.removeEventListener("reset", onFormReset);
   unregisterCalendarLayer();
-  unregister?.();
 });
 
 defineExpose({

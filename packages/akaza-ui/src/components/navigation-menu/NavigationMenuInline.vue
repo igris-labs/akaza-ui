@@ -7,6 +7,9 @@ import type {
   NavigationMenuUi,
 } from ".";
 
+import SlotContent from "../../utils/SlotContent";
+import { getNavigationDestinationProps as getDestinationProps, getNavigationComponent as getLeafComponent, getNavigationValue as getValue, hasNavigationDestination as hasDestination } from "./items";
+
 defineOptions({ name: "NavigationMenuInline" });
 
 const props = defineProps<{
@@ -26,26 +29,6 @@ const emit = defineEmits<{
   select: [item: NavigationMenuItem, event: Event];
 }>();
 
-function getValue(item: NavigationMenuItem): string {
-  return item.value ?? (typeof item.to === "string" ? item.to : item.href) ?? item.label;
-}
-
-function hasDestination(item: NavigationMenuItem): boolean {
-  return Boolean(item.as || item.to != null || item.href !== undefined);
-}
-
-function getLeafComponent(item: NavigationMenuItem) {
-  if (item.as) return item.as;
-  if (item.to != null) return "RouterLink";
-  if (item.href !== undefined) return "a";
-  return "button";
-}
-
-function getDestinationProps(item: NavigationMenuItem): { to: unknown } | { href: string } | Record<string, never> {
-  if (item.to != null) return { to: item.to };
-  if (item.href !== undefined) return { href: item.href };
-  return {};
-}
 
 function isExpanded(item: NavigationMenuItem): boolean {
   return props.expanded.includes(getValue(item));
@@ -93,17 +76,10 @@ function rowSlot(item: NavigationMenuItem) {
   return props.providedSlots[item.children?.length ? "trigger" : "link"];
 }
 
-function renderRow(item: NavigationMenuItem) {
-  return rowSlot(item)?.(slotProps(item));
-}
-
 function hasPartSlot(name: string) {
   return Boolean(props.providedSlots[name]);
 }
 
-function renderPart(name: string, item: NavigationMenuItem) {
-  return props.providedSlots[name]?.(slotProps(item));
-}
 </script>
 
 <template>
@@ -168,14 +144,14 @@ function renderPart(name: string, item: NavigationMenuItem) {
           data-akaza-navigation-menu-inline-control
           @click="item.children?.length ? toggle(item, $event) : emit('select', item, $event)"
         >
-          <component :is="() => renderRow(item)" v-if="rowSlot(item)" />
+          <SlotContent v-if="rowSlot(item)" :render="rowSlot(item)!" :scope="{ ...slotProps(item) }" />
           <template v-else>
             <span
               v-if="hasPartSlot('item-leading')"
               :class="ui?.itemLeading"
               class="akaza-navigation-menu-item-leading"
             >
-              <component :is="() => renderPart('item-leading', item)" />
+              <SlotContent :render="providedSlots['item-leading']!" :scope="{ ...slotProps(item) }" />
             </span>
             <component
               :is="item.icon"
@@ -190,7 +166,7 @@ function renderPart(name: string, item: NavigationMenuItem) {
               :class="ui?.itemLabel"
               class="akaza-navigation-menu-item-label"
             >
-              <component :is="() => renderPart('item-label', item)" />
+              <SlotContent :render="providedSlots['item-label']!" :scope="{ ...slotProps(item) }" />
             </span>
             <span
               v-else
@@ -213,7 +189,7 @@ function renderPart(name: string, item: NavigationMenuItem) {
               :class="ui?.itemTrailing"
               class="akaza-navigation-menu-item-trailing"
             >
-              <component :is="() => renderPart('item-trailing', item)" />
+              <SlotContent :render="providedSlots['item-trailing']!" :scope="{ ...slotProps(item) }" />
             </span>
             <span
               v-if="item.children?.length && hasPartSlot('child-indicator')"
@@ -222,7 +198,7 @@ function renderPart(name: string, item: NavigationMenuItem) {
               class="akaza-navigation-menu-child-indicator"
               aria-hidden="true"
             >
-              <component :is="() => renderPart('child-indicator', item)" />
+              <SlotContent :render="providedSlots['child-indicator']!" :scope="{ ...slotProps(item) }" />
             </span>
           </template>
         </component>

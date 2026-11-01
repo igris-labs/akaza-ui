@@ -44,7 +44,12 @@ const sidebar = useSidebar(useTemplateRef<SidebarController>("navigation"));
 <template>
   <AppLayout>
     <template #header>
-      <button type="button" @click="sidebar.toggle">Navigation</button>
+      <button
+        type="button"
+        @click="sidebar.toggle"
+      >
+        Navigation
+      </button>
       <span>Workspace</span>
     </template>
 
@@ -55,9 +60,15 @@ const sidebar = useSidebar(useTemplateRef<SidebarController>("navigation"));
         aria-label="Workspace navigation"
       >
         <template #default="{ collapsed, isMobile, closeMobile }">
-          <button v-if="isMobile" type="button" @click="closeMobile">Close navigation</button>
+          <button
+            v-if="isMobile"
+            type="button"
+            @click="closeMobile"
+          >
+            Close navigation
+          </button>
           <nav aria-label="Workspace">
-            <a href="/projects">{{ collapsed ? 'P' : 'Projects' }}</a>
+            <a href="/projects">{{ collapsed ? "P" : "Projects" }}</a>
           </nav>
         </template>
       </Sidebar>
@@ -110,7 +121,14 @@ Use `content` when sidebars should extend alongside the bars. `full` spans all t
   <template #header>Workspace toolbar</template>
   <template #left><Sidebar aria-label="Navigation">Navigation</Sidebar></template>
   <h1>Workspace</h1>
-  <template #right><Sidebar side="right" aria-label="Inspector">Inspector</Sidebar></template>
+  <template #right>
+    <Sidebar
+      side="right"
+      aria-label="Inspector"
+    >
+      Inspector
+    </Sidebar>
+  </template>
   <template #footer>Workspace status</template>
 </AppLayout>
 ```
@@ -131,7 +149,14 @@ Choose `left` or `right` to span main plus only that side. Header and footer are
   <template #header>Header above navigation and main</template>
   <template #left><Sidebar aria-label="Navigation">Navigation</Sidebar></template>
   <h1>Workspace</h1>
-  <template #right><Sidebar side="right" aria-label="Inspector">Inspector</Sidebar></template>
+  <template #right>
+    <Sidebar
+      side="right"
+      aria-label="Inspector"
+    >
+      Inspector
+    </Sidebar>
+  </template>
   <template #footer>Footer below main and inspector</template>
 </AppLayout>
 ```
@@ -152,7 +177,11 @@ The contained preview scrolls as a whole; its header stays visible. In a full-sc
 
 ::component-code
 ```vue
-<AppLayout scroll="page" sticky-header sticky-sides>
+<AppLayout
+  scroll="page"
+  sticky-header
+  sticky-sides
+>
   <template #header>Page toolbar</template>
   <template #left><Sidebar aria-label="Navigation">Navigation</Sidebar></template>
   <article>Long page content</article>
@@ -173,7 +202,11 @@ Disable `viewport` when embedding a shell inside another page. Content-scrolling
 ::component-code
 ```vue
 <div style="height: 24rem">
-  <AppLayout :viewport="false" main-as="div" main-label="Workspace preview">
+  <AppLayout
+    :viewport="false"
+    main-as="div"
+    main-label="Workspace preview"
+  >
     <template #header>Preview toolbar</template>
     <p>Scrollable preview content</p>
   </AppLayout>
@@ -205,12 +238,27 @@ const sidebar = useSidebar(useTemplateRef<SidebarController>("navigation"));
 <template>
   <AppLayout :layout="{ left: 'overlay' }">
     <template #header>
-      <button type="button" @click="sidebar.toggle">Navigation</button>
+      <button
+        type="button"
+        @click="sidebar.toggle"
+      >
+        Navigation
+      </button>
     </template>
     <template #left>
-      <Sidebar ref="navigation" collapsible="offcanvas" aria-label="Navigation">
+      <Sidebar
+        ref="navigation"
+        collapsible="offcanvas"
+        aria-label="Navigation"
+      >
         <template #default="{ isMobile, closeMobile }">
-          <button v-if="isMobile" type="button" @click="closeMobile">Close navigation</button>
+          <button
+            v-if="isMobile"
+            type="button"
+            @click="closeMobile"
+          >
+            Close navigation
+          </button>
           Navigation
         </template>
       </Sidebar>

@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import type { EditableProps, EditableState } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
-import { computed, inject, nextTick, onBeforeUnmount, onMounted, onUpdated, ref, useId } from "vue";
+import { computed, inject, nextTick, onMounted, onUpdated, ref, useId } from "vue";
+import { createChangeDetails as createDetails } from "../../utils/changeEvent";
+import { useFieldControl } from "../../utils/useFieldControl";
 import { useFormReset } from "../../utils/useFormReset";
 import { fieldContextKey } from "../field/context";
 
@@ -47,9 +49,7 @@ const focused = ref(false);
 const preserveSelectionOnPointerUp = ref(false);
 const touched = ref(false);
 const validationActive = ref(false);
-const nativeInvalid = ref(false);
-const validationMessage = ref("");
-const validity = ref<ValidityState | null>(null);
+const { nativeInvalid, validationMessage, syncValidity, registerControl } = useFieldControl(field);
 const initialValue = model.value;
 
 const resolvedId = computed(() => id ?? field?.inputId.value ?? `akaza-editable-${autoId}`);
@@ -65,27 +65,13 @@ const state = computed(() => editing.value ? "editing" : "preview");
 const previewPlaceholder = computed(() => typeof placeholder === "string" ? placeholder : (placeholder.preview ?? "Enter text..."));
 const editPlaceholder = computed(() => typeof placeholder === "string" ? placeholder : (placeholder.edit ?? "Enter text..."));
 
-const unregister = field?.registerControl({
+registerControl({
   dirty: isDirty,
   touched,
   filled: isFilled,
   focused,
-  invalid: nativeInvalid,
-  validationMessage,
-  validity,
 });
 
-function createDetails(reason: string, event?: Event) {
-  let canceled = false;
-  const details: AkazaChangeEventDetails = {
-    reason,
-    ...(event && { event }),
-    cancel: () => {
-      canceled = true;
-    },
-  };
-  return { details, canceled: () => canceled };
-}
 
 useFormReset(() => hiddenRef.value, () => {
   model.value = initialValue;
@@ -100,9 +86,7 @@ function updateValidity(reveal = validationActive.value) {
   const input = hiddenRef.value;
   if (!input) return;
   input.setCustomValidity(isRequired.value && !(model.value ?? "").length ? "Enter a value." : "");
-  validity.value = input.validity;
-  nativeInvalid.value = reveal && !input.validity.valid;
-  validationMessage.value = input.validationMessage;
+  syncValidity(input, reveal);
 }
 
 function focusInput() {
@@ -245,7 +229,6 @@ onMounted(() => {
   if (startWithEditMode) focusInput();
 });
 onUpdated(updateValidity);
-onBeforeUnmount(() => unregister?.());
 </script>
 
 <template>

@@ -24,6 +24,8 @@ for (const kind of ["menu", "context-menu", "menubar"] as const) {
     await expect(root).toBeVisible();
     await root.evaluate(element => element.setAttribute("data-edge-test", ""));
     await page.addStyleTag({ content: '[data-edge-test] { position: fixed !important; top: 60px !important; left: auto !important; right: 8px !important; width: 180px !important; min-width: 0 !important; transform: none !important; scale: none !important; translate: none !important; }' });
+    // Moving the panel must not turn this keyboard check into a concurrent hover interaction.
+    await page.mouse.move(1, 1);
     const trigger = root.locator(".akaza-menu-submenu-trigger").first();
     await trigger.focus();
     await trigger.press("ArrowRight");
@@ -36,6 +38,8 @@ for (const kind of ["menu", "context-menu", "menubar"] as const) {
     await expect(trigger).toBeFocused();
     await expect(root).toBeVisible();
 
+    // Keyboard dismissal can leave the pointer within the row's former submenu.
+    await page.mouse.move(1, 1);
     await trigger.hover();
     await expect(submenu).toBeVisible();
     await expectInsideViewport(submenu);

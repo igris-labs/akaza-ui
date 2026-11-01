@@ -47,7 +47,10 @@ Use `side` and `align` to control where the panel appears relative to the trigge
 
 ```vue
 <template>
-  <Popover side="top" align="center">
+  <Popover
+    side="top"
+    align="center"
+  >
     <template #trigger="{ toggle }">
       <button @click="toggle">Info</button>
     </template>
@@ -142,6 +145,18 @@ By default the popover stays in the DOM tree next to its trigger. Pass `teleport
 |--------|-----------|------------|
 | `root` | `akaza-popover-root` | `data-akaza-state` |
 | `content` | `akaza-popover-content` | `data-akaza-state`, `data-akaza-side`, `data-akaza-align` |
+
+### Positioning Variables
+
+The panel updates when its trigger or content resizes, and on viewport scroll or resize. Placement can switch sides to fit the viewport.
+
+| Variable | Meaning |
+| --- | --- |
+| `--akaza-popover-anchor-width` | Anchor width in pixels. |
+| `--akaza-popover-anchor-height` | Anchor height in pixels. |
+| `--akaza-popover-available-width` | Viewport width after collision padding. |
+| `--akaza-popover-available-height` | Viewport height after collision padding. |
+| `--akaza-popover-transform-origin` | Origin matching the resolved side and alignment. |
 
 ### Keyboard
 

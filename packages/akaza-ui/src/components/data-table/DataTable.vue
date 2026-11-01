@@ -21,6 +21,7 @@ import type { AkazaChangeEventDetails } from "../../types";
 import type { PaginationUi } from "../pagination";
 import { computed, onBeforeUnmount, ref, useAttrs, useId, useSlots } from "vue";
 import { useDataTable } from "../../composables/data-table";
+import { createChangeDetails as changeDetails } from "../../utils/changeEvent";
 import { Pagination } from "../pagination";
 import DataTableRender from "./DataTableRender";
 
@@ -171,18 +172,6 @@ const liveMessage = computed(() => {
   if (props.error) return labels.value.error;
   return `${table.filteredRowCount.value} result${table.filteredRowCount.value === 1 ? "" : "s"}`;
 });
-
-function changeDetails(reason: string, event?: Event) {
-  let canceled = false;
-  const details: AkazaChangeEventDetails = {
-    reason,
-    ...(event && { event }),
-    cancel: () => {
-      canceled = true;
-    },
-  };
-  return { details, canceled: () => canceled };
-}
 
 function columnLabel(column: DataTableColumnInstance<T>): string {
   return typeof column.definition.header === "string" ? column.definition.header : column.id;

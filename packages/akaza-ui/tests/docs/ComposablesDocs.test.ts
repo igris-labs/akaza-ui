@@ -5,12 +5,12 @@ import { compileScript, compileTemplate, parse } from "vue/compiler-sfc";
 import * as akaza from "../../src/index";
 
 const contentRoot = resolve(__dirname, "../../../../docs/content");
-const pages = ["use-data-table", "use-overlay", "use-sidebar", "use-toast"];
+const pages = ["use-color", "use-data-table", "use-disclosure", "use-form-reset", "use-overlay", "use-sidebar", "use-toast", "use-typeahead"];
 
 describe("public composable documentation", () => {
   it("documents every public use composable without exposing internal helpers", () => {
     const names = Object.keys(akaza).filter(name => /^use[A-Z]/.test(name)).sort();
-    expect(names).toEqual(["useDataTable", "useOverlay", "useSidebar", "useToast"]);
+    expect(names).toEqual(["useColor", "useDataTable", "useDisclosure", "useFormReset", "useOverlay", "useSidebar", "useToast", "useTypeahead"]);
     const index = readFileSync(resolve(contentRoot, "2.composables/1.index.md"), "utf8");
     for (const page of pages) expect(index).toContain(`/composables/${page}`);
     const toast = readFileSync(resolve(contentRoot, "2.composables/use-toast.md"), "utf8");

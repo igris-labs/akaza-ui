@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import type { InputProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
-import { computed, inject, nextTick, onBeforeUnmount, onMounted, onUpdated, ref, useId, useTemplateRef } from "vue";
+import { computed, inject, nextTick, onMounted, onUpdated, ref, useId, useTemplateRef } from "vue";
+import { createChangeDetails } from "../../utils/changeEvent";
+import { useFieldControl } from "../../utils/useFieldControl";
+import { useFormReset } from "../../utils/useFormReset";
 import { fieldContextKey } from "../field/context";
 
 const {
@@ -35,10 +38,7 @@ const initialValue = model.value;
 const focused = ref(false);
 const touched = ref(false);
 const validationActive = ref(false);
-const nativeInvalid = ref(false);
-const validationMessage = ref("");
-const validity = ref<ValidityState | null>(null);
-let formElement: HTMLFormElement | null = null;
+const { nativeInvalid, syncValidity, registerControl } = useFieldControl(field);
 
 const resolvedId = computed(() => id ?? field?.inputId.value ?? `akaza-input-${autoId}`);
 const resolvedName = computed(() => name ?? field?.name.value);
@@ -50,14 +50,11 @@ const describedBy = computed(() => ariaDescribedby ?? field?.describedBy.value);
 const isFilled = computed(() => model.value.length > 0);
 const isDirty = computed(() => model.value !== initialValue);
 
-const unregister = field?.registerControl({
+registerControl({
   dirty: isDirty,
   touched,
   filled: isFilled,
   focused,
-  invalid: nativeInvalid,
-  validationMessage,
-  validity,
 });
 
 const stateAttrs = computed(() => ({
@@ -80,23 +77,15 @@ const stateAttrs = computed(() => ({
 function updateValidity(reveal = validationActive.value) {
   const input = inputRef.value;
   if (!input) return;
-  validity.value = input.validity;
-  nativeInvalid.value = reveal && !input.validity.valid;
-  validationMessage.value = input.validationMessage;
+  syncValidity(input, reveal);
 }
 
 function onInput(event: Event) {
   validationActive.value = true;
   const value = (event.target as HTMLInputElement).value;
-  let canceled = false;
-  emit("value-change", value, {
-    reason: "input",
-    event,
-    cancel: () => {
-      canceled = true;
-    },
-  });
-  if (!canceled) model.value = value;
+  const changeEvent = createChangeDetails("input", event);
+  emit("value-change", value, changeEvent.details);
+  if (!changeEvent.canceled()) model.value = value;
   else (event.target as HTMLInputElement).value = model.value;
   updateValidity();
 }
@@ -117,27 +106,19 @@ function onInvalid() {
   updateValidity();
 }
 
-async function onFormReset(event: Event) {
-  await nextTick();
-  if (event.defaultPrevented) return;
+useFormReset(() => inputRef.value, () => {
   model.value = initialValue;
   focused.value = false;
   touched.value = false;
   validationActive.value = false;
   nativeInvalid.value = false;
   nextTick(() => updateValidity(false));
-}
+});
 
 onMounted(() => {
   updateValidity(false);
-  formElement = inputRef.value?.form ?? null;
-  formElement?.addEventListener("reset", onFormReset);
 });
 onUpdated(updateValidity);
-onBeforeUnmount(() => {
-  formElement?.removeEventListener("reset", onFormReset);
-  unregister?.();
-});
 </script>
 
 <template>

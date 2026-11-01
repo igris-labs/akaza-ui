@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { ToggleProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
+import { createChangeDetails } from "../../utils/changeEvent";
 
 const { as = "button", disabled = false, ariaLabel, ui } = defineProps<ToggleProps>();
 
@@ -13,13 +14,9 @@ const model = defineModel<boolean>({ default: false });
 function toggle(event?: Event) {
   if (disabled) return;
   const next = !model.value;
-  let canceled = false;
-  emit("pressed-change", next, {
-    reason: event ? "trigger" : "programmatic",
-    ...(event && { event }),
-    cancel: () => { canceled = true; },
-  });
-  if (!canceled) model.value = next;
+  const changeEvent = createChangeDetails(event ? "trigger" : "programmatic", event);
+  emit("pressed-change", next, changeEvent.details);
+  if (!changeEvent.canceled()) model.value = next;
 }
 
 function onKeydown(event: KeyboardEvent) {

@@ -10,7 +10,7 @@ import type { AkazaChangeEventDetails } from "../../types";
 import { useEventListener } from "@vueuse/core";
 import { computed, onBeforeUnmount, ref, useId, watch } from "vue";
 import { useSidebar } from "../../composables/sidebar";
-import { resolveAction } from "../../utils/changeEvent";
+import { createChangeDetails, resolveAction } from "../../utils/changeEvent";
 import { Drawer } from "../drawer";
 
 defineOptions({ inheritAttrs: false });
@@ -135,13 +135,9 @@ const mobileUi = computed(() => ({
 
 function changeOpen(next: boolean, reason: string, event?: Event) {
   if (openState.value === next) return;
-  let canceled = false;
-  emit("open-change", next, {
-    reason,
-    ...(event && { event }),
-    cancel: () => { canceled = true; },
-  });
-  if (!canceled) {
+  const changeEvent = createChangeDetails(reason, event);
+  emit("open-change", next, changeEvent.details);
+  if (!changeEvent.canceled()) {
     // Safari does not focus buttons on pointer activation; keep a modal return target.
     if (next && event?.currentTarget instanceof HTMLElement) {
       event.currentTarget.focus({ preventScroll: true });
@@ -152,27 +148,18 @@ function changeOpen(next: boolean, reason: string, event?: Event) {
 
 function changeCollapsed(next: boolean, reason: string, event?: Event) {
   if (props.collapsible === false || collapsedState.value === next) return;
-  let canceled = false;
-  emit("collapsed-change", next, {
-    reason,
-    ...(event && { event }),
-    cancel: () => { canceled = true; },
-  });
-  if (!canceled) collapsedState.value = next;
+  const changeEvent = createChangeDetails(reason, event);
+  emit("collapsed-change", next, changeEvent.details);
+  if (!changeEvent.canceled()) collapsedState.value = next;
 }
 
 function changeSize(next: number, reason: string, event?: Event) {
   const value = clampSize(next);
   const previousSize = currentSize.value;
   if (value === previousSize) return;
-  let canceled = false;
-  emit("size-change", value, {
-    reason,
-    previousSize,
-    ...(event && { event }),
-    cancel: () => { canceled = true; },
-  });
-  if (!canceled) currentSize.value = value;
+  const changeEvent = createChangeDetails(reason, event);
+  emit("size-change", value, { ...changeEvent.details, previousSize });
+  if (!changeEvent.canceled()) currentSize.value = value;
 }
 
 function openMobile(reasonOrEvent?: string | Event, event?: Event) {
@@ -216,13 +203,9 @@ function resetSize(reasonOrEvent?: string | Event, event?: Event) {
 }
 
 function onDrawerOpenChange(next: boolean, details: AkazaChangeEventDetails) {
-  let canceled = false;
-  emit("open-change", next, {
-    reason: details.reason,
-    ...(details.event && { event: details.event }),
-    cancel: () => { canceled = true; },
-  });
-  if (canceled) details.cancel();
+  const changeEvent = createChangeDetails(details.reason, details.event);
+  emit("open-change", next, changeEvent.details);
+  if (changeEvent.canceled()) details.cancel();
 }
 
 function onMobileContentClick(event: MouseEvent) {

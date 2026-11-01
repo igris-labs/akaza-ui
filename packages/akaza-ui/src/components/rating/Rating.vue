@@ -2,7 +2,9 @@
 import type { ComponentPublicInstance } from "vue";
 import type { RatingProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
-import { computed, inject, nextTick, onBeforeUnmount, onMounted, onUpdated, ref, useId } from "vue";
+import { computed, inject, nextTick, onMounted, onUpdated, ref, useId } from "vue";
+import { createChangeDetails as createDetails } from "../../utils/changeEvent";
+import { useFieldControl } from "../../utils/useFieldControl";
 import { useFormReset } from "../../utils/useFormReset";
 import { fieldContextKey } from "../field/context";
 
@@ -44,9 +46,7 @@ const focusedValue = ref<number | null>(null);
 const focused = ref(false);
 const touched = ref(false);
 const validationActive = ref(false);
-const nativeInvalid = ref(false);
-const validationMessage = ref("");
-const validity = ref<ValidityState | null>(null);
+const { nativeInvalid, syncValidity, registerControl } = useFieldControl(field);
 const initialValue = model.value;
 
 const safeLength = computed(() => Math.max(1, Math.floor(length)));
@@ -66,14 +66,11 @@ const isInvalid = computed(() => invalid || field?.invalid.value || nativeInvali
 const state = computed(() => isFilled.value ? "selected" : "empty");
 const tabStopValue = computed(() => focusedValue.value ?? (normalizedValue.value > 0 ? normalizedValue.value : values.value[0]));
 
-const unregister = field?.registerControl({
+registerControl({
   dirty: isDirty,
   touched,
   filled: isFilled,
   focused,
-  invalid: nativeInvalid,
-  validationMessage,
-  validity,
 });
 
 function round(value: number): number {
@@ -97,17 +94,6 @@ function stepsForItem(item: number): number[] {
   return itemValues;
 }
 
-function createDetails(reason: string, event?: Event) {
-  let canceled = false;
-  const details: AkazaChangeEventDetails = {
-    reason,
-    ...(event && { event }),
-    cancel: () => {
-      canceled = true;
-    },
-  };
-  return { details, canceled: () => canceled };
-}
 
 function valueLabel(value: number): string {
   return getValueLabel?.(value, safeLength.value) ?? `${value} of ${safeLength.value}`;
@@ -126,9 +112,7 @@ function updateValidity(reveal = validationActive.value) {
   const input = hiddenRef.value;
   if (!input) return;
   input.setCustomValidity(isRequired.value && !isFilled.value ? "Select a rating." : "");
-  validity.value = input.validity;
-  nativeInvalid.value = reveal && !input.validity.valid;
-  validationMessage.value = input.validationMessage;
+  syncValidity(input, reveal);
 }
 
 function setValue(value: number, reason: string, event?: Event): boolean {
@@ -247,7 +231,6 @@ onMounted(() => {
   if (autoFocus) nextTick(() => focusValue(normalizedValue.value || values.value[0] || 0));
 });
 onUpdated(updateValidity);
-onBeforeUnmount(() => unregister?.());
 </script>
 
 <template>

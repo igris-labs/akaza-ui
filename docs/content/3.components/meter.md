@@ -31,7 +31,10 @@ import { Meter } from "akaza-ui";
 </script>
 
 <template>
-  <Meter label="Storage used" :value="64" />
+  <Meter
+    label="Storage used"
+    :value="64"
+  />
 </template>
 ```
 ::
@@ -44,7 +47,10 @@ Use a basic meter for a read-only value inside a known min/max range.
 
 ```vue
 <template>
-  <Meter label="Storage used" :value="64" />
+  <Meter
+    label="Storage used"
+    :value="64"
+  />
 </template>
 ```
 
@@ -100,10 +106,11 @@ Slots receive value, formatted value, percentage, and state where relevant.
 
 ```vue
 <template>
-  <Meter :value="health" label="Health">
-    <template #value="{ percentage }">
-      {{ Math.round(percentage) }}%
-    </template>
+  <Meter
+    :value="health"
+    label="Health"
+  >
+    <template #value="{ percentage }">{{ Math.round(percentage) }}%</template>
   </Meter>
 </template>
 ```

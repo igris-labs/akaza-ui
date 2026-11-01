@@ -1,11 +1,10 @@
 <script setup lang="ts">
 import type { AlertDialogProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
-import { nextTick, useId, useTemplateRef, watch } from "vue";
+import { useId, useTemplateRef } from "vue";
 import { useAlertDialog } from "../../composables/alert-dialog";
-import { resolveAction } from "../../utils/changeEvent";
-import { useDismissableLayer } from "../../utils/dismissableLayer";
-import { useFocusScope } from "../../utils/focusScope";
+import { createChangeDetails, resolveAction } from "../../utils/changeEvent";
+import { useModalLifecycle } from "../../utils/useModalLifecycle";
 
 const {
   as = "div",
@@ -29,36 +28,22 @@ const contentRef = useTemplateRef<HTMLElement>("contentRef");
 const overlayRef = useTemplateRef<HTMLElement>("overlayRef");
 const titleId = useId();
 const descriptionId = useId();
-const { activate, deactivate } = useFocusScope(contentRef, {
+const { layerOrder, captureRestoreTarget } = useModalLifecycle({
+  open: isOpen,
+  content: contentRef,
+  overlay: overlayRef,
+  onEscape: () => {},
   initialFocusSelector: "[data-akaza-cancel]",
-  getExemptElements: () => [overlayRef.value],
 });
-const { layerOrder, register, unregister } = useDismissableLayer(() => {});
-let restoreFocusTarget: HTMLElement | null = null;
 
-function getEventTarget(event?: Event) {
-  return event?.currentTarget instanceof HTMLElement ? event.currentTarget : null;
-}
 
-watch(isOpen, async (val) => {
-  if (val) {
-    const focusTarget = restoreFocusTarget
-      ?? (typeof document !== "undefined" ? document.activeElement as HTMLElement : null);
-    await nextTick();
-    activate(focusTarget);
-    restoreFocusTarget = null;
-    register();
-  } else {
-    deactivate();
-    unregister();
-  }
-}, { immediate: true });
+
 
 function handleChange(open: boolean, reason: string, event?: Event) {
-  let canceled = false;
-  emit('open-change', open, { reason, ...(event && { event }), cancel: () => { canceled = true; } });
-  if (canceled) return;
-  if (open) restoreFocusTarget = getEventTarget(event);
+  const changeEvent = createChangeDetails(reason, event);
+  emit('open-change', open, changeEvent.details);
+  if (changeEvent.canceled()) return;
+  if (open) captureRestoreTarget(event);
   open ? _open() : _close();
 }
 

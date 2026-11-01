@@ -31,7 +31,10 @@ import { Drawer } from "akaza-ui";
 </script>
 
 <template>
-  <Drawer title="Cart" side="right">
+  <Drawer
+    title="Cart"
+    side="right"
+  >
     <template #trigger="{ toggle }">
       <button @click="toggle">Open cart</button>
     </template>
@@ -57,7 +60,10 @@ Use `side="bottom"` for mobile-style sheets and short task flows.
 
 ```vue
 <template>
-  <Drawer side="bottom" title="Options">
+  <Drawer
+    side="bottom"
+    title="Options"
+  >
     <template #trigger="{ toggle }">
       <button @click="toggle">Open options</button>
     </template>
@@ -74,7 +80,10 @@ Disable swipe dismissal when accidental close would be costly.
 
 ```vue
 <template>
-  <Drawer :swipe-to-close="false" title="Required">
+  <Drawer
+    :swipe-to-close="false"
+    title="Required"
+  >
     <template #trigger="{ toggle }">
       <button @click="toggle">Open</button>
     </template>

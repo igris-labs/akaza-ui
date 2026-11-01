@@ -58,7 +58,17 @@ The `#trigger` slot renders inside the trigger button. Use `ui.trigger` to style
     </template>
 
     <template #icon="{ isOpen }">
-      <svg :class="['chevron', { 'chevron--open': isOpen }]" .../>
+      <svg
+        :class="['chevron', { 'chevron--open': isOpen }]"
+        viewBox="0 0 24 24"
+        width="16"
+        height="16"
+        fill="none"
+        stroke="currentColor"
+        aria-hidden="true"
+      >
+        <path d="m6 9 6 6 6-6" />
+      </svg>
     </template>
 
     <template #content>

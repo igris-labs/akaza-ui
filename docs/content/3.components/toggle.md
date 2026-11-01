@@ -28,7 +28,10 @@ const bold = ref(false);
 </script>
 
 <template>
-  <Toggle v-model="bold" aria-label="Bold">
+  <Toggle
+    v-model="bold"
+    aria-label="Bold"
+  >
     <template #default="{ pressed }">
       <strong :class="{ active: pressed }">B</strong>
     </template>
@@ -45,14 +48,23 @@ Use `Toggle` inside toolbars for independent on/off controls.
 
 ```vue
 <template>
-  <div role="toolbar" aria-label="Text formatting">
-    <Toggle v-model="bold" aria-label="Bold">
+  <div
+    role="toolbar"
+    aria-label="Text formatting"
+  >
+    <Toggle
+      v-model="bold"
+      aria-label="Bold"
+    >
       <template #default="{ pressed }">
         <span :data-active="pressed">B</span>
       </template>
     </Toggle>
 
-    <Toggle v-model="italic" aria-label="Italic">
+    <Toggle
+      v-model="italic"
+      aria-label="Italic"
+    >
       <template #default="{ pressed }">
         <span :data-active="pressed">I</span>
       </template>
@@ -67,7 +79,10 @@ Use `Toggle` inside toolbars for independent on/off controls.
 
 ```vue
 <template>
-  <Toggle v-model="active" aria-label="Mute">
+  <Toggle
+    v-model="active"
+    aria-label="Mute"
+  >
     <template #default="{ state }">
       <span :data-state="state">🔇</span>
     </template>

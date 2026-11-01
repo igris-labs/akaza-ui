@@ -2,7 +2,9 @@
 import type { ToggleGroupModel, ToggleGroupOption, ToggleGroupProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
 import { computed, ref } from "vue";
+import { createChangeDetails } from "../../utils/changeEvent";
 import { useCheckableField } from "../../utils/useCheckableField";
+import { useRovingFocus } from "../../utils/useRovingFocus";
 
 const {
   options,
@@ -65,6 +67,8 @@ function isSelected(option: ToggleGroupOption): boolean {
   return selectedValues.value.includes(getValue(option));
 }
 
+const roving = useRovingFocus({ items: () => options, isDisabled: isItemDisabled, loop: () => loop });
+
 function getRovingIndex(): number {
   if (options[focusedIndex.value] && !isItemDisabled(options[focusedIndex.value]!)) return focusedIndex.value;
   const selectedIndex = options.findIndex((option) => isSelected(option) && !isItemDisabled(option));
@@ -102,32 +106,17 @@ function select(option: ToggleGroupOption, event?: Event) {
   if (isItemDisabled(option) || inputRef.value?.matches(":disabled")) return;
   const next = nextValue(option);
   if (effectiveRequired.value && (Array.isArray(next) ? next.length === 0 : !next)) return;
-  let canceled = false;
-  emit("value-change", next, {
-    reason: event ? "trigger" : "programmatic",
-    ...(event && { event }),
-    cancel: () => {
-      canceled = true;
-    },
-  });
-  if (!canceled) {
+  const changeEvent = createChangeDetails(event ? "trigger" : "programmatic", event);
+  emit("value-change", next, changeEvent.details);
+  if (!changeEvent.canceled()) {
     model.value = next;
     bridge.onChange();
   }
 }
 
 function move(index: number, delta: number) {
-  const count = options.length;
-  let next = index;
-  for (let step = 0; step < count; step++) {
-    next += delta;
-    if (loop) next = (next + count) % count;
-    if (next < 0 || next >= count) return;
-    if (!isItemDisabled(options[next]!)) {
-      focusItem(next);
-      return;
-    }
-  }
+  const next = roving.nextIndex(index, delta);
+  if (next >= 0) focusItem(next);
 }
 
 function handleKeydown(event: KeyboardEvent, index: number) {

@@ -32,7 +32,10 @@ import { Field, Input } from "akaza-ui";
 </script>
 
 <template>
-  <Field label="Email" description="Used for notifications.">
+  <Field
+    label="Email"
+    description="Used for notifications."
+  >
     <Input type="email" />
   </Field>
 </template>
@@ -69,7 +72,10 @@ Pass `error` when you want the field to show a controlled validation message. Ex
     label="Email"
     error="Enter a valid email address."
   >
-    <Input type="email" invalid />
+    <Input
+      type="email"
+      invalid
+    />
   </Field>
 </template>
 ```
@@ -85,7 +91,10 @@ Use `error-match` to show the browser validation message only for a matching val
     label="Email"
     error-match="typeMismatch"
   >
-    <Input type="email" required />
+    <Input
+      type="email"
+      required
+    />
   </Field>
 </template>
 ```
@@ -96,7 +105,11 @@ Pass `controlProps` to native controls so ids, names, required state, disabled s
 
 ```vue
 <template>
-  <Field v-slot="{ controlProps }" name="bio" label="Bio">
+  <Field
+    v-slot="{ controlProps }"
+    name="bio"
+    label="Bio"
+  >
     <textarea v-bind="controlProps" />
   </Field>
 </template>
@@ -108,7 +121,11 @@ Use scoped state to render custom status text or styling beside the control.
 
 ```vue
 <template>
-  <Field v-slot="{ invalid, focused }" label="Project" name="project">
+  <Field
+    v-slot="{ invalid, focused }"
+    label="Project"
+    name="project"
+  >
     <Input />
     <span>{{ focused ? "Editing" : invalid ? "Needs attention" : "Ready" }}</span>
   </Field>

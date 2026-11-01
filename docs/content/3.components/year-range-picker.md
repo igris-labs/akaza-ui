@@ -3,9 +3,6 @@ title: Year Range Picker
 description: Accessible year-level range selection with preview, limits, fixed endpoints, and paging.
 navigation:
   icon: i-lucide-calendar-range
-  badge:
-    label: NEW
-    color: success
 ---
 
 `YearRangePicker` selects inclusive year ranges. It combines Year Picker's paged grid and roving focus with range anchoring, preview, maximum length, non-contiguous rules, and fixed endpoints.
@@ -36,7 +33,10 @@ const range = shallowRef<CalendarDateRange>({});
 </script>
 
 <template>
-  <YearRangePicker v-model="range" :maximum-years="6" />
+  <YearRangePicker
+    v-model="range"
+    :maximum-years="6"
+  />
 </template>
 ```
 ::
@@ -48,7 +48,10 @@ const range = shallowRef<CalendarDateRange>({});
 `maximumYears` counts both endpoints and rejects a longer second selection.
 
 ```vue
-<YearRangePicker v-model="range" :maximum-years="5" />
+<YearRangePicker
+  v-model="range"
+  :maximum-years="5"
+/>
 ```
 
 ### Fixed boundary
@@ -65,14 +68,17 @@ The fixed endpoint must exist. Selections before a fixed start, or after a fixed
 ### Custom page shape
 
 ```vue
-<YearRangePicker :years-per-page="16" :columns="4" />
+<YearRangePicker
+  :years-per-page="16"
+  :columns="4"
+/>
 ```
 
 ### Unavailable years
 
 ```vue
 <YearRangePicker
-  :is-year-unavailable="date => suspendedYears.has(date.year)"
+  :is-year-unavailable="(date) => suspendedYears.has(date.year)"
   allow-non-contiguous-ranges
 />
 ```

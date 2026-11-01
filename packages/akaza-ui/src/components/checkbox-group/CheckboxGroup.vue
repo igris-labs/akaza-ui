@@ -3,6 +3,7 @@ import type { CheckboxGroupOption, CheckboxGroupProps, CheckboxGroupValue } from
 import type { AkazaChangeEventDetails } from "../../types";
 import type { CheckboxUi, CheckboxValue } from "../checkbox";
 import { computed, provide, useTemplateRef } from "vue";
+import { createChangeDetails } from "../../utils/changeEvent";
 import { useCheckableField } from "../../utils/useCheckableField";
 import { Checkbox } from "../checkbox";
 import { fieldContextKey } from "../field/context";
@@ -101,15 +102,9 @@ function setOption(option: CheckboxGroupOption, checked: boolean, details: Akaza
     ? [...new Set([...model.value, value])]
     : model.value.filter((item) => item !== value);
 
-  let canceled = false;
-  emit("value-change", next, {
-    reason: details.reason,
-    ...(details.event && { event: details.event }),
-    cancel: () => {
-      canceled = true;
-    },
-  });
-  if (canceled) {
+  const changeEvent = createChangeDetails(details.reason, details.event);
+  emit("value-change", next, changeEvent.details);
+  if (changeEvent.canceled()) {
     details.cancel();
     return;
   }
@@ -122,15 +117,9 @@ function setAll(value: CheckboxValue, details: AkazaChangeEventDetails) {
   const checked = value === true;
   const retained = model.value.filter(item => !enabledOptionValues.value.includes(item));
   const targetValues = checked ? [...retained, ...enabledOptionValues.value] : retained;
-  let canceled = false;
-  emit("value-change", targetValues, {
-    reason: details.reason,
-    ...(details.event && { event: details.event }),
-    cancel: () => {
-      canceled = true;
-    },
-  });
-  if (canceled) {
+  const changeEvent = createChangeDetails(details.reason, details.event);
+  emit("value-change", targetValues, changeEvent.details);
+  if (changeEvent.canceled()) {
     details.cancel();
     return;
   }

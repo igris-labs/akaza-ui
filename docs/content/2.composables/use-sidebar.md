@@ -36,11 +36,32 @@ const inspector = useSidebar(inspectorRef);
 </script>
 
 <template>
-  <button type="button" @click="primary.toggle">Toggle navigation</button>
-  <button type="button" @click="inspector.toggle">Toggle inspector</button>
+  <button
+    type="button"
+    @click="primary.toggle"
+  >
+    Toggle navigation
+  </button>
+  <button
+    type="button"
+    @click="inspector.toggle"
+  >
+    Toggle inspector
+  </button>
 
-  <Sidebar ref="primary" collapsible="icon">...</Sidebar>
-  <Sidebar ref="inspector" side="right" collapsible="offcanvas">...</Sidebar>
+  <Sidebar
+    ref="primary"
+    collapsible="icon"
+  >
+    ...
+  </Sidebar>
+  <Sidebar
+    ref="inspector"
+    side="right"
+    collapsible="offcanvas"
+  >
+    ...
+  </Sidebar>
 </template>
 ```
 
@@ -65,7 +86,12 @@ const { isMobile, state, toggle } = useSidebar({
 </script>
 
 <template>
-  <button type="button" @click="toggle">Toggle sidebar</button>
+  <button
+    type="button"
+    @click="toggle"
+  >
+    Toggle sidebar
+  </button>
   <output>{{ state }}</output>
 
   <Sidebar

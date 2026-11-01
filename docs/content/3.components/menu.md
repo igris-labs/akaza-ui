@@ -34,7 +34,10 @@ const items = [
 </script>
 
 <template>
-  <Menu :items="items" @select="({ value }) => console.log(value)">
+  <Menu
+    :items="items"
+    @select="({ value }) => console.log(value)"
+  >
     <template #trigger="{ toggle }">
       <button @click="toggle">Actions ▾</button>
     </template>
@@ -56,9 +59,7 @@ const items = [
     { label: "Edit", value: "edit" },
     { label: "Rename", value: "rename" },
   ],
-  [
-    { label: "Delete", value: "delete" },
-  ],
+  [{ label: "Delete", value: "delete" }],
 ];
 </script>
 
@@ -78,10 +79,20 @@ Use checkbox item types for toggles inside a menu.
 ```vue
 <script setup lang="ts">
 const items = [
-  { type: "checkbox", label: "Show sidebar", checked: true, value: "sidebar",
-    onUpdateChecked: (v) => console.log("sidebar:", v) },
-  { type: "checkbox", label: "Compact mode", checked: false, value: "compact",
-    onUpdateChecked: (v) => console.log("compact:", v) },
+  {
+    type: "checkbox",
+    label: "Show sidebar",
+    checked: true,
+    value: "sidebar",
+    onUpdateChecked: (v) => console.log("sidebar:", v),
+  },
+  {
+    type: "checkbox",
+    label: "Compact mode",
+    checked: false,
+    value: "compact",
+    onUpdateChecked: (v) => console.log("compact:", v),
+  },
 ];
 </script>
 ```
@@ -102,7 +113,10 @@ const items = [
 </script>
 
 <template>
-  <Menu :items="items" v-model:radio-values="radioValues">
+  <Menu
+    :items="items"
+    v-model:radio-values="radioValues"
+  >
     <template #trigger="{ toggle }">
       <button @click="toggle">View ▾</button>
     </template>
@@ -119,10 +133,13 @@ Submenus prefer the right side in LTR and the left side in RTL (`dir="rtl"`). Th
 ```vue
 <script setup lang="ts">
 const items = [
-  { label: "Share", children: [
-    { label: "Copy link", value: "copy-link" },
-    { label: "Send email", value: "send-email" },
-  ]},
+  {
+    label: "Share",
+    children: [
+      { label: "Copy link", value: "copy-link" },
+      { label: "Send email", value: "send-email" },
+    ],
+  },
 ];
 </script>
 ```
@@ -223,6 +240,18 @@ Changes to `ui`, radio values, and close-on-select settings remain reactive in n
 | `submenuContent` | `akaza-menu-submenu-content` | `data-akaza-submenu`, `data-akaza-side`, `data-akaza-align` |
 
 Submenus expose `--akaza-menu-submenu-anchor-width`, `--akaza-menu-submenu-anchor-height`, `--akaza-menu-submenu-available-width`, `--akaza-menu-submenu-available-height`, and `--akaza-menu-submenu-transform-origin`. Use `data-akaza-side` for the resolved placement. Menus and their submenus use the shared floating-layer base, `--akaza-z-layer-base` (default `1200`); `--akaza-z-menu` overrides their z-index.
+
+### Positioning Variables
+
+These variables are available on teleported root panels (`teleport="body"` or another target). Inline root panels keep their existing CSS-based positioning. Submenus use the separate `--akaza-menu-submenu-*` variables listed above.
+
+| Variable | Meaning |
+| --- | --- |
+| `--akaza-menu-anchor-width` | Anchor width in pixels. |
+| `--akaza-menu-anchor-height` | Anchor height in pixels. |
+| `--akaza-menu-available-width` | Viewport width after collision padding. |
+| `--akaza-menu-available-height` | Viewport height after collision padding. |
+| `--akaza-menu-transform-origin` | Origin matching the resolved side and alignment. |
 
 ### Keyboard
 

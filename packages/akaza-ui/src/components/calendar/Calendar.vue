@@ -15,6 +15,7 @@ import {
   today,
 } from "@internationalized/date";
 import { computed, nextTick, onMounted, shallowRef } from "vue";
+import { createChangeDetails as createDetails } from "../../utils/changeEvent";
 
 const {
   locale = "en-US",
@@ -266,17 +267,6 @@ function weekdayDates(month: CalendarMonth): CalendarDateValue[] {
   return month.weeks[0]?.map(({ date }) => date) ?? [];
 }
 
-function createDetails(reason: string, event?: Event) {
-  let canceled = false;
-  const details: AkazaChangeEventDetails = {
-    reason,
-    ...(event && { event }),
-    cancel: () => {
-      canceled = true;
-    },
-  };
-  return { details, canceled: () => canceled };
-}
 
 function changePlaceholder(value: CalendarDateValue, reason: string, event?: Event): boolean {
   const next = startOfMonth(value).copy();

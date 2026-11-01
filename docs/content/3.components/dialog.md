@@ -39,7 +39,10 @@ import { Dialog } from "akaza-ui";
     </template>
 
     <template #body>
-      <input type="text" placeholder="Display name" />
+      <input
+        type="text"
+        placeholder="Display name"
+      />
     </template>
 
     <template #footer="{ close }">
@@ -66,7 +69,12 @@ Use `#header` when the close control belongs beside the title.
 
     <template #header="{ close, titleId }">
       <h2 :id="titleId">Settings</h2>
-      <button aria-label="Close" @click="close">✕</button>
+      <button
+        aria-label="Close"
+        @click="close"
+      >
+        ✕
+      </button>
     </template>
 
     <template #body>
@@ -82,7 +90,10 @@ Use `fullscreen` for flows that should take over the viewport.
 
 ```vue
 <template>
-  <Dialog :fullscreen="true" title="Full view">
+  <Dialog
+    :fullscreen="true"
+    title="Full view"
+  >
     <template #trigger="{ toggle }">
       <button @click="toggle">Expand</button>
     </template>
@@ -99,7 +110,10 @@ Disable backdrop dismissal when the user must make an explicit choice.
 
 ```vue
 <template>
-  <Dialog :close-on-backdrop-click="false" title="Required step">
+  <Dialog
+    :close-on-backdrop-click="false"
+    title="Required step"
+  >
     <template #trigger="{ toggle }">
       <button @click="toggle">Start</button>
     </template>
@@ -123,7 +137,10 @@ const dialog = ref();
 </script>
 
 <template>
-  <Dialog ref="dialog" title="Notification">
+  <Dialog
+    ref="dialog"
+    title="Notification"
+  >
     <template #body><p>You have a new message.</p></template>
     <template #footer="{ close }">
       <button @click="close">Dismiss</button>

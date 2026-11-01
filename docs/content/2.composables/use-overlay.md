@@ -28,7 +28,12 @@ function openDialog() {
 </script>
 
 <template>
-  <button type="button" @click="openDialog">Open dialog</button>
+  <button
+    type="button"
+    @click="openDialog"
+  >
+    Open dialog
+  </button>
   <OverlayProvider />
 </template>
 ```

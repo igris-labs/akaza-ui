@@ -35,7 +35,11 @@ const tags = ref(["Vue", "TypeScript"]);
 </script>
 
 <template>
-  <TagsInput v-model="tags" placeholder="Add technology" clearable />
+  <TagsInput
+    v-model="tags"
+    placeholder="Add technology"
+    clearable
+  />
 </template>
 ```
 ::
@@ -102,9 +106,9 @@ Use `convertValue` to produce non-string models. Pair object values with `displa
   <TagsInput
     v-model="users"
     name="user"
-    :convert-value="name => ({ id: findId(name), name })"
-    :display-value="user => user.name"
-    :serialize-value="user => String(user.id)"
+    :convert-value="(name) => ({ id: findId(name), name })"
+    :display-value="(user) => user.name"
+    :serialize-value="(user) => String(user.id)"
     :is-equal="(a, b) => a.id === b.id"
   />
 </template>
@@ -120,11 +124,19 @@ Use `#tag` for the complete token or `#delete` for only the remove icon. A custo
     <template #tag="{ label, remove, isHighlighted }">
       <span :data-active="isHighlighted || undefined">
         {{ label }}
-        <button type="button" @click="remove">Remove</button>
+        <button
+          type="button"
+          @click="remove"
+        >
+          Remove
+        </button>
       </span>
     </template>
     <template #input="{ inputProps }">
-      <input v-bind="inputProps" aria-label="Add another tag">
+      <input
+        v-bind="inputProps"
+        aria-label="Add another tag"
+      />
     </template>
   </TagsInput>
 </template>
@@ -136,8 +148,15 @@ Inside [Field](/components/field), TagsInput inherits `id`, `name`, required/dis
 
 ```vue
 <template>
-  <Field label="Project labels" name="labels" required>
-    <TagsInput v-model="labels" placeholder="Add label" />
+  <Field
+    label="Project labels"
+    name="labels"
+    required
+  >
+    <TagsInput
+      v-model="labels"
+      placeholder="Add label"
+    />
   </Field>
 </template>
 ```

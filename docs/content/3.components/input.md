@@ -42,8 +42,16 @@ Inside `Field`, the input inherits `id`, `name`, `required`, `disabled`, invalid
 
 ```vue
 <template>
-  <Field name="email" label="Email" description="Used for account notices." required>
-    <Input type="email" placeholder="you@example.com" />
+  <Field
+    name="email"
+    label="Email"
+    description="Used for account notices."
+    required
+  >
+    <Input
+      type="email"
+      placeholder="you@example.com"
+    />
   </Field>
 </template>
 ```
@@ -58,7 +66,7 @@ Use native input attributes when browser validation already covers the rule. Nat
     type="text"
     name="slug"
     required
-    pattern="[a-z0-9-]+"
+    pattern="[a-z0-9\-]+"
     minlength="3"
     placeholder="project-slug"
   />
@@ -82,7 +90,10 @@ function onlyLowercase(next: string, details: AkazaChangeEventDetails) {
 </script>
 
 <template>
-  <Input v-model="value" @value-change="onlyLowercase" />
+  <Input
+    v-model="value"
+    @value-change="onlyLowercase"
+  />
 </template>
 ```
 
@@ -99,8 +110,14 @@ const readOnly = ref("Read only");
 </script>
 
 <template>
-  <Input v-model="locked" disabled />
-  <Input v-model="readOnly" readonly />
+  <Input
+    v-model="locked"
+    disabled
+  />
+  <Input
+    v-model="readOnly"
+    readonly
+  />
 </template>
 ```
 

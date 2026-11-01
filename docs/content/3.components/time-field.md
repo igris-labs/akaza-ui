@@ -3,9 +3,6 @@ title: Time Field
 description: Locale-aware segmented time input with keyboard editing, constraints, granularity, and native forms.
 navigation:
   icon: i-lucide-clock-3
-  badge:
-    label: NEW
-    color: success
 ---
 
 `TimeField` renders locale-ordered hour, minute, second, and day-period controls. It supports 12/24-hour cycles, keyboard editing, paste, constraints, Field state, and native forms.
@@ -43,7 +40,10 @@ const value = shallowRef<TimeValue>(new Time(9, 30));
 </script>
 
 <template>
-  <TimeField v-model="value" :hour-cycle="12" />
+  <TimeField
+    v-model="value"
+    :hour-cycle="12"
+  />
 </template>
 ```
 ::
@@ -55,8 +55,14 @@ const value = shallowRef<TimeValue>(new Time(9, 30));
 Omit `hourCycle` to follow locale preference. Bind numeric `12` or `24` when product requirements must override it.
 
 ```vue
-<TimeField v-model="time" :hour-cycle="12" />
-<TimeField v-model="time" :hour-cycle="24" />
+<TimeField
+  v-model="time"
+  :hour-cycle="12"
+/>
+<TimeField
+  v-model="time"
+  :hour-cycle="24"
+/>
 ```
 
 In 12-hour mode, day period is a real button. It works with click, touch, arrow keys, and direct `A` or `P` input.
@@ -66,9 +72,18 @@ In 12-hour mode, day period is a real button. It works with click, touch, arrow 
 `granularity` renders through the requested smallest unit. Omitted minutes or seconds are stored as zero when a complete value is committed.
 
 ```vue
-<TimeField v-model="hour" granularity="hour" />
-<TimeField v-model="minute" granularity="minute" />
-<TimeField v-model="precise" granularity="second" />
+<TimeField
+  v-model="hour"
+  granularity="hour"
+/>
+<TimeField
+  v-model="minute"
+  granularity="minute"
+/>
+<TimeField
+  v-model="precise"
+  granularity="second"
+/>
 ```
 
 ### Step and snapping
@@ -92,7 +107,7 @@ Constraints report native validity after interaction without turning an untouche
   v-model="time"
   :min-value="new Time(9)"
   :max-value="new Time(17)"
-  :is-time-unavailable="value => value.hour === 12"
+  :is-time-unavailable="(value) => value.hour === 12"
 />
 ```
 
@@ -101,7 +116,11 @@ Constraints report native validity after interaction without turning an untouche
 `TimeField` inherits `id`, `name`, `required`, `disabled`, descriptions, and validation presentation from `Field`.
 
 ```vue
-<Field label="Meeting time" name="meeting" required>
+<Field
+  label="Meeting time"
+  name="meeting"
+  required
+>
   <TimeField v-model="time" />
 </Field>
 ```
@@ -114,7 +133,10 @@ Passing a `ZonedDateTime` preserves its date and zone when editing time fields. 
 
 ```vue
 <TimeField v-model="zonedTime" />
-<TimeField v-model="zonedTime" hide-time-zone />
+<TimeField
+  v-model="zonedTime"
+  hide-time-zone
+/>
 ```
 
 ### Cancel changes
@@ -122,9 +144,11 @@ Passing a `ZonedDateTime` preserves its date and zone when editing time fields. 
 ```vue
 <TimeField
   v-model="time"
-  @value-change="(value, details) => {
-    if (value && value.hour < 8) details.cancel()
-  }"
+  @value-change="
+    (value, details) => {
+      if (value && value.hour < 8) details.cancel();
+    }
+  "
 />
 ```
 

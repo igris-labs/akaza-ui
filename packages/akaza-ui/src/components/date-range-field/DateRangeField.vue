@@ -3,7 +3,11 @@ import type { DateRangeFieldEndpoint, DateRangeFieldProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
 import type { CalendarDateRange, CalendarDateValue } from "../calendar";
 import type { DateFieldProps } from "../date-field";
-import { computed, inject, nextTick, onBeforeUnmount, onMounted, provide, ref, shallowRef, useId, useTemplateRef, watch } from "vue";
+import { computed, inject, nextTick, provide, useId, useTemplateRef, watch } from "vue";
+import { createChangeDetails as createDetails } from "../../utils/changeEvent";
+import { useFieldControl } from "../../utils/useFieldControl";
+import { useFormReset } from "../../utils/useFormReset";
+import { rangeEndpointDetails, useRangeFieldState } from "../../utils/useRangeFieldState";
 import DateField from "../date-field/DateField.vue";
 import { fieldContextKey } from "../field/context";
 
@@ -49,16 +53,13 @@ const rootRef = useTemplateRef<HTMLElement>("rootRef");
 const validationRef = useTemplateRef<HTMLInputElement>("validationRef");
 const startFieldRef = useTemplateRef<InstanceType<typeof DateField>>("startFieldRef");
 const endFieldRef = useTemplateRef<InstanceType<typeof DateField>>("endFieldRef");
-const touched = ref(false);
-const focused = ref(false);
-const validationActive = ref(false);
-const nativeInvalid = ref(false);
-const childInvalid = ref(false);
-const childFilled = ref(false);
-const validationMessage = ref("");
-const validity = shallowRef<ValidityState | null>(null);
+const { touched, focused, validationActive, childInvalid, childFilled, syncChildState, onInput, onFocusin, onFocusout } = useRangeFieldState({
+  root: rootRef,
+  children: () => [startFieldRef.value?.validationState, endFieldRef.value?.validationState],
+  updateValidity,
+});
+const { nativeInvalid, syncValidity, registerControl } = useFieldControl(field);
 const initialRange = cloneRange(model.value);
-let formElement: HTMLFormElement | null = null;
 
 const resolvedId = computed(() => id ?? field?.inputId.value ?? `akaza-date-range-field-${autoId}`);
 const resolvedName = computed(() => name ?? field?.name.value);
@@ -88,14 +89,11 @@ const endFieldBindings = computed(() => ({
   "onUpdate:modelValue": (value: CalendarDateValue | undefined) => setEndpoint("end", value),
 }));
 
-const unregister = field?.registerControl({
+registerControl({
   dirty: isDirty,
   touched,
   filled: isFilled,
   focused,
-  invalid: nativeInvalid,
-  validationMessage,
-  validity,
 });
 
 function cloneRange(value: CalendarDateRange): CalendarDateRange {
@@ -145,17 +143,6 @@ function setEndpoint(endpoint: DateRangeFieldEndpoint, value: CalendarDateValue 
   nextTick(syncChildState);
 }
 
-function createDetails(reason: string, event?: Event) {
-  let canceled = false;
-  const details: AkazaChangeEventDetails = {
-    reason,
-    ...(event && { event }),
-    cancel: () => {
-      canceled = true;
-    },
-  };
-  return { details, canceled: () => canceled };
-}
 
 function requestValue(value: CalendarDateRange, reason: string, event?: Event): boolean {
   if (isDisabled.value || readOnly) return false;
@@ -173,19 +160,11 @@ function onEndpointValueChange(
   details: AkazaChangeEventDetails,
 ) {
   const next = withEndpoint(endpoint, value);
-  emit("value-change", next, {
-    reason: `${endpoint}-${details.reason}`,
-    ...(details.event && { event: details.event }),
-    cancel: details.cancel,
-  });
+  emit("value-change", next, rangeEndpointDetails(endpoint, details));
 }
 
 function onEndpointValueCommit(endpoint: DateRangeFieldEndpoint, details: AkazaChangeEventDetails) {
-  emit("value-commit", cloneRange(model.value), {
-    reason: `${endpoint}-${details.reason}`,
-    ...(details.event && { event: details.event }),
-    cancel: details.cancel,
-  });
+  emit("value-commit", cloneRange(model.value), rangeEndpointDetails(endpoint, details));
 }
 
 function onStartValueChange(value: CalendarDateValue | undefined, details: AkazaChangeEventDetails) {
@@ -249,35 +228,7 @@ function updateValidity(reveal = validationActive.value) {
   const input = validationRef.value;
   if (!input) return;
   input.setCustomValidity(nativeError.value);
-  validity.value = input.validity;
-  validationMessage.value = input.validationMessage;
-  nativeInvalid.value = reveal && !input.validity.valid;
-}
-
-function syncChildState() {
-  const states = [startFieldRef.value?.validationState, endFieldRef.value?.validationState];
-  childInvalid.value = states.some(state => state?.invalid);
-  childFilled.value = states.some(state => state?.filled);
-  updateValidity();
-}
-
-watch(() => [startFieldRef.value?.validationState, endFieldRef.value?.validationState], syncChildState, { flush: "post" });
-
-function onInput() {
-  validationActive.value = true;
-  nextTick(syncChildState);
-}
-
-function onFocusin() {
-  focused.value = true;
-}
-
-function onFocusout(event: FocusEvent) {
-  if (rootRef.value?.contains(event.relatedTarget as Node | null)) return;
-  focused.value = false;
-  touched.value = true;
-  validationActive.value = true;
-  nextTick(syncChildState);
+  syncValidity(input, reveal);
 }
 
 function focusStart() {
@@ -299,29 +250,17 @@ function clear(event?: Event): boolean {
   return requestValue({}, "clear", event);
 }
 
-async function onFormReset(event: Event) {
-  await nextTick();
-  if (event.defaultPrevented) return;
+useFormReset(() => validationRef.value, () => {
   model.value = cloneRange(initialRange);
   touched.value = false;
   validationActive.value = false;
-  childInvalid.value = false;
   nativeInvalid.value = false;
   nextTick(() => syncChildState());
-}
+});
 
 watch(model, () => nextTick(syncChildState), { deep: false });
 
-onMounted(() => {
-  syncChildState();
-  formElement = validationRef.value?.form ?? null;
-  formElement?.addEventListener("reset", onFormReset);
-});
 
-onBeforeUnmount(() => {
-  formElement?.removeEventListener("reset", onFormReset);
-  unregister?.();
-});
 
 defineExpose({ clear, focusEnd, focusStart, setValue: requestValue });
 </script>

@@ -2,13 +2,15 @@
 import type { MenuItem, MenuProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
 import { onClickOutside } from "@vueuse/core";
-import { computed, nextTick, onUnmounted, provide, ref, useId, useSlots, useTemplateRef, watch } from "vue";
+import { computed, nextTick, onUnmounted, provide, useId, useSlots, useTemplateRef, watch } from "vue";
 import { useMenu } from "../../composables/menu";
-import { resolveAction } from "../../utils/changeEvent";
+import { createChangeDetails, resolveAction } from "../../utils/changeEvent";
 import { useDismissableLayer } from "../../utils/dismissableLayer";
+import { useFloatingPosition } from "../../utils/floatingPosition";
 import { useFocusBranch } from "../../utils/focusScope";
 import { MENU_CONTEXT_KEY } from "./context";
 import MenuPanel from "./MenuPanel.vue";
+import { getMenuItemValue as getItemValue, normalizeMenuItems as normalizeItems, useMenuActions } from "./useMenuActions";
 
 const {
   as = "div",
@@ -35,15 +37,9 @@ const model = defineModel<boolean>({ default: false });
 const { isOpen, open: _open, close: _close, toggle: _toggle } = useMenu(model);
 
 function handleChange(nextOpen: boolean, reason: string, event?: Event) {
-  let canceled = false;
-  emit("open-change", nextOpen, {
-    reason,
-    ...(event && { event }),
-    cancel: () => {
-      canceled = true;
-    },
-  });
-  if (canceled) return;
+  const changeEvent = createChangeDetails(reason, event);
+  emit("open-change", nextOpen, changeEvent.details);
+  if (changeEvent.canceled()) return;
   nextOpen ? _open() : _close();
 }
 
@@ -69,16 +65,9 @@ const { layerOrder, register, unregister } = useDismissableLayer((event?: Keyboa
 
 // ── Normalize items to groups ────────────────────────────────────────────────
 
-function normalizeItems(raw?: MenuItem[] | MenuItem[][]): MenuItem[][] {
-  if (!raw?.length) return [];
-  return Array.isArray(raw[0]) ? (raw as MenuItem[][]) : [raw as MenuItem[]];
-}
 
 const normalizedGroups = computed(() => normalizeItems(items));
 
-function getItemValue(item: MenuItem): string {
-  return (item.value ?? item.label ?? "") as string;
-}
 
 // ── Positioning ──────────────────────────────────────────────────────────────
 
@@ -110,76 +99,43 @@ const localPositionStyle = computed(() => {
   return s;
 });
 
-const fixedPositionStyle = ref<Record<string, string>>({ position: "fixed", top: "-9999px", left: "-9999px" });
+const { style: fixedPositionStyle } = useFloatingPosition({
+  reference: rootRef,
+  floating: contentRef,
+  active: () => isOpen.value && teleport !== false,
+  side: () => side,
+  align: () => align,
+  sideOffset: () => sideOffset,
+  strategy: "fixed",
+  collisionPadding: 4,
+  flip: false,
+  cssVarPrefix: "akaza-menu",
+});
 const positionStyle = computed(() =>
   teleport === false ? localPositionStyle.value : fixedPositionStyle.value,
 );
 const layeredPositionStyle = computed(() => ({
   ...positionStyle.value,
+  ...(teleport !== false && { transform: undefined, transformOrigin: undefined }),
   "--akaza-layer-order": String(layerOrder.value),
 }));
 
-function computePosition() {
-  if (typeof window === "undefined") return;
-  if (teleport === false || !rootRef.value || !contentRef.value) return;
-  const trigger = rootRef.value.getBoundingClientRect();
-  const content = contentRef.value.getBoundingClientRect();
-  const gap = sideOffset;
-  let top = 0;
-  let left = 0;
 
-  if (side === "top") top = trigger.top - content.height - gap;
-  else if (side === "bottom") top = trigger.bottom + gap;
-  else if (side === "left") left = trigger.left - content.width - gap;
-  else left = trigger.right + gap;
-
-  if (side === "top" || side === "bottom") {
-    if (align === "start") left = trigger.left;
-    else if (align === "end") left = trigger.right - content.width;
-    else left = trigger.left + trigger.width / 2 - content.width / 2;
-  } else {
-    if (align === "start") top = trigger.top;
-    else if (align === "end") top = trigger.bottom - content.height;
-    else top = trigger.top + trigger.height / 2 - content.height / 2;
-  }
-
-  top = Math.max(4, Math.min(top, window.innerHeight - content.height - 4));
-  left = Math.max(4, Math.min(left, window.innerWidth - content.width - 4));
-  fixedPositionStyle.value = { position: "fixed", top: `${top}px`, left: `${left}px` };
-}
-
-function addPositionListeners() {
-  if (typeof window === "undefined") return;
-  if (teleport === false) return;
-  window.addEventListener("scroll", computePosition, { passive: true, capture: true });
-  window.addEventListener("resize", computePosition, { passive: true });
-}
-
-function removePositionListeners() {
-  if (typeof window === "undefined") return;
-  if (teleport === false) return;
-  window.removeEventListener("scroll", computePosition, { capture: true });
-  window.removeEventListener("resize", computePosition);
-}
-
-watch(isOpen, async (val) => {
+watch(isOpen, async (val, _previous, cleanup) => {
+  let canceled = false;
+  cleanup(() => { canceled = true; });
   if (val) {
     await nextTick();
+    if (canceled) return;
     register();
-    computePosition();
-    addPositionListeners();
     const first = panelRef.value?.getItems()?.[0];
     if (first) panelRef.value?.highlightItem(first);
   } else {
     unregister();
-    removePositionListeners();
   }
 }, { immediate: true });
 
-onUnmounted(() => {
-  unregister();
-  removePositionListeners();
-});
+onUnmounted(unregister);
 
 // ── Dismiss ──────────────────────────────────────────────────────────────────
 
@@ -212,57 +168,15 @@ function onContentKeydown(e: KeyboardEvent) {
 
 // ── Item handlers ────────────────────────────────────────────────────────────
 
-function onItemSelect(item: MenuItem, event: Event) {
-  if (item.disabled) return;
-  let canceled = false;
-  emit("select", item, {
-    reason: "select",
-    event,
-    cancel: () => {
-      canceled = true;
-    },
-  });
-  if (canceled) return;
-  item.onSelect?.();
-  if (closeOnSelect) close("select", event);
-}
-
-function onCheckboxSelect(item: MenuItem, event: Event) {
-  if (item.disabled) return;
-  const next = !item.checked;
-  let canceled = false;
-  emit("check-change", item, next, {
-    reason: "select",
-    event,
-    cancel: () => {
-      canceled = true;
-    },
-  });
-  if (canceled) return;
-  item.onUpdateChecked?.(next);
-}
-
-function isRadioChecked(item: MenuItem): boolean {
-  return radioValues?.[item.radioGroup ?? ""] === item.value;
-}
-
-function onRadioSelect(item: MenuItem, event: Event) {
-  if (item.disabled) return;
-  const group = item.radioGroup ?? "";
-  const value = (item.value ?? "") as string;
-  let canceled = false;
-  emit("radio-change", group, value, {
-    reason: "select",
-    event,
-    cancel: () => {
-      canceled = true;
-    },
-  });
-  if (canceled) return;
-  if (radioValues) {
-    emit("update:radioValues", { ...radioValues, [group]: value });
-  }
-}
+const { onItemSelect, onCheckboxSelect, onRadioSelect, isRadioChecked } = useMenuActions({
+  closeOnSelect: () => closeOnSelect,
+  radioValues: () => radioValues,
+  close,
+  onSelect: (item, details) => emit("select", item, details),
+  onCheckChange: (item, checked, details) => emit("check-change", item, checked, details),
+  onRadioChange: (group, value, details) => emit("radio-change", group, value, details),
+  onRadioValuesChange: values => emit("update:radioValues", values),
+});
 
 // ── Provide context for recursive MenuPanel ──────────────────────────────────
 

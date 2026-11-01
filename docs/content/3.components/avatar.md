@@ -26,7 +26,11 @@ import { Avatar } from "akaza-ui";
 </script>
 
 <template>
-  <Avatar src="/avatar.jpg" alt="Jane Doe" text="JD" />
+  <Avatar
+    src="/avatar.jpg"
+    alt="Jane Doe"
+    text="JD"
+  />
 </template>
 ```
 ::
@@ -39,7 +43,10 @@ Use `#fallback` to render initials or an icon with your own styles.
 
 ```vue
 <template>
-  <Avatar src="/avatar.jpg" alt="Jane Doe">
+  <Avatar
+    src="/avatar.jpg"
+    alt="Jane Doe"
+  >
     <template #fallback>
       <span class="avatar-initials">JD</span>
     </template>
@@ -53,7 +60,12 @@ Prevent a flash of the fallback during fast loads.
 
 ```vue
 <template>
-  <Avatar src="/avatar.jpg" alt="Jane Doe" text="JD" :delay-ms="300" />
+  <Avatar
+    src="/avatar.jpg"
+    alt="Jane Doe"
+    text="JD"
+    :delay-ms="300"
+  />
 </template>
 ```
 
@@ -65,7 +77,11 @@ Use `#image` to render a custom element instead of a plain `<img>`.
 <template>
   <Avatar>
     <template #image="{ src, alt }">
-      <img :src="src" :alt="alt" class="avatar-img" />
+      <img
+        :src="src"
+        :alt="alt"
+        class="avatar-img"
+      />
     </template>
     <template #fallback>
       <span class="avatar-icon">👤</span>

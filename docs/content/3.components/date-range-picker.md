@@ -3,9 +3,6 @@ title: Date Range Picker
 description: Segmented date-range entry and an accessible range Calendar in one collision-aware popup.
 navigation:
   icon: i-lucide-calendar-search
-  badge:
-    label: NEW
-    color: success
 ---
 
 `DateRangePicker` combines Date Range Field and Calendar. Users can type either endpoint or select a range from the popup.
@@ -78,8 +75,14 @@ Render adjacent months and navigate by the visible page. Add `fixedWeeks` when t
 Picker stays open after a complete selection by default so users can inspect or adjust both boundaries. Add `closeOnSelect` when a finished range should close immediately, or provide `closeLabel` for an explicit generated close button.
 
 ```vue
-<DateRangePicker v-model="range" close-on-select />
-<DateRangePicker v-model="range" close-label="Done" />
+<DateRangePicker
+  v-model="range"
+  close-on-select
+/>
+<DateRangePicker
+  v-model="range"
+  close-label="Done"
+/>
 ```
 
 ### Constraints and unavailable dates
@@ -103,7 +106,10 @@ Use `isDateDisabled` for Calendar-only selection rules. Use `isDateUnavailable` 
 Fix the start or end while the other boundary remains editable through both segments and Calendar.
 
 ```vue
-<DateRangePicker v-model="range" fixed-date="start" />
+<DateRangePicker
+  v-model="range"
+  fixed-date="start"
+/>
 ```
 
 ### Controlled popup
@@ -114,9 +120,11 @@ Use `v-model:open` and the cancelable `open-change` event when application state
 <DateRangePicker
   v-model="range"
   v-model:open="open"
-  @open-change="(next, details) => {
-    if (!next && hasUnsavedDraft) details.cancel()
-  }"
+  @open-change="
+    (next, details) => {
+      if (!next && hasUnsavedDraft) details.cancel();
+    }
+  "
 />
 ```
 

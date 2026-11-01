@@ -42,7 +42,8 @@ const volume = ref(60);
       root: 'h-6 w-full max-w-xs',
       track: 'h-2 w-full rounded-full bg-neutral-200 dark:bg-neutral-800',
       range: 'h-full rounded-full bg-neutral-900 dark:bg-white',
-      thumb: 'size-5 rounded-full border-2 border-neutral-900 bg-white outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 dark:border-white dark:bg-neutral-950 dark:focus-visible:ring-white',
+      thumb:
+        'size-5 rounded-full border-2 border-neutral-900 bg-white outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 dark:border-white dark:bg-neutral-950 dark:focus-visible:ring-white',
     }"
   />
 </template>
@@ -80,7 +81,11 @@ const price = ref([20, 80]);
 
 ```vue
 <template>
-  <Slider v-model="range" :step="5" :min-steps-between-thumbs="2" />
+  <Slider
+    v-model="range"
+    :step="5"
+    :min-steps-between-thumbs="2"
+  />
 </template>
 ```
 
@@ -111,7 +116,8 @@ const volume = ref(60);
         root: 'h-40 w-6',
         track: 'h-full w-2 rounded-full bg-neutral-200 dark:bg-neutral-800',
         range: 'w-full rounded-full bg-neutral-900 dark:bg-white',
-        thumb: 'size-5 rounded-full border-2 border-neutral-900 bg-white outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 dark:border-white dark:bg-neutral-950 dark:focus-visible:ring-white',
+        thumb:
+          'size-5 rounded-full border-2 border-neutral-900 bg-white outline-none focus-visible:ring-2 focus-visible:ring-neutral-900 dark:border-white dark:bg-neutral-950 dark:focus-visible:ring-white',
       }"
     />
     <span class="text-sm tabular-nums">Volume: {{ volume }}</span>
@@ -139,7 +145,11 @@ Without Tailwind, import `akaza-ui/dist/akaza-ui.css` once from `main.ts`. The N
 
 ```vue
 <template>
-  <Slider v-model="brightness" inverted aria-label="Brightness" />
+  <Slider
+    v-model="brightness"
+    inverted
+    aria-label="Brightness"
+  />
 </template>
 ```
 
@@ -149,7 +159,10 @@ Use `#thumb` when the thumb needs visible value text or custom markup.
 
 ```vue
 <template>
-  <Slider v-model="value" aria-label="Progress">
+  <Slider
+    v-model="value"
+    aria-label="Progress"
+  >
     <template #thumb="{ value }">
       <span>{{ value }}</span>
     </template>

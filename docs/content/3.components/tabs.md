@@ -36,7 +36,10 @@ const active = ref("account");
 </script>
 
 <template>
-  <Tabs :items="tabs" v-model="active">
+  <Tabs
+    :items="tabs"
+    v-model="active"
+  >
     <template #panel-account>Account settings.</template>
     <template #panel-security>Security settings.</template>
     <template #panel-notifications>Notification preferences.</template>
@@ -53,7 +56,10 @@ Use `#tab` to style each tab button and react to the active state.
 
 ```vue
 <template>
-  <Tabs :items="tabs" v-model="active">
+  <Tabs
+    :items="tabs"
+    v-model="active"
+  >
     <template #tab="{ item, isActive }">
       <span :class="['tab', { 'tab--active': isActive }]">
         {{ item.label }}
@@ -89,7 +95,11 @@ Arrow keys only move focus; the user must press Space or Enter to activate a tab
 
 ```vue
 <template>
-  <Tabs :items="tabs" v-model="active" activation-mode="manual">
+  <Tabs
+    :items="tabs"
+    v-model="active"
+    activation-mode="manual"
+  >
     <template #panel-account>Account content.</template>
   </Tabs>
 </template>
@@ -101,7 +111,11 @@ Use vertical orientation when tab labels should sit beside the active panel.
 
 ```vue
 <template>
-  <Tabs :items="tabs" v-model="active" orientation="vertical">
+  <Tabs
+    :items="tabs"
+    v-model="active"
+    orientation="vertical"
+  >
     <template #panel-account>Account content.</template>
   </Tabs>
 </template>
@@ -113,7 +127,11 @@ Remove inactive panels from the DOM instead of hiding them.
 
 ```vue
 <template>
-  <Tabs :items="tabs" v-model="active" :unmount-on-hide="true">
+  <Tabs
+    :items="tabs"
+    v-model="active"
+    :unmount-on-hide="true"
+  >
     <template #panel-account>Account content.</template>
   </Tabs>
 </template>

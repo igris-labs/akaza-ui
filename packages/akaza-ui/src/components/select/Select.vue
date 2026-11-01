@@ -2,10 +2,15 @@
 import type { SelectModelValue, SelectOption, SelectProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
 import { computed, inject, nextTick, onBeforeUnmount, onMounted, onUpdated, ref, useId, useTemplateRef, watch } from "vue";
+import { useTypeahead } from "../../composables/typeahead";
+import { createChangeDetails } from "../../utils/changeEvent";
 import { useDismissableLayer } from "../../utils/dismissableLayer";
 import { useFloatingPosition } from "../../utils/floatingPosition";
 import { useFocusBranch } from "../../utils/focusScope";
+import { useFieldControl } from "../../utils/useFieldControl";
 import { useFormReset } from "../../utils/useFormReset";
+import { usePopupInteraction } from "../../utils/usePopupInteraction";
+import { nextEnabledIndex } from "../../utils/useRovingFocus";
 import { fieldContextKey } from "../field/context";
 
 const {
@@ -62,12 +67,15 @@ const optionRefs = ref<Array<HTMLElement | null>>([]);
 const focused = ref(false);
 const touched = ref(false);
 const validationActive = ref(false);
-const nativeInvalid = ref(false);
-const validationMessage = ref("");
-const validity = ref<ValidityState | null>(null);
-let typeahead = "";
-let typeaheadTimer: number | undefined;
-let pointerDownInsideContent = false;
+const { nativeInvalid, syncValidity, registerControl } = useFieldControl(field);
+const { push: pushTypeahead } = useTypeahead();
+const { isInternalFocusMove } = usePopupInteraction({
+  root: rootRef,
+  content: contentRef,
+  open: openModel,
+  focusTarget: () => searchRef.value ?? triggerRef.value,
+  onOutsidePointerDown: event => setOpen(false, "outside-click", event),
+});
 
 const resolvedId = computed(() => id ?? field?.inputId.value ?? `akaza-select-${autoId}`);
 const contentId = `akaza-select-content-${autoId}`;
@@ -158,14 +166,11 @@ const layeredContentStyle = computed(() => ({
   "--akaza-layer-order": layerOrder.value,
 }));
 
-const unregister = field?.registerControl({
+registerControl({
   dirty: isDirty,
   touched,
   filled: isFilled,
   focused,
-  invalid: nativeInvalid,
-  validationMessage,
-  validity,
 });
 
 function getValue(option: SelectOption): string {
@@ -220,9 +225,7 @@ function updateValidity(reveal = validationActive.value) {
   const select = nativeRef.value;
   if (!select) return;
   select.setCustomValidity(isRequired.value && !isFilled.value ? "Please select an option." : "");
-  validity.value = select.validity;
-  nativeInvalid.value = reveal && !select.validity.valid;
-  validationMessage.value = select.validationMessage;
+  syncValidity(select, reveal);
 }
 
 function findEnabledIndex(start = 0): number {
@@ -243,15 +246,9 @@ function focusOption(index: number) {
 
 function setOpen(next: boolean, reason: string, event?: Event) {
   if ((isDisabled.value && next) || openModel.value === next) return;
-  let canceled = false;
-  emit("open-change", next, {
-    reason,
-    ...(event && { event }),
-    cancel: () => {
-      canceled = true;
-    },
-  });
-  if (canceled) return;
+  const changeEvent = createChangeDetails(reason, event);
+  emit("open-change", next, changeEvent.details);
+  if (changeEvent.canceled()) return;
   openModel.value = next;
 }
 
@@ -267,15 +264,9 @@ function selectOption(option: SelectOption, event?: Event) {
   if (loading || isItemDisabled(option)) return;
   validationActive.value = true;
   const value = getNextValue(option);
-  let canceled = false;
-  emit("value-change", value, {
-    reason: event ? "select" : "programmatic",
-    ...(event && { event }),
-    cancel: () => {
-      canceled = true;
-    },
-  });
-  if (canceled) return;
+  const changeEvent = createChangeDetails(event ? "select" : "programmatic", event);
+  emit("value-change", value, changeEvent.details);
+  if (changeEvent.canceled()) return;
   model.value = value;
   if (resetSearchOnSelect) setSearch("", "select", event);
   if (!multiple) setOpen(false, "select", event);
@@ -285,17 +276,9 @@ function selectOption(option: SelectOption, event?: Event) {
 
 function move(delta: number) {
   if (loading || !visibleOptions.value.length) return;
-  const count = visibleOptions.value.length;
-  let next = activeIndex.value < 0 ? findEnabledIndex() : activeIndex.value;
-  for (let step = 0; step < count; step++) {
-    next = next + delta;
-    if (loop) next = (next + count) % count;
-    if (next < 0 || next >= count) return;
-    if (!isItemDisabled(visibleOptions.value[next]!)) {
-      focusOption(next);
-      return;
-    }
-  }
+  const from = activeIndex.value < 0 ? findEnabledIndex() : activeIndex.value;
+  const next = nextEnabledIndex(visibleOptions.value, from, delta, loop, isItemDisabled);
+  if (next >= 0) focusOption(next);
 }
 
 function onTriggerKeydown(event: KeyboardEvent) {
@@ -335,11 +318,7 @@ function onTriggerKeydown(event: KeyboardEvent) {
     return;
   }
   if (event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey) {
-    typeahead += event.key.toLowerCase();
-    window.clearTimeout(typeaheadTimer);
-    typeaheadTimer = window.setTimeout(() => {
-      typeahead = "";
-    }, 500);
+    const typeahead = pushTypeahead(event.key.toLowerCase());
     const index = visibleOptions.value.findIndex((option) =>
       !isItemDisabled(option) && getLabel(option).toLowerCase().startsWith(typeahead),
     );
@@ -351,15 +330,9 @@ function onTriggerKeydown(event: KeyboardEvent) {
 }
 
 function setSearch(value: string, reason: string, event?: Event) {
-  let canceled = false;
-  emit("search-change", value, {
-    reason,
-    ...(event && { event }),
-    cancel: () => {
-      canceled = true;
-    },
-  });
-  if (canceled) return false;
+  const changeEvent = createChangeDetails(reason, event);
+  emit("search-change", value, changeEvent.details);
+  if (changeEvent.canceled()) return false;
   searchModel.value = value;
   activeIndex.value = findEnabledIndex();
   return true;
@@ -406,15 +379,9 @@ function onNativeChange(event: Event) {
   });
   if (multiple) {
     const next = Array.from(select.selectedOptions).map((option) => option.value);
-    let canceled = false;
-    emit("value-change", next, {
-      reason: "native",
-      event,
-      cancel: () => {
-        canceled = true;
-      },
-    });
-    if (!canceled) model.value = next;
+    const changeEvent = createChangeDetails("native", event);
+    emit("value-change", next, changeEvent.details);
+    if (!changeEvent.canceled()) model.value = next;
     restoreAcceptedSelection();
     updateValidity();
     return;
@@ -423,26 +390,12 @@ function onNativeChange(event: Event) {
   const option = options.find((item) => isSelectableOption(item) && getValue(item) === select.value);
   if (option) selectOption(option, event);
   else {
-    let canceled = false;
-    emit("value-change", nullableValue, {
-      reason: "native",
-      event,
-      cancel: () => {
-        canceled = true;
-      },
-    });
-    if (!canceled) model.value = nullableValue;
+    const changeEvent = createChangeDetails("native", event);
+    emit("value-change", nullableValue, changeEvent.details);
+    if (!changeEvent.canceled()) model.value = nullableValue;
     updateValidity();
   }
   restoreAcceptedSelection();
-}
-
-function onDocumentPointerDown(event: PointerEvent) {
-  pointerDownInsideContent = contentRef.value?.contains(event.target as Node) ?? false;
-  if (!openModel.value) return;
-  const target = event.target as Node;
-  if (rootRef.value?.contains(target)) return;
-  setOpen(false, "outside-click", event);
 }
 
 function onFocusIn() {
@@ -450,22 +403,12 @@ function onFocusIn() {
 }
 
 function onFocusOut(event: FocusEvent) {
-  const nextTarget = event.relatedTarget as Node | null;
-  if (rootRef.value?.contains(nextTarget)) return;
-  // Scrollbar presses may move focus to a fallback ancestor instead of the popup.
-  if (pointerDownInsideContent && (!nextTarget || nextTarget.contains(rootRef.value))) return;
+  if (isInternalFocusMove(event)) return;
   validationActive.value = true;
   touched.value = true;
   focused.value = false;
   setOpen(false, "blur", event);
   updateValidity();
-}
-
-function onDocumentPointerUp() {
-  if (pointerDownInsideContent && openModel.value && document.activeElement?.contains(rootRef.value)) {
-    (searchRef.value ?? triggerRef.value)?.focus({ preventScroll: true });
-  }
-  pointerDownInsideContent = false;
 }
 
 function onInvalid(event: Event) {
@@ -476,9 +419,6 @@ function onInvalid(event: Event) {
 }
 
 onMounted(() => {
-  document.addEventListener("pointerdown", onDocumentPointerDown);
-  document.addEventListener("pointerup", onDocumentPointerUp);
-  document.addEventListener("pointercancel", onDocumentPointerUp);
   updateValidity(false);
 });
 onUpdated(updateValidity);
@@ -501,12 +441,7 @@ watch(isDisabled, (value) => {
   if (value && openModel.value) setOpen(false, "disabled");
 }, { immediate: true });
 onBeforeUnmount(() => {
-  document.removeEventListener("pointerdown", onDocumentPointerDown);
-  document.removeEventListener("pointerup", onDocumentPointerUp);
-  document.removeEventListener("pointercancel", onDocumentPointerUp);
-  window.clearTimeout(typeaheadTimer);
   unregisterDismissable();
-  unregister?.();
 });
 </script>
 

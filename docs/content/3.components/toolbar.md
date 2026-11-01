@@ -36,7 +36,10 @@ const items = computed(() => [
 </script>
 
 <template>
-  <Toolbar :items="items" aria-label="Editor toolbar" />
+  <Toolbar
+    :items="items"
+    aria-label="Editor toolbar"
+  />
 </template>
 ```
 ::
@@ -51,10 +54,18 @@ Use `type: "group"` for related commands inside the toolbar.
 <template>
   <Toolbar
     :items="[
-      { type: 'group', label: 'Alignment', children: [
-        { label: 'Left', pressed: align === 'left', onSelect: () => (align = 'left') },
-        { label: 'Center', pressed: align === 'center', onSelect: () => (align = 'center') },
-      ] },
+      {
+        type: 'group',
+        label: 'Alignment',
+        children: [
+          { label: 'Left', pressed: align === 'left', onSelect: () => (align = 'left') },
+          {
+            label: 'Center',
+            pressed: align === 'center',
+            onSelect: () => (align = 'center'),
+          },
+        ],
+      },
     ]"
   />
 </template>

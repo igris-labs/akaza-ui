@@ -38,7 +38,10 @@ function onFormSubmit(values: FormValues) {
 </script>
 
 <template>
-  <Form @submit="onSubmit" @form-submit="onFormSubmit">
+  <Form
+    @submit="onSubmit"
+    @form-submit="onFormSubmit"
+  >
     <!-- fields -->
   </Form>
 </template>
@@ -62,7 +65,11 @@ function submit(details: FormSubmitDetails) {
 
 <template>
   <Form @submit="submit">
-    <Field name="email" label="Email" required>
+    <Field
+      name="email"
+      label="Email"
+      required
+    >
       <Input type="email" />
     </Field>
     <Button type="submit">Create account</Button>
@@ -77,10 +84,17 @@ function submit(details: FormSubmitDetails) {
 ```vue
 <template>
   <Form @form-submit="(values) => console.log(values)">
-    <Field name="email" label="Email">
+    <Field
+      name="email"
+      label="Email"
+    >
       <Input />
     </Field>
-    <CheckboxGroup v-model="channels" name="channels" :options="channelOptions" />
+    <CheckboxGroup
+      v-model="channels"
+      name="channels"
+      :options="channelOptions"
+    />
     <Button type="submit">Save</Button>
   </Form>
 </template>
@@ -99,7 +113,10 @@ const errors = {
 
 <template>
   <Form :errors="errors">
-    <Field name="email" label="Email">
+    <Field
+      name="email"
+      label="Email"
+    >
       <Input type="email" />
     </Field>
   </Form>
@@ -112,8 +129,16 @@ Set `prevent-default` to `false` when you want the browser to submit to `action`
 
 ```vue
 <template>
-  <Form action="/newsletter" method="post" :prevent-default="false">
-    <Field name="email" label="Email" required>
+  <Form
+    action="/newsletter"
+    method="post"
+    :prevent-default="false"
+  >
+    <Field
+      name="email"
+      label="Email"
+      required
+    >
       <Input type="email" />
     </Field>
     <Button type="submit">Subscribe</Button>
@@ -128,7 +153,11 @@ Use the default slot state to show submitted, invalid, or success feedback.
 ```vue
 <template>
   <Form v-slot="{ state, submitted, valid }">
-    <Field name="name" label="Name" required>
+    <Field
+      name="name"
+      label="Name"
+      required
+    >
       <Input />
     </Field>
     <p v-if="submitted">{{ valid ? "Submitted" : "Fix errors" }}</p>

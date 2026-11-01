@@ -3,9 +3,6 @@ title: Year Picker
 description: Accessible paged year grid with constraints and single or multiple selection.
 navigation:
   icon: i-lucide-calendar-days
-  badge:
-    label: NEW
-    color: success
 ---
 
 `YearPicker` presents a configurable page of years with roving focus, paging, constraints, locale formatting, and single or multiple selection. Selected values are `@internationalized/date` dates normalized to January 1.
@@ -38,7 +35,10 @@ const page = shallowRef<CalendarDateValue>(new CalendarDate(2024, 1, 1));
 </script>
 
 <template>
-  <YearPicker v-model="value" v-model:placeholder="page" />
+  <YearPicker
+    v-model="value"
+    v-model:placeholder="page"
+  />
 </template>
 ```
 ::
@@ -50,7 +50,10 @@ const page = shallowRef<CalendarDateValue>(new CalendarDate(2024, 1, 1));
 `yearsPerPage` controls paging distance and visible item count. `columns` controls the number of keyboard rows.
 
 ```vue
-<YearPicker :years-per-page="9" :columns="3" />
+<YearPicker
+  :years-per-page="9"
+  :columns="3"
+/>
 ```
 
 ### Multiple years
@@ -58,7 +61,11 @@ const page = shallowRef<CalendarDateValue>(new CalendarDate(2024, 1, 1));
 Use `multiple` with an array model for non-contiguous years.
 
 ```vue
-<YearPicker v-model="years" multiple prevent-deselect />
+<YearPicker
+  v-model="years"
+  multiple
+  prevent-deselect
+/>
 ```
 
 ### Constraints
@@ -69,7 +76,7 @@ Boundaries and matcher props use complete date values but are compared at year p
 <YearPicker
   :min-value="new CalendarDate(2025, 1, 1)"
   :max-value="new CalendarDate(2035, 1, 1)"
-  :is-year-unavailable="date => date.year === 2030"
+  :is-year-unavailable="(date) => date.year === 2030"
 />
 ```
 

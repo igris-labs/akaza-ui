@@ -36,7 +36,12 @@ const rating = ref(3.5);
 </script>
 
 <template>
-  <Rating v-model="rating" :step="0.5" hoverable clearable />
+  <Rating
+    v-model="rating"
+    :step="0.5"
+    hoverable
+    clearable
+  />
 </template>
 ```
 ::
@@ -49,7 +54,10 @@ Set `step` below `1` to expose fractional radio values. Akaza supports the Reka-
 
 ```vue
 <template>
-  <Rating v-model="rating" :step="0.25" />
+  <Rating
+    v-model="rating"
+    :step="0.25"
+  />
 </template>
 ```
 
@@ -59,7 +67,11 @@ Set `step` below `1` to expose fractional radio values. Akaza supports the Reka-
 
 ```vue
 <template>
-  <Rating v-model="rating" hoverable clearable />
+  <Rating
+    v-model="rating"
+    hoverable
+    clearable
+  />
 </template>
 ```
 
@@ -83,8 +95,16 @@ Read-only ratings remain perceivable and focusable but reject changes. Disabled 
 
 ```vue
 <template>
-  <Rating :model-value="4" read-only aria-label="Average rating" />
-  <Rating :model-value="2" disabled aria-label="Unavailable rating" />
+  <Rating
+    :model-value="4"
+    read-only
+    aria-label="Average rating"
+  />
+  <Rating
+    :model-value="2"
+    disabled
+    aria-label="Unavailable rating"
+  />
 </template>
 ```
 
@@ -94,7 +114,11 @@ Inside [Field](/components/field), Rating inherits label, name, required, disabl
 
 ```vue
 <template>
-  <Field label="Service rating" name="rating" required>
+  <Field
+    label="Service rating"
+    name="rating"
+    required
+  >
     <Rating v-model="rating" />
   </Field>
 </template>

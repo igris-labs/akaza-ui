@@ -1,8 +1,88 @@
 import { mount } from "@vue/test-utils";
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { NavigationMenu } from "@/components/navigation-menu";
 
+afterEach(() => vi.useRealTimers());
+
 describe("navigation menu", () => {
+  it.each(["horizontal", "vertical"] as const)("preserves slotted descendants in %s navigation", async (orientation) => {
+    const wrapper = mount(NavigationMenu, {
+      props: { orientation, items: [{ label: "Overview" }, { label: "Workspace", children: [{ label: "Members" }] }] },
+      slots: { 'item-leading': '<span class="stable-icon">Icon</span>', 'child-indicator': '<span class="stable-chevron">Expand</span>' },
+    });
+    const trigger = wrapper.get(".akaza-navigation-menu-trigger");
+    const icon = trigger.get(".stable-icon").element;
+    const chevron = trigger.get(".stable-chevron").element;
+    await trigger.trigger("focus");
+    expect(trigger.get(".stable-icon").element).toBe(icon);
+    expect(trigger.get(".stable-chevron").element).toBe(chevron);
+    await trigger.trigger("click");
+    expect(trigger.attributes("aria-expanded")).toBe("true");
+    expect(trigger.get(".stable-icon").element).toBe(icon);
+    wrapper.unmount();
+  });
+
+  it("keeps hover-open content open on the first click, then allows click to close", async () => {
+    vi.useFakeTimers();
+    const wrapper = mount(NavigationMenu, { props: { items: [{ label: "Docs", children: [{ label: "Guide" }] }] } });
+    const trigger = wrapper.get(".akaza-navigation-menu-trigger");
+    await trigger.trigger("mouseenter");
+    await vi.advanceTimersByTimeAsync(80);
+    expect(trigger.attributes("aria-expanded")).toBe("true");
+    await trigger.trigger("click");
+    expect(trigger.attributes("aria-expanded")).toBe("true");
+    await trigger.trigger("click");
+    expect(trigger.attributes("aria-expanded")).toBe("false");
+    wrapper.unmount();
+  });
+
+  it("keeps a dismissed collapsed tooltip closed during focus restoration", async () => {
+    vi.useFakeTimers();
+    const wrapper = mount(NavigationMenu, {
+      attachTo: document.body,
+      props: { orientation: "vertical", collapsed: true, tooltip: true, teleport: false, items: [{ label: "Overview" }] },
+    });
+    const link = wrapper.get(".akaza-navigation-menu-link");
+    await link.trigger("mouseenter");
+    await vi.advanceTimersByTimeAsync(80);
+    // Simulate focus being elsewhere while a collapsed leaf's tooltip is open.
+    await wrapper.get("[role='tooltip']").trigger("keydown", { key: "Escape" });
+    await vi.advanceTimersByTimeAsync(500);
+    expect(wrapper.find("[role='tooltip']").exists()).toBe(false);
+    expect(document.activeElement).toBe(link.element);
+    await link.trigger("mouseenter");
+    await vi.advanceTimersByTimeAsync(500);
+    expect(wrapper.find("[role='tooltip']").exists()).toBe(false);
+    await link.trigger("mouseleave");
+    await link.trigger("mouseenter");
+    await vi.advanceTimersByTimeAsync(80);
+    expect(wrapper.find("[role='tooltip']").exists()).toBe(true);
+    wrapper.unmount();
+  });
+
+  it("does not reopen an Escape-dismissed tooltip on late hover while focused", async () => {
+    vi.useFakeTimers();
+    const wrapper = mount(NavigationMenu, {
+      attachTo: document.body,
+      props: { orientation: "vertical", collapsed: true, tooltip: true, teleport: false, items: [{ label: "Overview" }] },
+    });
+    const link = wrapper.get(".akaza-navigation-menu-link");
+    (link.element as HTMLElement).focus();
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find("[role='tooltip']").exists()).toBe(true);
+    await link.trigger("keydown", { key: "Escape" });
+    await link.trigger("mouseenter");
+    await vi.advanceTimersByTimeAsync(500);
+    expect(wrapper.find("[role='tooltip']").exists()).toBe(false);
+    expect(document.activeElement).toBe(link.element);
+
+    (link.element as HTMLElement).blur();
+    (link.element as HTMLElement).focus();
+    await wrapper.vm.$nextTick();
+    expect(wrapper.find("[role='tooltip']").exists()).toBe(true);
+    wrapper.unmount();
+  });
+
   it("prevents disabled links from selecting", async () => {
     const onSelect = vi.fn();
     const wrapper = mount(NavigationMenu, {

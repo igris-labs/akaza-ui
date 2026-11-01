@@ -4,8 +4,8 @@ description: Responsive application sidebar with desktop collapse, resizing, and
 navigation:
   icon: i-lucide-panel-left
   badge:
-    label: NEW
-    color: success
+    label: UPDATED
+    color: warning
 ---
 
 `Sidebar` renders persistent navigation on desktop and reuses modal `Drawer` behavior on small screens. Content stays consumer-owned while Akaza UI manages responsive state, collapse geometry, resizing, focus, dismissal, and accessibility.
@@ -119,7 +119,12 @@ const items = [
     collapsible="icon"
   >
     <template #header="{ toggleCollapsed }">
-      <button type="button" @click="toggleCollapsed">Toggle</button>
+      <button
+        type="button"
+        @click="toggleCollapsed"
+      >
+        Toggle
+      </button>
     </template>
 
     <template #default="{ collapsed: isCollapsed }">
@@ -142,8 +147,14 @@ const items = [
 Use `icon` when compact controls remain usable. Use `offcanvas` when the complete desktop panel should leave the layout.
 
 ```vue
-<Sidebar v-model:collapsed="collapsed" collapsible="icon" />
-<Sidebar v-model:collapsed="hidden" collapsible="offcanvas" />
+<Sidebar
+  v-model:collapsed="collapsed"
+  collapsible="icon"
+/>
+<Sidebar
+  v-model:collapsed="hidden"
+  collapsible="offcanvas"
+/>
 <Sidebar :collapsible="false" />
 ```
 
@@ -161,7 +172,12 @@ const open = ref(false);
 </script>
 
 <template>
-  <button :aria-expanded="open" @click="open = true">Open navigation</button>
+  <button
+    :aria-expanded="open"
+    @click="open = true"
+  >
+    Open navigation
+  </button>
 
   <Sidebar
     v-model:open="open"
@@ -202,7 +218,12 @@ The resize handle supports pointer, pen, touch, and keyboard input. Double-click
 Placement also changes pointer and keyboard resize direction.
 
 ```vue
-<Sidebar side="right" collapsible="icon" resizable aria-label="Inspector">
+<Sidebar
+  side="right"
+  collapsible="icon"
+  resizable
+  aria-label="Inspector"
+>
   <template #header>Inspector</template>
   Properties
 </Sidebar>
@@ -213,7 +234,10 @@ Placement also changes pointer and keyboard resize direction.
 Global shortcuts are opt-in to avoid application conflicts. `keyboardShortcut="b"` uses Command+B on macOS and Ctrl+B elsewhere.
 
 ```vue
-<Sidebar keyboard-shortcut="b" collapsible="icon" />
+<Sidebar
+  keyboard-shortcut="b"
+  collapsible="icon"
+/>
 ```
 
 Shortcuts are ignored while focus is inside an input, textarea, select, or editable element.
@@ -233,8 +257,18 @@ const sidebar = useSidebar(sidebarRef);
 </script>
 
 <template>
-  <button type="button" @click="sidebar.toggle">Toggle navigation</button>
-  <Sidebar ref="sidebar" collapsible="icon">...</Sidebar>
+  <button
+    type="button"
+    @click="sidebar.toggle"
+  >
+    Toggle navigation
+  </button>
+  <Sidebar
+    ref="sidebar"
+    collapsible="icon"
+  >
+    ...
+  </Sidebar>
 </template>
 ```
 

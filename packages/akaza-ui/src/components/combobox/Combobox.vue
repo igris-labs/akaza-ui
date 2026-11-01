@@ -3,10 +3,14 @@ import type { Slot } from "vue";
 import type { ComboboxModelValue, ComboboxOption, ComboboxProps, ComboboxValue } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
 import { computed, inject, onBeforeUnmount, onMounted, onUpdated, ref, useId, useSlots, useTemplateRef, watch } from "vue";
+import { createChangeDetails } from "../../utils/changeEvent";
 import { useDismissableLayer } from "../../utils/dismissableLayer";
 import { useFloatingPosition } from "../../utils/floatingPosition";
 import { useFocusBranch } from "../../utils/focusScope";
+import { useFieldControl } from "../../utils/useFieldControl";
 import { useFormReset } from "../../utils/useFormReset";
+import { usePopupInteraction } from "../../utils/usePopupInteraction";
+import { nextEnabledIndex } from "../../utils/useRovingFocus";
 import { fieldContextKey } from "../field/context";
 
 const {
@@ -72,11 +76,15 @@ const slots = useSlots() as Record<string, Slot | undefined>;
 const focused = ref(false);
 const touched = ref(false);
 const validationActive = ref(false);
-const nativeInvalid = ref(false);
-const validationMessage = ref("");
-const validity = ref<ValidityState | null>(null);
+const { nativeInvalid, syncValidity, registerControl } = useFieldControl(field);
 const activeIndex = ref(-1);
-let pointerDownInsideContent = false;
+const { isInternalFocusMove } = usePopupInteraction({
+  root: rootRef,
+  content: contentRef,
+  open: openModel,
+  focusTarget: inputRef,
+  onOutsidePointerDown: event => setOpen(false, "outside-click", event),
+});
 const initialValue: ComboboxModelValue = Array.isArray(model.value) ? [...model.value] : model.value;
 
 const resolvedId = computed(() => id ?? field?.inputId.value ?? `akaza-combobox-${autoId}`);
@@ -151,14 +159,11 @@ const stateAttrs = computed(() => ({
   "data-akaza-focused": focused.value || undefined,
 }));
 
-const unregister = field?.registerControl({
+registerControl({
   dirty: isDirty,
   touched,
   filled: isFilled,
   focused,
-  invalid: nativeInvalid,
-  validationMessage,
-  validity,
 });
 
 function getValue(option: ComboboxOption): ComboboxValue {
@@ -222,23 +227,15 @@ function updateValidity(reveal = validationActive.value) {
   const input = hiddenRef.value;
   if (!input) return;
   input.setCustomValidity(isRequired.value && !isFilled.value ? "Please select an option." : "");
-  validity.value = input.validity;
-  nativeInvalid.value = reveal && !input.validity.valid;
-  validationMessage.value = input.validationMessage;
+  syncValidity(input, reveal);
 }
 
 function setOpen(next: boolean, reason: string, event?: Event) {
   if ((isDisabled.value || readOnly) && next) return;
   if (openModel.value === next) return;
-  let canceled = false;
-  emit("open-change", next, {
-    reason,
-    ...(event && { event }),
-    cancel: () => {
-      canceled = true;
-    },
-  });
-  if (canceled) return;
+  const changeEvent = createChangeDetails(reason, event);
+  emit("open-change", next, changeEvent.details);
+  if (changeEvent.canceled()) return;
   openModel.value = next;
   if (next) activeIndex.value = findEnabledIndex();
   else activeIndex.value = -1;
@@ -246,15 +243,9 @@ function setOpen(next: boolean, reason: string, event?: Event) {
 
 function setSearch(value: string, reason: string, event?: Event) {
   if (readOnly) return false;
-  let canceled = false;
-  emit("search-change", value, {
-    reason,
-    ...(event && { event }),
-    cancel: () => {
-      canceled = true;
-    },
-  });
-  if (canceled) return false;
+  const changeEvent = createChangeDetails(reason, event);
+  emit("search-change", value, changeEvent.details);
+  if (changeEvent.canceled()) return false;
   searchModel.value = value;
   return true;
 }
@@ -287,15 +278,9 @@ function selectOption(option: ComboboxOption, event?: Event) {
   if (loading || readOnly || isItemDisabled(option)) return;
   validationActive.value = true;
   const value = getNextValue(option);
-  let canceled = false;
-  emit("value-change", value, {
-    reason: event ? "select" : "programmatic",
-    ...(event && { event }),
-    cancel: () => {
-      canceled = true;
-    },
-  });
-  if (canceled) return;
+  const changeEvent = createChangeDetails(event ? "select" : "programmatic", event);
+  emit("value-change", value, changeEvent.details);
+  if (changeEvent.canceled()) return;
   model.value = value;
   if (resetSearchOnSelect) setSearch("", "select", event);
   if (!multiple) setOpen(false, "select", event);
@@ -318,13 +303,9 @@ function clearValue(event?: Event) {
 
 function commitValue(value: ComboboxModelValue, reason: string, event?: Event) {
   validationActive.value = true;
-  let canceled = false;
-  emit("value-change", value, {
-    reason,
-    ...(event && { event }),
-    cancel: () => { canceled = true; },
-  });
-  if (!canceled) {
+  const changeEvent = createChangeDetails(reason, event);
+  emit("value-change", value, changeEvent.details);
+  if (!changeEvent.canceled()) {
     model.value = value;
     updateValidity();
   }
@@ -333,28 +314,16 @@ function commitValue(value: ComboboxModelValue, reason: string, event?: Event) {
 function createOption(event?: Event) {
   const value = searchModel.value.trim();
   if (!canCreate.value || !value) return;
-  let canceled = false;
-  emit("create", value, {
-    reason: "create",
-    ...(event && { event }),
-    cancel: () => { canceled = true; },
-  });
-  if (!canceled) setOpen(false, "create", event);
+  const changeEvent = createChangeDetails("create", event);
+  emit("create", value, changeEvent.details);
+  if (!changeEvent.canceled()) setOpen(false, "create", event);
 }
 
 function move(delta: number) {
   if (loading || !filteredOptions.value.length) return;
-  const count = filteredOptions.value.length;
-  let next = activeIndex.value < 0 ? findEnabledIndex() : activeIndex.value;
-  for (let step = 0; step < count; step++) {
-    next += delta;
-    if (loop) next = (next + count) % count;
-    if (next < 0 || next >= count) return;
-    if (!isItemDisabled(filteredOptions.value[next]!)) {
-      focusOption(next);
-      return;
-    }
-  }
+  const from = activeIndex.value < 0 ? findEnabledIndex() : activeIndex.value;
+  const next = nextEnabledIndex(filteredOptions.value, from, delta, loop, isItemDisabled);
+  if (next >= 0) focusOption(next);
 }
 
 function onInput(event: Event) {
@@ -414,10 +383,7 @@ function onClick(event: MouseEvent) {
 }
 
 function onBlur(event: FocusEvent) {
-  const nextTarget = event.relatedTarget as Node | null;
-  if (rootRef.value?.contains(nextTarget)) return;
-  // Scrollbar presses may move focus to a fallback ancestor instead of the popup.
-  if (pointerDownInsideContent && (!nextTarget || nextTarget.contains(rootRef.value))) return;
+  if (isInternalFocusMove(event)) return;
   validationActive.value = true;
   touched.value = true;
   focused.value = false;
@@ -433,24 +399,7 @@ function onInvalid(event: Event) {
   inputRef.value?.focus();
 }
 
-function onDocumentPointerDown(event: PointerEvent) {
-  pointerDownInsideContent = contentRef.value?.contains(event.target as Node) ?? false;
-  if (!openModel.value) return;
-  if (rootRef.value?.contains(event.target as Node)) return;
-  setOpen(false, "outside-click", event);
-}
-
-function onDocumentPointerUp() {
-  if (pointerDownInsideContent && openModel.value && document.activeElement?.contains(rootRef.value)) {
-    inputRef.value?.focus({ preventScroll: true });
-  }
-  pointerDownInsideContent = false;
-}
-
 onMounted(() => {
-  document.addEventListener("pointerdown", onDocumentPointerDown);
-  document.addEventListener("pointerup", onDocumentPointerUp);
-  document.addEventListener("pointercancel", onDocumentPointerUp);
   updateValidity(false);
 });
 onUpdated(updateValidity);
@@ -467,11 +416,7 @@ watch(openModel, (open) => {
   }
 }, { immediate: true });
 onBeforeUnmount(() => {
-  document.removeEventListener("pointerdown", onDocumentPointerDown);
-  document.removeEventListener("pointerup", onDocumentPointerUp);
-  document.removeEventListener("pointercancel", onDocumentPointerUp);
   unregisterDismissable();
-  unregister?.();
 });
 
 function hasOptionSlot(option: ComboboxOption) {

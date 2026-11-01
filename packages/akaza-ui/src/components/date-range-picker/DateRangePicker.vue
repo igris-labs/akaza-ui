@@ -5,7 +5,7 @@ import type { AkazaChangeEventDetails } from "../../types";
 import type { CalendarDateRange, CalendarDateValue, CalendarModelValue } from "../calendar";
 import { onClickOutside } from "@vueuse/core";
 import { computed, nextTick, onBeforeUnmount, useId, useTemplateRef, watch } from "vue";
-import { resolveAction } from "../../utils/changeEvent";
+import { createChangeDetails as createDetails, resolveAction } from "../../utils/changeEvent";
 import { useDismissableLayer } from "../../utils/dismissableLayer";
 import { useFloatingPosition } from "../../utils/floatingPosition";
 import { useFocusBranch } from "../../utils/focusScope";
@@ -146,17 +146,6 @@ const contentStyle = computed<CSSProperties>(() => ({
   "--akaza-layer-order": layerOrder.value,
 }));
 
-function createDetails(reason: string, event?: Event) {
-  let canceled = false;
-  const details: AkazaChangeEventDetails = {
-    reason,
-    ...(event && { event }),
-    cancel: () => {
-      canceled = true;
-    },
-  };
-  return { details, canceled: () => canceled };
-}
 
 function setOpen(open: boolean, reason: string, event?: Event): boolean {
   if ((open && disabled) || openModel.value === open) return false;

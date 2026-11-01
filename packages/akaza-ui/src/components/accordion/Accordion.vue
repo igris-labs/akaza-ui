@@ -3,6 +3,8 @@ import type { AccordionItem, AccordionProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
 import { onKeyStroke } from "@vueuse/core";
 import { useId, useTemplateRef } from "vue";
+import { createChangeDetails } from "../../utils/changeEvent";
+import { nextEnabledIndex } from "../../utils/useRovingFocus";
 
 const {
   items,
@@ -66,9 +68,9 @@ function toggle(item: AccordionItem, event?: Event) {
     const current = Array.isArray(model.value) ? model.value : [];
     nextValue = current.includes(v) ? current.filter((x) => x !== v) : [...current, v];
   }
-  let canceled = false;
-  emit('value-change', nextValue, { reason: 'trigger', ...(event && { event }), cancel: () => { canceled = true; } });
-  if (!canceled) model.value = nextValue;
+  const changeEvent = createChangeDetails('trigger', event);
+  emit('value-change', nextValue, changeEvent.details);
+  if (!changeEvent.canceled()) model.value = nextValue;
 }
 
 function triggerId(item: AccordionItem): string {
@@ -94,8 +96,7 @@ onKeyStroke(["ArrowDown", "ArrowUp", "ArrowRight", "ArrowLeft", "Home", "End"], 
   e.preventDefault();
   const currentIdx = triggers.indexOf(document.activeElement as HTMLElement);
   let next = currentIdx;
-  if (isPrev) next = currentIdx > 0 ? currentIdx - 1 : triggers.length - 1;
-  else if (isNext) next = currentIdx < triggers.length - 1 ? currentIdx + 1 : 0;
+  if (isPrev || isNext) next = nextEnabledIndex(triggers, currentIdx, isNext ? 1 : -1, true);
   else if (e.key === "Home") next = 0;
   else if (e.key === "End") next = triggers.length - 1;
 

@@ -2,7 +2,9 @@
 import type { ComponentPublicInstance } from "vue";
 import type { PinInputProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
-import { computed, inject, nextTick, onBeforeUnmount, onMounted, onUpdated, ref, useId, watch } from "vue";
+import { computed, inject, nextTick, onMounted, onUpdated, ref, useId, watch } from "vue";
+import { createChangeDetails as createDetails } from "../../utils/changeEvent";
+import { useFieldControl } from "../../utils/useFieldControl";
 import { useFormReset } from "../../utils/useFormReset";
 import { fieldContextKey } from "../field/context";
 
@@ -43,9 +45,7 @@ const activeIndex = ref(-1);
 const focused = ref(false);
 const touched = ref(false);
 const validationActive = ref(false);
-const nativeInvalid = ref(false);
-const validationMessage = ref("");
-const validity = ref<ValidityState | null>(null);
+const { nativeInvalid, syncValidity, registerControl } = useFieldControl(field);
 
 const initialValue = model.value;
 const safeLength = computed(() => Math.max(1, Math.floor(length)));
@@ -68,14 +68,11 @@ const isDirty = computed(() => model.value !== initialValue);
 const isInvalid = computed(() => invalid || field?.invalid.value || nativeInvalid.value || false);
 const state = computed(() => isComplete.value ? "complete" : "incomplete");
 
-const unregister = field?.registerControl({
+registerControl({
   dirty: isDirty,
   touched,
   filled: isFilled,
   focused,
-  invalid: nativeInvalid,
-  validationMessage,
-  validity,
 });
 
 useFormReset(() => hiddenRef.value, () => {
@@ -92,22 +89,9 @@ function updateValidity(reveal = validationActive.value) {
   const input = hiddenRef.value;
   if (!input) return;
   input.setCustomValidity(isRequired.value && !isComplete.value ? `Enter all ${safeLength.value} characters.` : "");
-  validity.value = input.validity;
-  nativeInvalid.value = reveal && !input.validity.valid;
-  validationMessage.value = input.validationMessage;
+  syncValidity(input, reveal);
 }
 
-function createDetails(reason: string, event?: Event) {
-  let canceled = false;
-  const details: AkazaChangeEventDetails = {
-    reason,
-    ...(event && { event }),
-    cancel: () => {
-      canceled = true;
-    },
-  };
-  return { details, canceled: () => canceled };
-}
 
 function normalizeCharacters(value: string): string[] {
   return Array.from(value).filter((character) => {
@@ -280,7 +264,6 @@ onMounted(() => {
   if (autoFocus) nextTick(() => focusInput(0));
 });
 onUpdated(updateValidity);
-onBeforeUnmount(() => unregister?.());
 </script>
 
 <template>

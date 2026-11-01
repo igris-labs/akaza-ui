@@ -2,7 +2,11 @@
 import type { TimeFieldProps, TimeFieldSegment, TimeValue } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
 import { Time, toTime } from "@internationalized/date";
-import { computed, inject, nextTick, onBeforeUnmount, onMounted, reactive, ref, useId, useTemplateRef, watch } from "vue";
+import { computed, inject, nextTick, onMounted, reactive, ref, useId, useTemplateRef, watch } from "vue";
+import { createChangeDetails as createDetails } from "../../utils/changeEvent";
+import { useFieldControl } from "../../utils/useFieldControl";
+import { useFormReset } from "../../utils/useFormReset";
+import { useSegmentFocus } from "../../utils/useSegmentFocus";
 import { fieldContextKey } from "../field/context";
 
 const {
@@ -42,17 +46,13 @@ const field = inject(fieldContextKey, null);
 const autoId = useId();
 const rootRef = useTemplateRef<HTMLElement>("rootRef");
 const hiddenRef = useTemplateRef<HTMLInputElement>("hiddenRef");
-const segmentRefs = new Map<TimeFieldSegment, HTMLInputElement>();
 const values = reactive<Record<TimeFieldSegment, string>>({ hour: "", minute: "", second: "" });
 const dayPeriod = ref<"am" | "pm">("am");
 const focusedPart = ref<TimeFieldSegment | "dayPeriod" | null>(null);
 const touched = ref(false);
 const validationActive = ref(false);
-const nativeInvalid = ref(false);
-const validationMessage = ref("");
-const validity = ref<ValidityState | null>(null);
+const { nativeInvalid, syncValidity, registerControl } = useFieldControl(field);
 const initialValue = model.value;
-let formElement: HTMLFormElement | null = null;
 
 const resolvedId = computed(() => id ?? field?.inputId.value ?? `akaza-time-field-${autoId}`);
 const resolvedName = computed(() => name ?? field?.name.value);
@@ -93,14 +93,11 @@ const dayPeriodLabels = computed(() => ({
   pm: formatDayPeriod(21),
 }));
 
-const unregister = field?.registerControl({
+registerControl({
   dirty: isDirty,
   touched,
   filled: isFilled,
   focused: isFocused,
-  invalid: nativeInvalid,
-  validationMessage,
-  validity,
 });
 
 function getParts(): Array<{ type: TimeFieldSegment | "dayPeriod" | "literal"; value: string }> {
@@ -166,15 +163,6 @@ function syncSegments(value: TimeValue | undefined) {
   dayPeriod.value = time.hour >= 12 ? "pm" : "am";
 }
 
-function createDetails(reason: string, event?: Event) {
-  let canceled = false;
-  const details: AkazaChangeEventDetails = {
-    reason,
-    ...(event && { event }),
-    cancel: () => { canceled = true; },
-  };
-  return { details, canceled: () => canceled };
-}
 
 function snapValue(value: TimeValue): TimeValue {
   if (!stepSnapping || !step) return value;
@@ -251,27 +239,14 @@ function updateValidity(reveal = validationActive.value) {
   const input = hiddenRef.value;
   if (!input) return;
   input.setCustomValidity(nativeError.value);
-  validity.value = input.validity;
-  validationMessage.value = input.validationMessage;
-  nativeInvalid.value = reveal && !input.validity.valid;
+  syncValidity(input, reveal);
 }
 
-function setSegmentRef(element: unknown, segment: TimeFieldSegment) {
-  if (element) segmentRefs.set(segment, element as HTMLInputElement);
-  else segmentRefs.delete(segment);
-}
-
-function focusSegment(segment: TimeFieldSegment) {
-  segmentRefs.get(segment)?.focus({ preventScroll: true });
-}
-
-function moveFocus(part: TimeFieldSegment | "dayPeriod", delta: number) {
-  const index = focusableParts.value.indexOf(part);
-  const next = focusableParts.value[Math.min(focusableParts.value.length - 1, Math.max(0, index + delta))];
-  if (!next) return;
-  if (next === "dayPeriod") rootRef.value?.querySelector<HTMLButtonElement>(".akaza-time-field-day-period")?.focus({ preventScroll: true });
-  else focusSegment(next);
-}
+const { segmentRefs, setSegmentRef, focusSegment, moveFocus } = useSegmentFocus<TimeFieldSegment, TimeFieldSegment | "dayPeriod">({
+  parts: () => focusableParts.value,
+  focusOptions: { preventScroll: true },
+  getExtraElement: part => part === "dayPeriod" ? rootRef.value?.querySelector<HTMLButtonElement>(".akaza-time-field-day-period") ?? null : null,
+});
 
 function onSegmentInput(segment: TimeFieldSegment, event: Event) {
   validationActive.value = true;
@@ -378,29 +353,21 @@ function onInvalid(event: Event) {
   focusSegment(firstSegment.value);
 }
 
-async function onFormReset(event: Event) {
-  await nextTick();
-  if (event.defaultPrevented) return;
+useFormReset(() => hiddenRef.value, () => {
   model.value = initialValue;
   syncSegments(initialValue);
   touched.value = false;
   validationActive.value = false;
   nativeInvalid.value = false;
   nextTick(() => updateValidity(false));
-}
+});
 
 watch(model, syncSegments, { immediate: true });
 
 onMounted(() => {
   updateValidity(false);
-  formElement = hiddenRef.value?.form ?? null;
-  formElement?.addEventListener("reset", onFormReset);
 });
 
-onBeforeUnmount(() => {
-  formElement?.removeEventListener("reset", onFormReset);
-  unregister?.();
-});
 
 defineExpose({
   validationState: computed(() => ({ invalid: Boolean(nativeError.value) && isFilled.value, filled: isFilled.value })),

@@ -3,9 +3,6 @@ title: Calendar
 description: Locale-aware date grid with keyboard navigation, constraints, and single, multiple, or range selection.
 navigation:
   icon: i-lucide-calendar-days
-  badge:
-    label: NEW
-    color: success
 ---
 
 `Calendar` renders a date grid with navigation, selection, locale formatting, constraints, and roving focus. It uses `@internationalized/date` values and avoids JavaScript `Date` parsing and local-midnight conversions.
@@ -86,21 +83,27 @@ const open = ref(false);
 </script>
 
 <template>
-<Popover v-model="open" teleport="body">
-  <template #trigger="{ toggle, triggerProps }">
-    <button v-bind="triggerProps" @click="toggle">
-      {{ date?.toString() ?? "Choose date" }}
-    </button>
-  </template>
+  <Popover
+    v-model="open"
+    teleport="body"
+  >
+    <template #trigger="{ toggle, triggerProps }">
+      <button
+        v-bind="triggerProps"
+        @click="toggle"
+      >
+        {{ date?.toString() ?? "Choose date" }}
+      </button>
+    </template>
 
-  <template #content>
-    <Calendar
-      v-model="date"
-      prevent-deselect
-      @value-change="open = false"
-    />
-  </template>
-</Popover>
+    <template #content>
+      <Calendar
+        v-model="date"
+        prevent-deselect
+        @value-change="open = false"
+      />
+    </template>
+  </Popover>
 </template>
 ```
 
@@ -111,7 +114,10 @@ Use Date Field's `showCalendar` prop instead when users also need segmented keyb
 Set `selectionMode="multiple"` to bind an array. Selecting an existing date removes it unless `preventDeselect` is enabled. The older `multiple` boolean remains as a compatibility alias.
 
 ```vue
-<Calendar v-model="dates" selection-mode="multiple" />
+<Calendar
+  v-model="dates"
+  selection-mode="multiple"
+/>
 ```
 
 ### Date range
@@ -191,9 +197,11 @@ Both selection and visible-month changes emit cancelable details before updating
 ```vue
 <Calendar
   v-model="date"
-  @value-change="(_value, details) => {
-    if (hasUnsavedChanges) details.cancel()
-  }"
+  @value-change="
+    (_value, details) => {
+      if (hasUnsavedChanges) details.cancel();
+    }
+  "
 />
 ```
 

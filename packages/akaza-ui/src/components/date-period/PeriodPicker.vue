@@ -4,6 +4,7 @@ import type { AkazaChangeEventDetails } from "../../types";
 import type { CalendarDateRange, CalendarDateValue, CalendarModelValue, CalendarRangeFixedDate } from "../calendar";
 import { getLocalTimeZone, toCalendar, toCalendarDate, today } from "@internationalized/date";
 import { computed, nextTick, onMounted, shallowRef } from "vue";
+import { createChangeDetails as createDetails } from "../../utils/changeEvent";
 
 export interface PeriodPickerUi {
   root?: string;
@@ -277,15 +278,6 @@ function rangeHasBlockedPeriod(start: CalendarDateValue, end: CalendarDateValue)
   });
 }
 
-function createDetails(reason: string, event?: Event) {
-  let canceled = false;
-  const details: AkazaChangeEventDetails = {
-    reason,
-    ...(event && { event }),
-    cancel: () => { canceled = true; },
-  };
-  return { details, canceled: () => canceled };
-}
 
 function changeValue(value: CalendarModelValue, reason: string, event?: Event): boolean {
   const change = createDetails(reason, event);

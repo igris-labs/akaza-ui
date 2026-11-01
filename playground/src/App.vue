@@ -17,6 +17,12 @@ import ListboxSection from "./sections/listbox/ListboxSection.vue";
 import MonthPickerSection from "./sections/month-picker/MonthPickerSection.vue";
 import MonthRangePickerSection from "./sections/month-range-picker/MonthRangePickerSection.vue";
 import ComboboxSection from "./sections/combobox/ComboboxSection.vue";
+import ColorAreaSection from "./sections/color-area/ColorAreaSection.vue";
+import ColorFieldSection from "./sections/color-field/ColorFieldSection.vue";
+import ColorPickerSection from "./sections/color-picker/ColorPickerSection.vue";
+import ColorSliderSection from "./sections/color-slider/ColorSliderSection.vue";
+import ColorSwatchSection from "./sections/color-swatch/ColorSwatchSection.vue";
+import ColorSwatchPickerSection from "./sections/color-swatch-picker/ColorSwatchPickerSection.vue";
 import PinInputSection from "./sections/pin-input/PinInputSection.vue";
 import TagsInputSection from "./sections/tags-input/TagsInputSection.vue";
 import EditableSection from "./sections/editable/EditableSection.vue";
@@ -69,6 +75,7 @@ function toggleTheme() {
 }
 
 const sections = [
+  { id: "color", label: "Color", items: ["color-area", "color-field", "color-picker", "color-slider", "color-swatch", "color-swatch-picker"] },
   { id: "disclosure", label: "Disclosure", items: ["accordion", "collapsible"] },
   {
     id: "display",
@@ -145,6 +152,12 @@ const pageSections = [
   { id: "checkbox", component: CheckboxSection },
   { id: "checkbox-group", component: CheckboxGroupSection },
   { id: "collapsible", component: CollapsibleSection },
+  { id: "color-area", component: ColorAreaSection },
+  { id: "color-field", component: ColorFieldSection },
+  { id: "color-picker", component: ColorPickerSection },
+  { id: "color-slider", component: ColorSliderSection },
+  { id: "color-swatch", component: ColorSwatchSection },
+  { id: "color-swatch-picker", component: ColorSwatchPickerSection },
   { id: "combobox", component: ComboboxSection },
   { id: "context-menu", component: ContextMenuSection },
   { id: "data-table", component: DataTableSection },

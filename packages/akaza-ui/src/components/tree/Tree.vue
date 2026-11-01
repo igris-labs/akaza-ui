@@ -15,7 +15,9 @@ import type {
   TreeVirtualOptions,
 } from ".";
 import { useVirtualList } from "@vueuse/core";
-import { computed, nextTick, onBeforeUnmount, onUpdated, ref, useId } from "vue";
+import { computed, nextTick, onUpdated, ref, useId } from "vue";
+import { useTypeahead } from "../../composables/typeahead";
+import { createChangeDetails } from "../../utils/changeEvent";
 
 defineOptions({ inheritAttrs: false });
 
@@ -74,8 +76,7 @@ const instanceId = `akaza-tree-${useId().replace(/:/g, "")}`;
 const itemRefs = new Map<TreeKey, HTMLElement>();
 const focusedKey = ref<TreeKey | null>(null);
 const selectionAnchor = ref<TreeKey | null>(null);
-let typeaheadQuery = "";
-let typeaheadTimer: number | undefined;
+const { push: pushTypeahead } = useTypeahead({ resetOnRepeatedCharacter: true });
 
 function readAccessor<TValue>(item: T, accessor: TreeAccessor<T, TValue> | undefined): TValue | undefined {
   if (!accessor) return undefined;
@@ -317,17 +318,9 @@ function eventReason(event: Event | undefined, fallback = "programmatic"): strin
 }
 
 function createDetails(node: InternalNode, reason: string, event?: Event) {
-  let canceled = false;
-  const details: TreeChangeEventDetails<T> = {
-    key: node.key,
-    item: node.item,
-    reason,
-    ...(event && { event }),
-    cancel: () => {
-      canceled = true;
-    },
-  };
-  return { details, canceled: () => canceled };
+  const changeEvent = createChangeDetails(reason, event);
+  const details: TreeChangeEventDetails<T> = { ...changeEvent.details, key: node.key, item: node.item };
+  return { details, canceled: changeEvent.canceled };
 }
 
 function orderedKeys(keys: Set<TreeKey>): TreeKey[] {
@@ -643,13 +636,7 @@ function onKeydown(node: TreeNode<T>, event: KeyboardEvent) {
     commitSelection(orderedKeys(keys), treeData.value.nodeMap.get(node.key)!, "select-all", event);
   } else if (props.typeahead && event.key.length === 1 && !event.altKey && !event.ctrlKey && !event.metaKey) {
     const character = event.key.toLocaleLowerCase();
-    typeaheadQuery = typeaheadQuery && [...typeaheadQuery].every(value => value === character)
-      ? character
-      : typeaheadQuery + character;
-    window.clearTimeout(typeaheadTimer);
-    typeaheadTimer = window.setTimeout(() => {
-      typeaheadQuery = "";
-    }, 500);
+    const typeaheadQuery = pushTypeahead(character);
     const candidates = [...visibleNodes.value.slice(node.index + 1), ...visibleNodes.value.slice(0, node.index + 1)];
     const match = candidates.find((candidate) => {
       const value = props.textValue?.(candidate.item) ?? candidate.label;
@@ -726,7 +713,6 @@ defineExpose({
 });
 
 onUpdated(normalizeFocus);
-onBeforeUnmount(() => window.clearTimeout(typeaheadTimer));
 </script>
 
 <template>

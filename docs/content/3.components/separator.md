@@ -46,7 +46,10 @@ Use vertical orientation between inline or flex items.
 <template>
   <div class="flex items-center gap-4">
     <span>Home</span>
-    <Separator orientation="vertical" class="h-4" />
+    <Separator
+      orientation="vertical"
+      class="h-4"
+    />
     <span>About</span>
   </div>
 </template>
@@ -78,7 +81,10 @@ Use `decorative` when the separator is purely visual and carries no semantic mea
 
 ```vue
 <template>
-  <Separator :decorative="true" class="my-divider" />
+  <Separator
+    :decorative="true"
+    class="my-divider"
+  />
 </template>
 ```
 

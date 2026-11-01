@@ -2,7 +2,7 @@
 import type { CollapsibleProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
 import { useId } from "vue";
-import { resolveAction } from "../../utils/changeEvent";
+import { createChangeDetails, resolveAction } from "../../utils/changeEvent";
 
 const { as = "div", disabled = false, unmountOnHide = false, ui } = defineProps<CollapsibleProps>();
 
@@ -16,9 +16,9 @@ const panelId = `akaza-collapsible-panel-${useId()}`;
 
 function handleChange(nextOpen: boolean, reason: string, event?: Event) {
   if (disabled && nextOpen) return;
-  let canceled = false;
-  emit('open-change', nextOpen, { reason, ...(event && { event }), cancel: () => { canceled = true; } });
-  if (canceled) return;
+  const changeEvent = createChangeDetails(reason, event);
+  emit('open-change', nextOpen, changeEvent.details);
+  if (changeEvent.canceled()) return;
   model.value = nextOpen;
 }
 

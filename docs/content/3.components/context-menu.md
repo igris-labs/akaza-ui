@@ -59,14 +59,22 @@ const showGrid = ref(true);
 const radioValues = ref({ sort: "name" });
 
 const items = computed(() => [
-  { type: "checkbox", label: "Show grid", checked: showGrid.value, onUpdateChecked: (value) => (showGrid.value = value) },
+  {
+    type: "checkbox",
+    label: "Show grid",
+    checked: showGrid.value,
+    onUpdateChecked: (value) => (showGrid.value = value),
+  },
   { type: "radio", label: "Name", value: "name", radioGroup: "sort" },
   { type: "radio", label: "Date", value: "date", radioGroup: "sort" },
 ]);
 </script>
 
 <template>
-  <ContextMenu v-model:radio-values="radioValues" :items="items">
+  <ContextMenu
+    v-model:radio-values="radioValues"
+    :items="items"
+  >
     <div>Right-click</div>
   </ContextMenu>
 </template>
@@ -85,7 +93,10 @@ const menu = ref<InstanceType<typeof ContextMenu>>();
 </script>
 
 <template>
-  <ContextMenu ref="menu" :items="items">
+  <ContextMenu
+    ref="menu"
+    :items="items"
+  >
     <button @click="menu?.openAt(120, 160, 'custom')">Open at point</button>
   </ContextMenu>
 </template>
@@ -158,6 +169,18 @@ The generated root uses `display: contents`, so it does not change the trigger s
 Popup transitions follow their placement side and last `120ms`. Set `--akaza-context-menu-duration` to change the duration. Reduced-motion mode removes the visible transition.
 
 Context menus join the shared floating-layer stack. `--akaza-z-layer-base` sets its base (default `1200`); `--akaza-z-context-menu` overrides the context panel's z-index. Nested panels use [Menu's collision positioning and styling hooks](/components/menu#styling-hooks), including `data-akaza-side` for their resolved side.
+
+### Positioning Variables
+
+The root panel uses a virtual pointer anchor, so its anchor width and height are zero. It can open above or to the left of the pointer near viewport edges, and updates on viewport resize.
+
+| Variable | Meaning |
+| --- | --- |
+| `--akaza-context-menu-anchor-width` | Anchor width in pixels. |
+| `--akaza-context-menu-anchor-height` | Anchor height in pixels. |
+| `--akaza-context-menu-available-width` | Viewport width after collision padding. |
+| `--akaza-context-menu-available-height` | Viewport height after collision padding. |
+| `--akaza-context-menu-transform-origin` | Origin matching the resolved side and alignment. |
 
 ### Keyboard
 

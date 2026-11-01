@@ -34,7 +34,10 @@ const items = [
 </script>
 
 <template>
-  <Menubar :items="items" aria-label="Editor menu" />
+  <Menubar
+    :items="items"
+    aria-label="Editor menu"
+  />
 </template>
 ```
 ::
@@ -50,10 +53,13 @@ Pass `radioValues` for radio menu items. The event contract matches `Menu`.
   <Menubar
     v-model:radio-values="radioValues"
     :items="[
-      { label: 'View', children: [
-        { type: 'radio', label: 'Preview', value: 'preview', radioGroup: 'view' },
-        { type: 'radio', label: 'Source', value: 'source', radioGroup: 'view' },
-      ] },
+      {
+        label: 'View',
+        children: [
+          { type: 'radio', label: 'Preview', value: 'preview', radioGroup: 'view' },
+          { type: 'radio', label: 'Source', value: 'source', radioGroup: 'view' },
+        ],
+      },
     ]"
   />
 </template>

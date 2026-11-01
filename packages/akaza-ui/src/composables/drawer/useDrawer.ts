@@ -1,5 +1,5 @@
 import type { Ref } from "vue";
-import { ref } from "vue";
+import { useDisclosure } from "../disclosure";
 
 export type DrawerSide = "top" | "right" | "bottom" | "left";
 
@@ -11,15 +11,5 @@ export interface UseDrawerReturn {
 }
 
 export function useDrawer(modelRef?: Ref<boolean>): UseDrawerReturn {
-  const isOpen = modelRef ?? ref(false);
-  function open() {
-    isOpen.value = true;
-  }
-  function close() {
-    isOpen.value = false;
-  }
-  function toggle() {
-    isOpen.value = !isOpen.value;
-  }
-  return { isOpen, open, close, toggle };
+  return useDisclosure(modelRef);
 }

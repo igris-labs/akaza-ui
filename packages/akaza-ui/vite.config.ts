@@ -29,6 +29,10 @@ export default defineConfig({
     rollupOptions: {
       external: ["vue", "@nuxt/kit"],
       output: {
+        // Keep color conversions removable from applications importing unrelated controls.
+        manualChunks(id) {
+          if (id.includes("/node_modules/culori/")) return "color-conversion";
+        },
         globals: {
           vue: "Vue",
         },

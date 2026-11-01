@@ -1,7 +1,11 @@
 <script setup lang="ts">
 import type { NumberFieldProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
-import { computed, inject, nextTick, onBeforeUnmount, onMounted, onUpdated, ref, useId, useTemplateRef } from "vue";
+import { computed, inject, nextTick, onMounted, onUpdated, ref, useId, useTemplateRef } from "vue";
+import { createChangeDetails } from "../../utils/changeEvent";
+import { clampNumber, snapToStep } from "../../utils/number";
+import { useFieldControl } from "../../utils/useFieldControl";
+import { useFormReset } from "../../utils/useFormReset";
 import { fieldContextKey } from "../field/context";
 
 const {
@@ -41,14 +45,11 @@ const initialValue = model.value;
 const focused = ref(false);
 const touched = ref(false);
 const validationActive = ref(false);
-const nativeInvalid = ref(false);
-const validationMessage = ref("");
-const validity = ref<ValidityState | null>(null);
+const { nativeInvalid, syncValidity, registerControl } = useFieldControl(field);
 const scrubbing = ref(false);
 let scrubStartX = 0;
 let scrubStartValue = 0;
 let pendingCommitValue: number | null | undefined;
-let formElement: HTMLFormElement | null = null;
 
 const resolvedId = computed(() => id ?? field?.inputId.value ?? `akaza-number-field-${autoId}`);
 const resolvedName = computed(() => name ?? field?.name.value);
@@ -78,59 +79,30 @@ const stateAttrs = computed(() => ({
   "data-akaza-scrubbing": scrubbing.value || undefined,
 }));
 
-const unregister = field?.registerControl({
+registerControl({
   dirty: isDirty,
   touched,
   filled: isFilled,
   focused,
-  invalid: nativeInvalid,
-  validationMessage,
-  validity,
 });
 
-function decimals(value: number): number {
-  const [coefficient = "", exponent = "0"] = String(value).toLowerCase().split("e");
-  return Math.min(100, Math.max(0, (coefficient.split(".")[1]?.length ?? 0) - Number(exponent)));
-}
-
-function clamp(value: number): number {
-  if (min !== undefined && value < min) return min;
-  if (max !== undefined && value > max) return max;
-  return value;
-}
-
-function snap(value: number): number {
-  if (!stepSnapping || step <= 0) return value;
-  const base = min ?? 0;
-  const snapped = Math.round((value - base) / step) * step + base;
-  return Number(snapped.toFixed(Math.max(decimals(step), decimals(base))));
-}
-
 function normalize(value: number): number {
-  return clamp(snap(value));
+  return clampNumber(stepSnapping ? snapToStep(value, step, min ?? 0) : value, min, max);
 }
 
 function updateValidity(reveal = validationActive.value) {
   const input = inputRef.value;
   if (!input) return;
-  validity.value = input.validity;
-  nativeInvalid.value = reveal && !input.validity.valid;
-  validationMessage.value = input.validationMessage;
+  syncValidity(input, reveal);
 }
 
 function setValue(value: number | null, reason: string, event?: Event): boolean {
   if (isDisabled.value || readonly) return false;
   validationActive.value = true;
   const next = value === null ? null : reason === "input" ? value : normalize(value);
-  let canceled = false;
-  emit("value-change", next, {
-    reason,
-    ...(event && { event }),
-    cancel: () => {
-      canceled = true;
-    },
-  });
-  if (canceled) {
+  const changeEvent = createChangeDetails(reason, event);
+  emit("value-change", next, changeEvent.details);
+  if (changeEvent.canceled()) {
     if (inputRef.value) inputRef.value.value = textValue.value;
     pendingCommitValue = undefined;
     return false;
@@ -233,9 +205,7 @@ function onInvalid() {
   updateValidity();
 }
 
-async function onFormReset(event: Event) {
-  await nextTick();
-  if (event.defaultPrevented) return;
+useFormReset(() => inputRef.value, async () => {
   model.value = initialValue;
   pendingCommitValue = undefined;
   touched.value = false;
@@ -243,18 +213,12 @@ async function onFormReset(event: Event) {
   nativeInvalid.value = false;
   await nextTick();
   updateValidity(false);
-}
+});
 
 onMounted(() => {
   updateValidity(false);
-  formElement = inputRef.value?.form ?? null;
-  formElement?.addEventListener("reset", onFormReset);
 });
 onUpdated(updateValidity);
-onBeforeUnmount(() => {
-  formElement?.removeEventListener("reset", onFormReset);
-  unregister?.();
-});
 </script>
 
 <template>

@@ -3,9 +3,6 @@ title: Data Table
 description: Semantic tables with sorting, filtering, selection, pagination, expansion, and resizing.
 navigation:
   icon: i-lucide-table-2
-  badge:
-    label: NEW
-    color: success
 ---
 
 `DataTable` renders typed columns and row data as a semantic HTML table. Akaza manages structure and interaction state. Your application supplies data, cell content, and styles.
@@ -80,7 +77,12 @@ const selection = ref<DataTableRowKey[]>([]);
     </template>
 
     <template #actions-cell="{ row }">
-      <button type="button" @click.stop="openUser(row.original)">Open</button>
+      <button
+        type="button"
+        @click.stop="openUser(row.original)"
+      >
+        Open
+      </button>
     </template>
   </DataTable>
 </template>
@@ -94,9 +96,18 @@ const selection = ref<DataTableRowKey[]>([]);
 Use `#[id]-header` and `#[id]-cell` for the clearest template-first API. Each cell receives the row, column, resolved value, indexes, and table controller.
 
 ```vue
-<DataTable :data="users" :columns="columns" row-key="id">
+<DataTable
+  :data="users"
+  :columns="columns"
+  row-key="id"
+>
   <template #name-header="{ column, toggleSorting }">
-    <button type="button" @click="toggleSorting">{{ column.definition.header }}</button>
+    <button
+      type="button"
+      @click="toggleSorting"
+    >
+      {{ column.definition.header }}
+    </button>
   </template>
 
   <template #name-cell="{ row }">
@@ -146,11 +157,17 @@ Sorting and filters are Vue models. Use controller methods in the toolbar so all
       :value="search"
       type="search"
       @input="table.setGlobalFilter($event.target.value, $event)"
+    />
+    <button
+      type="button"
+      @click="table.setFilter('status', 'active', $event)"
     >
-    <button type="button" @click="table.setFilter('status', 'active', $event)">
       Active only
     </button>
-    <button type="button" @click="table.clearFilter('status', $event)">
+    <button
+      type="button"
+      @click="table.clearFilter('status', $event)"
+    >
       All statuses
     </button>
   </template>
@@ -173,11 +190,14 @@ Add a `selection` column and choose `single` or `multiple`. Selection stores sta
   row-key="id"
   selection-mode="multiple"
   selection-behavior="row"
-  :is-row-selectable="row => !row.locked"
+  :is-row-selectable="(row) => !row.locked"
   select-all-scope="filtered"
 >
   <template #toolbar="{ table }">
-    <button :disabled="!table.selectedRows.value.length" @click="archive(selectedIds)">
+    <button
+      :disabled="!table.selectedRows.value.length"
+      @click="archive(selectedIds)"
+    >
       Archive selected
     </button>
   </template>
@@ -201,9 +221,19 @@ Set `paginate` for client pagination. The bundled paginator is styled through th
   paginate
 >
   <template #pagination="{ page, pageCount, setPage }">
-    <button :disabled="page === 1" @click="setPage(page - 1)">Previous</button>
+    <button
+      :disabled="page === 1"
+      @click="setPage(page - 1)"
+    >
+      Previous
+    </button>
     <span>Page {{ page }} of {{ pageCount }}</span>
-    <button :disabled="page === pageCount" @click="setPage(page + 1)">Next</button>
+    <button
+      :disabled="page === pageCount"
+      @click="setPage(page + 1)"
+    >
+      Next
+    </button>
   </template>
 </DataTable>
 ```
@@ -225,25 +255,29 @@ const query = computed(() => ({
   pagination: pagination.value,
 }));
 
-watch(query, async (value, _previous, onCleanup) => {
-  const request = new AbortController();
-  onCleanup(() => request.abort());
-  response.value = await fetchRows(value, request.signal);
-}, { immediate: true });
+watch(
+  query,
+  async (value, _previous, onCleanup) => {
+    const request = new AbortController();
+    onCleanup(() => request.abort());
+    response.value = await fetchRows(value, request.signal);
+  },
+  { immediate: true },
+);
 </script>
 
 <template>
   <DataTable
-  v-model:sorting="sorting"
-  v-model:filters="filters"
-  v-model:pagination="pagination"
-  :data="response.rows"
-  :columns="columns"
-  :row-count="response.total"
-  row-key="id"
-  manual-sorting
-  manual-filtering
-  manual-pagination
+    v-model:sorting="sorting"
+    v-model:filters="filters"
+    v-model:pagination="pagination"
+    :data="response.rows"
+    :columns="columns"
+    :row-count="response.total"
+    row-key="id"
+    manual-sorting
+    manual-filtering
+    manual-pagination
   />
 </template>
 ```
@@ -274,7 +308,7 @@ const columns = [
   :data="users"
   :columns="columns"
   row-key="id"
-  :is-row-expandable="row => Boolean(row.auditLog.length)"
+  :is-row-expandable="(row) => Boolean(row.auditLog.length)"
 >
   <template #expanded="{ row }">
     <AuditLog :entries="row.original.auditLog" />
@@ -319,7 +353,13 @@ Row reorder is available only for flat, unsorted rows. Sorting or hierarchical d
 State rows preserve the table structure and span every visible column. Replace their content without rebuilding the table.
 
 ```vue
-<DataTable :data="rows" :columns="columns" row-key="id" :loading="pending" :error="error">
+<DataTable
+  :data="rows"
+  :columns="columns"
+  row-key="id"
+  :loading="pending"
+  :error="error"
+>
   <template #loading>Loading members...</template>
   <template #error="{ error }">{{ getMessage(error) }}</template>
   <template #empty>No members match these filters.</template>

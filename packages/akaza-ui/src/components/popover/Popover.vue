@@ -1,12 +1,13 @@
 <script setup lang="ts">
 import type { CSSProperties } from "vue";
-import type { PopoverProps, PopoverSide } from ".";
+import type { PopoverProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
 import { onClickOutside } from "@vueuse/core";
-import { computed, nextTick, onUnmounted, ref, useId, useTemplateRef, watch } from "vue";
+import { computed, nextTick, onUnmounted, useId, useTemplateRef, watch } from "vue";
 import { usePopover } from "../../composables/popover";
-import { resolveAction } from "../../utils/changeEvent";
+import { createChangeDetails, resolveAction } from "../../utils/changeEvent";
 import { useDismissableLayer } from "../../utils/dismissableLayer";
+import { useFloatingPosition } from "../../utils/floatingPosition";
 import { useFocusBranch } from "../../utils/focusScope";
 
 const {
@@ -26,15 +27,9 @@ const model = defineModel<boolean>({ default: false });
 const { open: _open, close: _close } = usePopover(model);
 
 function handleChange(nextOpen: boolean, reason: string, event?: Event) {
-  let canceled = false;
-  emit("open-change", nextOpen, {
-    reason,
-    ...(event && { event }),
-    cancel: () => {
-      canceled = true;
-    },
-  });
-  if (canceled) return;
+  const changeEvent = createChangeDetails(reason, event);
+  emit("open-change", nextOpen, changeEvent.details);
+  if (changeEvent.canceled()) return;
   nextOpen ? _open() : _close();
 }
 
@@ -55,8 +50,6 @@ const popoverId = useId();
 const rootRef = useTemplateRef<HTMLElement>("rootRef");
 const contentRef = useTemplateRef<HTMLElement>("contentRef");
 useFocusBranch(contentRef);
-let positionFrame = 0;
-let resizeObserver: ResizeObserver | undefined;
 const { layerOrder, register, unregister } = useDismissableLayer((event?: KeyboardEvent) => {
   close("escape", event);
   nextTick(() => getTriggerFocusTarget()?.focus());
@@ -79,134 +72,38 @@ onClickOutside(
 
 // ── Positioning ───────────────────────────────────────────────────────────────
 
-const posStyle = ref({ top: "-9999px", left: "-9999px" });
-const actualSide = ref<PopoverSide>(side);
+const { style: positionStyle, actualSide } = useFloatingPosition({
+  reference: rootRef,
+  floating: contentRef,
+  active: model,
+  side: () => side,
+  align: () => align,
+  sideOffset: () => sideOffset,
+  collisionPadding: 4,
+  fallbackSides: ["bottom", "top", "right", "left"],
+  strategy: () => teleport === false ? "absolute" : "fixed",
+  cssVarPrefix: "akaza-popover",
+});
 const contentStyle = computed<CSSProperties>(() => ({
-  ...posStyle.value,
-  position: teleport === false ? "absolute" : "fixed",
+  ...positionStyle.value,
+  // Positioning must not override consumer or enter/leave transforms.
+  transform: undefined,
+  transformOrigin: undefined,
   "--akaza-layer-order": layerOrder.value,
 }));
 
-function schedulePosition() {
-  if (typeof requestAnimationFrame === "undefined") return;
-  cancelAnimationFrame(positionFrame);
-  positionFrame = requestAnimationFrame(() => {
-    positionFrame = requestAnimationFrame(() => {
-      computePosition();
-    });
-  });
-}
-
-function computePosition() {
-  if (typeof window === "undefined") return;
-  if (!rootRef.value || !contentRef.value) return;
-
-  const t = rootRef.value.getBoundingClientRect();
-  const contentWidth = contentRef.value.offsetWidth;
-  const contentHeight = contentRef.value.offsetHeight;
-  const vw = window.innerWidth;
-  const vh = window.innerHeight;
-  const gap = sideOffset;
-
-  // Auto-flip: prefer requested side, fall back if no room
-  const order: PopoverSide[] = [side, "bottom", "top", "right", "left"];
-  const candidates = [...new Set(order)];
-
-  let chosen: PopoverSide = candidates[candidates.length - 1]!;
-  for (const d of candidates) {
-    if (d === "top" && t.top >= contentHeight + gap) {
-      chosen = d;
-      break;
-    }
-    if (d === "bottom" && vh - t.bottom >= contentHeight + gap) {
-      chosen = d;
-      break;
-    }
-    if (d === "right" && vw - t.right >= contentWidth + gap) {
-      chosen = d;
-      break;
-    }
-    if (d === "left" && t.left >= contentWidth + gap) {
-      chosen = d;
-      break;
-    }
-  }
-
-  let top = 0;
-  let left = 0;
-
-  // Main axis
-  if (chosen === "top") top = t.top - contentHeight - gap;
-  else if (chosen === "bottom") top = t.bottom + gap;
-  else if (chosen === "left") left = t.left - contentWidth - gap;
-  else left = t.right + gap;
-
-  // Cross axis (align)
-  if (chosen === "top" || chosen === "bottom") {
-    if (align === "start") left = t.left;
-    else if (align === "end") left = t.right - contentWidth;
-    else left = t.left + t.width / 2 - contentWidth / 2;
-  } else {
-    if (align === "start") top = t.top;
-    else if (align === "end") top = t.bottom - contentHeight;
-    else top = t.top + t.height / 2 - contentHeight / 2;
-  }
-
-  // Clamp to viewport
-  top = Math.max(4, Math.min(top, vh - contentHeight - 4));
-  left = Math.max(4, Math.min(left, vw - contentWidth - 4));
-
-  actualSide.value = chosen;
-  posStyle.value =
-    teleport === false
-      ? { top: `${top - t.top}px`, left: `${left - t.left}px` }
-      : { top: `${top}px`, left: `${left}px` };
-}
-
-// ── Open/close with viewport tracking ────────────────────────────────────────
-
-function addListeners() {
-  if (typeof window === "undefined") return;
-  if (teleport !== false) {
-    window.addEventListener("scroll", computePosition, { passive: true, capture: true });
-  }
-  window.addEventListener("resize", computePosition, { passive: true });
-
-  if (typeof ResizeObserver !== "undefined" && contentRef.value) {
-    resizeObserver = new ResizeObserver(() => {
-      computePosition();
-    });
-    resizeObserver.observe(contentRef.value);
-  }
-}
-
-function removeListeners() {
-  if (typeof window === "undefined") return;
-  if (teleport !== false) {
-    window.removeEventListener("scroll", computePosition, { capture: true });
-  }
-  window.removeEventListener("resize", computePosition);
-  resizeObserver?.disconnect();
-  resizeObserver = undefined;
-}
-
-watch(model, async (val) => {
-  if (val) {
+watch(model, async (open, _previous, cleanup) => {
+  let canceled = false;
+  cleanup(() => { canceled = true; });
+  if (open) {
     await nextTick();
-    register();
-    addListeners();
-    schedulePosition();
+    if (!canceled) register();
   } else {
     unregister();
-    removeListeners();
   }
 }, { immediate: true });
 
-onUnmounted(() => {
-  if (typeof cancelAnimationFrame !== "undefined") cancelAnimationFrame(positionFrame);
-  unregister();
-  removeListeners();
-});
+onUnmounted(unregister);
 
 // ── Trigger ARIA props ────────────────────────────────────────────────────────
 

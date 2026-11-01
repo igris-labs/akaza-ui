@@ -30,7 +30,10 @@ const enabled = ref(false);
 </script>
 
 <template>
-  <Switch v-model="enabled" label="Enable notifications" />
+  <Switch
+    v-model="enabled"
+    label="Enable notifications"
+  />
 </template>
 ```
 ::
@@ -43,7 +46,10 @@ Use `#thumb` to replace the sliding indicator while keeping switch behavior.
 
 ```vue
 <template>
-  <Switch v-model="enabled" class="my-switch">
+  <Switch
+    v-model="enabled"
+    class="my-switch"
+  >
     <template #thumb="{ checked }">
       <span :class="['thumb', { 'thumb--on': checked }]" />
     </template>
@@ -90,7 +96,11 @@ Use `aria-label` when there's no visible label text.
 
 ```vue
 <template>
-  <Switch v-model="muted" aria-label="Mute audio" class="my-switch" />
+  <Switch
+    v-model="muted"
+    aria-label="Mute audio"
+    class="my-switch"
+  />
 </template>
 ```
 

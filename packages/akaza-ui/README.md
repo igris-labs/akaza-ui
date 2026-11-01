@@ -66,6 +66,8 @@ No manual CSS import or component registration needed.
 
 ## Usage
 
+Color controls include `ColorPicker`, `ColorField`, `ColorArea`, `ColorSlider`, `ColorSwatch`, and `ColorSwatchPicker`. They share the DOM-free `useColor` composable and CSS string models. The `format` prop selects output notation, including HEX, RGB, HSL, HWB, Lab/LCH, OKLab/OKLCH, Display P3, and other CSS spaces. ColorPicker uses flat slots and nested `ui` maps rather than a required public part tree. See the [color documentation](https://akaza-ui.com/components/color-picker) for examples and gamut limits.
+
 ```vue
 <script setup lang="ts">
 import { Dialog } from "akaza-ui";

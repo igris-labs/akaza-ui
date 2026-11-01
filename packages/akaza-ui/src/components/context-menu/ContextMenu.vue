@@ -4,10 +4,13 @@ import type { AkazaChangeEventDetails } from "../../types";
 import type { MenuItem } from "../menu";
 import { onClickOutside } from "@vueuse/core";
 import { computed, nextTick, onUnmounted, provide, ref, useId, useSlots, useTemplateRef, watch } from "vue";
+import { createChangeDetails } from "../../utils/changeEvent";
 import { useDismissableLayer } from "../../utils/dismissableLayer";
+import { useFloatingPosition } from "../../utils/floatingPosition";
 import { useFocusBranch } from "../../utils/focusScope";
 import { MENU_CONTEXT_KEY } from "../menu/context";
 import MenuPanel from "../menu/MenuPanel.vue";
+import { getMenuItemValue as getItemValue, normalizeMenuItems as normalizeItems, useMenuActions } from "../menu/useMenuActions";
 
 const {
   items,
@@ -36,38 +39,39 @@ useFocusBranch(contentRef);
 const panelRef = useTemplateRef<InstanceType<typeof MenuPanel>>("panelRef");
 const menuId = `akaza-context-menu-${useId()}`;
 const point = ref({ x: 0, y: 0 });
-const positionStyle = ref<Record<string, string>>({ position: "fixed", top: "-9999px", left: "-9999px" });
-const actualSide = ref<"left" | "right">("right");
-const actualAlign = ref<"start" | "end">("start");
+const pointerAnchor = computed(() => {
+  const { x, y } = point.value;
+  return { getBoundingClientRect: () => new DOMRect(x, y, 0, 0) };
+});
+const { style: positionStyle, actualSide, actualAlign, update: computePosition } = useFloatingPosition({
+  reference: pointerAnchor,
+  floating: contentRef,
+  active: model,
+  side: "right",
+  align: "start",
+  sideOffset: () => sideOffset,
+  alignOffset: () => sideOffset,
+  flipAlign: true,
+  collisionPadding: 4,
+  strategy: "fixed",
+  cssVarPrefix: "akaza-context-menu",
+});
 let previousFocus: HTMLElement | null = null;
 let longPressTimer: number | undefined;
 let pressStart: { x: number; y: number } | null = null;
 const { layerOrder, register, unregister } = useDismissableLayer((event?: KeyboardEvent) => close("escape", event));
 const layeredPositionStyle = computed(() => ({ ...positionStyle.value, "--akaza-layer-order": String(layerOrder.value) }));
 
-function normalizeItems(raw?: MenuItem[] | MenuItem[][]): MenuItem[][] {
-  if (!raw?.length) return [];
-  return Array.isArray(raw[0]) ? (raw as MenuItem[][]) : [raw as MenuItem[]];
-}
 
 const normalizedGroups = computed(() => normalizeItems(items));
 
-function getItemValue(item: MenuItem): string {
-  return (item.value ?? item.label ?? "") as string;
-}
 
 function setOpen(next: boolean, reason: string, event?: Event) {
   if (disabled && next) return;
   if (model.value === next) return;
-  let canceled = false;
-  emit("open-change", next, {
-    reason,
-    ...(event && { event }),
-    cancel: () => {
-      canceled = true;
-    },
-  });
-  if (canceled) return;
+  const changeEvent = createChangeDetails(reason, event);
+  emit("open-change", next, changeEvent.details);
+  if (changeEvent.canceled()) return;
   model.value = next;
   if (!next && restoreFocus && reason !== "outside-click") {
     nextTick(() => previousFocus?.focus({ preventScroll: true }));
@@ -128,28 +132,6 @@ function onPointerMove(event: PointerEvent) {
   if (Math.hypot(event.clientX - pressStart.x, event.clientY - pressStart.y) > 10) clearLongPress();
 }
 
-function computePosition() {
-  if (typeof window === "undefined" || !contentRef.value) return;
-  const content = contentRef.value.getBoundingClientRect();
-  const padding = 4;
-  const right = point.value.x + sideOffset;
-  const left = point.value.x - content.width - sideOffset;
-  const below = point.value.y + sideOffset;
-  const above = point.value.y - content.height - sideOffset;
-  const useLeft = right + content.width + padding > window.innerWidth && left >= padding;
-  const useAbove = below + content.height + padding > window.innerHeight && above >= padding;
-  const resolvedLeft = Math.max(padding, Math.min(useLeft ? left : right, window.innerWidth - content.width - padding));
-  const resolvedTop = Math.max(padding, Math.min(useAbove ? above : below, window.innerHeight - content.height - padding));
-
-  actualSide.value = useLeft ? "left" : "right";
-  actualAlign.value = useAbove ? "end" : "start";
-  positionStyle.value = {
-    position: "fixed",
-    left: `${resolvedLeft}px`,
-    top: `${resolvedTop}px`,
-    transformOrigin: `${useLeft ? "right" : "left"} ${useAbove ? "bottom" : "top"}`,
-  };
-}
 
 function onContentKeydown(event: KeyboardEvent) {
   if (event.key === "Escape") {
@@ -158,53 +140,15 @@ function onContentKeydown(event: KeyboardEvent) {
   }
 }
 
-function onItemSelect(item: MenuItem, event: Event) {
-  if (item.disabled) return;
-  let canceled = false;
-  emit("select", item, {
-    reason: "select",
-    event,
-    cancel: () => {
-      canceled = true;
-    },
-  });
-  if (canceled) return;
-  item.onSelect?.();
-  if (closeOnSelect) close("select", event);
-}
-
-function onCheckboxSelect(item: MenuItem, event: Event) {
-  if (item.disabled) return;
-  const next = !item.checked;
-  let canceled = false;
-  emit("check-change", item, next, {
-    reason: "select",
-    event,
-    cancel: () => {
-      canceled = true;
-    },
-  });
-  if (!canceled) item.onUpdateChecked?.(next);
-}
-
-function isRadioChecked(item: MenuItem): boolean {
-  return radioValues?.[item.radioGroup ?? ""] === item.value;
-}
-
-function onRadioSelect(item: MenuItem, event: Event) {
-  if (item.disabled) return;
-  const group = item.radioGroup ?? "";
-  const value = (item.value ?? "") as string;
-  let canceled = false;
-  emit("radio-change", group, value, {
-    reason: "select",
-    event,
-    cancel: () => {
-      canceled = true;
-    },
-  });
-  if (!canceled && radioValues) emit("update:radioValues", { ...radioValues, [group]: value });
-}
+const { onItemSelect, onCheckboxSelect, onRadioSelect, isRadioChecked } = useMenuActions({
+  closeOnSelect: () => closeOnSelect,
+  radioValues: () => radioValues,
+  close,
+  onSelect: (item, details) => emit("select", item, details),
+  onCheckChange: (item, checked, details) => emit("check-change", item, checked, details),
+  onRadioChange: (group, value, details) => emit("radio-change", group, value, details),
+  onRadioValuesChange: values => emit("update:radioValues", values),
+});
 
 const slots = useSlots();
 
@@ -223,9 +167,12 @@ provide(MENU_CONTEXT_KEY, {
   rootSlots: slots,
 });
 
-watch(model, async (open) => {
+watch(model, async (open, _previous, cleanup) => {
+  let canceled = false;
+  cleanup(() => { canceled = true; });
   if (open) {
     await nextTick();
+    if (canceled) return;
     register();
     computePosition();
     const first = panelRef.value?.getItems()?.[0];

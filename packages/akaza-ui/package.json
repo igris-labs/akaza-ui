@@ -1,7 +1,9 @@
 {
   "name": "akaza-ui",
-  "version": "0.0.9-alpha",
+  "type": "module",
+  "version": "0.0.10-alpha",
   "description": "Vue-native headless UI primitives — accessible, unstyled, composable.",
+  "license": "MIT",
   "keywords": [
     "a11y",
     "accessible",
@@ -13,19 +15,10 @@
     "vue",
     "vue3"
   ],
-  "license": "MIT",
-  "files": [
-    "README.md",
-    "dist"
-  ],
-  "type": "module",
   "sideEffects": [
     "*.css",
     "dist/akaza-ui.css"
   ],
-  "main": "./dist/akaza-ui.cjs",
-  "module": "./dist/akaza-ui.js",
-  "types": "./dist/types/index.d.ts",
   "exports": {
     ".": {
       "import": {
@@ -44,6 +37,13 @@
     },
     "./dist/akaza-ui.css": "./dist/akaza-ui.css"
   },
+  "main": "./dist/akaza-ui.cjs",
+  "module": "./dist/akaza-ui.js",
+  "types": "./dist/types/index.d.ts",
+  "files": [
+    "README.md",
+    "dist"
+  ],
   "publishConfig": {
     "access": "public"
   },
@@ -61,10 +61,20 @@
     "test:watch": "vitest",
     "coverage": "vitest run --coverage"
   },
+  "peerDependencies": {
+    "@nuxt/kit": ">=3.0.0",
+    "vue": ">=3.5.0"
+  },
+  "peerDependenciesMeta": {
+    "@nuxt/kit": {
+      "optional": true
+    }
+  },
   "dependencies": {
     "@internationalized/date": "^3.12.0",
     "@tanstack/vue-table": "^9.1.2",
-    "@vueuse/core": "^13.1.0"
+    "@vueuse/core": "^13.1.0",
+    "culori": "^4.0.2"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^4.10.3",
@@ -72,6 +82,7 @@
     "@nuxt/kit": "^4.4.2",
     "@playwright/test": "^1.62.1",
     "@testing-library/vue": "^8.1.0",
+    "@types/culori": "^4.0.1",
     "@vitejs/plugin-vue": "^5.2.1",
     "@vitest/coverage-v8": "^3.0.7",
     "@vue/test-utils": "^2.4.6",
@@ -87,14 +98,5 @@
     "vitest": "^3.0.7",
     "vue": "^3.5.13",
     "vue-tsc": "^2.2.0"
-  },
-  "peerDependencies": {
-    "@nuxt/kit": ">=3.0.0",
-    "vue": ">=3.5.0"
-  },
-  "peerDependenciesMeta": {
-    "@nuxt/kit": {
-      "optional": true
-    }
   }
 }

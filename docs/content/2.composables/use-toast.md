@@ -23,7 +23,12 @@ function notify() {
 </script>
 
 <template>
-  <button type="button" @click="notify">Save</button>
+  <button
+    type="button"
+    @click="notify"
+  >
+    Save
+  </button>
   <Toast />
 </template>
 ```
@@ -108,7 +113,12 @@ function notify() {
 </script>
 
 <template>
-  <button type="button" @click="notify">Save workspace</button>
+  <button
+    type="button"
+    @click="notify"
+  >
+    Save workspace
+  </button>
   <Toast :manager="manager" />
 </template>
 ```

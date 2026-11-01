@@ -10,8 +10,14 @@ import type {
 import type { AkazaChangeEventDetails } from "../../types";
 import { onClickOutside, useResizeObserver } from "@vueuse/core";
 import { computed, nextTick, onUnmounted, ref, useId, useSlots, useTemplateRef, watch } from "vue";
+import { useTypeahead } from "../../composables/typeahead";
+import { createChangeDetails } from "../../utils/changeEvent";
 import { useDismissableLayer } from "../../utils/dismissableLayer";
 import { useFloatingPosition } from "../../utils/floatingPosition";
+import SlotContent from "../../utils/SlotContent";
+import { useDelayedAction } from "../../utils/useDelayedAction";
+import { useRovingFocus } from "../../utils/useRovingFocus";
+import { getNavigationDestinationProps as getDestinationProps, getNavigationComponent as getLeafComponent, getNavigationValue as getValue, hasNavigationDestination as hasDestination } from "./items";
 import NavigationMenuInline from "./NavigationMenuInline.vue";
 
 const {
@@ -84,14 +90,16 @@ const teleportTarget = computed(() => {
   if (teleport !== undefined) return teleport;
   return orientation === "vertical" && collapsed ? "body" : false;
 });
-let openTimer: number | undefined;
-let closeTimer: number | undefined;
-let typeahead = "";
-let typeaheadTimer: number | undefined;
+const delayedOpen = useDelayedAction();
+const delayedClose = useDelayedAction();
+let restoringFocus = false;
+let openedByHover = false;
+let dismissedTooltipValue: string | null = null;
+const { push: pushTypeahead } = useTypeahead();
 const { register, unregister } = useDismissableLayer((event?: KeyboardEvent) => {
   const triggerIndex = items.findIndex((item) => getValue(item) === openValue.value);
   setOpen(null, "escape", event);
-  if (triggerIndex >= 0) focusTrigger(triggerIndex);
+  if (triggerIndex >= 0) restoreTriggerFocus(triggerIndex);
 });
 
 const panelItems = computed(() => items.filter((item) => item.type !== "label" && item.type !== "separator" && item.children?.length));
@@ -139,26 +147,6 @@ const indicatorStyle = computed(() => {
   };
 });
 
-function getValue(item: NavigationMenuItem): string {
-  return item.value ?? (typeof item.to === "string" ? item.to : item.href) ?? item.label;
-}
-
-function hasDestination(item: NavigationMenuItem): boolean {
-  return Boolean(item.as || item.to != null || item.href !== undefined);
-}
-
-function getLeafComponent(item: NavigationMenuItem) {
-  if (item.as) return item.as;
-  if (item.to != null) return "RouterLink";
-  if (item.href !== undefined) return "a";
-  return "button";
-}
-
-function getDestinationProps(item: NavigationMenuItem): { to: unknown } | { href: string } | Record<string, never> {
-  if (item.to != null) return { to: item.to };
-  if (item.href !== undefined) return { href: item.href };
-  return {};
-}
 
 function collectDefaultExpanded(source: NavigationMenuItem[]): string[] {
   const values: string[] = [];
@@ -246,23 +234,26 @@ function getPanelMotion(item: NavigationMenuItem) {
 }
 
 function setOpen(value: string | null, reason: string, event?: Event) {
-  if (disabled && value) return;
-  if (openValue.value === value) return;
   if (reason !== "hover") {
-    window.clearTimeout(openTimer);
-    window.clearTimeout(closeTimer);
+    delayedOpen.cancel();
+    delayedClose.cancel();
   } else if (value === null) {
-    window.clearTimeout(openTimer);
+    delayedOpen.cancel();
   }
-  let canceled = false;
-  emit("open-change", value, {
-    reason,
-    ...(event && { event }),
-    cancel: () => {
-      canceled = true;
-    },
-  });
-  if (!canceled) openValue.value = value;
+  if (disabled && value) return;
+  if (openValue.value === value) {
+    if (reason !== "hover") openedByHover = false;
+    return;
+  }
+  const changeEvent = createChangeDetails(reason, event);
+  emit("open-change", value, changeEvent.details);
+  if (!changeEvent.canceled()) {
+    if (value === null && reason === "escape" && activeTooltipItem.value) {
+      dismissedTooltipValue = getValue(activeTooltipItem.value);
+    }
+    openedByHover = value !== null && reason === "hover";
+    openValue.value = value;
+  }
 }
 
 function setExpanded(item: NavigationMenuItem, nextExpanded: boolean, reason: string, event?: Event) {
@@ -273,15 +264,9 @@ function setExpanded(item: NavigationMenuItem, nextExpanded: boolean, reason: st
   else values.delete(value);
   const next = Array.from(values);
   if (next.length === expandedValue.value.length && next.every((entry, index) => entry === expandedValue.value[index])) return;
-  let canceled = false;
-  emit("expanded-change", next, {
-    item,
-    expanded: nextExpanded,
-    reason,
-    ...(event && { event }),
-    cancel: () => { canceled = true; },
-  });
-  if (!canceled) expandedValue.value = next;
+  const changeEvent = createChangeDetails(reason, event);
+  emit("expanded-change", next, { ...changeEvent.details, item, expanded: nextExpanded });
+  if (!changeEvent.canceled()) expandedValue.value = next;
 }
 
 function toggleExpanded(item: NavigationMenuItem, event?: Event) {
@@ -295,25 +280,14 @@ function selectItem(item: NavigationMenuItem, event: Event) {
     return;
   }
   item.onClick?.(event as MouseEvent);
-  let canceled = false;
-  emit("select", item, {
-    reason: "select",
-    event,
-    cancel: () => {
-      canceled = true;
-    },
-  });
-  if (!canceled) {
+  const changeEvent = createChangeDetails("select", event);
+  emit("select", item, changeEvent.details);
+  if (!changeEvent.canceled()) {
     const value = getValue(item);
     if (selectedValue.value !== value) {
-      let valueCanceled = false;
-      emit("value-change", value, {
-        item,
-        reason: "select",
-        event,
-        cancel: () => { valueCanceled = true; },
-      });
-      if (!valueCanceled) selectedValue.value = value;
+      const valueChangeEvent = createChangeDetails("select", event);
+      emit("value-change", value, { ...valueChangeEvent.details, item });
+      if (!valueChangeEvent.canceled()) selectedValue.value = value;
     }
     item.onSelect?.();
     if (isFlyout.value) setOpen(null, "select", event);
@@ -324,22 +298,25 @@ function selectItem(item: NavigationMenuItem, event: Event) {
 
 function focusTrigger(index: number) {
   activeTriggerIndex.value = index;
-  triggerRefs.value[index]?.focus();
+  triggerRefs.value[index]?.focus({ preventScroll: true });
 }
 
+function restoreTriggerFocus(index: number) {
+  restoringFocus = true;
+  focusTrigger(index);
+  restoringFocus = false;
+}
+
+function onTriggerClick(item: NavigationMenuItem, event: MouseEvent) {
+  const value = getValue(item);
+  setOpen(openValue.value === value && !openedByHover ? null : value, "trigger", event);
+}
+
+const roving = useRovingFocus({ items: () => items, isDisabled: item => !isFocusableItem(item), loop: () => loop });
+
 function move(index: number, delta: number) {
-  const count = items.length;
-  let next = index;
-  for (let step = 0; step < count; step++) {
-    next += delta;
-    if (loop) next = (next + count) % count;
-    if (next < 0 || next >= count) return;
-    const candidate = items[next];
-    if (candidate && isFocusableItem(candidate)) {
-      focusTrigger(next);
-      return;
-    }
-  }
+  const next = roving.nextIndex(index, delta);
+  if (next >= 0) focusTrigger(next);
 }
 
 function onTriggerKeydown(event: KeyboardEvent, item: NavigationMenuItem, index: number) {
@@ -376,9 +353,7 @@ function onTriggerKeydown(event: KeyboardEvent, item: NavigationMenuItem, index:
       }
     }
   } else if (event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey) {
-    typeahead += event.key.toLowerCase();
-    window.clearTimeout(typeaheadTimer);
-    typeaheadTimer = window.setTimeout(() => { typeahead = ""; }, 500);
+    const typeahead = pushTypeahead(event.key.toLowerCase());
     const next = items.findIndex((candidate) =>
       isFocusableItem(candidate) && candidate.label.toLowerCase().startsWith(typeahead),
     );
@@ -388,11 +363,16 @@ function onTriggerKeydown(event: KeyboardEvent, item: NavigationMenuItem, index:
 
 function onTriggerFocus(event: FocusEvent, item: NavigationMenuItem, index: number) {
   activeTriggerIndex.value = index;
-  if (collapsed && tooltip && !item.children) setOpen(getValue(item), "focus", event);
+  if (!restoringFocus && dismissedTooltipValue !== getValue(item) && collapsed && tooltip && !item.children) setOpen(getValue(item), "focus", event);
 }
 
 function onTriggerBlur(event: FocusEvent, item: NavigationMenuItem) {
+  resetTooltipDismissal(item);
   if (collapsed && tooltip && !item.children) scheduleClose(event);
+}
+
+function resetTooltipDismissal(item: NavigationMenuItem) {
+  if (dismissedTooltipValue === getValue(item)) dismissedTooltipValue = null;
 }
 
 function getTriggerTabindex(item: NavigationMenuItem, index: number) {
@@ -403,22 +383,22 @@ function getTriggerTabindex(item: NavigationMenuItem, index: number) {
   return index === activeTriggerIndex.value ? 0 : -1;
 }
 
-function scheduleOpen(item: NavigationMenuItem, event: Event) {
+function scheduleOpen(item: NavigationMenuItem, event: MouseEvent) {
   if (!isFlyout.value || (!item.children && !(collapsed && tooltip)) || disabled || item.disabled) return;
-  window.clearTimeout(closeTimer);
-  window.clearTimeout(openTimer);
-  openTimer = window.setTimeout(() => setOpen(getValue(item), "hover", event), openDelay);
+  // Focus-induced scrolling can deliver a late hover event after Escape.
+  if (dismissedTooltipValue === getValue(item)) return;
+  delayedClose.cancel();
+  delayedOpen.schedule(() => setOpen(getValue(item), "hover", event), openDelay);
 }
 
 function scheduleClose(event?: Event) {
   if (!isFlyout.value) return;
-  window.clearTimeout(openTimer);
-  window.clearTimeout(closeTimer);
-  closeTimer = window.setTimeout(() => setOpen(null, "hover", event), closeDelay);
+  delayedOpen.cancel();
+  delayedClose.schedule(() => setOpen(null, "hover", event), closeDelay);
 }
 
 function cancelClose() {
-  window.clearTimeout(closeTimer);
+  delayedClose.cancel();
 }
 
 function getContentItems() {
@@ -444,7 +424,7 @@ function onContentKeydown(event: KeyboardEvent) {
     event.preventDefault();
     const triggerIndex = items.findIndex((item) => getValue(item) === openValue.value);
     setOpen(null, "escape", event);
-    if (triggerIndex >= 0) focusTrigger(triggerIndex);
+    if (triggerIndex >= 0) restoreTriggerFocus(triggerIndex);
   }
 }
 
@@ -469,16 +449,8 @@ function getSlotProps(item: NavigationMenuItem, depth: number) {
   };
 }
 
-function renderSlot(item: NavigationMenuItem, fallback: string, depth = 0) {
-  return slots[item.slot ?? fallback]!(getSlotProps(item, depth));
-}
-
 function hasPartSlot(name: string) {
   return Boolean(slots[name]);
-}
-
-function renderPart(name: string, item: NavigationMenuItem, depth = 0) {
-  return slots[name]!(getSlotProps(item, depth));
 }
 
 function inlineControls() {
@@ -554,9 +526,6 @@ watch(openValue, async (value, previous) => {
 });
 
 onUnmounted(() => {
-  window.clearTimeout(openTimer);
-  window.clearTimeout(closeTimer);
-  window.clearTimeout(typeaheadTimer);
   unregister();
 });
 </script>
@@ -636,20 +605,21 @@ onUnmounted(() => {
             :data-akaza-active="containsActiveItem(item) || undefined"
             :data-akaza-state="item.children?.length ? (openValue === getValue(item) ? 'open' : 'closed') : (isItemActive(item) ? 'active' : 'inactive')"
             :data-akaza-disabled="disabled || item.disabled || undefined"
-            @click="item.children ? setOpen(openValue === getValue(item) ? null : getValue(item), 'trigger', $event) : selectItem(item, $event)"
+            @click="item.children ? onTriggerClick(item, $event) : selectItem(item, $event)"
             @focus="onTriggerFocus($event, item, index)"
             @blur="onTriggerBlur($event, item)"
             @keydown="onTriggerKeydown($event, item, index)"
             @mouseenter="scheduleOpen(item, $event)"
+            @mouseleave="resetTooltipDismissal(item)"
           >
-            <component :is="() => renderSlot(item, item.children ? 'trigger' : 'link')" v-if="hasSlot(item, item.children ? 'trigger' : 'link')" />
+            <SlotContent v-if="hasSlot(item, item.children ? 'trigger' : 'link')" :render="slots[item.slot ?? (item.children ? 'trigger' : 'link')]!" :scope="getSlotProps(item, 0)" />
             <template v-else>
               <span
                 v-if="hasPartSlot('item-leading')"
                 :class="ui?.itemLeading"
                 class="akaza-navigation-menu-item-leading"
               >
-                <component :is="() => renderPart('item-leading', item)" />
+                <SlotContent :render="slots['item-leading']!" :scope="getSlotProps(item, 0)" />
               </span>
               <component
                 :is="item.icon"
@@ -663,7 +633,7 @@ onUnmounted(() => {
                 :class="ui?.itemLabel"
                 class="akaza-navigation-menu-item-label"
               >
-                <component :is="() => renderPart('item-label', item)" />
+                <SlotContent :render="slots['item-label']!" :scope="getSlotProps(item, 0)" />
               </span>
               <span v-else :class="ui?.itemLabel" class="akaza-navigation-menu-item-label">{{ item.label }}</span>
               <span v-if="item.badge !== undefined" :class="ui?.badge" class="akaza-navigation-menu-badge">{{ item.badge }}</span>
@@ -672,7 +642,7 @@ onUnmounted(() => {
                 :class="ui?.itemTrailing"
                 class="akaza-navigation-menu-item-trailing"
               >
-                <component :is="() => renderPart('item-trailing', item)" />
+                <SlotContent :render="slots['item-trailing']!" :scope="getSlotProps(item, 0)" />
               </span>
               <span
                 v-if="item.children?.length && hasPartSlot('child-indicator')"
@@ -681,7 +651,7 @@ onUnmounted(() => {
                 class="akaza-navigation-menu-child-indicator"
                 aria-hidden="true"
               >
-                <component :is="() => renderPart('child-indicator', item)" />
+                <SlotContent :render="slots['child-indicator']!" :scope="getSlotProps(item, 0)" />
               </span>
             </template>
           </component>
@@ -769,7 +739,7 @@ onUnmounted(() => {
                       class="akaza-navigation-menu-content-link"
                       @click="selectItem(child, $event)"
                     >
-                      <component :is="() => renderSlot(child, 'item', 1)" v-if="hasSlot(child, 'item')" />
+                      <SlotContent v-if="hasSlot(child, 'item')" :render="slots[child.slot ?? 'item']!" :scope="getSlotProps(child, 1)" />
                       <template v-else>
                         <span :class="ui?.label" class="akaza-navigation-menu-label">{{ child.label }}</span>
                         <span v-if="child.badge !== undefined" :class="ui?.badge" class="akaza-navigation-menu-badge">{{ child.badge }}</span>
@@ -804,7 +774,7 @@ onUnmounted(() => {
                           class="akaza-navigation-menu-content-link"
                           @click="selectItem(nested, $event)"
                         >
-                          <component :is="() => renderSlot(nested, 'item', 2)" v-if="hasSlot(nested, 'item')" />
+                          <SlotContent v-if="hasSlot(nested, 'item')" :render="slots[nested.slot ?? 'item']!" :scope="getSlotProps(nested, 2)" />
                           <template v-else>{{ nested.label }}</template>
                         </component>
                       </li>

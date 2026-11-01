@@ -2,11 +2,10 @@
 import type { DrawerProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
 import { usePointerSwipe } from "@vueuse/core";
-import { computed, nextTick, useId, useTemplateRef, watch } from "vue";
+import { computed, useId, useTemplateRef } from "vue";
 import { useDrawer } from "../../composables/drawer";
-import { resolveAction } from "../../utils/changeEvent";
-import { useDismissableLayer } from "../../utils/dismissableLayer";
-import { useFocusScope } from "../../utils/focusScope";
+import { createChangeDetails, resolveAction } from "../../utils/changeEvent";
+import { useModalLifecycle } from "../../utils/useModalLifecycle";
 
 const {
   as = "div",
@@ -30,17 +29,24 @@ const TRANSITION_DURATION = 300;
 
 const model = defineModel<boolean>({ default: false });
 const { isOpen, open: _open, close: _close, toggle: _toggle } = useDrawer(model);
-let restoreFocusTarget: HTMLElement | null = null;
 
-function getEventTarget(event?: Event) {
-  return event?.currentTarget instanceof HTMLElement ? event.currentTarget : null;
-}
+const contentRef = useTemplateRef<HTMLElement>("contentRef");
+const overlayRef = useTemplateRef<HTMLElement>("overlayRef");
+const titleId = useId();
+const descriptionId = useId();
+const { layerOrder, captureRestoreTarget } = useModalLifecycle({
+  open: isOpen,
+  content: contentRef,
+  overlay: overlayRef,
+  onEscape: event => close("escape", event),
+});
+
 
 function handleChange(nextOpen: boolean, reason: string, event?: Event) {
-  let canceled = false;
-  emit('open-change', nextOpen, { reason, ...(event && { event }), cancel: () => { canceled = true; } });
-  if (canceled) return;
-  if (nextOpen) restoreFocusTarget = getEventTarget(event);
+  const changeEvent = createChangeDetails(reason, event);
+  emit('open-change', nextOpen, changeEvent.details);
+  if (changeEvent.canceled()) return;
+  if (nextOpen) captureRestoreTarget(event);
   nextOpen ? _open() : _close();
 }
 
@@ -57,28 +63,6 @@ function toggle(reasonOrEvent?: string | Event, event?: Event) {
   handleChange(!isOpen.value, details.reason, details.event);
 }
 
-const contentRef = useTemplateRef<HTMLElement>("contentRef");
-const overlayRef = useTemplateRef<HTMLElement>("overlayRef");
-const titleId = useId();
-const descriptionId = useId();
-const { activate, deactivate } = useFocusScope(contentRef, {
-  getExemptElements: () => [overlayRef.value],
-});
-const { layerOrder, register, unregister } = useDismissableLayer((event?: KeyboardEvent) => close('escape', event));
-
-watch(isOpen, async (val) => {
-  if (val) {
-    const focusTarget = restoreFocusTarget
-      ?? (typeof document !== "undefined" ? document.activeElement as HTMLElement : null);
-    await nextTick();
-    activate(focusTarget);
-    restoreFocusTarget = null;
-    register();
-  } else {
-    deactivate();
-    unregister();
-  }
-}, { immediate: true });
 
 function onOverlayClick(event: MouseEvent) {
   if (closeOnBackdropClick) close('backdrop-click', event);
@@ -87,7 +71,6 @@ function onOverlayClick(event: MouseEvent) {
 const insetValue = computed(() =>
   typeof inset === "number" ? `${inset}px` : inset,
 );
-
 const drawerStyle = computed(() => ({
   "--akaza-drawer-inset": insetValue.value,
 }));

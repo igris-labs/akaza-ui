@@ -164,6 +164,7 @@ const hasOwnerEmailIssue = computed(
 const hasWorkspaceSlugIssue = computed(
   () =>
     Boolean(errors.value.workspaceSlug) ||
+    !workspaceSlugPattern.test(workspaceSlug.value) ||
     ["admin", "root", "billing"].includes(workspaceSlug.value.toLowerCase()),
 );
 const hasPlanIssue = computed(() => Boolean(errors.value.plan) || !plan.value);
@@ -202,7 +203,7 @@ const workspaceSlugError = computed(() => {
   if (!shouldShowIssue("workspaceSlug")) return undefined;
   const serverError = getFieldError("workspaceSlug");
   if (serverError) return serverError;
-  const slug = workspaceSlug.value.toLowerCase();
+  const slug = workspaceSlug.value;
   if (!slug.trim()) return "Workspace slug is required.";
   if (!workspaceSlugPattern.test(slug)) return "Use lowercase letters, numbers, and hyphens only.";
   if (["admin", "root", "billing"].includes(slug)) {
@@ -237,7 +238,9 @@ const liveIssues = computed(() => {
   const issues: string[] = [];
   if (!plan.value) issues.push("Plan is required.");
   if (seats.value === null || seats.value < 5) issues.push("Seats must be at least 5.");
-  if (["admin", "root", "billing"].includes(workspaceSlug.value.toLowerCase())) {
+  if (!workspaceSlugPattern.test(workspaceSlug.value)) {
+    issues.push("Use lowercase letters, numbers, and hyphens for the workspace slug.");
+  } else if (["admin", "root", "billing"].includes(workspaceSlug.value)) {
     issues.push("Workspace slug is reserved.");
   }
   if (ownerEmail.value.toLowerCase() === "blocked@company.test") {
@@ -310,12 +313,14 @@ function onFormSubmit(values: FormValues, details: FormSubmitDetails) {
 
   const nextErrors: FormErrors = {};
   const email = String(values.ownerEmail ?? "");
-  const slug = String(values.workspaceSlug ?? "").toLowerCase();
+  const slug = String(values.workspaceSlug ?? "");
 
   if (email.toLowerCase() === "blocked@company.test") {
     nextErrors.ownerEmail = "blocked@company.test is blocked by server-side validation.";
   }
-  if (["admin", "root", "billing"].includes(slug)) {
+  if (!workspaceSlugPattern.test(slug)) {
+    nextErrors.workspaceSlug = "Use lowercase letters, numbers, and hyphens only.";
+  } else if (["admin", "root", "billing"].includes(slug)) {
     nextErrors.workspaceSlug = `${slug} is reserved. Pick a team-specific slug.`;
   }
   if (!values.permissions) {
@@ -468,7 +473,7 @@ function onFormSubmit(values: FormValues, details: FormSubmitDetails) {
               <Input
                 v-model="workspaceSlug"
                 :class="inputClass"
-                pattern="[a-z0-9-]+"
+                pattern="[a-z0-9\-]+"
                 placeholder="support-team"
                 @blur="markInteracted('workspaceSlug')"
                 @value-change="onFieldValueChange('workspaceSlug')"

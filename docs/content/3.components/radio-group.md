@@ -32,7 +32,10 @@ const options = ["email", "sms", "push"];
 </script>
 
 <template>
-  <RadioGroup v-model="selected" :options="options" />
+  <RadioGroup
+    v-model="selected"
+    :options="options"
+  />
 </template>
 ```
 ::
@@ -53,7 +56,11 @@ const options = [
 </script>
 
 <template>
-  <RadioGroup v-model="plan" :options="options" legend="Choose a plan" />
+  <RadioGroup
+    v-model="plan"
+    :options="options"
+    legend="Choose a plan"
+  />
 </template>
 ```
 
@@ -69,7 +76,10 @@ The `#item` slot renders inside each radio button. Provide only the visual conte
     :ui="{ item: 'plan-card' }"
   >
     <template #item="{ option, label, description, isChecked }">
-      <span class="plan-card__dot" :data-checked="isChecked" />
+      <span
+        class="plan-card__dot"
+        :data-checked="isChecked"
+      />
       <span>
         <strong>{{ label }}</strong>
         <p>{{ description }}</p>
@@ -85,7 +95,11 @@ Use horizontal orientation for compact sets like sizes or segmented choices.
 
 ```vue
 <template>
-  <RadioGroup v-model="size" :options="['S', 'M', 'L', 'XL']" orientation="horizontal" />
+  <RadioGroup
+    v-model="size"
+    :options="['S', 'M', 'L', 'XL']"
+    orientation="horizontal"
+  />
 </template>
 ```
 

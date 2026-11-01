@@ -47,7 +47,11 @@ const items = [
 </script>
 
 <template>
-  <Stepper v-model="step" :items="items" show-controls />
+  <Stepper
+    v-model="step"
+    :items="items"
+    show-controls
+  />
 </template>
 ```
 ::
@@ -60,7 +64,11 @@ Linear mode is enabled by default. Users can revisit completed steps or advance 
 
 ```vue
 <template>
-  <Stepper v-model="step" :items="items" linear />
+  <Stepper
+    v-model="step"
+    :items="items"
+    linear
+  />
 </template>
 ```
 
@@ -70,7 +78,11 @@ Disable `linear` when every enabled step can be opened directly.
 
 ```vue
 <template>
-  <Stepper v-model="step" :items="items" :linear="false" />
+  <Stepper
+    v-model="step"
+    :items="items"
+    :linear="false"
+  />
 </template>
 ```
 
@@ -80,7 +92,11 @@ Vertical orientation switches arrow navigation to Up and Down and exposes matchi
 
 ```vue
 <template>
-  <Stepper v-model="step" :items="items" orientation="vertical" />
+  <Stepper
+    v-model="step"
+    :items="items"
+    orientation="vertical"
+  />
 </template>
 ```
 
@@ -98,7 +114,11 @@ const items = [
 </script>
 
 <template>
-  <Stepper v-model="step" :items="items" :linear="false" />
+  <Stepper
+    v-model="step"
+    :items="items"
+    :linear="false"
+  />
 </template>
 ```
 
@@ -111,9 +131,11 @@ Cancel a proposed step change until application validation passes. Akaza does no
   <Stepper
     v-model="step"
     :items="items"
-    @value-change="(_value, details) => {
-      if (!currentStepIsValid) details.cancel()
-    }"
+    @value-change="
+      (_value, details) => {
+        if (!currentStepIsValid) details.cancel();
+      }
+    "
   />
 </template>
 ```

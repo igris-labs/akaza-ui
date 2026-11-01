@@ -43,7 +43,7 @@ const { rows, globalFilter, columns: visibleColumns } = table;
     <input
       :value="globalFilter"
       @input="table.setGlobalFilter(($event.target as HTMLInputElement).value, $event)"
-    >
+    />
   </label>
   <table>
     <caption>People</caption>
@@ -53,17 +53,34 @@ const { rows, globalFilter, columns: visibleColumns } = table;
           v-for="column in visibleColumns"
           :key="column.id"
           scope="col"
-          :aria-sort="column.sorted === 'asc' ? 'ascending' : column.sorted === 'desc' ? 'descending' : 'none'"
+          :aria-sort="
+            column.sorted === 'asc'
+              ? 'ascending'
+              : column.sorted === 'desc'
+                ? 'descending'
+                : 'none'
+          "
         >
-          <button type="button" @click="table.toggleSorting(column.id, $event)">
+          <button
+            type="button"
+            @click="table.toggleSorting(column.id, $event)"
+          >
             {{ column.definition.header }}
           </button>
         </th>
       </tr>
     </thead>
     <tbody>
-      <tr v-for="row in rows" :key="row.id">
-        <td v-for="cell in table.getRowCells(row)" :key="cell.column.id">{{ cell.value }}</td>
+      <tr
+        v-for="row in rows"
+        :key="row.id"
+      >
+        <td
+          v-for="cell in table.getRowCells(row)"
+          :key="cell.column.id"
+        >
+          {{ cell.value }}
+        </td>
       </tr>
       <tr v-if="!rows.length"><td colspan="2">No people found.</td></tr>
     </tbody>

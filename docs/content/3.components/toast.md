@@ -102,10 +102,18 @@ await toast.promise(api.publish(), {
 ```vue
 <Toast>
   <template #toast="{ toast, type, priority, action, performAction, close }">
-    <article :data-type="type" :data-priority="priority">
+    <article
+      :data-type="type"
+      :data-priority="priority"
+    >
       <strong>{{ toast.title }}</strong>
       <p>{{ toast.description }}</p>
-      <button v-if="action" @click="performAction($event)">{{ action.label }}</button>
+      <button
+        v-if="action"
+        @click="performAction($event)"
+      >
+        {{ action.label }}
+      </button>
       <button @click="close()">Dismiss</button>
     </article>
   </template>

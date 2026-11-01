@@ -1,6 +1,7 @@
 import type { Ref } from "vue";
-import { computed, inject, nextTick, onBeforeUnmount, onMounted, onUpdated, ref } from "vue";
+import { computed, inject, nextTick, onMounted, onUpdated, ref } from "vue";
 import { fieldContextKey } from "../components/field/context";
+import { useFieldControl } from "./useFieldControl";
 import { useFormReset } from "./useFormReset";
 
 /** Native checkbox validity/reset bridged to Field without imposing public parts. */
@@ -9,15 +10,13 @@ export function useCheckableField<T>(model: Ref<T>, input: Ref<HTMLInputElement 
   const initialValue = Array.isArray(model.value) ? [...model.value] as T : model.value;
   const touched = ref(false);
   const focused = ref(false);
-  const nativeInvalid = ref(false);
-  const validationMessage = ref("");
-  const validity = ref<ValidityState | null>(null);
+  const { nativeInvalid, validationMessage, validity, registerControl } = useFieldControl(field);
   const dirty = computed(() => Array.isArray(model.value) && Array.isArray(initialValue)
     ? model.value.length !== initialValue.length || model.value.some((value, index) => value !== initialValue[index])
     : model.value !== initialValue);
   const invalid = computed(() => nativeInvalid.value || field?.invalid.value || false);
   let revealed = false;
-  const unregister = field?.registerControl({ dirty, touched, focused, filled: computed(() => filled.value), invalid: nativeInvalid, validationMessage, validity });
+  registerControl({ dirty, touched, focused, filled: computed(() => filled.value) });
 
   function sync() {
     validity.value = input.value?.validity ?? null;
@@ -39,9 +38,6 @@ export function useCheckableField<T>(model: Ref<T>, input: Ref<HTMLInputElement 
   });
   onMounted(sync);
   onUpdated(sync);
-  onBeforeUnmount(() => {
-    unregister?.();
-  });
   return {
     field, invalid, onInvalid,
     attrs: computed(() => ({

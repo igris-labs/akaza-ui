@@ -57,7 +57,12 @@ const page = ref(1);
 
 ```vue
 <template>
-  <Pagination v-model="page" :total="200" :items-per-page="10" :sibling-count="1" />
+  <Pagination
+    v-model="page"
+    :total="200"
+    :items-per-page="10"
+    :sibling-count="1"
+  />
 </template>
 ```
 
@@ -67,7 +72,11 @@ Set `showEdges` to preserve first and last page numbers and insert ellipses arou
 
 ```vue
 <template>
-  <Pagination v-model="page" :total="500" show-edges />
+  <Pagination
+    v-model="page"
+    :total="500"
+    show-edges
+  />
 </template>
 ```
 
@@ -109,9 +118,11 @@ Return an href to render controls as anchors. Disabled boundary links prevent na
   <Pagination
     v-model="page"
     :total="500"
-    @value-change="(_page, details) => {
-      if (hasUnsavedChanges) details.cancel()
-    }"
+    @value-change="
+      (_page, details) => {
+        if (hasUnsavedChanges) details.cancel();
+      }
+    "
   />
 </template>
 ```

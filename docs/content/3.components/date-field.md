@@ -3,9 +3,6 @@ title: Date Field
 description: Locale-ordered segmented date input with keyboard editing, optional Calendar, validation, paste, and native forms.
 navigation:
   icon: i-lucide-calendar-clock
-  badge:
-    label: NEW
-    color: success
 ---
 
 `DateField` splits a date into day, month, and year spinbutton segments. It supports locale order, keyboard stepping, validation, ISO paste, native form submission, and an optional Calendar.
@@ -80,7 +77,10 @@ Validation stays quiet on initial render. It becomes visible after users leave t
 `locale` controls segment order, separators, and segment labels. The model remains an `@internationalized/date` value.
 
 ```vue
-<DateField v-model="date" locale="en-GB" />
+<DateField
+  v-model="date"
+  locale="en-GB"
+/>
 ```
 
 For `en-GB`, focus order is day, month, year. For `en-US`, it is month, day, year.
@@ -103,7 +103,10 @@ Use boundaries for fixed limits and `isDateUnavailable` for application rules. I
 Set `showCalendar` to add a keyboard-accessible calendar trigger. Date Field forwards locale, direction, constraints, disabled state, read-only state, and `ui.calendar` to its built-in Calendar. Selection commits the date and closes the popup.
 
 ```vue
-<DateField v-model="date" show-calendar>
+<DateField
+  v-model="date"
+  show-calendar
+>
   <template #calendar-trigger>Calendar</template>
 </DateField>
 ```
@@ -111,9 +114,16 @@ Set `showCalendar` to add a keyboard-accessible calendar trigger. Date Field for
 Use `v-model:calendar-open` when popup state must be controlled. Use `#calendar` to replace the calendar body without replacing positioning, outside-click dismissal, Escape handling, or layer ordering.
 
 ```vue
-<DateField v-model="date" show-calendar>
+<DateField
+  v-model="date"
+  show-calendar
+>
   <template #calendar="{ value, select, close }">
-    <MyCalendar :value="value" @select="select" @cancel="close" />
+    <MyCalendar
+      :value="value"
+      @select="select"
+      @cancel="close"
+    />
   </template>
 </DateField>
 ```
@@ -128,7 +138,11 @@ Set `name` on the component or inherit it from `Field`. A complete value submits
 
 ```vue
 <form @submit.prevent="submit">
-  <DateField v-model="date" name="start" required />
+  <DateField
+    v-model="date"
+    name="start"
+    required
+  />
   <button>Submit</button>
 </form>
 ```
@@ -140,9 +154,11 @@ Set `name` on the component or inherit it from `Field`. A complete value submits
 ```vue
 <DateField
   v-model="date"
-  @value-change="(next, details) => {
-    if (next && blockedDates.has(next.toString())) details.cancel()
-  }"
+  @value-change="
+    (next, details) => {
+      if (next && blockedDates.has(next.toString())) details.cancel();
+    }
+  "
 />
 ```
 
@@ -151,8 +167,14 @@ Set `name` on the component or inherit it from `Field`. A complete value submits
 Read-only segments stay focusable for inspection but cannot change. Disabled segments leave the tab sequence and the hidden input is excluded from form submission.
 
 ```vue
-<DateField v-model="date" read-only />
-<DateField v-model="date" disabled />
+<DateField
+  v-model="date"
+  read-only
+/>
+<DateField
+  v-model="date"
+  disabled
+/>
 ```
 
 ## Reactive validation

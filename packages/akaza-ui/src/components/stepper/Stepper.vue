@@ -3,6 +3,8 @@ import type { ComponentPublicInstance } from "vue";
 import type { StepperItem, StepperItemState, StepperProps, StepperValue } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
 import { computed, nextTick, ref, useId } from "vue";
+import { createChangeDetails as createDetails } from "../../utils/changeEvent";
+import { useRovingFocus } from "../../utils/useRovingFocus";
 
 const {
   items,
@@ -46,6 +48,8 @@ const state = computed(() => {
   if (currentIndex.value < 0) return "empty";
   return currentIndex.value === items.length - 1 ? "complete" : "active";
 });
+const roving = useRovingFocus({ items: () => items, isDisabled: (item, index) => !canActivate(item, index), loop: () => loop });
+
 const isFirstStep = computed(() => currentIndex.value <= firstEnabledIndex());
 const isLastStep = computed(() => currentIndex.value >= lastEnabledIndex());
 const isPrevDisabled = computed(() => !hasPrev());
@@ -88,39 +92,18 @@ function canActivate(item: StepperItem, index: number): boolean {
 }
 
 function firstEnabledIndex(): number {
-  return items.findIndex((item, index) => canActivate(item, index));
+  return roving.firstIndex.value;
 }
 
 function lastEnabledIndex(): number {
-  for (let index = items.length - 1; index >= 0; index--) {
-    if (canActivate(items[index]!, index)) return index;
-  }
-  return -1;
+  return roving.lastIndex.value;
 }
 
 function nextEnabledIndex(from: number, direction: 1 | -1): number {
-  if (!items.length) return -1;
-  let index = from;
-  for (let count = 0; count < items.length; count++) {
-    index += direction;
-    if (loop) index = (index + items.length) % items.length;
-    else if (index < 0 || index >= items.length) return -1;
-    if (index !== from && canActivate(items[index]!, index)) return index;
-  }
-  return -1;
+  const next = roving.nextIndex(from, direction);
+  return next === from ? -1 : next;
 }
 
-function createDetails(reason: string, event?: Event) {
-  let canceled = false;
-  const details: AkazaChangeEventDetails = {
-    reason,
-    ...(event && { event }),
-    cancel: () => {
-      canceled = true;
-    },
-  };
-  return { details, canceled: () => canceled };
-}
 
 function goToIndex(index: number, reason = "programmatic", event?: Event): boolean {
   const item = items[index];

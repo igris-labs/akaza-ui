@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { FormProps, FormSubmitDetails, FormValues } from ".";
 import { computed, nextTick, provide, ref } from "vue";
+import { createChangeDetails } from "../../utils/changeEvent";
 import { formContextKey } from "./context";
 
 const {
@@ -54,21 +55,13 @@ function onSubmit(event: SubmitEvent) {
 
   if (preventDefault) event.preventDefault();
 
-  let canceled = false;
-  const details: FormSubmitDetails = {
-    reason: "submit",
-    event,
-    formData: new FormData(form, event.submitter),
-    valid,
-    cancel: () => {
-      canceled = true;
-    },
-  };
+  const changeEvent = createChangeDetails("submit", event);
+  const details: FormSubmitDetails = { ...changeEvent.details, event, formData: new FormData(form, event.submitter), valid };
 
   emit("submit", details);
   emit("form-submit", getValues(details.formData), details);
 
-  if (canceled && !event.defaultPrevented) event.preventDefault();
+  if (changeEvent.canceled() && !event.defaultPrevented) event.preventDefault();
 }
 
 async function onReset(event: Event) {

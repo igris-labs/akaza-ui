@@ -3,8 +3,12 @@ import type { ComponentPublicInstance } from "vue";
 import type { ListboxModelValue, ListboxOption, ListboxProps, ListboxValue } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
 import { useVirtualList } from "@vueuse/core";
-import { computed, inject, nextTick, onBeforeUnmount, onMounted, onUpdated, ref, useId } from "vue";
+import { computed, inject, nextTick, onMounted, onUpdated, ref, useId } from "vue";
+import { useTypeahead } from "../../composables/typeahead";
+import { createChangeDetails as emitDetails } from "../../utils/changeEvent";
+import { useFieldControl } from "../../utils/useFieldControl";
 import { useFormReset } from "../../utils/useFormReset";
+import { nextEnabledIndex } from "../../utils/useRovingFocus";
 import { fieldContextKey } from "../field/context";
 
 const {
@@ -65,11 +69,8 @@ const selectionAnchor = ref(-1);
 const focused = ref(false);
 const touched = ref(false);
 const validationActive = ref(false);
-const nativeInvalid = ref(false);
-const validationMessage = ref("");
-const validity = ref<ValidityState | null>(null);
-let typeahead = "";
-let typeaheadTimer: number | undefined;
+const { nativeInvalid, syncValidity, registerControl } = useFieldControl(field);
+const { push: pushTypeahead } = useTypeahead();
 let previousActiveIndex = -1;
 
 const initialValue: ListboxModelValue = Array.isArray(model.value) ? [...model.value] : model.value;
@@ -122,14 +123,11 @@ const virtualContainerStyle = computed(() => virtualize
   ? { height: `var(--akaza-listbox-virtual-height, ${virtualHeight}px)` }
   : undefined);
 
-const unregister = field?.registerControl({
+registerControl({
   dirty: isDirty,
   touched,
   filled: isFilled,
   focused,
-  invalid: nativeInvalid,
-  validationMessage,
-  validity,
 });
 
 function getValue(option: ListboxOption): ListboxValue {
@@ -202,21 +200,7 @@ function updateValidity(reveal = validationActive.value) {
   const input = hiddenRef.value;
   if (!input) return;
   input.setCustomValidity(isRequired.value && !isFilled.value ? "Please select an option." : "");
-  validity.value = input.validity;
-  nativeInvalid.value = reveal && !input.validity.valid;
-  validationMessage.value = input.validationMessage;
-}
-
-function emitDetails(reason: string, event?: Event) {
-  let canceled = false;
-  const details: AkazaChangeEventDetails = {
-    reason,
-    ...(event && { event }),
-    cancel: () => {
-      canceled = true;
-    },
-  };
-  return { details, canceled: () => canceled };
+  syncValidity(input, reveal);
 }
 
 function commitValue(value: ListboxModelValue, reason: string, event?: Event): boolean {
@@ -335,20 +319,11 @@ function onPointerLeave(event: PointerEvent) {
 }
 
 function move(delta: number, event: KeyboardEvent) {
-  const count = visibleOptions.value.length;
-  if (!count) return;
-  let next = activeIndex.value;
-  for (let step = 0; step < count; step++) {
-    next += delta;
-    if (loop) next = (next + count) % count;
-    else if (next < 0 || next >= count) return;
-    if (!isItemDisabled(visibleOptions.value[next]!)) {
-      setActive(next, "keyboard", event);
-      if (multiple && event.shiftKey && selectionAnchor.value >= 0 && !readOnly) {
-        commitValue(rangeValues(selectionAnchor.value, next), "range", event);
-      }
-      return;
-    }
+  const next = nextEnabledIndex(visibleOptions.value, activeIndex.value, delta, loop, isItemDisabled);
+  if (next < 0) return;
+  setActive(next, "keyboard", event);
+  if (multiple && event.shiftKey && selectionAnchor.value >= 0 && !readOnly) {
+    commitValue(rangeValues(selectionAnchor.value, next), "range", event);
   }
 }
 
@@ -374,11 +349,7 @@ function onKeydown(event: KeyboardEvent) {
     event.preventDefault();
     commitValue(visibleOptions.value.filter((option) => !isItemDisabled(option)).map(getValue), "select-all", event);
   } else if (event.key.length === 1 && !event.altKey && !event.ctrlKey && !event.metaKey) {
-    typeahead += event.key.toLowerCase();
-    window.clearTimeout(typeaheadTimer);
-    typeaheadTimer = window.setTimeout(() => {
-      typeahead = "";
-    }, 500);
+    const typeahead = pushTypeahead(event.key.toLowerCase());
     const match = visibleOptions.value.findIndex((option) =>
       !isItemDisabled(option) && getLabel(option).toLowerCase().startsWith(typeahead),
     );
@@ -453,10 +424,6 @@ onMounted(() => {
 onUpdated(() => {
   normalizeActiveIndex();
   updateValidity();
-});
-onBeforeUnmount(() => {
-  window.clearTimeout(typeaheadTimer);
-  unregister?.();
 });
 </script>
 

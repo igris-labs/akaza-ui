@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import type { MenuItem } from ".";
-import { computed, inject, nextTick, onUnmounted, ref, useTemplateRef } from "vue";
+import { computed, inject, nextTick, ref, useTemplateRef } from "vue";
+import { useTypeahead } from "../../composables/typeahead";
 import { useFloatingPosition } from "../../utils/floatingPosition";
 import SlotContent from "../../utils/SlotContent";
+import { useDelayedAction } from "../../utils/useDelayedAction";
 import { MENU_CONTEXT_KEY } from "./context";
 
 defineOptions({ name: "MenuPanel" });
@@ -67,15 +69,10 @@ function highlightItem(el: HTMLElement) {
 
 // ── Typeahead ────────────────────────────────────────────────────────────────
 
-let typeaheadBuffer = "";
-let typeaheadTimer: ReturnType<typeof setTimeout>;
+const { push: pushTypeahead } = useTypeahead();
 
 function onTypeahead(char: string, itemEls: HTMLElement[]) {
-  typeaheadBuffer += char.toLowerCase();
-  clearTimeout(typeaheadTimer);
-  typeaheadTimer = setTimeout(() => {
-    typeaheadBuffer = "";
-  }, 500);
+  const typeaheadBuffer = pushTypeahead(char.toLowerCase());
 
   const match = itemEls.find((el) =>
     el.textContent?.trim().toLowerCase().startsWith(typeaheadBuffer),
@@ -99,6 +96,7 @@ function onPanelKeydown(e: KeyboardEvent) {
       e.stopPropagation();
       const value = target.getAttribute("data-akaza-value");
       if (value) {
+        cancelSubmenuClose();
         activeSubmenu.value = value;
         nextTick(() => {
           const submenu = findSubmenu(value);
@@ -151,11 +149,11 @@ function onPanelKeydown(e: KeyboardEvent) {
 
 // ── Submenu state (per-level) ────────────────────────────────────────────────
 
-let submenuCloseTimer: ReturnType<typeof setTimeout>;
+const submenuClose = useDelayedAction();
 
 function openSubmenu(item: MenuItem) {
   if (item.disabled) return;
-  clearTimeout(submenuCloseTimer);
+  submenuClose.cancel();
   activeSubmenu.value = ctx.getItemValue(item);
 }
 
@@ -169,13 +167,15 @@ function openSubmenuAndFocus(item: MenuItem) {
 }
 
 function closeSubmenuDelayed() {
-  submenuCloseTimer = setTimeout(() => {
+  submenuClose.schedule(() => {
+    // Pointer movement must not remove the current keyboard focus.
+    if (submenuContent.value?.contains(document.activeElement)) return;
     activeSubmenu.value = null;
   }, 150);
 }
 
 function cancelSubmenuClose() {
-  clearTimeout(submenuCloseTimer);
+  submenuClose.cancel();
 }
 
 function onSubmenuKeydown(e: KeyboardEvent, item: MenuItem) {
@@ -183,6 +183,7 @@ function onSubmenuKeydown(e: KeyboardEvent, item: MenuItem) {
   if (e.key === closeSubmenuKey || e.key === "Escape") {
     e.preventDefault();
     e.stopPropagation();
+    submenuClose.cancel();
     activeSubmenu.value = null;
     const trigger = Array.from(panelRef.value?.querySelectorAll<HTMLElement>("[data-akaza-value]") ?? [])
       .find(element => element.dataset.akazaValue === ctx.getItemValue(item));
@@ -196,11 +197,6 @@ function onSubmenuKeydown(e: KeyboardEvent, item: MenuItem) {
 function hasRootSlot(name: string): boolean {
   return !!ctx.rootSlots[name];
 }
-
-onUnmounted(() => {
-  clearTimeout(typeaheadTimer);
-  clearTimeout(submenuCloseTimer);
-});
 
 defineExpose({ panelRef, getItems, highlightItem });
 </script>
@@ -266,15 +262,10 @@ defineExpose({ panelRef, getItems, highlightItem });
             @keydown.enter.prevent="ctx.onCheckboxSelect(item, $event)"
             @keydown.space.prevent="ctx.onCheckboxSelect(item, $event)"
           >
-            <component
-              :is="
-                () =>
-                  ctx.rootSlots[item.slot ?? 'checkbox-item']!({
-                    item,
-                    checked: item.checked,
-                  })
-              "
+            <SlotContent
               v-if="hasRootSlot(item.slot ?? 'checkbox-item')"
+              :render="ctx.rootSlots[item.slot ?? 'checkbox-item']!"
+              :scope="{ item, checked: item.checked }"
             />
             <template v-else>{{ item.label }}</template>
           </div>
@@ -296,15 +287,10 @@ defineExpose({ panelRef, getItems, highlightItem });
             @keydown.enter.prevent="ctx.onRadioSelect(item, $event)"
             @keydown.space.prevent="ctx.onRadioSelect(item, $event)"
           >
-            <component
-              :is="
-                () =>
-                  ctx.rootSlots[item.slot ?? 'radio-item']!({
-                    item,
-                    checked: ctx.isRadioChecked(item),
-                  })
-              "
+            <SlotContent
               v-if="hasRootSlot(item.slot ?? 'radio-item')"
+              :render="ctx.rootSlots[item.slot ?? 'radio-item']!"
+              :scope="{ item, checked: ctx.isRadioChecked(item) }"
             />
             <template v-else>{{ item.label }}</template>
           </div>
@@ -333,15 +319,10 @@ defineExpose({ panelRef, getItems, highlightItem });
               @keydown.enter.prevent="openSubmenuAndFocus(item)"
               @keydown.space.prevent="openSubmenuAndFocus(item)"
             >
-              <component
-                :is="
-                  () =>
-                    ctx.rootSlots[item.slot ?? 'item']!({
-                      item,
-                      hasSubmenu: true,
-                    })
-                "
+              <SlotContent
                 v-if="hasRootSlot(item.slot ?? 'item')"
+                :render="ctx.rootSlots[item.slot ?? 'item']!"
+                :scope="{ item, hasSubmenu: true }"
               />
               <template v-else>{{ item.label }}</template>
             </div>
@@ -379,15 +360,10 @@ defineExpose({ panelRef, getItems, highlightItem });
             @keydown.enter.prevent="ctx.onItemSelect(item, $event)"
             @keydown.space.prevent="ctx.onItemSelect(item, $event)"
           >
-            <component
-              :is="
-                () =>
-                  ctx.rootSlots[item.slot ?? 'item']!({
-                    item,
-                    hasSubmenu: false,
-                  })
-              "
+            <SlotContent
               v-if="hasRootSlot(item.slot ?? 'item')"
+              :render="ctx.rootSlots[item.slot ?? 'item']!"
+              :scope="{ item, hasSubmenu: false }"
             />
             <template v-else>{{ item.label }}</template>
           </div>

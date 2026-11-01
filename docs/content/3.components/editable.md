@@ -54,7 +54,10 @@ Choose when the preview enters edit mode. `focus` is keyboard-friendly and is th
 
 ```vue
 <template>
-  <Editable v-model="title" activation-mode="dblclick" />
+  <Editable
+    v-model="title"
+    activation-mode="dblclick"
+  />
 </template>
 ```
 
@@ -64,7 +67,11 @@ Choose when the preview enters edit mode. `focus` is keyboard-friendly and is th
 
 ```vue
 <template>
-  <Editable v-model="summary" multiline submit-mode="both" />
+  <Editable
+    v-model="summary"
+    multiline
+    submit-mode="both"
+  />
 </template>
 ```
 
@@ -74,7 +81,11 @@ Set `submitMode="none"` when only the generated submit button or exposed method 
 
 ```vue
 <template>
-  <Editable v-model="slug" activation-mode="none" submit-mode="none" />
+  <Editable
+    v-model="slug"
+    activation-mode="none"
+    submit-mode="none"
+  />
 </template>
 ```
 
@@ -84,7 +95,11 @@ Inside [Field](/components/field), `Editable` inherits id, name, required, disab
 
 ```vue
 <template>
-  <Field label="Release title" name="title" required>
+  <Field
+    label="Release title"
+    name="title"
+    required
+  >
     <Editable v-model="title" />
   </Field>
 </template>

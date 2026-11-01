@@ -4,6 +4,8 @@ import type { TabsItem, TabsProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
 import { onKeyStroke } from "@vueuse/core";
 import { computed, nextTick, onMounted, onUnmounted, ref, useId } from "vue";
+import { createChangeDetails } from "../../utils/changeEvent";
+import { nextEnabledIndex } from "../../utils/useRovingFocus";
 
 const {
   items,
@@ -112,8 +114,7 @@ onKeyStroke(["ArrowRight", "ArrowLeft", "ArrowDown", "ArrowUp", "Home", "End"], 
   const currentIdx = fromIdx >= 0 ? fromIdx : enabled.findIndex((i) => i.value === model.value);
 
   let nextIdx = currentIdx;
-  if (isPrev) nextIdx = currentIdx > 0 ? currentIdx - 1 : enabled.length - 1;
-  else if (isNext) nextIdx = currentIdx < enabled.length - 1 ? currentIdx + 1 : 0;
+  if (isPrev || isNext) nextIdx = nextEnabledIndex(enabled, currentIdx < 0 && isPrev ? 0 : currentIdx, isNext ? 1 : -1, true);
   else if (e.key === "Home") nextIdx = 0;
   else if (e.key === "End") nextIdx = enabled.length - 1;
 
@@ -128,13 +129,9 @@ onKeyStroke(["ArrowRight", "ArrowLeft", "ArrowDown", "ArrowUp", "Home", "End"], 
 
 function activate(item: TabsItem, event?: Event) {
   if (item.disabled) return;
-  let canceled = false;
-  emit("value-change", item.value, {
-    reason: event ? "trigger" : "programmatic",
-    ...(event && { event }),
-    cancel: () => { canceled = true; },
-  });
-  if (!canceled) model.value = item.value;
+  const changeEvent = createChangeDetails(event ? "trigger" : "programmatic", event);
+  emit("value-change", item.value, changeEvent.details);
+  if (!changeEvent.canceled()) model.value = item.value;
 }
 </script>
 

@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import type { TooltipDirection, TooltipProps } from ".";
+import type { TooltipProps } from ".";
 import { computed, nextTick, onUnmounted, ref, useId, useTemplateRef, watch } from "vue";
 import { useTooltip } from "../../composables/tooltip";
 import { useDismissableLayer } from "../../utils/dismissableLayer";
+import { useFloatingPosition } from "../../utils/floatingPosition";
 import { useFocusBranch } from "../../utils/focusScope";
 
 const {
@@ -30,69 +31,21 @@ const triggerRef = useTemplateRef<HTMLElement>("triggerRef");
 const contentRef = useTemplateRef<HTMLElement>("contentRef");
 useFocusBranch(contentRef);
 
-const GAP = 8;
-const posStyle = ref({ top: "-9999px", left: "-9999px" });
-const actualDirection = ref<TooltipDirection>(direction);
-
-function computePosition() {
-  if (typeof window === "undefined") return;
-  if (!triggerRef.value || !contentRef.value) return;
-
-  const t = triggerRef.value.getBoundingClientRect();
-  const c = contentRef.value.getBoundingClientRect();
-  const vw = window.innerWidth;
-  const vh = window.innerHeight;
-
-  // Try preferred direction first, then fall back
-  const order: TooltipDirection[] = [direction, "top", "bottom", "right", "left"];
-  const candidates = [...new Set(order)];
-
-  let chosen: TooltipDirection = candidates[candidates.length - 1]!;
-  for (const d of candidates) {
-    if (d === "top" && t.top >= c.height + GAP) {
-      chosen = d;
-      break;
-    }
-    if (d === "bottom" && vh - t.bottom >= c.height + GAP) {
-      chosen = d;
-      break;
-    }
-    if (d === "right" && vw - t.right >= c.width + GAP) {
-      chosen = d;
-      break;
-    }
-    if (d === "left" && t.left >= c.width + GAP) {
-      chosen = d;
-      break;
-    }
-  }
-
-  let top = 0;
-  let left = 0;
-  if (chosen === "top") {
-    top = t.top - c.height - GAP;
-    left = t.left + t.width / 2 - c.width / 2;
-  } else if (chosen === "bottom") {
-    top = t.bottom + GAP;
-    left = t.left + t.width / 2 - c.width / 2;
-  } else if (chosen === "left") {
-    top = t.top + t.height / 2 - c.height / 2;
-    left = t.left - c.width - GAP;
-  } else {
-    top = t.top + t.height / 2 - c.height / 2;
-    left = t.right + GAP;
-  }
-
-  // Clamp to viewport edges
-  top = Math.max(4, Math.min(top, vh - c.height - 4));
-  left = Math.max(4, Math.min(left, vw - c.width - 4));
-
-  actualDirection.value = chosen;
-  posStyle.value = { top: `${top}px`, left: `${left}px` };
-}
+const { style: positionStyle, actualSide: actualDirection, update: computePosition } = useFloatingPosition({
+  reference: triggerRef,
+  floating: contentRef,
+  active: model,
+  side: () => direction,
+  align: "center",
+  sideOffset: 8,
+  collisionPadding: 4,
+  fallbackSides: ["top", "bottom", "right", "left"],
+  strategy: "fixed",
+  cssVarPrefix: "akaza-tooltip",
+});
+const posStyle = computed(() => ({ ...positionStyle.value, transform: undefined, transformOrigin: undefined }));
 
 const posReady = ref(false);
-let posCleanup: (() => void) | null = null;
 const { layerOrder, register, unregister } = useDismissableLayer((event?: KeyboardEvent) => {
   event?.preventDefault();
   _close();
@@ -110,25 +63,13 @@ watch(model, async (val, _old, cleanup) => {
     register();
     computePosition();
     posReady.value = true;
-    const update = () => computePosition();
-    window.addEventListener("scroll", update, { passive: true, capture: true });
-    window.addEventListener("resize", update, { passive: true });
-    posCleanup = () => {
-      window.removeEventListener("scroll", update, { capture: true });
-      window.removeEventListener("resize", update);
-    };
   } else {
     posReady.value = false;
     unregister();
-    posCleanup?.();
-    posCleanup = null;
   }
 }, { immediate: true });
 
-onUnmounted(() => {
-  unregister();
-  posCleanup?.();
-});
+onUnmounted(unregister);
 
 const triggerProps = computed(() => ({
   "aria-describedby": model.value ? tooltipId : undefined,

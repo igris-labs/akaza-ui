@@ -1,7 +1,10 @@
 <script setup lang="ts">
 import type { SliderProps, SliderValue } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
-import { computed, inject, onBeforeUnmount, onMounted, ref, useId, useTemplateRef } from "vue";
+import { computed, inject, onMounted, ref, useId, useTemplateRef } from "vue";
+import { createChangeDetails } from "../../utils/changeEvent";
+import { clampNumber, snapToStep } from "../../utils/number";
+import { useFieldControl } from "../../utils/useFieldControl";
 import { useFormReset } from "../../utils/useFormReset";
 import { fieldContextKey } from "../field/context";
 
@@ -42,9 +45,7 @@ const focused = ref(false);
 const validationActive = ref(false);
 const dragging = ref(false);
 const activeThumbIndex = ref(0);
-const nativeInvalid = ref(false);
-const validationMessage = ref("");
-const validity = ref<ValidityState | null>(null);
+const { nativeInvalid, syncValidity, registerControl } = useFieldControl(field);
 const initialValue = Array.isArray(model.value) ? [...model.value] : model.value;
 
 const resolvedId = computed(() => id ?? field?.inputId.value ?? `akaza-slider-${autoId}`);
@@ -91,35 +92,15 @@ function getPercentage(value: number): number {
   return inverted ? 100 - raw : raw;
 }
 
-const unregister = field?.registerControl({
+registerControl({
   dirty: isDirty,
   touched,
   filled: isFilled,
   focused,
-  invalid: nativeInvalid,
-  validationMessage,
-  validity,
 });
 
-function decimals(value: number): number {
-  const [, decimal = ""] = String(value).split(".");
-  return decimal.length;
-}
-
-function clamp(value: number): number {
-  if (value < min) return min;
-  if (value > max) return max;
-  return value;
-}
-
-function snap(value: number): number {
-  if (step <= 0) return value;
-  const snapped = Math.round((value - min) / step) * step + min;
-  return Number(snapped.toFixed(Math.max(decimals(step), decimals(min))));
-}
-
 function normalize(value: number): number {
-  return clamp(snap(value));
+  return clampNumber(snapToStep(value, step, min), min, max);
 }
 
 function isMultipleValue(value: SliderValue): value is number[] {
@@ -142,9 +123,7 @@ useFormReset(() => inputRef.value, () => {
 function updateValidity(reveal = validationActive.value) {
   const input = inputRef.value;
   if (!input) return;
-  validity.value = input.validity;
-  nativeInvalid.value = reveal && !input.validity.valid;
-  validationMessage.value = input.validationMessage;
+  syncValidity(input, reveal);
 }
 
 function getOutputValue(nextValues: number[]): SliderValue {
@@ -193,15 +172,9 @@ function setValueAt(index: number, value: number, reason: string, event?: Event)
   if (next !== undefined) nextThumbValue = Math.min(nextThumbValue, next - gap);
   nextValues[index] = normalize(nextThumbValue);
   const outputValue = getOutputValue(nextValues);
-  let canceled = false;
-  emit("value-change", outputValue, {
-    reason,
-    ...(event && { event }),
-    cancel: () => {
-      canceled = true;
-    },
-  });
-  if (!canceled) model.value = outputValue;
+  const changeEvent = createChangeDetails(reason, event);
+  emit("value-change", outputValue, changeEvent.details);
+  if (!changeEvent.canceled()) model.value = outputValue;
   updateValidity();
 }
 
@@ -280,7 +253,6 @@ function onInvalid() {
 }
 
 onMounted(() => updateValidity(false));
-onBeforeUnmount(() => unregister?.());
 </script>
 
 <template>

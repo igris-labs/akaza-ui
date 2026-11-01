@@ -3,6 +3,20 @@ import { describe, expect, it, vi } from "vitest";
 import { Menubar } from "@/components/menubar";
 
 describe("menubar", () => {
+  it("keeps slotted trigger content mounted during focus and open updates", async () => {
+    const wrapper = mount(Menubar, {
+      props: { teleport: false, items: [{ value: "file", label: "File", children: [{ label: "Open" }] }, { value: "help", label: "Help" }] },
+      slots: { trigger: '<span class="stable-trigger">Menu</span>' },
+    });
+    const trigger = wrapper.findAll(".akaza-menubar-trigger")[1]!;
+    const content = trigger.get(".stable-trigger").element;
+    await trigger.trigger("focus");
+    expect(trigger.get(".stable-trigger").element).toBe(content);
+    await wrapper.findAll(".akaza-menubar-trigger")[0]!.trigger("click");
+    expect(trigger.get(".stable-trigger").element).toBe(content);
+    wrapper.unmount();
+  });
+
   it("portals popup panels by default and supports inline rendering", async () => {
     const wrapper = mount(Menubar, {
       attachTo: document.body,

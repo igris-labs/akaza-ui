@@ -112,7 +112,12 @@ const open = ref(false);
 <template>
   <Tooltip v-model="open">
     <template #trigger>
-      <button @focus="open = true" @blur="open = false">Focus me</button>
+      <button
+        @focus="open = true"
+        @blur="open = false"
+      >
+        Focus me
+      </button>
     </template>
     <template #content>Controlled tooltip</template>
   </Tooltip>
@@ -164,6 +169,18 @@ Open tooltips do not install browser listeners during SSR. Client tooltips parti
 | `trigger` | `akaza-tooltip-trigger` | `data-akaza-state` |
 | `content` | `akaza-tooltip-content` | `data-akaza-state`, `data-akaza-side` |
 | `arrow` | `akaza-tooltip-arrow` | — |
+
+### Positioning Variables
+
+Positioning leaves CSS transforms available for consumer styles and enter/leave transitions. The preferred direction falls back to another side when space is insufficient.
+
+| Variable | Meaning |
+| --- | --- |
+| `--akaza-tooltip-anchor-width` | Anchor width in pixels. |
+| `--akaza-tooltip-anchor-height` | Anchor height in pixels. |
+| `--akaza-tooltip-available-width` | Viewport width after collision padding. |
+| `--akaza-tooltip-available-height` | Viewport height after collision padding. |
+| `--akaza-tooltip-transform-origin` | Origin matching the resolved side and alignment. |
 
 ### Keyboard
 

@@ -29,7 +29,8 @@ provide("navigation", navigation);
   <UApp class="min-h-[100dvh] bg-background">
     <NuxtLoadingIndicator />
 
-    <AppHeader />
+    <!-- Isolate server-prefetched icon IDs from the page's async ID scope. -->
+    <LazyAppHeader />
 
     <UMain class="bg-background">
       <NuxtLayout>

@@ -39,7 +39,11 @@ const options = [
 </script>
 
 <template>
-  <Listbox v-model="framework" :options="options" aria-label="Framework" />
+  <Listbox
+    v-model="framework"
+    :options="options"
+    aria-label="Framework"
+  />
 </template>
 ```
 ::
@@ -137,8 +141,8 @@ Use `by` to compare objects and `serializeValue` to control submitted form value
     v-model="assignee"
     name="assignee"
     by="id"
-    :serialize-value="user => String(user.id)"
-    :options="users.map(user => ({ value: user, label: user.name }))"
+    :serialize-value="(user) => String(user.id)"
+    :options="users.map((user) => ({ value: user, label: user.name }))"
     aria-label="Assignee"
   />
 </template>
@@ -150,8 +154,15 @@ Inside [Field](/components/field), Listbox inherits `id`, `name`, required/disab
 
 ```vue
 <template>
-  <Field label="Environment" name="environment" required>
-    <Listbox v-model="environment" :options="environments" />
+  <Field
+    label="Environment"
+    name="environment"
+    required
+  >
+    <Listbox
+      v-model="environment"
+      :options="environments"
+    />
   </Field>
 </template>
 ```

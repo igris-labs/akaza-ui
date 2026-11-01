@@ -3,9 +3,6 @@ title: Time Range Field
 description: Coordinated segmented start and end times with aggregate validation and native form values.
 navigation:
   icon: i-lucide-clock-arrow-up
-  badge:
-    label: NEW
-    color: success
 ---
 
 `TimeRangeField` combines two Time Field controls under one range model and validity state. It supports locale order, granularity, constraints, partial input, Field integration, and separate form values.
@@ -46,7 +43,10 @@ const value = shallowRef<TimeRange>({
 </script>
 
 <template>
-  <TimeRangeField v-model="value" :hour-cycle="24" />
+  <TimeRangeField
+    v-model="value"
+    :hour-cycle="24"
+  />
 </template>
 ```
 ::
@@ -58,7 +58,11 @@ const value = shallowRef<TimeRange>({
 Aggregate validation starts after interaction. Untouched empty fields remain neutral; blur or submit reveals missing endpoints and Field error text.
 
 ```vue
-<Field label="Availability" name="window" required>
+<Field
+  label="Availability"
+  name="window"
+  required
+>
   <TimeRangeField v-model="range" />
 </Field>
 ```
@@ -111,9 +115,11 @@ Use nested `startField` and `endField` UI objects for segment parts while root U
 ```vue
 <TimeRangeField
   v-model="range"
-  @value-change="(value, details) => {
-    if (isLocked(value)) details.cancel()
-  }"
+  @value-change="
+    (value, details) => {
+      if (isLocked(value)) details.cancel();
+    }
+  "
 />
 ```
 

@@ -91,6 +91,12 @@ No manual CSS import or component registration needed.
 | `Checkbox`         | Tri-state checkbox (`true`, `false`, `'indeterminate'`)                    |
 | `CheckboxGroup`    | Multi-select checkbox list with an items-based API                         |
 | `Collapsible`      | Single show/hide region with animated height                               |
+| `ColorArea`        | Two-axis color selection with keyboard, pointer, touch, and channel controls |
+| `ColorField`       | Color text/channel editing with drafts, output formats, and native validation |
+| `ColorPicker`      | Flat color editor with shared precision, alpha, previews, and optional presets |
+| `ColorSlider`      | Hue, alpha, and channel slider with gradients, RTL, and vertical support |
+| `ColorSwatch`      | Accessible readonly preview for CSS color literals |
+| `ColorSwatchPicker` | Single/multiple palette selection with custom item slots |
 | `Combobox`         | Editable input plus listbox selection, filtering, and creation             |
 | `ContextMenu`      | Right-click menu positioned at the pointer                                 |
 | `DataTable`        | Typed semantic table with custom cells, sorting, filtering, and selection  |
@@ -135,6 +141,8 @@ No manual CSS import or component registration needed.
 | `HoverPreviewCard` | Hover/focus rich preview for links and entities                            |
 
 ## Usage
+
+Color controls share the DOM-free `useColor` composable. Output formats include HEX, RGB, HSL, HWB, Lab/LCH, OKLab/OKLCH, Display P3, and other CSS color spaces. The format selects serialized output; it does not force the editing space. See [color documentation](https://akaza-ui.com/components/color-picker) for styling, gamut limits, and examples.
 
 ### Dialog
 

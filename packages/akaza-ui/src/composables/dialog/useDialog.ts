@@ -1,5 +1,5 @@
 import type { Ref } from "vue";
-import { ref } from "vue";
+import { useDisclosure } from "../disclosure";
 
 export interface UseDialogReturn {
   isOpen: Ref<boolean>;
@@ -9,15 +9,5 @@ export interface UseDialogReturn {
 }
 
 export function useDialog(modelRef?: Ref<boolean>): UseDialogReturn {
-  const isOpen = modelRef ?? ref(false);
-  function open() {
-    isOpen.value = true;
-  }
-  function close() {
-    isOpen.value = false;
-  }
-  function toggle() {
-    isOpen.value = !isOpen.value;
-  }
-  return { isOpen, open, close, toggle };
+  return useDisclosure(modelRef);
 }

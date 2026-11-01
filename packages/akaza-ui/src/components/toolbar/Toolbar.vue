@@ -2,6 +2,8 @@
 import type { ToolbarItem, ToolbarProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
 import { computed, ref, useSlots } from "vue";
+import { createChangeDetails } from "../../utils/changeEvent";
+import { nextEnabledIndex } from "../../utils/useRovingFocus";
 
 const {
   items = [],
@@ -83,9 +85,7 @@ function focusNext(root: HTMLElement, current: HTMLElement, delta: number) {
   const items = getFocusable(root);
   const currentIndex = items.indexOf(current);
   if (currentIndex < 0) return;
-  let next = currentIndex + delta;
-  if (loop) next = (next + items.length) % items.length;
-  if (next < 0 || next >= items.length) return;
+  const next = nextEnabledIndex(items, currentIndex, delta, loop);
   items[next]?.focus();
 }
 
@@ -116,15 +116,9 @@ function selectItem(item: ToolbarItem, event: Event) {
     event.preventDefault();
     return;
   }
-  let canceled = false;
-  emit("select", item, {
-    reason: "trigger",
-    event,
-    cancel: () => {
-      canceled = true;
-    },
-  });
-  if (!canceled) item.onSelect?.();
+  const changeEvent = createChangeDetails("trigger", event);
+  emit("select", item, changeEvent.details);
+  if (!changeEvent.canceled()) item.onSelect?.();
 }
 
 function onItemFocus(event: FocusEvent) {
@@ -136,13 +130,9 @@ function onItemFocus(event: FocusEvent) {
 function onInput(item: ToolbarItem, event: Event) {
   const target = event.target as HTMLInputElement;
   const value = target.value;
-  let canceled = false;
-  emit("input-change", item, value, {
-    reason: "input",
-    event,
-    cancel: () => { canceled = true; },
-  });
-  if (!canceled) item.onUpdateValue?.(value);
+  const changeEvent = createChangeDetails("input", event);
+  emit("input-change", item, value, changeEvent.details);
+  if (!changeEvent.canceled()) item.onUpdateValue?.(value);
   else target.value = String(item.inputValue ?? "");
 }
 

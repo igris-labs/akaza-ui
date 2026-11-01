@@ -50,10 +50,16 @@ Use `Fieldset` around controls that answer one shared question.
     legend="Billing details"
     description="Used for invoices and receipts."
   >
-    <Field name="name" label="Name">
+    <Field
+      name="name"
+      label="Name"
+    >
       <Input />
     </Field>
-    <Field name="company" label="Company">
+    <Field
+      name="company"
+      label="Company"
+    >
       <Input />
     </Field>
   </Fieldset>
@@ -66,8 +72,14 @@ Native fieldset behavior disables the controls inside it.
 
 ```vue
 <template>
-  <Fieldset legend="Shipping" disabled>
-    <Field name="address" label="Address">
+  <Fieldset
+    legend="Shipping"
+    disabled
+  >
+    <Field
+      name="address"
+      label="Address"
+    >
       <Input />
     </Field>
   </Fieldset>
@@ -85,7 +97,10 @@ Use `invalid` to mark the whole group when the group-level choice has an error. 
     description="Choose one active payment method."
     invalid
   >
-    <RadioGroup v-model="payment" :options="paymentOptions" />
+    <RadioGroup
+      v-model="payment"
+      :options="paymentOptions"
+    />
     <p class="text-sm text-red-600">Choose one active payment method.</p>
   </Fieldset>
 </template>
@@ -105,7 +120,10 @@ Use `#legend` when the group label needs badges, hints, or richer markup.
       </span>
     </template>
 
-    <Field name="taxId" label="Tax ID">
+    <Field
+      name="taxId"
+      label="Tax ID"
+    >
       <Input />
     </Field>
   </Fieldset>

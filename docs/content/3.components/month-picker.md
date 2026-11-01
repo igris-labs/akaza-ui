@@ -3,9 +3,6 @@ title: Month Picker
 description: Accessible month grid with locale labels, paging, constraints, and single or multiple selection.
 navigation:
   icon: i-lucide-calendar-range
-  badge:
-    label: NEW
-    color: success
 ---
 
 `MonthPicker` displays one year at a time as a month grid. It supports roving focus, year paging, locale labels, constraints, and single or multiple selection.
@@ -46,7 +43,10 @@ const page = shallowRef<CalendarDateValue>(new CalendarDate(2026, 1, 1));
 </script>
 
 <template>
-  <MonthPicker v-model="value" v-model:placeholder="page" />
+  <MonthPicker
+    v-model="value"
+    v-model:placeholder="page"
+  />
 </template>
 ```
 ::
@@ -58,7 +58,10 @@ const page = shallowRef<CalendarDateValue>(new CalendarDate(2026, 1, 1));
 Set `multiple` to use an array model. Activating an already selected month removes it unless `preventDeselect` is enabled.
 
 ```vue
-<MonthPicker v-model="months" multiple />
+<MonthPicker
+  v-model="months"
+  multiple
+/>
 ```
 
 ### Constraints and unavailable months
@@ -70,7 +73,7 @@ Use `minValue` and `maxValue` for hard boundaries. Use `isMonthDisabled` for app
   v-model="month"
   :min-value="new CalendarDate(2026, 3, 1)"
   :max-value="new CalendarDate(2026, 10, 1)"
-  :is-month-unavailable="date => date.month === 7"
+  :is-month-unavailable="(date) => date.month === 7"
 />
 ```
 
@@ -84,8 +87,8 @@ Bind `v-model:placeholder` when application state must own the displayed year. `
 <MonthPicker
   v-model="month"
   v-model:placeholder="visibleYear"
-  :next-page="date => date.add({ years: 2 })"
-  :prev-page="date => date.subtract({ years: 2 })"
+  :next-page="(date) => date.add({ years: 2 })"
+  :prev-page="(date) => date.subtract({ years: 2 })"
 />
 ```
 

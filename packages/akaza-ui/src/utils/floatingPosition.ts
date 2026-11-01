@@ -1,19 +1,24 @@
 import type { CSSProperties, MaybeRefOrGetter, Ref } from "vue";
-import { nextTick, onUnmounted, ref, toValue, watch } from "vue";
+import { nextTick, onUnmounted, ref, shallowRef, toValue, watch } from "vue";
 
 export type FloatingSide = "top" | "right" | "bottom" | "left";
 export type FloatingAlign = "start" | "center" | "end";
 
 interface FloatingPositionOptions {
-  reference: Ref<HTMLElement | null>;
+  reference: Ref<{ getBoundingClientRect: () => DOMRect } | null>;
   floating: Ref<HTMLElement | null>;
   active: MaybeRefOrGetter<boolean>;
   side: MaybeRefOrGetter<FloatingSide>;
   align: MaybeRefOrGetter<FloatingAlign>;
   sideOffset?: MaybeRefOrGetter<number>;
+  alignOffset?: MaybeRefOrGetter<number>;
+  flipAlign?: boolean;
   collisionPadding?: MaybeRefOrGetter<number>;
   matchWidth?: MaybeRefOrGetter<boolean>;
-  strategy?: "absolute" | "fixed";
+  strategy?: MaybeRefOrGetter<"absolute" | "fixed">;
+  /** Ordered alternatives for popups that can switch axis. Defaults to opposite-side flipping. */
+  fallbackSides?: MaybeRefOrGetter<readonly FloatingSide[]>;
+  flip?: boolean;
   /** Limit oversized popups to the viewport before choosing their coordinates. */
   constrainSize?: boolean;
   cssVarPrefix: string;
@@ -23,7 +28,34 @@ interface FloatingPositionReturn {
   style: Ref<CSSProperties>;
   actualSide: Ref<FloatingSide>;
   actualAlign: Ref<FloatingAlign>;
+  geometry: Ref<FloatingGeometry | null>;
   update: () => void;
+}
+
+interface FloatingGeometry {
+  reference: DOMRect;
+  width: number;
+  height: number;
+  left: number;
+  top: number;
+  side: FloatingSide;
+}
+
+/** Arrow coordinates use viewport geometry, independent of the popup's offset parent. */
+export function getFloatingArrowStyle(geometry: FloatingGeometry | null, size: number): CSSProperties {
+  if (!geometry) return {};
+  const { reference, width, height, left, top, side } = geometry;
+  const half = size / 2;
+  if (side === "top" || side === "bottom") {
+    return {
+      left: `${Math.max(half, Math.min(reference.left + reference.width / 2 - left - half, width - size - half))}px`,
+      [side === "top" ? "bottom" : "top"]: `${-half}px`,
+    };
+  }
+  return {
+    top: `${Math.max(half, Math.min(reference.top + reference.height / 2 - top - half, height - size - half))}px`,
+    [side === "left" ? "right" : "left"]: `${-half}px`,
+  };
 }
 
 function opposite(side: FloatingSide): FloatingSide {
@@ -50,9 +82,10 @@ function transformOrigin(side: FloatingSide, align: FloatingAlign) {
 }
 
 export function useFloatingPosition(options: FloatingPositionOptions): FloatingPositionReturn {
-  const style = ref<CSSProperties>({ position: options.strategy ?? "absolute", top: "-9999px", left: "-9999px" });
+  const style = ref<CSSProperties>({ position: toValue(options.strategy) ?? "absolute", top: "-9999px", left: "-9999px" });
   const actualSide = ref<FloatingSide>(toValue(options.side));
   const actualAlign = ref<FloatingAlign>(toValue(options.align));
+  const geometry = shallowRef<FloatingGeometry | null>(null);
   let listening = false;
   let disposed = false;
   let resizeObserver: ResizeObserver | undefined;
@@ -81,8 +114,27 @@ export function useFloatingPosition(options: FloatingPositionOptions): FloatingP
     const required = preferred === "top" || preferred === "bottom" ? floatingRect.height : floatingRect.width;
     const preferredSpace = availableSpace(preferred, referenceRect, width, height, padding);
     const alternateSpace = availableSpace(alternate, referenceRect, width, height, padding);
-    const side = preferredSpace >= required + offset || preferredSpace >= alternateSpace ? preferred : alternate;
-    const align = toValue(options.align);
+    let side = preferred;
+    if (options.flip !== false) {
+      if (options.fallbackSides !== undefined) {
+        const candidates = [...new Set([preferred, ...toValue(options.fallbackSides)])];
+        side = candidates.find(candidate => availableSpace(candidate, referenceRect, width, height, padding)
+          >= (candidate === "top" || candidate === "bottom" ? floatingRect.height : floatingRect.width) + offset)
+          ?? candidates[candidates.length - 1]!;
+      } else {
+        side = preferredSpace >= required + offset || preferredSpace >= alternateSpace ? preferred : alternate;
+      }
+    }
+    let align = toValue(options.align);
+    const alignOffset = toValue(options.alignOffset ?? 0);
+    if (options.flipAlign && align !== "center") {
+      const horizontal = side === "top" || side === "bottom";
+      const startSpace = horizontal ? width - referenceRect.left - padding : height - referenceRect.top - padding;
+      const endSpace = horizontal ? referenceRect.right - padding : referenceRect.bottom - padding;
+      const needed = (horizontal ? floatingRect.width : floatingRect.height) + alignOffset;
+      if (align === "start" && startSpace < needed && endSpace >= needed) align = "end";
+      else if (align === "end" && endSpace < needed && startSpace >= needed) align = "start";
+    }
 
     let top = 0;
     let left = 0;
@@ -92,12 +144,12 @@ export function useFloatingPosition(options: FloatingPositionOptions): FloatingP
     else left = referenceRect.right + offset;
 
     if (side === "top" || side === "bottom") {
-      if (align === "start") left = referenceRect.left;
-      else if (align === "end") left = referenceRect.right - floatingRect.width;
+      if (align === "start") left = referenceRect.left + alignOffset;
+      else if (align === "end") left = referenceRect.right - floatingRect.width - alignOffset;
       else left = referenceRect.left + (referenceRect.width - floatingRect.width) / 2;
     } else {
-      if (align === "start") top = referenceRect.top;
-      else if (align === "end") top = referenceRect.bottom - floatingRect.height;
+      if (align === "start") top = referenceRect.top + alignOffset;
+      else if (align === "end") top = referenceRect.bottom - floatingRect.height - alignOffset;
       else top = referenceRect.top + (referenceRect.height - floatingRect.height) / 2;
     }
 
@@ -106,13 +158,14 @@ export function useFloatingPosition(options: FloatingPositionOptions): FloatingP
 
     const offsetParent = floating.offsetParent as HTMLElement | null;
     const parentRect = offsetParent?.getBoundingClientRect();
-    const strategy = options.strategy ?? "absolute";
+    const strategy = toValue(options.strategy) ?? "absolute";
     const localLeft = parentRect ? left - parentRect.left + offsetParent!.scrollLeft - offsetParent!.clientLeft : left + (strategy === "fixed" ? 0 : window.scrollX);
     const localTop = parentRect ? top - parentRect.top + offsetParent!.scrollTop - offsetParent!.clientTop : top + (strategy === "fixed" ? 0 : window.scrollY);
     const prefix = options.cssVarPrefix;
 
     actualSide.value = side;
     actualAlign.value = align;
+    geometry.value = { reference: referenceRect, ...floatingRect, left, top, side };
     style.value = {
       position: strategy,
       top: `${localTop}px`,
@@ -138,7 +191,7 @@ export function useFloatingPosition(options: FloatingPositionOptions): FloatingP
     window.addEventListener("resize", update, { passive: true });
     if (typeof ResizeObserver !== "undefined") {
       resizeObserver = new ResizeObserver(update);
-      if (options.reference.value) resizeObserver.observe(options.reference.value);
+      if (options.reference.value instanceof Element) resizeObserver.observe(options.reference.value);
       if (options.floating.value) resizeObserver.observe(options.floating.value);
     }
   }
@@ -168,10 +221,15 @@ export function useFloatingPosition(options: FloatingPositionOptions): FloatingP
       toValue(options.side),
       toValue(options.align),
       toValue(options.sideOffset ?? 0),
+      toValue(options.alignOffset ?? 0),
       toValue(options.collisionPadding ?? 8),
       toValue(options.matchWidth ?? false),
+      toValue(options.strategy),
+      toValue(options.fallbackSides),
     ],
     () => update(),
+    // Teleport can change the offset parent during the same render.
+    { flush: "post" },
   );
 
   watch([() => options.reference.value, () => options.floating.value], async () => {
@@ -188,5 +246,5 @@ export function useFloatingPosition(options: FloatingPositionOptions): FloatingP
     removeListeners();
   });
 
-  return { style, actualSide, actualAlign, update };
+  return { style, actualSide, actualAlign, geometry, update };
 }

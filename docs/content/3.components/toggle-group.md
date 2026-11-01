@@ -38,7 +38,11 @@ const options = [
 </script>
 
 <template>
-  <ToggleGroup v-model="value" :options="options" :allow-empty="false" />
+  <ToggleGroup
+    v-model="value"
+    :options="options"
+    :allow-empty="false"
+  />
 </template>
 ```
 ::
@@ -87,7 +91,11 @@ Use labels and descriptions for richer option cards.
 
 ```vue
 <template>
-  <ToggleGroup v-model="plan" :options="plans" :ui="{ root: 'grid gap-2' }">
+  <ToggleGroup
+    v-model="plan"
+    :options="plans"
+    :ui="{ root: 'grid gap-2' }"
+  >
     <template #item="{ label, description }">
       <span>
         <strong>{{ label }}</strong>
@@ -104,7 +112,11 @@ Arrow key direction follows `orientation`.
 
 ```vue
 <template>
-  <ToggleGroup v-model="view" orientation="vertical" :options="views" />
+  <ToggleGroup
+    v-model="view"
+    orientation="vertical"
+    :options="views"
+  />
 </template>
 ```
 
@@ -114,7 +126,12 @@ When `name` is provided, selected values are submitted with the form. Multiple m
 
 ```vue
 <template>
-  <ToggleGroup v-model="filters" type="multiple" name="filters" :options="options" />
+  <ToggleGroup
+    v-model="filters"
+    type="multiple"
+    name="filters"
+    :options="options"
+  />
 </template>
 ```
 

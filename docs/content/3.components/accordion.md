@@ -31,9 +31,21 @@ The trigger button itself is rendered by the component; use the `ui.trigger` pro
 import { Accordion } from "akaza-ui";
 
 const items = [
-  { value: "a", label: "What is Akaza UI?", content: "A headless Vue component library with a Vue-native slots API." },
-  { value: "b", label: "Is it styled?", content: "No. Bring your own CSS, Tailwind, or design system." },
-  { value: "c", label: "Does it support keyboard input?", content: "Yes. Use arrow, Home, End, Enter, and Space keys." },
+  {
+    value: "a",
+    label: "What is Akaza UI?",
+    content: "A headless Vue component library with a Vue-native slots API.",
+  },
+  {
+    value: "b",
+    label: "Is it styled?",
+    content: "No. Bring your own CSS, Tailwind, or design system.",
+  },
+  {
+    value: "c",
+    label: "Does it support keyboard input?",
+    content: "Yes. Use arrow, Home, End, Enter, and Space keys.",
+  },
 ];
 </script>
 
@@ -65,7 +77,10 @@ The `#trigger` slot renders inside the trigger button. Style the button with `ui
 
 ```vue
 <template>
-  <Accordion :items="items" :ui="{ trigger: 'px-4 py-3 hover:bg-neutral-50' }">
+  <Accordion
+    :items="items"
+    :ui="{ trigger: 'px-4 py-3 hover:bg-neutral-50' }"
+  >
     <template #trigger="{ item, isOpen }">
       <span :class="['trigger-label', { 'trigger-label--open': isOpen }]">
         {{ item.label }}
@@ -73,7 +88,17 @@ The `#trigger` slot renders inside the trigger button. Style the button with `ui
     </template>
 
     <template #icon="{ isOpen }">
-      <svg :class="['icon', { 'icon--open': isOpen }]" .../>
+      <svg
+        :class="['icon', { 'icon--open': isOpen }]"
+        viewBox="0 0 24 24"
+        width="16"
+        height="16"
+        fill="none"
+        stroke="currentColor"
+        aria-hidden="true"
+      >
+        <path d="m6 9 6 6 6-6" />
+      </svg>
     </template>
   </Accordion>
 </template>
@@ -85,7 +110,10 @@ Use `type="multiple"` when more than one accordion panel should stay open at the
 
 ```vue
 <template>
-  <Accordion :items="items" type="multiple" />
+  <Accordion
+    :items="items"
+    type="multiple"
+  />
 </template>
 ```
 
@@ -95,16 +123,17 @@ Give an item a `slot` key to render rich content in its panel.
 
 ```vue
 <script setup lang="ts">
-const items = [
-  { value: "form", label: "Contact us", slot: "contact-form" },
-];
+const items = [{ value: "form", label: "Contact us", slot: "contact-form" }];
 </script>
 
 <template>
   <Accordion :items="items">
     <template #contact-form="{ close }">
       <form @submit.prevent="close">
-        <input type="email" placeholder="your@email.com" />
+        <input
+          type="email"
+          placeholder="your@email.com"
+        />
         <button type="submit">Send</button>
       </form>
     </template>

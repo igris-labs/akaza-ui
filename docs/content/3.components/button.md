@@ -55,7 +55,12 @@ async function save() {
 </script>
 
 <template>
-  <Button loading-auto @click="save">Save</Button>
+  <Button
+    loading-auto
+    @click="save"
+  >
+    Save
+  </Button>
 </template>
 ```
 
@@ -80,7 +85,12 @@ Use `as` to render a different root while keeping Akaza button state hooks.
 
 ```vue
 <template>
-  <Button as="a" href="/docs">Read the docs</Button>
+  <Button
+    as="a"
+    href="/docs"
+  >
+    Read the docs
+  </Button>
 </template>
 ```
 
@@ -90,7 +100,12 @@ Keeps the button in the tab order while disabled. This allows a disabled button 
 
 ```vue
 <template>
-  <Button disabled focusable-when-disabled>Restricted</Button>
+  <Button
+    disabled
+    focusable-when-disabled
+  >
+    Restricted
+  </Button>
 </template>
 ```
 

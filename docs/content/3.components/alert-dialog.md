@@ -42,7 +42,12 @@ import { AlertDialog } from "akaza-ui";
 
     <template #footer="{ close }">
       <button @click="close">Cancel</button>
-      <button class="btn-danger" @click="close">Delete</button>
+      <button
+        class="btn-danger"
+        @click="close"
+      >
+        Delete
+      </button>
     </template>
   </AlertDialog>
 </template>
@@ -64,7 +69,12 @@ Use header, body, and footer slots when the default alert layout needs custom co
 
     <template #header="{ close, titleId }">
       <h2 :id="titleId">Are you sure?</h2>
-      <button aria-label="Close" @click="close">✕</button>
+      <button
+        aria-label="Close"
+        @click="close"
+      >
+        ✕
+      </button>
     </template>
 
     <template #body="{ descriptionId }">

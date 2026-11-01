@@ -42,7 +42,11 @@ const options = [
 </script>
 
 <template>
-  <Select v-model="plan" :options="options" placeholder="Choose plan" />
+  <Select
+    v-model="plan"
+    :options="options"
+    placeholder="Choose plan"
+  />
 </template>
 ```
 ::
@@ -67,7 +71,11 @@ const options = [
 </script>
 
 <template>
-  <Select v-model="permissions" multiple :options="options" />
+  <Select
+    v-model="permissions"
+    multiple
+    :options="options"
+  />
 </template>
 ```
 
@@ -120,8 +128,16 @@ Place `Select` inside [Field](/components/field) to inherit `id`, `name`, `requi
 
 ```vue
 <template>
-  <Field label="Server region" name="region" required>
-    <Select v-model="region" :options="regions" placeholder="Choose region" />
+  <Field
+    label="Server region"
+    name="region"
+    required
+  >
+    <Select
+      v-model="region"
+      :options="regions"
+      placeholder="Choose region"
+    />
   </Field>
 </template>
 ```
@@ -132,7 +148,10 @@ Use `#option` to render richer option content. The component still owns `role="o
 
 ```vue
 <template>
-  <Select v-model="region" :options="regions">
+  <Select
+    v-model="region"
+    :options="regions"
+  >
     <template #option="{ label, description, isSelected }">
       <span aria-hidden="true">{{ isSelected ? "✓" : "" }}</span>
       <span>

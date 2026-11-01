@@ -70,15 +70,19 @@
 
 App Layout should compose the shipped `Sidebar`. Persistence and route handling remain consumer-owned so application-shell primitives have no Vue Router or storage coupling.
 
-### Planned — Color Primitives
+### Implemented — Color Primitives
 
 | Component           | Notes                                   |
 | ------------------- | --------------------------------------- |
-| Color Field         | Text/segmented color input              |
-| Color Area          | 2D saturation/brightness selection area |
-| Color Slider        | Hue, alpha, or channel slider           |
-| Color Swatch        | Readonly color preview                  |
-| Color Swatch Picker | Selectable swatch group                 |
+| Color Field         | Complete CSS color or numeric channel input, draft validation, locale-aware channels, keyboard/wheel editing, and forms |
+| Color Area          | Two-axis color selection, native accessible channel sliders, pointer/touch, RTL, and alternate editing spaces |
+| Color Slider        | Hue/alpha/channel gradients, keyboard/pointer/touch, vertical orientation, RTL, and readonly behavior |
+| Color Swatch        | Readonly CSS color preview, accessible/decorative modes, and custom content |
+| Color Swatch Picker | Items-based single/multiple Listbox composition, disabled options, custom slots, and normalized form values |
+| Color Picker        | Flat inline composition with shared precision/hue memory, optional presets, replaceable parts, and Popover examples |
+| useColor            | Shared DOM-free state; reactive output formats including LCH/OKLCH, alpha, channel editing, cancellation, gamut reporting, and reset |
+
+Color previews are functional data, not package theme styles. Controls retain full precision internally; RGB/HEX output and canvas/gradient previews are sRGB-limited. Public models remain CSS strings, not color-engine objects. Browser-engine release verification remains required.
 
 ### Planned — Layout & Utility Primitives
 

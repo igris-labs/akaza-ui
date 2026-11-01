@@ -62,13 +62,14 @@ const links = computed(() => {
 <template>
   <UPage v-if="page">
     <div class="lg:px-16">
-      <UPageHeader :title="page.title" :description="page.description" :headline="headline">
+      <!-- Keep header icon prefetch scopes separate from content examples. -->
+      <LazyUPageHeader :title="page.title" :description="page.description" :headline="headline">
         <template #links>
           <UButton v-for="(link, index) in page.links" :key="index" v-bind="link" />
 
           <PageHeaderLinks />
         </template>
-      </UPageHeader>
+      </LazyUPageHeader>
 
       <UPageBody>
         <ContentRenderer v-if="page" :value="page" />

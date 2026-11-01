@@ -76,6 +76,7 @@ const nativeInvalid = ref(false);
 const validationMessage = ref("");
 const validity = ref<ValidityState | null>(null);
 const activeIndex = ref(-1);
+let pointerDownInsideContent = false;
 const initialValue: ComboboxModelValue = Array.isArray(model.value) ? [...model.value] : model.value;
 
 const resolvedId = computed(() => id ?? field?.inputId.value ?? `akaza-combobox-${autoId}`);
@@ -415,6 +416,8 @@ function onClick(event: MouseEvent) {
 function onBlur(event: FocusEvent) {
   const nextTarget = event.relatedTarget as Node | null;
   if (rootRef.value?.contains(nextTarget)) return;
+  // Scrollbar presses may move focus to a fallback ancestor instead of the popup.
+  if (pointerDownInsideContent && (!nextTarget || nextTarget.contains(rootRef.value))) return;
   validationActive.value = true;
   touched.value = true;
   focused.value = false;
@@ -431,13 +434,23 @@ function onInvalid(event: Event) {
 }
 
 function onDocumentPointerDown(event: PointerEvent) {
+  pointerDownInsideContent = contentRef.value?.contains(event.target as Node) ?? false;
   if (!openModel.value) return;
   if (rootRef.value?.contains(event.target as Node)) return;
   setOpen(false, "outside-click", event);
 }
 
+function onDocumentPointerUp() {
+  if (pointerDownInsideContent && openModel.value && document.activeElement?.contains(rootRef.value)) {
+    inputRef.value?.focus({ preventScroll: true });
+  }
+  pointerDownInsideContent = false;
+}
+
 onMounted(() => {
   document.addEventListener("pointerdown", onDocumentPointerDown);
+  document.addEventListener("pointerup", onDocumentPointerUp);
+  document.addEventListener("pointercancel", onDocumentPointerUp);
   updateValidity(false);
 });
 onUpdated(updateValidity);
@@ -455,6 +468,8 @@ watch(openModel, (open) => {
 }, { immediate: true });
 onBeforeUnmount(() => {
   document.removeEventListener("pointerdown", onDocumentPointerDown);
+  document.removeEventListener("pointerup", onDocumentPointerUp);
+  document.removeEventListener("pointercancel", onDocumentPointerUp);
   unregisterDismissable();
   unregister?.();
 });

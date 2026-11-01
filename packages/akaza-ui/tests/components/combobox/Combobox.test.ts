@@ -4,6 +4,90 @@ import { defineComponent, ref } from "vue";
 import { Combobox } from "@/components/combobox";
 
 describe("combobox", () => {
+  it("treats focus falling back to a focusable ancestor as scrollbar interaction", async () => {
+    const ancestor = document.createElement("main");
+    ancestor.tabIndex = -1;
+    document.body.append(ancestor);
+    const wrapper = mount(Combobox, { attachTo: ancestor, props: { options: [{ label: "Vue", value: "vue" }] } });
+    try {
+      const input = wrapper.get(".akaza-combobox-input").element as HTMLInputElement;
+      input.focus();
+      await wrapper.vm.$nextTick();
+      await wrapper.get(".akaza-combobox-viewport").trigger("pointerdown");
+      ancestor.focus();
+      await wrapper.vm.$nextTick();
+      expect(wrapper.find(".akaza-combobox-content").exists()).toBe(true);
+      document.dispatchEvent(new Event("pointerup", { bubbles: true }));
+      expect(document.activeElement).toBe(input);
+    } finally {
+      wrapper.unmount();
+      ancestor.remove();
+    }
+  });
+
+  it.each(["pointerup", "pointercancel"])("keeps scrollbar blur internal and restores input focus on %s", async (eventType) => {
+    const wrapper = mount(Combobox, {
+      attachTo: document.body,
+      props: { resetSearchOnBlur: true, options: [{ value: "vue", label: "Vue" }] },
+    });
+    try {
+      const input = wrapper.get(".akaza-combobox-input");
+      (input.element as HTMLInputElement).focus();
+      await input.setValue("V");
+      const viewport = wrapper.get(".akaza-combobox-viewport");
+      await viewport.trigger("pointerdown");
+      (input.element as HTMLInputElement).blur();
+      await wrapper.vm.$nextTick();
+
+      expect(wrapper.find(".akaza-combobox-content").exists()).toBe(true);
+      expect((input.element as HTMLInputElement).value).toBe("V");
+      expect(wrapper.emitted("open-change")?.some(args => args[0] === false)).not.toBe(true);
+
+      document.dispatchEvent(new Event(eventType, { bubbles: true }));
+      expect(document.activeElement).toBe(input.element);
+      // The gesture guard must not suppress a subsequent real blur or its search reset.
+      (input.element as HTMLInputElement).blur();
+      await wrapper.vm.$nextTick();
+      expect(wrapper.find(".akaza-combobox-content").exists()).toBe(false);
+      expect(wrapper.emitted("update:search")?.at(-1)).toEqual([""]);
+    } finally {
+      wrapper.unmount();
+    }
+  });
+
+  it("still dismisses for an outside pointer press after scrolling", async () => {
+    const wrapper = mount(Combobox, { attachTo: document.body, props: { options: [{ label: "Vue", value: "vue" }] } });
+    try {
+      (wrapper.get(".akaza-combobox-input").element as HTMLInputElement).focus();
+      await wrapper.vm.$nextTick();
+      await wrapper.get(".akaza-combobox-viewport").trigger("pointerdown");
+      document.body.dispatchEvent(new Event("pointerdown", { bubbles: true }));
+      await wrapper.vm.$nextTick();
+      expect(wrapper.find(".akaza-combobox-content").exists()).toBe(false);
+      expect(wrapper.emitted("open-change")?.at(-1)?.[1]).toMatchObject({ reason: "outside-click" });
+    } finally {
+      wrapper.unmount();
+    }
+  });
+
+  it("does not suppress a real outside focus target during a popup pointer gesture", async () => {
+    const outside = document.createElement("button");
+    document.body.append(outside);
+    const wrapper = mount(Combobox, { attachTo: document.body, props: { options: [{ label: "Vue", value: "vue" }] } });
+    try {
+      (wrapper.get(".akaza-combobox-input").element as HTMLInputElement).focus();
+      await wrapper.vm.$nextTick();
+      await wrapper.get(".akaza-combobox-viewport").trigger("pointerdown");
+      outside.focus();
+      await wrapper.vm.$nextTick();
+      expect(wrapper.find(".akaza-combobox-content").exists()).toBe(false);
+      expect(document.activeElement).toBe(outside);
+    } finally {
+      wrapper.unmount();
+      outside.remove();
+    }
+  });
+
   it("restores the selected label after an unmatched query closes", async () => {
     const wrapper = mount(defineComponent({
       components: { Combobox },

@@ -1,10 +1,57 @@
-import { mount } from "@vue/test-utils";
+import { flushPromises, mount } from "@vue/test-utils";
 import { describe, expect, it } from "vitest";
 import { defineComponent, ref } from "vue";
 import { Field } from "@/components/field";
 import { Select } from "@/components/select";
 
 describe("select", () => {
+  it("restores focus when a scrollbar press focuses an ancestor", async () => {
+    const ancestor = document.createElement("main");
+    ancestor.tabIndex = -1;
+    document.body.append(ancestor);
+    const wrapper = mount(Select, { attachTo: ancestor, props: { options: [{ label: "Vue", value: "vue" }] } });
+    try {
+      const trigger = wrapper.get(".akaza-select-trigger");
+      (trigger.element as HTMLElement).focus();
+      await trigger.trigger("click");
+      await wrapper.get(".akaza-select-viewport").trigger("pointerdown");
+      ancestor.focus();
+      await wrapper.vm.$nextTick();
+      expect(wrapper.find(".akaza-select-content").exists()).toBe(true);
+      document.dispatchEvent(new Event("pointerup", { bubbles: true }));
+      expect(document.activeElement).toBe(trigger.element);
+    } finally {
+      wrapper.unmount();
+      ancestor.remove();
+    }
+  });
+
+  it.each([false, true])("keeps scrollbar blur internal with autocomplete=%s", async (autocomplete) => {
+    const wrapper = mount(Select, {
+      attachTo: document.body,
+      props: { autocomplete, options: [{ value: "vue", label: "Vue" }] },
+    });
+    try {
+      const trigger = wrapper.get(".akaza-select-trigger");
+      (trigger.element as HTMLButtonElement).focus();
+      await trigger.trigger("click");
+      await flushPromises();
+      const focusOwner = autocomplete ? wrapper.get(".akaza-select-search-input") : trigger;
+      await wrapper.get(".akaza-select-viewport").trigger("pointerdown");
+      (focusOwner.element as HTMLElement).blur();
+      await wrapper.vm.$nextTick();
+      expect(wrapper.find(".akaza-select-content").exists()).toBe(true);
+
+      document.dispatchEvent(new Event("pointerup", { bubbles: true }));
+      expect(document.activeElement).toBe(focusOwner.element);
+      (focusOwner.element as HTMLElement).blur();
+      await wrapper.vm.$nextTick();
+      expect(wrapper.find(".akaza-select-content").exists()).toBe(false);
+    } finally {
+      wrapper.unmount();
+    }
+  });
+
   it("does not expose native invalid state before interaction", async () => {
     const wrapper = mount(Select, {
       props: {

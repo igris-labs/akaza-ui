@@ -269,6 +269,8 @@ Popup transitions follow their placement side and last `120ms`. Set `--akaza-com
 
 ### Keyboard
 
+Using the popup scrollbar or mouse wheel keeps the list open. After a scrollbar gesture moves focus away from the input, focus returns without resetting your search. Moving focus to an outside control or clicking outside still closes the popup.
+
 | Key | Behavior |
 |-----|----------|
 | `ArrowDown` / `ArrowUp` | Open popup and move highlight. |

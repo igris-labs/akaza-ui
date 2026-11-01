@@ -284,6 +284,8 @@ Native `data-akaza-invalid` appears after interaction or invalid submit. Control
 
 ### Keyboard
 
+Using the popup scrollbar or mouse wheel keeps the list open. After a scrollbar gesture moves focus away, focus returns to the trigger, or to the search input when autocomplete is enabled. Moving focus to an outside control or clicking outside still closes the popup.
+
 | Key | Behavior |
 |-----|----------|
 | `Enter` / `Space` | Open select, or select/toggle highlighted option. |

@@ -1,5 +1,7 @@
 <script setup lang="ts">
-import { Menu } from "akaza-ui";
+import { Button as ExampleButton } from "../../ui/button";
+
+import { Menu } from "../../ui/menu";
 
 const items = [
   [
@@ -13,52 +15,33 @@ const items = [
 
 <template>
   <Menu
+    teleport="body"
     :items="items"
     side="bottom"
     align="start"
     :side-offset="6"
-    :ui="{
-      content: 'menu-content',
-      item: 'menu-item',
-      separator: 'menu-separator',
-    }"
   >
-    <template #trigger="{ toggle }">
-      <button
-        class="flex items-center gap-2 rounded-lg border border-neutral-300 bg-white px-3 py-2 text-sm font-medium text-neutral-700 shadow-sm transition-colors hover:bg-neutral-50 dark:border-neutral-700 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
+    <template #trigger="{ toggle, triggerProps }">
+      <ExampleButton
+        class="items-center gap-2"
+        v-bind="triggerProps"
         @click="() => toggle()"
       >
         Actions
         <svg
-          class="size-3.5 text-neutral-500"
+          class="size-3.5 text-muted-foreground"
           viewBox="0 0 16 16"
           fill="none"
           stroke="currentColor"
           stroke-width="1.5"
         >
-          <path d="M4 6l4 4 4-4" stroke-linecap="round" stroke-linejoin="round" />
+          <path
+            d="M4 6l4 4 4-4"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          />
         </svg>
-      </button>
+      </ExampleButton>
     </template>
   </Menu>
 </template>
-
-<style>
-@reference "../../../assets/css/main.css";
-
-.menu-content {
-  @apply min-w-40 overflow-hidden rounded-xl border border-neutral-300 bg-white p-1 shadow-lg dark:border-neutral-800 dark:bg-neutral-900;
-}
-
-.menu-item {
-  @apply flex w-full cursor-pointer items-center rounded-lg px-3 py-2 text-sm text-neutral-700 transition-colors hover:bg-neutral-100 dark:text-neutral-200 dark:hover:bg-neutral-800;
-}
-
-.menu-item[aria-disabled="true"] {
-  @apply cursor-not-allowed opacity-40;
-}
-
-.menu-separator {
-  @apply my-1 h-px bg-neutral-200 dark:bg-neutral-800;
-}
-</style>

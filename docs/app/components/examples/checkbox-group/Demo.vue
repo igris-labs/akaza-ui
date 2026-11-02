@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import type { CheckboxGroupValue } from "akaza-ui";
-import { CheckboxGroup } from "akaza-ui";
 import { ref } from "vue";
+import { CheckboxGroup } from "../../ui/checkbox-group";
 
 const value = ref<CheckboxGroupValue[]>(["email"]);
 const options = [
@@ -20,17 +20,7 @@ const options = [
       name="channels"
       parent-description="Toggle every enabled channel."
       :options="options"
-      :ui="{
-        legend: 'mb-1 text-sm font-semibold',
-        parentItem: 'mb-2 border-b border-neutral-300 pb-3 dark:border-neutral-800',
-        checkbox: {
-          wrapper: 'gap-3',
-          root: 'mt-0.5 rounded border border-neutral-400 bg-white data-[akaza-state=checked]:border-neutral-900 data-[akaza-state=checked]:bg-neutral-900 data-[akaza-state=checked]:text-white dark:border-neutral-700 dark:bg-neutral-950 dark:data-[akaza-state=checked]:border-white dark:data-[akaza-state=checked]:bg-white dark:data-[akaza-state=checked]:text-neutral-950',
-          label: 'text-sm font-medium',
-          description: 'block text-xs text-neutral-600 dark:text-neutral-400',
-        },
-      }"
     />
-    <p class="text-xs text-neutral-600">Selected: {{ value.join(", ") || "none" }}</p>
+    <p class="text-xs text-muted-foreground">Selected: {{ value.join(", ") || "none" }}</p>
   </div>
 </template>

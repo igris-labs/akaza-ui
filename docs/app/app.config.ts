@@ -1,17 +1,6 @@
 import akazaPackage from "../../packages/akaza-ui/package.json";
 
 export default defineAppConfig({
-  ui: {
-    colors: {
-      neutral: "zinc",
-    },
-    footer: {
-      slots: {
-        root: "border-t border-default",
-        left: "text-sm text-muted",
-      },
-    },
-  },
   seo: {
     siteName: "Akaza UI Docs",
   },
@@ -71,6 +60,8 @@ export default defineAppConfig({
       {
         label: "Ecosystem",
         children: [
+          { label: "IPEX", to: "https://ipex.igrislabs.com", target: "_blank" },
+          { label: "Initera", to: "https://initera.app", target: "_blank" },
           {
             label: "Inspira UI",
             to: "https://inspira-ui.com",

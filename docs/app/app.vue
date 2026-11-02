@@ -1,50 +1,20 @@
 <script setup lang="ts">
-const { seo } = useAppConfig();
-
-const { data: navigation } = await useAsyncData("navigation", () =>
-  queryCollectionNavigation("docs"),
-);
-const { data: files } = useLazyAsyncData("search", () => queryCollectionSearchSections("docs"), {
-  server: false,
-});
-
+import { provideToastManager } from "akaza-ui";
+provideToastManager();
+const searchOpen = useState("docs-search-open", () => false);
 useHead({
-  meta: [{ name: "viewport", content: "width=device-width, initial-scale=1" }],
+  htmlAttrs: { lang: "en" },
   link: [{ rel: "icon", href: "/favicon.ico" }],
-  htmlAttrs: {
-    lang: "en",
-  },
 });
-
 useSeoMeta({
-  titleTemplate: `%s - ${seo?.siteName}`,
-  ogSiteName: seo?.siteName,
+  titleTemplate: "%s · Akaza UI",
+  ogSiteName: "Akaza UI",
   twitterCard: "summary_large_image",
 });
-
-provide("navigation", navigation);
 </script>
-
 <template>
-  <UApp class="min-h-[100dvh] bg-background">
-    <NuxtLoadingIndicator />
-
-    <!-- Isolate server-prefetched icon IDs from the page's async ID scope. -->
-    <LazyAppHeader />
-
-    <UMain class="bg-background">
-      <NuxtLayout>
-        <NuxtPage />
-      </NuxtLayout>
-    </UMain>
-
-    <AppFooter />
-
-    <ClientOnly>
-      <LazyUContentSearch
-        :files="files"
-        :navigation="navigation"
-      />
-    </ClientOnly>
-  </UApp>
+  <NuxtRouteAnnouncer />
+  <NuxtLoadingIndicator color="var(--foreground)" />
+  <NuxtLayout><NuxtPage /></NuxtLayout>
+  <DocsSearch v-model:open="searchOpen" />
 </template>

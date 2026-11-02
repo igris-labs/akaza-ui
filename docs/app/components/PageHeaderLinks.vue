@@ -1,80 +1,94 @@
 <script setup lang="ts">
-import { useClipboard } from '@vueuse/core'
-
-const route = useRoute()
-const toast = useToast()
-const { copy, copied } = useClipboard()
-const site = useSiteConfig()
-
-const mdPath = computed(() => `${site.url}/raw${route.path}.md`)
-
-const items = [
+import type { MenuItem } from "akaza-ui";
+import { Button } from "./ui/button";
+import { Menu } from "./ui/menu";
+const route = useRoute();
+const site = useSiteConfig();
+const status = ref("Copy page");
+const mdPath = computed(() => `${site.url || "https://akaza-ui.com"}/raw${route.path}.md`);
+const items = computed<MenuItem[]>(() => [
+  { value: "copy-link", label: "Copy Markdown link", onSelect: () => copy(true) },
   {
-    label: 'Copy Markdown link',
-    icon: 'i-lucide-link',
-    onSelect() {
-      copy(mdPath.value)
-      toast.add({
-        title: 'Copied to clipboard',
-        icon: 'i-lucide-check-circle'
-      })
-    }
+    value: "markdown",
+    label: "View as Markdown",
+    onSelect: () => openLink(`/raw${route.path}.md`),
   },
   {
-    label: 'View as Markdown',
-    icon: 'i-simple-icons:markdown',
-    target: '_blank',
-    to: `/raw${route.path}.md`
+    value: "chatgpt",
+    label: "Open in ChatGPT",
+    onSelect: () =>
+      openLink(
+        `https://chatgpt.com/?hints=search&q=${encodeURIComponent(`Read ${mdPath.value} so I can ask questions about it.`)}`,
+      ),
   },
   {
-    label: 'Open in ChatGPT',
-    icon: 'i-simple-icons:openai',
-    target: '_blank',
-    to: `https://chatgpt.com/?hints=search&q=${encodeURIComponent(`Read ${mdPath.value} so I can ask questions about it.`)}`
+    value: "claude",
+    label: "Open in Claude",
+    onSelect: () =>
+      openLink(
+        `https://claude.ai/new?q=${encodeURIComponent(`Read ${mdPath.value} so I can ask questions about it.`)}`,
+      ),
   },
-  {
-    label: 'Open in Claude',
-    icon: 'i-simple-icons:anthropic',
-    target: '_blank',
-    to: `https://claude.ai/new?q=${encodeURIComponent(`Read ${mdPath.value} so I can ask questions about it.`)}`
+]);
+watch(
+  () => route.path,
+  () => (status.value = "Copy page"),
+);
+function openLink(url: string) {
+  window.open(url, "_blank", "noopener,noreferrer");
+}
+async function copy(link = false) {
+  try {
+    const text = link ? mdPath.value : await $fetch<string>(`/raw${route.path}.md`);
+    await navigator.clipboard.writeText(text);
+    status.value = "Copied";
+  } catch {
+    status.value = "Copy failed. Use Markdown view.";
   }
-]
-
-async function copyPage() {
-  copy(await $fetch<string>(`/raw${route.path}.md`))
 }
 </script>
-
 <template>
-  <UFieldGroup>
-    <UButton
-      label="Copy page"
-      :icon="copied ? 'i-lucide-copy-check' : 'i-lucide-copy'"
-      color="neutral"
-      variant="outline"
-      :ui="{
-        leadingIcon: [copied ? 'text-primary' : 'text-neutral', 'size-3.5']
-      }"
-      @click="copyPage"
-    />
-    <UDropdownMenu
-      :items="items"
-      :content="{
-        align: 'end',
-        side: 'bottom',
-        sideOffset: 8
-      }"
-      :ui="{
-        content: 'w-48'
-      }"
+  <div
+    class="flex items-center gap-1"
+    data-ui
+  >
+    <Button
+      variant="soft"
+      color="secondary"
+      size="sm"
+      @click="copy()"
     >
-      <UButton
-        icon="i-lucide-chevron-down"
-        size="sm"
-        color="neutral"
-        variant="outline"
-        aria-label="Open copy actions menu"
-      />
-    </UDropdownMenu>
-  </UFieldGroup>
+      <Icon
+        :name="status === 'Copied' ? 'lucide:check' : 'lucide:copy'"
+        class="size-3.5"
+        aria-hidden="true"
+      />{{ status }}
+    </Button>
+    <Menu
+      teleport="body"
+      :items="items"
+      align="end"
+    >
+      <template #trigger="{ toggle, triggerProps }">
+        <Button
+          v-bind="triggerProps"
+          variant="ghost"
+          size="sm"
+          shape="icon"
+          aria-label="More page actions"
+          @click="toggle"
+        >
+          <Icon
+            name="lucide:chevron-down"
+            class="size-4"
+            aria-hidden="true"
+          />
+        </Button>
+      </template>
+    </Menu>
+    <span
+      class="sr-only"
+      role="status"
+    >{{ status === "Copy page" ? "" : status }}</span>
+  </div>
 </template>

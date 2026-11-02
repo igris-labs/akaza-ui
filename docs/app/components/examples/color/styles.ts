@@ -1,12 +1,12 @@
 export const fieldUi = {
   root: "block min-w-0 flex-1",
   input:
-    "h-9 w-full min-w-0 rounded-md border border-input bg-background px-3 text-[13px] text-foreground outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-invalid]:border-destructive disabled:opacity-50",
+    "h-9 w-full min-w-0 rounded-md border border-input bg-background px-3 text-[13px] text-foreground outline-none focus-visible:ring-1 focus-visible:ring-ring data-[akaza-invalid]:border-destructive disabled:opacity-50",
 };
 export const areaUi = {
   root: "h-44 w-full max-w-sm rounded-md data-[akaza-focused]:ring-2 data-[akaza-focused]:ring-ring data-[akaza-disabled]:opacity-50",
   area: "rounded-md",
-  thumb: "size-5 rounded-full border-2 border-neutral-400 bg-white shadow-sm",
+  thumb: "size-5 rounded-full border-2 border-border bg-background shadow-sm",
 };
 export const hueAreaUi = {
   ...areaUi,
@@ -17,7 +17,8 @@ export const sliderUi = {
   root: "h-6 w-full max-w-sm rounded-md data-[akaza-disabled]:opacity-50",
   axis: "peer outline-none",
   track: "h-3 w-full rounded-full bg-muted",
-  thumb: "size-6 rounded-full border-2 border-neutral-400 bg-white shadow-sm peer-data-[akaza-focus-visible]:ring-2 peer-data-[akaza-focus-visible]:ring-ring peer-data-[akaza-focus-visible]:ring-offset-2 peer-data-[akaza-focus-visible]:ring-offset-background",
+  thumb:
+    "size-6 rounded-full border-2 border-border bg-background shadow-sm peer-data-[akaza-focus-visible]:ring-2 peer-data-[akaza-focus-visible]:ring-ring peer-data-[akaza-focus-visible]:ring-offset-2 peer-data-[akaza-focus-visible]:ring-offset-background",
 };
 export const swatchUi = { root: "block size-9 shrink-0 rounded-md border border-border" };
 export const paletteUi = {

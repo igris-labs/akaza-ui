@@ -1,11 +1,14 @@
 <script setup lang="ts">
-import { Avatar } from "akaza-ui";
+import { Avatar } from "../../ui/avatar";
 </script>
 
 <template>
   <div class="flex items-center gap-4">
     <!-- Loaded image -->
-    <Avatar src="https://i.pravatar.cc/80?img=1" alt="Alice">
+    <Avatar
+      src="https://i.pravatar.cc/80?img=1"
+      alt="Alice"
+    >
       <template #fallback>
         <span
           class="flex size-full items-center justify-center bg-violet-100 text-sm font-medium text-violet-700 dark:bg-violet-900/40 dark:text-violet-300"
@@ -16,7 +19,10 @@ import { Avatar } from "akaza-ui";
     </Avatar>
 
     <!-- Initials fallback -->
-    <Avatar src="/nonexistent.jpg" alt="Bob">
+    <Avatar
+      src="/nonexistent.jpg"
+      alt="Bob"
+    >
       <template #fallback>
         <span
           class="flex size-full items-center justify-center bg-sky-100 text-sm font-medium text-sky-700 dark:bg-sky-900/40 dark:text-sky-300"
@@ -29,9 +35,9 @@ import { Avatar } from "akaza-ui";
     <!-- Icon fallback -->
     <Avatar alt="Guest">
       <template #fallback>
-        <span class="flex size-full items-center justify-center bg-neutral-100 dark:bg-neutral-800">
+        <span class="flex size-full items-center justify-center bg-muted">
           <svg
-            class="size-5 text-neutral-600 dark:text-neutral-500"
+            class="size-5 text-muted-foreground"
             viewBox="0 0 20 20"
             fill="currentColor"
           >
@@ -46,15 +52,3 @@ import { Avatar } from "akaza-ui";
     </Avatar>
   </div>
 </template>
-
-<style scoped>
-@reference "../../../assets/css/main.css";
-
-:deep(.akaza-avatar) {
-  @apply size-10 overflow-hidden rounded-full border border-neutral-300 dark:border-neutral-800;
-}
-
-:deep(.akaza-avatar img) {
-  @apply size-full object-cover;
-}
-</style>

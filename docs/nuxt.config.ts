@@ -1,9 +1,13 @@
+import tailwindcss from "@tailwindcss/vite";
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   modules: [
     "@nuxt/eslint",
     "@nuxt/image",
-    "@nuxt/ui",
+    "@nuxt/icon",
+    "@nuxt/fonts",
+    "@nuxtjs/color-mode",
     "@nuxt/content",
     "nuxt-og-image",
     "nuxt-llms",
@@ -17,15 +21,18 @@ export default defineNuxtConfig({
 
   css: ["~/assets/css/main.css"],
 
-  mdc: {
-    highlight: {
-      themes: ["github-light", "github-dark"],
-    },
-  },
+  components: [
+    { path: "~/components/prose", pathPrefix: false, global: true },
+    { path: "~/components", extensions: ["vue"], ignore: ["prose/**", "ui/**"] },
+  ],
+
+  colorMode: { classSuffix: "", preference: "system", fallback: "light" },
+  vite: { plugins: [tailwindcss()] },
 
   content: {
     build: {
       markdown: {
+        highlight: false,
         toc: {
           searchDepth: 1,
         },
@@ -55,7 +62,10 @@ export default defineNuxtConfig({
   },
 
   icon: {
-    provider: "iconify",
+    provider: "none",
+    clientBundle: {
+      scan: { globInclude: ["app/**/*.{vue,ts}", "content/**/*.{md,yml}"] },
+    },
   },
 
   llms: {
@@ -90,5 +100,4 @@ export default defineNuxtConfig({
       },
     ],
   },
-
 });

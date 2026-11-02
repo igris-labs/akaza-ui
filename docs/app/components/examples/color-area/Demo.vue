@@ -2,14 +2,17 @@
 import type { ColorFormat } from "akaza-ui";
 import { COLOR_FORMATS, ColorArea, ColorPicker, ColorSlider } from "akaza-ui";
 import { ref } from "vue";
+import { Field } from "../../ui/field";
+import { Select } from "../../ui/select";
 import { hueAreaUi, sliderUi } from "../color/styles";
 const color = ref("#56d799");
 const formattedColor = ref("#56d799");
+const formatOptions = COLOR_FORMATS.map((value) => ({ value, label: value }));
 const format = ref<ColorFormat>("hex");
 const rtlColor = ref("#56d799");
 </script>
 <template>
-  <div class="grid min-w-0 gap-6 [--ui-radius:0.25rem]">
+  <div class="grid min-w-0 gap-6">
     <section class="grid min-w-0 gap-3">
       <h3 class="text-sm font-medium">Hue and saturation</h3>
       <p class="text-xs leading-5 text-muted-foreground">
@@ -61,21 +64,16 @@ const rtlColor = ref("#56d799");
       <p class="text-xs leading-5 text-muted-foreground">
         Choose the format for the returned value. The area still edits hue and saturation.
       </p>
-      <label class="grid w-full max-w-64 gap-1 text-xs text-muted-foreground">
-        Output format
-        <select
+      <Field
+        label="Output format"
+        class="w-full max-w-64"
+      >
+        <Select
           v-model="format"
-          class="h-9 rounded-md border border-input bg-background px-2 text-sm text-foreground"
-        >
-          <option
-            v-for="item in COLOR_FORMATS"
-            :key="item"
-            :value="item"
-          >
-            {{ item }}
-          </option>
-        </select>
-      </label>
+          :options="formatOptions"
+          class="w-full"
+        />
+      </Field>
       <ColorPicker
         v-slot="{ getChannel }"
         v-model="formattedColor"

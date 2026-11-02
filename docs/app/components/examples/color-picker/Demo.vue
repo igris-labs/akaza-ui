@@ -1,15 +1,21 @@
 <script setup lang="ts">
 import type { ColorFormat } from "akaza-ui";
-import { COLOR_FORMATS, ColorPicker, ColorSwatch, Popover } from "akaza-ui";
+
+import { COLOR_FORMATS, ColorPicker, ColorSwatch } from "akaza-ui";
 import { ref } from "vue";
-import { palette, pickerUi, swatchUi } from "../color/styles";
+import { Button as ExampleButton } from "../../ui/button";
+import { Field } from "../../ui/field";
+import { Popover } from "../../ui/popover";
+import { Select } from "../../ui/select";
+import { palette, pickerUi } from "../color/styles";
 const color = ref("oklch(0.65 0.2 250 / 0.8)");
+const formatOptions = COLOR_FORMATS.map((value) => ({ value, label: value }));
 const format = ref<ColorFormat>("oklch");
 const committed = ref("");
 const open = ref(false);
 </script>
 <template>
-  <div class="grid min-w-0 gap-6 [--ui-radius:0.25rem]">
+  <div class="grid min-w-0 gap-6">
     <section class="grid min-w-0 gap-3">
       <h3 class="text-sm font-medium">Popover composition</h3>
       <p class="text-xs leading-5 text-muted-foreground">
@@ -18,25 +24,24 @@ const open = ref(false);
       <Popover
         v-model="open"
         teleport="body"
-        :ui="{
-          content:
-            'max-h-[calc(100dvh-1rem)] w-[min(90vw,22rem)] overflow-y-auto rounded-md border border-border bg-popover p-4 shadow-lg [--ui-radius:0.25rem]',
-        }"
       >
         <template #trigger="{ toggle, triggerProps }">
-          <button
+          <ExampleButton
             type="button"
-            class="inline-flex items-center gap-2 rounded-md border border-input px-3 py-2 text-sm"
+            color="secondary"
+            variant="outline"
+            size="md"
+            class="w-fit"
             v-bind="triggerProps"
             @click="toggle"
           >
             <ColorSwatch
               :color="color"
               decorative
-              :ui="swatchUi"
+              :ui="{ root: 'block size-4 shrink-0 rounded-sm border border-border' }"
             />
             Choose color
-          </button>
+          </ExampleButton>
         </template>
         <template #content>
           <ColorPicker
@@ -53,21 +58,16 @@ const open = ref(false);
       <p class="text-xs leading-5 text-muted-foreground">
         Choose the format for the returned color. Hue stays editable for gray and black.
       </p>
-      <label class="grid max-w-sm gap-1 text-xs text-muted-foreground">
-        Output format
-        <select
+      <Field
+        label="Output format"
+        class="w-full max-w-sm"
+      >
+        <Select
           v-model="format"
-          class="h-9 rounded-md border border-input bg-background px-2 text-sm text-foreground"
-        >
-          <option
-            v-for="item in COLOR_FORMATS"
-            :key="item"
-            :value="item"
-          >
-            {{ item }}
-          </option>
-        </select>
-      </label>
+          :options="formatOptions"
+          class="w-full"
+        />
+      </Field>
       <ColorPicker
         v-model="color"
         :format="format"

@@ -5,7 +5,7 @@ import { sliderUi, swatchUi } from "../color/styles";
 const color = ref("#56d799");
 </script>
 <template>
-  <div class="grid min-w-0 gap-6 [--ui-radius:0.25rem]">
+  <div class="grid min-w-0 gap-6">
     <section class="grid min-w-0 gap-3">
       <h3 class="text-sm font-medium">Hue and opacity</h3>
       <p class="text-xs leading-5 text-muted-foreground">

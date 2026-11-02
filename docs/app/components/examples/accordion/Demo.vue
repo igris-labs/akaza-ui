@@ -1,42 +1,31 @@
 <script setup lang="ts">
-import { Accordion } from 'akaza-ui'
+import { Accordion } from "../../ui/accordion";
 
 const items = [
-  { value: 'a', label: 'What is Akaza UI?', content: 'A headless Vue component library with a Vue-native slots API.' },
-  { value: 'b', label: 'Is it styled?', content: 'Package CSS covers behavior and layout mechanics. You supply the visual styles.' },
-  { value: 'c', label: 'Is it accessible?', content: 'Yes, fully WAI-ARIA compliant with keyboard navigation and screen reader support built in.' },
-]
+  {
+    value: "a",
+    label: "What is Akaza UI?",
+    content: "A headless Vue component library with a Vue-native slots API.",
+  },
+  {
+    value: "b",
+    label: "Is it styled?",
+    content: "Package CSS covers behavior and layout mechanics. You supply the visual styles.",
+  },
+  {
+    value: "c",
+    label: "Is it accessible?",
+    content:
+      "Yes, fully WAI-ARIA compliant with keyboard navigation and screen reader support built in.",
+  },
+];
 </script>
 
 <template>
-  <div class="w-full max-w-sm divide-y divide-neutral-300 rounded-xl border border-neutral-300 bg-white dark:divide-neutral-800 dark:border-neutral-800 dark:bg-neutral-900">
+  <div class="w-full max-w-sm">
     <Accordion
       :items="items"
       collapsible
-      :ui="{
-        trigger: 'flex w-full items-center justify-between px-4 py-3.5 text-left transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800/60',
-      }"
-    >
-      <template #trigger="{ item }">
-        <span class="text-sm font-medium text-neutral-900 dark:text-neutral-100">{{ item.label }}</span>
-      </template>
-      <template #icon="{ isOpen }">
-        <svg
-          class="size-4 shrink-0 text-neutral-500 transition-transform duration-200 dark:text-neutral-500"
-          :class="{ 'rotate-180': isOpen }"
-          viewBox="0 0 16 16"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.5"
-        >
-          <path d="M4 6l4 4 4-4" stroke-linecap="round" stroke-linejoin="round" />
-        </svg>
-      </template>
-      <template #content="{ item }">
-        <p class="px-4 pb-4 text-sm leading-relaxed text-neutral-600 dark:text-neutral-400">
-          {{ item.content }}
-        </p>
-      </template>
-    </Accordion>
+    />
   </div>
 </template>

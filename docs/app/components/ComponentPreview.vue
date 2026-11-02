@@ -1,11 +1,8 @@
 <template>
   <div
-    class="not-prose relative my-0 rounded-t-xl border border-b-0 border-neutral-300 dark:border-neutral-800 z-49"
+    data-ui
+    class="not-prose my-6 mb-0 flex min-h-56 items-center justify-center rounded-t-lg bg-muted/70 p-5 sm:p-8"
   >
-    <div
-      class="flex min-h-52 items-center justify-center rounded-t-xl bg-neutral-100 p-8 dark:bg-neutral-950 z-49"
-    >
-      <slot />
-    </div>
+    <slot />
   </div>
 </template>

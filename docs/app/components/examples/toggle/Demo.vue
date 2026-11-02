@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { Toggle } from "akaza-ui";
 import { ref } from "vue";
+import { Toggle } from "../../ui/toggle";
 
 const bold = ref(false);
 const italic = ref(false);
@@ -12,17 +12,12 @@ const underline = ref(false);
     <div
       role="toolbar"
       aria-label="Text formatting"
-      class="flex items-center gap-1 rounded-xl border border-neutral-300 bg-white p-1 dark:border-neutral-800 dark:bg-neutral-900"
+      class="flex items-center gap-1 rounded-xl border border-border bg-background p-1"
     >
       <Toggle
         v-model="bold"
         aria-label="Bold"
-        class="flex size-8 cursor-pointer items-center justify-center rounded-lg text-sm font-bold transition-colors"
-        :class="
-          bold
-            ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900'
-            : 'text-neutral-600 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800'
-        "
+        class="size-8 items-center justify-center"
       >
         B
       </Toggle>
@@ -30,12 +25,7 @@ const underline = ref(false);
       <Toggle
         v-model="italic"
         aria-label="Italic"
-        class="flex size-8 cursor-pointer items-center justify-center rounded-lg text-sm italic transition-colors"
-        :class="
-          italic
-            ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900'
-            : 'text-neutral-600 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800'
-        "
+        class="size-8 items-center justify-center"
       >
         I
       </Toggle>
@@ -43,19 +33,14 @@ const underline = ref(false);
       <Toggle
         v-model="underline"
         aria-label="Underline"
-        class="flex size-8 cursor-pointer items-center justify-center rounded-lg text-sm underline transition-colors"
-        :class="
-          underline
-            ? 'bg-neutral-900 text-white dark:bg-white dark:text-neutral-900'
-            : 'text-neutral-600 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:bg-neutral-800'
-        "
+        class="size-8 items-center justify-center"
       >
         U
       </Toggle>
     </div>
 
     <p
-      class="text-sm text-neutral-600 dark:text-neutral-400"
+      class="text-sm text-muted-foreground"
       :class="{
         'font-bold': bold,
         italic,

@@ -1,26 +1,29 @@
 <script setup lang="ts">
-import { ref } from "vue";
-
+import { Button } from "./ui/button";
 const showCode = ref(false);
+const id = useId();
 </script>
-
 <template>
-  <div
-    class="not-prose mb-6 overflow-hidden rounded-b-xl border border-neutral-300 dark:border-neutral-800 z-30"
-  >
-    <div v-show="showCode" class="border-b border-neutral-300 dark:border-neutral-800">
-      <div class="[&_pre]:m-0 [&_pre]:rounded-none [&_pre]:max-h-96 [&_pre]:overflow-auto">
-        <slot />
-      </div>
+  <div class="not-prose mb-8 overflow-hidden rounded-b-lg bg-muted/70">
+    <div
+      v-show="showCode"
+      :id="id"
+      class="[&_pre]:max-h-120 [&_pre]:overflow-auto [&>div]:my-0 [&>div]:rounded-none"
+    >
+      <slot />
     </div>
-    <UButton
-      color="neutral"
+    <Button
       variant="ghost"
-      size="sm"
-      :icon="showCode ? 'i-lucide-chevron-up' : 'i-lucide-code'"
-      :label="showCode ? 'Hide code' : 'Show code'"
-      class="w-full justify-center rounded-none py-2.5 text-xs font-medium z-30"
+      class="w-full justify-center rounded-none py-3"
+      :aria-expanded="showCode"
+      :aria-controls="id"
       @click="showCode = !showCode"
-    />
+    >
+      <Icon
+        :name="showCode ? 'lucide:chevron-up' : 'lucide:code'"
+        class="size-4"
+        aria-hidden="true"
+      />{{ showCode ? "Hide code" : "Show code" }}
+    </Button>
   </div>
 </template>

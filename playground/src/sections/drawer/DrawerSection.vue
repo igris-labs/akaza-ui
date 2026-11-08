@@ -28,6 +28,9 @@ import {
 } from "../styles";
 
 const openRight = ref(false);
+const openPreview = ref(false);
+const previewIssue = ref("Login stalls");
+const quickCapture = ref("");
 const openLeft = ref(false);
 const openBottom = ref(false);
 const openTop = ref(false);
@@ -54,9 +57,29 @@ function onDrawerChange(open: boolean, details: AkazaChangeEventDetails) {
   <section id="drawer">
     <h2 :class="sectionTitle">Drawer</h2>
     <p :class="sectionDescriptionTight">
-      A side panel with focus trap, backdrop, and swipe-to-dismiss gestures. Swipe in the dismiss
-      direction to close.
+      A side panel with swipe-to-dismiss gestures. Modal drawers trap focus; nonmodal drawers keep
+      the page interactive.
     </p>
+
+    <div :class="exampleBlock">
+      <div :class="exampleLabel">
+        <span :class="exampleLabelTitle">Nonmodal issue preview</span>
+        <span :class="exampleLabelDescription">Keep selecting issues and editing the list while the preview stays open.</span>
+      </div>
+      <div :class="canvasCol">
+        <label class="grid w-full max-w-sm gap-2 text-sm text-foreground">
+          Quick capture
+          <input v-model="quickCapture" class="h-9 rounded-md border border-input bg-background px-3 outline-none focus-visible:ring-2 focus-visible:ring-ring" placeholder="Add an issue" />
+        </label>
+        <div class="flex flex-wrap gap-2">
+          <button v-for="issue in ['Login stalls', 'Search is slow']" :key="issue" :class="buttonGhost" type="button" @click="previewIssue = issue; openPreview = true">{{ issue }}</button>
+        </div>
+        <Drawer v-model="openPreview" :modal="false" :swipe-to-close="false" title="Issue preview" :ui="rightUi">
+          <template #body><p :class="dialogBodyText">{{ previewIssue }}</p></template>
+          <template #footer="{ close }"><button :class="buttonGhost" type="button" @click="close">Close preview</button></template>
+        </Drawer>
+      </div>
+    </div>
 
     <div :class="exampleBlock">
       <div :class="exampleLabel">

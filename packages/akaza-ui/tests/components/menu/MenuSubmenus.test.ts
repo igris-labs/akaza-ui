@@ -32,6 +32,37 @@ describe("menu submenu collisions", () => {
   });
 
   for (const component of ["Menu", "ContextMenu", "Menubar"] as const) {
+    it.each([
+      ["trigger", "ltr"], ["parent", "ltr"], ["trigger", "rtl"], ["parent", "rtl"],
+    ] as const)(`${component} aligns to the %s bottom in %s and reacts to option changes`, async (anchor, dir) => {
+      vi.spyOn(HTMLElement.prototype, "getBoundingClientRect").mockImplementation(function (this: HTMLElement) {
+        if (this.classList.contains("akaza-menu-submenu-trigger")) return DOMRect.fromRect({ x: 200, y: 90, width: 180, height: 28 });
+        if (this.classList.contains("akaza-menu-submenu-content")) return DOMRect.fromRect({ width: 120, height: 72 });
+        return DOMRect.fromRect({ x: 200, y: 40, width: 180, height: 240 });
+      });
+      const branch = { ...children[0]!, submenu: { anchor, align: "end" as const, sideOffset: 6, alignOffset: 8 } };
+      const items = [branch];
+      const wrapper = component === "Menu"
+        ? mount(Menu, { attachTo: document.body, props: { modelValue: true, items, dir } })
+        : component === "ContextMenu"
+          ? mount(ContextMenu, { attachTo: document.body, props: { modelValue: true, items, teleport: false, dir } })
+          : mount(Menubar, { attachTo: document.body, props: { modelValue: "file", items: [{ value: "file", label: "File", children: items }], dir, teleport: false } });
+      await flushPromises();
+      const trigger = wrapper.get(".akaza-menu-submenu-trigger");
+      (trigger.element as HTMLElement).focus();
+      await trigger.trigger("keydown", { key: dir === "ltr" ? "ArrowRight" : "ArrowLeft" });
+      await flushPromises();
+      const submenu = wrapper.get(".akaza-menu-submenu-content");
+      const style = (submenu.element as HTMLElement).style;
+      expect(submenu.attributes("data-akaza-align")).toBe("end");
+      expect(style.top).toBe(anchor === "parent" ? "200px" : "38px");
+      expect(style.left).toBe(dir === "ltr" ? "386px" : "74px");
+      const updated = [{ ...branch, submenu: { ...branch.submenu, align: "start" as const } }];
+      await wrapper.setProps({ items: component === "Menubar" ? [{ value: "file", children: updated }] : updated });
+      await flushPromises();
+      expect(style.top).toBe(anchor === "parent" ? "48px" : "98px");
+    });
+
     it.each(["ltr", "rtl"] as const)(`${component} keeps keyboard focus through pending hover dismissal in %s`, async (dir) => {
       vi.useFakeTimers();
       const wrapper = component === "Menu"

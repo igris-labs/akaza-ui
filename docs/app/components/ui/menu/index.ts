@@ -11,7 +11,7 @@ export const menuVariants = tv({
     root: "inline-flex",
     // Keep fixed submenus in viewport coordinates while the parent fades in.
     content:
-      "z-50 max-w-[calc(100vw-2rem)] min-w-40 translate-none! scale-none! transform-none! overflow-hidden rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-lg motion-reduce:transition-none",
+      "max-w-[calc(100vw-2rem)] min-w-40 translate-none! scale-none! transform-none! overflow-hidden rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-lg motion-reduce:transition-none",
     panel: "min-w-40",
     submenuIndicator: "ms-auto size-4 shrink-0 text-muted-foreground rtl:rotate-180",
     item: "relative isolate flex cursor-pointer items-center gap-2 rounded-md text-left text-foreground transition-colors duration-150 ease-interaction outline-none select-none before:pointer-events-none before:absolute before:inset-x-0 before:inset-y-px before:-z-10 before:rounded-[inherit] before:transition-colors before:duration-150 before:ease-interaction hover:before:bg-muted focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 data-akaza-disabled:pointer-events-none data-akaza-disabled:opacity-50 data-akaza-highlighted:before:bg-muted data-[akaza-state=checked]:text-foreground data-[akaza-state=checked]:before:bg-muted motion-reduce:transition-none motion-reduce:before:transition-none [@media(pointer:coarse)]:min-h-11",
@@ -29,7 +29,7 @@ export const menuVariants = tv({
       "relative isolate flex cursor-pointer items-center gap-2 rounded-md text-left text-foreground transition-colors duration-150 ease-interaction outline-none select-none before:pointer-events-none before:absolute before:inset-x-0 before:inset-y-px before:-z-10 before:rounded-[inherit] before:transition-colors before:duration-150 before:ease-interaction hover:before:bg-muted focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 data-akaza-disabled:pointer-events-none data-akaza-disabled:opacity-50 data-akaza-highlighted:before:bg-muted data-[akaza-state=checked]:text-foreground data-[akaza-state=checked]:before:bg-muted motion-reduce:transition-none motion-reduce:before:transition-none [@media(pointer:coarse)]:min-h-11",
     // Akaza anchors to the row, inset 5px from the panel edge; add a 2px surface gap.
     submenuContent:
-      "z-50 max-w-[calc(100vw-2rem)] min-w-40 translate-none! scale-none! transform-none! overflow-hidden rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-lg data-[akaza-side=left]:-ml-[7px] data-[akaza-side=right]:ml-[7px] motion-reduce:transition-none",
+      "max-w-[calc(100vw-2rem)] min-w-40 translate-none! scale-none! transform-none! overflow-hidden rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-lg data-[akaza-side=left]:-ml-[7px] data-[akaza-side=right]:ml-[7px] motion-reduce:transition-none",
   },
   variants: {
     size: {

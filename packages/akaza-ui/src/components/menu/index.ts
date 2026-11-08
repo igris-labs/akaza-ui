@@ -2,6 +2,17 @@ import type { Component } from "vue";
 
 export { default as Menu } from "./Menu.vue";
 
+export interface MenuSubmenuOptions {
+  /** Align against the item trigger or the containing menu panel. @default 'trigger' */
+  anchor?: "trigger" | "parent";
+  /** Vertical alignment for a side-opening submenu. @default 'start' */
+  align?: "start" | "center" | "end";
+  /** Horizontal gap from the anchor in pixels. @default 0 */
+  sideOffset?: number;
+  /** Vertical offset from the aligned edge in pixels. @default 0 */
+  alignOffset?: number;
+}
+
 export interface MenuItem {
   /** Display label */
   label?: string;
@@ -19,6 +30,8 @@ export interface MenuItem {
   radioGroup?: string;
   /** Sub-menu items. Accepts flat array or grouped (array of arrays). */
   children?: MenuItem[] | MenuItem[][];
+  /** Position this item's children. Shared by Menu, ContextMenu, and Menubar. */
+  submenu?: MenuSubmenuOptions;
   /** Named slot key for per-item rendering override */
   slot?: string;
   /** Per-item select callback (action items only) */

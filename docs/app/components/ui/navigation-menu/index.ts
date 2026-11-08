@@ -17,7 +17,7 @@ export const navigationMenuVariants = tv({
     link: "inline-flex shrink-0 cursor-pointer items-center justify-center gap-1.5 rounded-md text-muted-foreground transition-colors duration-150 ease-interaction outline-none select-none hover:text-highlighted focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 data-akaza-disabled:pointer-events-none data-akaza-disabled:opacity-50 motion-reduce:transition-none [@media(pointer:coarse)]:min-h-11 [@media(pointer:coarse)]:min-w-11",
     indicator: "hidden",
     content:
-      "z-50 max-w-[calc(100vw-2rem)] min-w-40 overflow-hidden rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-lg motion-reduce:transition-none",
+      "max-w-[calc(100vw-2rem)] min-w-40 overflow-hidden rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-lg motion-reduce:transition-none",
     viewport: "overflow-hidden",
     panel: "w-max max-w-[min(20rem,calc(100vw-2rem))] p-1",
     contentList: "grid gap-1",
@@ -43,7 +43,7 @@ export const navigationMenuVariants = tv({
     groupLabel: "px-2 py-2 text-xs font-medium text-muted-foreground",
     separator: "my-1 h-px bg-border",
     tooltip:
-      "z-50 min-w-40 overflow-hidden rounded-lg border border-border bg-popover p-1 px-2 py-1 text-xs text-popover-foreground shadow-lg motion-reduce:transition-none",
+      "min-w-40 overflow-hidden rounded-lg border border-border bg-popover p-1 px-2 py-1 text-xs text-popover-foreground shadow-lg motion-reduce:transition-none",
   },
   variants: {
     size: {

@@ -33,6 +33,7 @@ const props = withDefaults(defineProps<SelectProps>(), {
   side: undefined,
   align: undefined,
   sideOffset: undefined,
+  teleport: undefined,
   ariaLabel: undefined,
   ariaLabelledby: undefined,
   ariaDescribedby: undefined,

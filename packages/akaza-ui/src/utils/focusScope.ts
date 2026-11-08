@@ -104,19 +104,19 @@ const useScopeStack = createGlobalState(() => {
   };
 });
 
-const focusBranchesKey: InjectionKey<Set<HTMLElement>> = Symbol("akaza-focus-branches");
+const focusBranchesKey: InjectionKey<Array<Set<HTMLElement>>> = Symbol("akaza-focus-branches");
 
 /** Register a logically owned popup without exposing portal wiring publicly. */
 export function useFocusBranch(element: Ref<HTMLElement | null>) {
-  const branches = inject(focusBranchesKey, null);
+  const branches = inject(focusBranchesKey, []);
   const stack = useScopeStack();
   watchPostEffect((cleanup) => {
     const node = element.value;
-    if (!node || !branches) return;
-    branches.add(node);
+    if (!node || !branches.length) return;
+    for (const scopeBranches of branches) scopeBranches.add(node);
     stack.refresh();
     cleanup(() => {
-      branches.delete(node);
+      for (const scopeBranches of branches) scopeBranches.delete(node);
       stack.refresh();
     });
   });
@@ -133,7 +133,7 @@ export function useFocusScope(containerRef: Ref<HTMLElement | null>, options: Fo
   let previouslyFocused: HTMLElement | null = null;
   let focusOperation = 0;
   const branches = new Set<HTMLElement>();
-  provide(focusBranchesKey, branches);
+  provide(focusBranchesKey, [branches, ...inject(focusBranchesKey, [])]);
 
   const scope: FocusScopeAPI = {
     paused: false,
@@ -151,7 +151,7 @@ export function useFocusScope(containerRef: Ref<HTMLElement | null>, options: Fo
   const { add, remove } = useScopeStack();
 
   function handleKeyDown(event: KeyboardEvent) {
-    if (scope.paused || event.key !== "Tab" || !containerRef.value) return;
+    if (event.defaultPrevented || scope.paused || event.key !== "Tab" || !containerRef.value) return;
 
     const focusable = [...new Set([containerRef.value, ...branches].flatMap(getFocusableElements))];
     if (focusable.length === 0) {
@@ -188,10 +188,13 @@ export function useFocusScope(containerRef: Ref<HTMLElement | null>, options: Fo
     }
   }
 
+  function contains(target: Node | null) {
+    return Boolean(containerRef.value?.contains(target) || [...branches].some(branch => branch.contains(target)));
+  }
+
   function handleFocusIn(event: FocusEvent) {
     if (scope.paused || !containerRef.value) return;
-    if (containerRef.value.contains(event.target as Node)) return;
-    if ([...branches].some((branch) => branch.contains(event.target as Node))) return;
+    if (contains(event.target as Node)) return;
     focusFirst();
   }
 
@@ -225,5 +228,5 @@ export function useFocusScope(containerRef: Ref<HTMLElement | null>, options: Fo
 
   onUnmounted(deactivate);
 
-  return { activate, deactivate };
+  return { activate, deactivate, contains };
 }

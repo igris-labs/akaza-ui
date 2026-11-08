@@ -19,7 +19,7 @@ export const dateRangeFieldVariants = tv({
     fields: "inline-flex max-w-full items-center gap-1.5",
     calendarTrigger: "",
     calendarContent:
-      "z-50 max-w-[calc(100vw-2rem)] overflow-auto rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-lg",
+      "max-w-[calc(100vw-2rem)] overflow-auto rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-lg",
     calendar: "border-0 bg-transparent shadow-none",
   },
   variants: {

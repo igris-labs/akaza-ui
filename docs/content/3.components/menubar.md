@@ -44,6 +44,8 @@ const items = [
 
 ## Examples
 
+Nested items accept the same [submenu positioning options](/components/menu#menusubmenuoptions) as Menu. Use `submenu: { anchor: "parent", align: "end" }` to align a submenu with the immediate parent popup's bottom. These options do not change the top-level menubar panel's placement.
+
 ### Radio groups
 
 Pass `radioValues` for radio menu items. The event contract matches `Menu`.

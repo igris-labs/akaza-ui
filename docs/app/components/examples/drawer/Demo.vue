@@ -5,7 +5,7 @@ import { Drawer } from "../../ui/drawer";
 </script>
 
 <template>
-  <Drawer side="right">
+  <Drawer side="right" title="Your cart">
     <template #trigger="{ toggle }">
       <ExampleButton @click="() => toggle()"> Open cart </ExampleButton>
     </template>

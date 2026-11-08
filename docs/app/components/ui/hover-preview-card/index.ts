@@ -12,7 +12,7 @@ export const hoverPreviewCardVariants = tv({
     trigger:
       "rounded-sm outline-none focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background",
     content:
-      "z-50 w-max max-w-[min(20rem,calc(100vw-2rem))] overflow-hidden rounded-lg border border-border bg-popover p-3 text-sm leading-6 text-popover-foreground shadow-lg motion-reduce:transition-none",
+      "w-max max-w-[min(20rem,calc(100vw-2rem))] overflow-hidden rounded-lg border border-border bg-popover p-3 text-sm leading-6 text-popover-foreground shadow-lg motion-reduce:transition-none",
     arrow: "fill-popover stroke-border",
   },
   variants: {

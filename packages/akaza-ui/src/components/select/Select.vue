@@ -6,6 +6,7 @@ import { useTypeahead } from "../../composables/typeahead";
 import { createChangeDetails } from "../../utils/changeEvent";
 import { useDismissableLayer } from "../../utils/dismissableLayer";
 import { useFloatingPosition } from "../../utils/floatingPosition";
+import { getFocusableElements } from "../../utils/focusable";
 import { useFocusBranch } from "../../utils/focusScope";
 import { useFieldControl } from "../../utils/useFieldControl";
 import { useFormReset } from "../../utils/useFormReset";
@@ -38,6 +39,7 @@ const {
   side = "bottom",
   align = "start",
   sideOffset = 6,
+  teleport = false,
   ariaLabel,
   ariaLabelledby,
   ariaDescribedby,
@@ -153,6 +155,8 @@ const { actualAlign, actualSide, style: contentStyle } = useFloatingPosition({
   align: () => align,
   sideOffset: () => sideOffset,
   matchWidth: true,
+  strategy: () => teleport === false ? "absolute" : "fixed",
+  constrainSize: true,
   cssVarPrefix: "akaza-select",
 });
 const { layerOrder, register: registerDismissable, unregister: unregisterDismissable } = useDismissableLayer(
@@ -250,6 +254,9 @@ function setOpen(next: boolean, reason: string, event?: Event) {
   emit("open-change", next, changeEvent.details);
   if (changeEvent.canceled()) return;
   openModel.value = next;
+  // Exclude leaving content before native Tab and modal focus handlers run.
+  if (!next) contentRef.value?.setAttribute("inert", "");
+  else contentRef.value?.removeAttribute("inert");
 }
 
 function getNextValue(option: SelectOption): SelectModelValue {
@@ -345,6 +352,22 @@ function onSearchInput(event: Event) {
 
 function onSearchKeydown(event: KeyboardEvent) {
   if (event.isComposing) return;
+  if (event.key === "Tab" && teleport !== false) {
+    setOpen(false, "tab", event);
+    const trigger = triggerRef.value;
+    if (!openModel.value && trigger) {
+      // Follow the trigger's logical tab order, not the portal's DOM position.
+      trigger.focus({ preventScroll: true });
+      const controls = getFocusableElements(trigger.ownerDocument.body);
+      const index = controls.indexOf(trigger);
+      const next = index >= 0 ? controls[index + (event.shiftKey ? -1 : 1)] : undefined;
+      if (next) {
+        event.preventDefault();
+        next.focus({ preventScroll: true });
+      }
+    }
+    return;
+  }
   if (event.key === "ArrowDown" || event.key === "ArrowUp") {
     event.preventDefault();
     move(event.key === "ArrowDown" ? 1 : -1);
@@ -422,20 +445,20 @@ onMounted(() => {
   updateValidity(false);
 });
 onUpdated(updateValidity);
-watch(openModel, async (open) => {
+watch(openModel, async (open, _previous, cleanup) => {
+  let stale = false;
+  cleanup(() => { stale = true; });
   if (!open) {
     unregisterDismissable();
     activeIndex.value = -1;
     return;
   }
-  registerDismissable();
   const selectedIndex = visibleOptions.value.findIndex((option) => isOptionSelected(option) && !isItemDisabled(option));
   activeIndex.value = selectedIndex >= 0 ? selectedIndex : findEnabledIndex();
-  if (autocomplete) {
-    await nextTick();
-    if (!openModel.value) return;
-    searchRef.value?.focus({ preventScroll: true });
-  }
+  await nextTick();
+  if (stale || !openModel.value || typeof document === "undefined") return;
+  registerDismissable();
+  if (autocomplete) searchRef.value?.focus({ preventScroll: true });
 }, { immediate: true });
 watch(isDisabled, (value) => {
   if (value && openModel.value) setOpen(false, "disabled");
@@ -527,128 +550,132 @@ onBeforeUnmount(() => {
       </slot>
     </button>
 
-    <Transition name="akaza-select">
-      <div
-        v-if="openModel"
-        :id="contentId"
-        ref="contentRef"
-        :data-akaza-state="openModel ? 'open' : 'closed'"
-        :data-akaza-side="actualSide"
-        :data-akaza-align="actualAlign"
-        :class="ui?.content"
-        :style="layeredContentStyle"
-        class="akaza-select-content"
-      >
-        <input
-          v-if="autocomplete"
-          ref="searchRef"
-          role="searchbox"
-          :value="searchModel"
-          :placeholder="searchPlaceholder"
-          :disabled="isDisabled"
-          :aria-controls="listboxId"
-          :aria-activedescendant="activeOptionId"
-          :aria-expanded="true"
-          :aria-label="searchPlaceholder"
-          :class="ui?.searchInput"
-          class="akaza-select-search-input"
-          @input="onSearchInput"
-          @keydown="onSearchKeydown"
-        >
+    <Teleport :to="typeof teleport === 'string' ? teleport : 'body'" :disabled="teleport === false">
+      <Transition name="akaza-select">
         <div
-          :id="listboxId"
-          role="listbox"
-          :aria-labelledby="resolvedId"
-          :aria-multiselectable="multiple || undefined"
-          :aria-busy="loading || undefined"
-          :class="ui?.viewport"
-          class="akaza-select-viewport"
+          v-if="openModel"
+          :id="contentId"
+          ref="contentRef"
+          :data-akaza-state="openModel ? 'open' : 'closed'"
+          :data-akaza-side="actualSide"
+          :data-akaza-align="actualAlign"
+          :inert="!openModel || undefined"
+          :class="ui?.content"
+          :style="layeredContentStyle"
+          class="akaza-select-content"
+          @focusin="onFocusIn"
+          @focusout="onFocusOut"
         >
-          <div
-            v-if="loading"
-            :class="ui?.loading"
-            class="akaza-select-loading"
+          <input
+            v-if="autocomplete"
+            ref="searchRef"
+            role="searchbox"
+            :value="searchModel"
+            :placeholder="searchPlaceholder"
+            :disabled="isDisabled"
+            :aria-controls="listboxId"
+            :aria-activedescendant="activeOptionId"
+            :aria-label="searchPlaceholder"
+            :class="ui?.searchInput"
+            class="akaza-select-search-input"
+            @input="onSearchInput"
+            @keydown="onSearchKeydown"
           >
-            <slot name="loading">Loading…</slot>
-          </div>
           <div
-            v-else-if="autocomplete && !hasVisibleOption"
-            :class="ui?.empty"
-            class="akaza-select-empty"
-          >
-            <slot name="empty">{{ emptyLabel }}</slot>
-          </div>
-          <template
-            v-for="(option, index) in visibleOptions"
-            v-else
-            :key="getOptionKey(option, index)"
+            :id="listboxId"
+            role="listbox"
+            :aria-labelledby="resolvedId"
+            :aria-multiselectable="multiple || undefined"
+            :aria-busy="loading || undefined"
+            :class="ui?.viewport"
+            class="akaza-select-viewport"
           >
             <div
-              v-if="option.type === 'label'"
-              role="presentation"
-              :class="ui?.groupLabel"
-              class="akaza-select-group-label"
+              v-if="loading"
+              :class="ui?.loading"
+              class="akaza-select-loading"
             >
-              <slot name="group-label" :option="option" :label="getLabel(option)">
-                {{ getLabel(option) }}
-              </slot>
+              <slot name="loading">Loading…</slot>
             </div>
-
             <div
-              v-else-if="option.type === 'separator'"
-              role="separator"
-              :class="ui?.separator"
-              class="akaza-select-separator"
-            />
-
-            <div
+              v-else-if="autocomplete && !hasVisibleOption"
+              :class="ui?.empty"
+              class="akaza-select-empty"
+            >
+              <slot name="empty">{{ emptyLabel }}</slot>
+            </div>
+            <template
+              v-for="(option, index) in visibleOptions"
               v-else
-              :id="`${contentId}-option-${index}`"
-              :ref="(el) => setOptionRef(el as HTMLElement | null, index)"
-              role="option"
-              :aria-selected="isOptionSelected(option)"
-              :aria-disabled="isItemDisabled(option) || undefined"
-              :data-akaza-state="isOptionSelected(option) ? 'checked' : 'unchecked'"
-              :data-akaza-highlighted="activeIndex === index || undefined"
-              :data-akaza-disabled="isItemDisabled(option) || undefined"
-              :class="ui?.option"
-              class="akaza-select-option"
-              @mousedown.prevent
-              @click="selectOption(option, $event)"
-              @mouseenter="highlightOnHover && !isItemDisabled(option) && focusOption(index)"
+              :key="getOptionKey(option, index)"
             >
-              <slot
-                name="option"
-                :option="option"
-                :value="getValue(option)"
-                :label="getLabel(option)"
-                :description="getDescription(option)"
-                :is-selected="isOptionSelected(option)"
-                :is-highlighted="activeIndex === index"
-                :is-disabled="isItemDisabled(option)"
-                :select="(event?: Event) => selectOption(option, event)"
+              <div
+                v-if="option.type === 'label'"
+                role="presentation"
+                :class="ui?.groupLabel"
+                class="akaza-select-group-label"
               >
-                <span :class="ui?.indicator" class="akaza-select-indicator" aria-hidden="true">
-                  {{ isOptionSelected(option) ? "✓" : "" }}
-                </span>
-                <span :class="ui?.optionText" class="akaza-select-option-text">
-                  <span :class="ui?.optionLabel" class="akaza-select-option-label">
-                    {{ getLabel(option) }}
+                <slot name="group-label" :option="option" :label="getLabel(option)">
+                  {{ getLabel(option) }}
+                </slot>
+              </div>
+
+              <div
+                v-else-if="option.type === 'separator'"
+                role="separator"
+                :class="ui?.separator"
+                class="akaza-select-separator"
+              />
+
+              <div
+                v-else
+                :id="`${contentId}-option-${index}`"
+                :ref="(el) => setOptionRef(el as HTMLElement | null, index)"
+                role="option"
+                :aria-selected="isOptionSelected(option)"
+                :aria-disabled="isItemDisabled(option) || undefined"
+                :data-akaza-state="isOptionSelected(option) ? 'checked' : 'unchecked'"
+                :data-akaza-highlighted="activeIndex === index || undefined"
+                :data-akaza-disabled="isItemDisabled(option) || undefined"
+                :class="ui?.option"
+                class="akaza-select-option"
+                @mousedown.prevent
+                @click="selectOption(option, $event)"
+                @mouseenter="highlightOnHover && !isItemDisabled(option) && focusOption(index)"
+              >
+                <slot
+                  name="option"
+                  :option="option"
+                  :value="getValue(option)"
+                  :label="getLabel(option)"
+                  :description="getDescription(option)"
+                  :is-selected="isOptionSelected(option)"
+                  :is-highlighted="activeIndex === index"
+                  :is-disabled="isItemDisabled(option)"
+                  :select="(event?: Event) => selectOption(option, event)"
+                >
+                  <span :class="ui?.indicator" class="akaza-select-indicator" aria-hidden="true">
+                    {{ isOptionSelected(option) ? "✓" : "" }}
                   </span>
-                  <span
-                    v-if="getDescription(option)"
-                    :class="ui?.optionDescription"
-                    class="akaza-select-option-description"
-                  >
-                    {{ getDescription(option) }}
+                  <span :class="ui?.optionText" class="akaza-select-option-text">
+                    <span :class="ui?.optionLabel" class="akaza-select-option-label">
+                      {{ getLabel(option) }}
+                    </span>
+                    <span
+                      v-if="getDescription(option)"
+                      :class="ui?.optionDescription"
+                      class="akaza-select-option-description"
+                    >
+                      {{ getDescription(option) }}
+                    </span>
                   </span>
-                </span>
-              </slot>
-            </div>
-          </template>
+                </slot>
+              </div>
+            </template>
+          </div>
         </div>
-      </div>
-    </Transition>
+      </Transition>
+    </Teleport>
   </div>
 </template>
 
@@ -675,7 +702,7 @@ onBeforeUnmount(() => {
   .akaza-select-content {
     position: absolute;
     z-index: var(--akaza-z-select, calc(var(--akaza-z-layer-base, 1200) + var(--akaza-layer-order, 0) + 1));
-    min-width: 100%;
+    min-width: 0;
   }
 
   .akaza-select-search-input {

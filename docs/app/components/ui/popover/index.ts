@@ -10,7 +10,7 @@ export const popoverVariants = tv({
   slots: {
     root: "inline-flex",
     content:
-      "z-50 w-max max-w-[min(20rem,calc(100vw-2rem))] overflow-hidden rounded-lg border border-border bg-popover p-3 text-popover-foreground shadow-lg motion-reduce:transition-none",
+      "w-max max-w-[min(20rem,calc(100vw-2rem))] overflow-hidden rounded-lg border border-border bg-popover p-3 text-popover-foreground shadow-lg motion-reduce:transition-none",
   },
   variants: {
     size: {

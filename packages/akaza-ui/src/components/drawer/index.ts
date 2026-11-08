@@ -21,6 +21,8 @@ export interface DrawerProps {
   ariaLabel?: string;
   side?: DrawerSide;
   inset?: number | string;
+  /** Trap focus, block background interaction, and lock body scrolling. @default true */
+  modal?: boolean;
   closeOnBackdropClick?: boolean;
   swipeToClose?: boolean;
   teleport?: string | false;

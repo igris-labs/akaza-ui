@@ -16,6 +16,7 @@ const props = withDefaults(defineProps<DrawerProps>(), {
   ariaLabel: undefined,
   side: undefined,
   inset: undefined,
+  modal: undefined,
   closeOnBackdropClick: undefined,
   swipeToClose: undefined,
   teleport: undefined,

@@ -16,10 +16,10 @@ export const selectVariants = tv({
     placeholder: "text-muted-foreground",
     icon: "shrink-0 text-muted-foreground",
     searchInput:
-      "m-1 border border-input bg-background text-foreground shadow-none transition-colors duration-150 ease-interaction outline-none placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:focus-visible:ring-destructive/25 data-akaza-disabled:pointer-events-none data-akaza-disabled:opacity-50 data-akaza-focused:ring-1 data-akaza-focused:ring-ring aria-invalid:data-akaza-focused:ring-destructive/25 data-akaza-invalid:border-destructive data-akaza-invalid:focus-visible:ring-destructive/25 data-akaza-invalid:data-akaza-focused:ring-destructive/25 motion-reduce:transition-none [@media(pointer:coarse)]:min-h-11",
+      "block w-full min-w-0 shrink-0 border border-input bg-background text-foreground shadow-none transition-colors duration-150 ease-interaction outline-none placeholder:text-muted-foreground focus-visible:ring-1 focus-visible:ring-ring focus-visible:ring-offset-1 focus-visible:ring-offset-background disabled:pointer-events-none disabled:opacity-50 aria-invalid:border-destructive aria-invalid:focus-visible:ring-destructive/25 data-akaza-disabled:pointer-events-none data-akaza-disabled:opacity-50 data-akaza-focused:ring-1 data-akaza-focused:ring-ring aria-invalid:data-akaza-focused:ring-destructive/25 data-akaza-invalid:border-destructive data-akaza-invalid:focus-visible:ring-destructive/25 data-akaza-invalid:data-akaza-focused:ring-destructive/25 motion-reduce:transition-none [@media(pointer:coarse)]:min-h-11",
     content:
-      "z-50 max-w-[calc(100vw-2rem)] min-w-40 overflow-hidden rounded-lg border border-border bg-popover p-1 text-popover-foreground shadow-lg motion-reduce:transition-none",
-    viewport: "max-h-72 overflow-auto",
+      "flex max-w-[calc(100vw-2rem)] min-w-40 flex-col gap-1.5 overflow-hidden rounded-lg border border-border bg-popover p-1.5 text-popover-foreground shadow-lg motion-reduce:transition-none",
+    viewport: "min-h-0 max-h-72 overflow-auto",
     empty: "px-3 py-6 text-center text-sm text-muted-foreground",
     loading: "px-3 py-4 text-sm text-muted-foreground",
     groupLabel: "px-2 py-1.5 text-xs font-medium text-muted-foreground",

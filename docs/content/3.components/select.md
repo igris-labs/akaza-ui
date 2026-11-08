@@ -9,6 +9,8 @@ navigation:
 
 Popup placement flips when preferred side lacks room, clamps to viewport, and follows anchor/content resize and ancestor scrolling.
 
+Set `teleport="body"` inside a scrolling or overflow-hidden container so the options are not clipped. Inline rendering remains the default.
+
 Use `autocomplete` to filter the list. Use [Combobox](/components/combobox) when the text input is the main control.
 
 ## Anatomy
@@ -52,6 +54,55 @@ const options = [
 ::
 
 ## Examples
+
+### Inside a scrolling dialog
+
+Teleport the options to `body` to let them extend outside the dialog's scrollable body. The native select stays in the form, and the popup stays inside the dialog's focus scope.
+
+::component-preview
+  :::examples-select-portal
+  :::
+::
+
+::component-code
+```vue
+<script setup lang="ts">
+import { Dialog, Select } from "akaza-ui";
+import { ref } from "vue";
+
+const open = ref(false);
+const project = ref("alpha");
+const projects = [
+  { value: "alpha", label: "Alpha" },
+  { value: "beta", label: "Beta" },
+];
+</script>
+
+<template>
+  <Dialog
+    v-model="open"
+    title="Project details"
+  >
+    <template #trigger="{ toggle }">
+      <button @click="toggle">Open project dialog</button>
+    </template>
+    <template #body>
+      <Select
+        v-model="project"
+        :options="projects"
+        teleport="body"
+        name="project"
+        aria-label="Project"
+      />
+    </template>
+  </Dialog>
+</template>
+```
+::
+
+Use a CSS selector for another portal target, or `:teleport="false"` to keep the popup inline. The target must exist when the popup renders. Keep targets outside clipping ancestors. Portaled options use fixed positioning and keep the trigger's width, limited to the viewport.
+
+Style portaled options through `ui.content`, `ui.option`, and the other popup parts. CSS selectors scoped beneath the Select root do not reach a portaled popup. Tab and Shift+Tab close a portaled search and continue from the trigger's position in the page.
 
 ### Multiple selection
 
@@ -214,6 +265,7 @@ A native form reset restores the initial model and clears interaction state. Cal
 | `highlightOnHover` | `boolean` | `true` | Pointer hover updates highlighted option. |
 | `side` | `"top" \| "right" \| "bottom" \| "left"` | `"bottom"` | Popup side. |
 | `align` | `"start" \| "center" \| "end"` | `"start"` | Popup alignment. |
+| `teleport` | `string \| false` | `false` | Selector for the popup target. Use `"body"` to escape clipping ancestors, or false to render inline. |
 | `sideOffset` | `number` | `6` | Popup offset in px. |
 | `ariaLabel` | `string` | — | Accessible label when no visible label exists. |
 | `ariaLabelledby` | `string` | — | Accessible label id. |

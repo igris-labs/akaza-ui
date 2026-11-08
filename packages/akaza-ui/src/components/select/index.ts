@@ -62,6 +62,8 @@ export interface SelectProps {
   side?: SelectSide;
   align?: SelectAlign;
   sideOffset?: number;
+  /** Move options outside clipping ancestors. Set false to render inline. @default false */
+  teleport?: string | false;
   ariaLabel?: string;
   ariaLabelledby?: string;
   ariaDescribedby?: string;

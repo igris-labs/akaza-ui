@@ -5,7 +5,7 @@ navigation:
   icon: i-lucide-panel-right
 ---
 
-A slide-in panel anchored to a viewport edge. Supports swipe-to-close on touch devices, focus trapping, and all four sides.
+A slide-in panel anchored to a viewport edge. Supports swipe-to-close on touch devices and all four sides. It is modal by default; use `:modal="false"` to keep the page interactive.
 
 ## Anatomy
 
@@ -53,6 +53,57 @@ import { Drawer } from "akaza-ui";
 ::
 
 ## Examples
+
+### Nonmodal side panel
+
+Set `modal` to `false` for a preview that stays open while users interact with the page. There is no backdrop, focus trap, or body scroll lock. Opening does not move focus. Closing restores focus only if it was still inside the drawer; focus elsewhere on the page stays unchanged. Escape still closes the topmost drawer; clicking elsewhere does not close it.
+
+::component-preview
+  :::examples-drawer-nonmodal
+  :::
+::
+
+::component-code
+```vue
+<script setup lang="ts">
+import { Drawer } from "akaza-ui";
+import { ref } from "vue";
+
+const open = ref(false);
+const issue = ref("Login stalls");
+const draft = ref("");
+</script>
+
+<template>
+  <label>
+    Quick capture
+    <input v-model="draft" />
+  </label>
+  <button
+    v-for="item in ['Login stalls', 'Search is slow']"
+    :key="item"
+    @click="
+      issue = item;
+      open = true;
+    "
+  >
+    {{ item }}
+  </button>
+  <Drawer
+    v-model="open"
+    :modal="false"
+    title="Issue preview"
+  >
+    <template #body>
+      <p>{{ issue }}</p>
+    </template>
+    <template #footer="{ close }"><button @click="close">Close preview</button></template>
+  </Drawer>
+</template>
+```
+::
+
+The panel keeps `role="dialog"` but omits `aria-modal`. Use `title`, `#title`, or `aria-label` to name it. An enclosing modal Dialog still controls interaction outside that Dialog. For a panel that takes space in the page instead of floating over it, use [AppLayout](/components/app-layout).
 
 ### Bottom drawer
 
@@ -128,6 +179,7 @@ Use `#header` when the drawer needs custom title actions.
 | `description` | `string` | — | Convenience description. Slot `#description` takes priority. |
 | `ariaLabel` | `string` | — | Fallback accessible name when no title is rendered. |
 | `inset` | `number \| string` | `0` | Space between the drawer and the viewport edge. |
+| `modal` | `boolean` | `true` | Show a backdrop, trap focus, hide background content from assistive technology, and lock body scrolling. Set false for a nonmodal panel. |
 | `closeOnBackdropClick` | `boolean` | `true` | Close when clicking the overlay. |
 | `swipeToClose` | `boolean` | `true` | Allow swiping the drawer closed on touch devices. |
 | `teleport` | `string \| false` | `"body"` | Teleport target. |
@@ -166,7 +218,7 @@ Use `#header` when the drawer needs custom title actions.
 
 | Key | Description |
 |-----|-------------|
-| `overlay` | The backdrop overlay. |
+| `overlay` | The backdrop overlay; rendered only in modal mode. |
 | `content` | The drawer panel. |
 | `header` | The header region. |
 | `title` | The title element. |
@@ -186,13 +238,13 @@ Use `#header` when the drawer needs custom title actions.
 | `body` | `akaza-drawer-body` | — |
 | `footer` | `akaza-drawer-footer` | — |
 
-`Drawer` renders trigger slot content plus a teleported overlay and panel. Use `ui` keys instead of plain `class` fallthrough. Your markup supplies the `handle` slot.
+`Drawer` renders trigger slot content plus a teleported panel and, in modal mode, an overlay. Use `ui` keys instead of plain `class` fallthrough. Your markup supplies the `handle` slot.
 
 ### Keyboard
 
 | Key | Behavior |
 |-----|----------|
-| `Tab` / `Shift + Tab` | Cycles through focusable drawer controls. |
-| `Escape` | Closes topmost drawer and restores prior focus. |
+| `Tab` / `Shift + Tab` | Cycles through drawer controls in modal mode. Follows normal page order in nonmodal mode. |
+| `Escape` | Closes the topmost drawer. Restores prior focus in modal mode, or when focus was inside a nonmodal drawer. |
 
-Pointer and touch users can activate backdrop dismissal and configured swipe gestures. Keyboard users always have explicit controls and Escape.
+Pointer and touch users can use backdrop dismissal in modal mode and swipe gestures in either mode. Include a close button for keyboard and screen reader users.

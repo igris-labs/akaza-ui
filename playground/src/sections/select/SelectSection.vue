@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import type { AkazaChangeEventDetails, SelectModelValue, SelectOption } from "akaza-ui";
 import { ref } from "vue";
-import { Field, Select } from "akaza-ui";
+import { Dialog, Field, Select } from "akaza-ui";
 import {
   buttonGhost,
   canvasCol,
   canvasGrid,
   codePill,
+  dialogContent,
+  dialogOverlay,
   eventEntry,
   eventLog,
   exampleStack,
@@ -19,6 +21,14 @@ import {
 } from "../styles";
 
 const plan = ref("pro");
+const projectDialogOpen = ref(false);
+const portaledProject = ref("project-1");
+const submittedProject = ref("Not submitted");
+const projects = Array.from({ length: 12 }, (_, index) => ({ value: `project-${index + 1}`, label: `Project ${index + 1}` }));
+
+function submitProject(event: Event) {
+  submittedProject.value = String(new FormData(event.currentTarget as HTMLFormElement).get("project"));
+}
 const server = ref("");
 const region = ref("iad");
 const permissions = ref<string[]>(["read", "deploy"]);
@@ -81,6 +91,25 @@ function blockOwner(value: SelectModelValue, details: AkazaChangeEventDetails) {
     </p>
 
     <div :class="exampleStack">
+      <div>
+        <h3 :class="exampleTitle">Portal inside a scrolling dialog</h3>
+        <div :class="canvasCol">
+          <Dialog v-model="projectDialogOpen" title="Project details" :ui="{ overlay: dialogOverlay, content: dialogContent, body: 'max-h-48 overflow-y-auto' }">
+            <template #trigger="{ toggle }"><button :class="buttonGhost" type="button" @click="toggle">Open project dialog</button></template>
+            <template #body>
+              <form class="grid gap-3" @submit.prevent="submitProject">
+                <label class="text-sm text-foreground" for="portal-project">Project</label>
+                <Select id="portal-project" v-model="portaledProject" :options="projects" name="project" teleport="body" autocomplete search-placeholder="Search projects" :ui="selectUi" />
+                <button :class="buttonGhost" type="submit">Save project</button>
+                <output :class="codePill">{{ submittedProject }}</output>
+                <p class="text-sm text-muted-foreground">The options can extend outside this scrolling body without changing its overflow.</p>
+              </form>
+            </template>
+            <template #footer="{ close }"><button :class="buttonGhost" type="button" @click="close">Close project dialog</button></template>
+          </Dialog>
+        </div>
+      </div>
+
       <div>
         <h3 :class="exampleTitle">Controlled value</h3>
         <div :class="canvasCol">

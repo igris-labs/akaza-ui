@@ -26,12 +26,18 @@ const activeSubmenu = ref<string | null>(null);
 const submenuContent = ref<HTMLElement | null>(null);
 const submenuTrigger = computed(() => Array.from(panelRef.value?.querySelectorAll<HTMLElement>(".akaza-menu-submenu-trigger") ?? [])
   .find(element => element.dataset.akazaValue === activeSubmenu.value && element.closest('[role="menu"]') === panelRef.value) ?? null);
+const submenuOptions = computed(() => items.flat().find(item => ctx.getItemValue(item) === activeSubmenu.value)?.submenu);
+const submenuAnchor = computed(() => submenuOptions.value?.anchor === "parent"
+  ? panelRef.value?.closest<HTMLElement>(".akaza-menu-content, .akaza-context-menu-content, .akaza-menubar-content") ?? panelRef.value
+  : submenuTrigger.value);
 const submenuPosition = useFloatingPosition({
-  reference: submenuTrigger,
+  reference: submenuAnchor,
   floating: submenuContent,
   active: () => activeSubmenu.value !== null,
   side: () => ctx.dir === "rtl" ? "left" : "right",
-  align: "start",
+  align: () => submenuOptions.value?.align ?? "start",
+  sideOffset: () => submenuOptions.value?.sideOffset ?? 0,
+  alignOffset: () => submenuOptions.value?.alignOffset ?? 0,
   strategy: "fixed",
   constrainSize: true,
   cssVarPrefix: "akaza-menu-submenu",

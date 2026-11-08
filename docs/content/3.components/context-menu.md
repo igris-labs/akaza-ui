@@ -47,6 +47,8 @@ const items = [
 
 ## Examples
 
+Items with `children` accept the same [submenu positioning options](/components/menu#menusubmenuoptions) as Menu. Use `submenu: { anchor: "parent", align: "end" }` to align a submenu with its parent popup's bottom.
+
 ### Checkbox and radio items
 
 Context menus support the same checkbox and radio item shape as `Menu`. Checkbox items stay open by default because `closeOnSelect` only applies to normal action items.

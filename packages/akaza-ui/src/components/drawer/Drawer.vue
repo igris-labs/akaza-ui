@@ -5,6 +5,7 @@ import { usePointerSwipe } from "@vueuse/core";
 import { computed, useId, useTemplateRef } from "vue";
 import { useDrawer } from "../../composables/drawer";
 import { createChangeDetails, resolveAction } from "../../utils/changeEvent";
+import { useFocusBranch } from "../../utils/focusScope";
 import { useModalLifecycle } from "../../utils/useModalLifecycle";
 
 const {
@@ -14,6 +15,7 @@ const {
   ariaLabel,
   side = "right",
   inset = 0,
+  modal = true,
   closeOnBackdropClick = true,
   swipeToClose = true,
   teleport = "body",
@@ -32,12 +34,14 @@ const { isOpen, open: _open, close: _close, toggle: _toggle } = useDrawer(model)
 
 const contentRef = useTemplateRef<HTMLElement>("contentRef");
 const overlayRef = useTemplateRef<HTMLElement>("overlayRef");
+useFocusBranch(contentRef);
 const titleId = useId();
 const descriptionId = useId();
 const { layerOrder, captureRestoreTarget } = useModalLifecycle({
   open: isOpen,
   content: contentRef,
   overlay: overlayRef,
+  modal: () => modal,
   onEscape: event => close("escape", event),
 });
 
@@ -212,7 +216,7 @@ defineExpose({ open, close, toggle, titleId, descriptionId });
   >
     <Transition name="akaza-drawer-overlay">
       <div
-        v-if="isOpen"
+        v-if="isOpen && modal"
         ref="overlayRef"
         :class="ui?.overlay"
         :style="{ '--akaza-layer-order': layerOrder }"
@@ -234,7 +238,7 @@ defineExpose({ open, close, toggle, titleId, descriptionId });
         v-if="isOpen"
         ref="contentRef"
         role="dialog"
-        aria-modal="true"
+        :aria-modal="modal ? true : undefined"
         :aria-labelledby="($slots.title || title) ? titleId : undefined"
         :aria-label="!($slots.title || title) ? ariaLabel : undefined"
         :aria-describedby="($slots.description || description) ? descriptionId : undefined"

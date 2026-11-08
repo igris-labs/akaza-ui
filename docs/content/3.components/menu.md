@@ -144,6 +144,59 @@ const items = [
 </script>
 ```
 
+### Submenu alignment
+
+Set `submenu` on an item to position its children. Each submenu below aligns with the top of its hovered or keyboard-focused item. Root `align` only positions the root popup.
+
+::component-preview
+  :::examples-menu-submenu-alignment
+  :::
+::
+
+::component-code
+```vue
+<script setup lang="ts">
+import type { MenuItem } from "akaza-ui";
+import { Menu } from "akaza-ui";
+
+const items: MenuItem[] = [
+  {
+    label: "Theme",
+    submenu: { anchor: "trigger", align: "start", sideOffset: 9 },
+    children: [{ label: "Light" }, { label: "Dark" }, { label: "System" }],
+  },
+  {
+    label: "Help",
+    submenu: { anchor: "trigger", align: "start", sideOffset: 9 },
+    children: [{ label: "Documentation" }, { label: "Support" }],
+  },
+  { label: "Profile" },
+  { label: "Sign out" },
+];
+</script>
+
+<template>
+  <Menu
+    :items="items"
+    teleport="body"
+  >
+    <template #trigger="{ toggle, triggerProps }">
+      <button
+        v-bind="triggerProps"
+        @click="toggle"
+      >
+        Account
+      </button>
+    </template>
+  </Menu>
+</template>
+```
+::
+
+`sideOffset` is measured from the item's edge. The demo uses 9px to account for the parent's 5px inset and leave 4px between panels.
+
+`anchor: "trigger"` and `align: "start"` are the defaults. For parent-bottom alignment, use `submenu: { anchor: "parent", align: "end" }`. Parent anchoring uses the immediate containing popup, including its padding. Each item has its own options; unset options use the defaults. Collision handling can shift the requested position to keep the submenu inside the viewport. These options also work in [ContextMenu](/components/context-menu) and [Menubar](/components/menubar).
+
 ## Reactive styling and nested menus
 
 Changes to `ui`, radio values, and close-on-select settings remain reactive in nested panels. Item values containing quotes or brackets are treated as data, not interpolated into CSS selectors. Stateful label slots retain component identity during ordinary updates.
@@ -177,8 +230,18 @@ Changes to `ui`, radio values, and close-on-select settings remain reactive in n
 | `onUpdateChecked` | `(checked: boolean) => void` | Called when a checkbox item changes. |
 | `radioGroup` | `string` | Radio group key for radio items. |
 | `children` | `MenuItem[] \| MenuItem[][]` | Sub-menu items. |
+| `submenu` | `MenuSubmenuOptions` | Position this item's submenu; see the options below. |
 | `slot` | `string` | Named slot key for per-item render override. |
 | `onSelect` | `() => void` | Per-item select callback. |
+
+### MenuSubmenuOptions
+
+| Key | Type | Default | Description |
+| --- | --- | --- | --- |
+| `anchor` | `"trigger" \| "parent"` | `"trigger"` | Align against the trigger or the containing popup. |
+| `align` | `"start" \| "center" \| "end"` | `"start"` | Align top edges, centers, or bottom edges. |
+| `sideOffset` | `number` | `0` | Horizontal gap from the anchor, in pixels. |
+| `alignOffset` | `number` | `0` | Vertical offset from the aligned edge. Positive moves start down and end up. |
 
 ### Slots
 

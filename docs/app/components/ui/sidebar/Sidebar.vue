@@ -148,6 +148,26 @@ let scrollTop = 0;
 function scrollBody() {
   return content.value?.closest<HTMLElement>(".akaza-sidebar-body");
 }
+async function revealActive(behavior?: ScrollBehavior) {
+  await nextTick();
+  const body = scrollBody();
+  if (!body?.isConnected || !body.clientHeight) return;
+  const active =
+    body.querySelector<HTMLElement>(".akaza-navigation-menu-link[data-akaza-active]") ??
+    body.querySelector<HTMLElement>(".akaza-navigation-menu-trigger[data-akaza-active]");
+  if (!active) return;
+  const viewport = body.getBoundingClientRect();
+  const row = active.getBoundingClientRect();
+  const offset =
+    row.top < viewport.top ? row.top - viewport.top : Math.max(0, row.bottom - viewport.bottom);
+  if (offset)
+    body.scrollTo({
+      top: body.scrollTop + offset,
+      behavior:
+        behavior ??
+        (window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "instant" : "smooth"),
+    });
+}
 watch(
   content,
   (_, __, onCleanup) => {
@@ -160,41 +180,13 @@ watch(
     };
     body.addEventListener("scroll", rememberScroll, { passive: true });
     onCleanup(() => body.removeEventListener("scroll", rememberScroll));
+    void revealActive("instant");
   },
   { flush: "post" },
 );
 watch(
-  () => props.modelValue,
-  async () => {
-    const body = scrollBody();
-    if (!body) return;
-    const position = body.scrollTop;
-    await nextTick();
-    if (body.isConnected) body.scrollTop = position;
-  },
-);
-watch(
-  () => primitive.value?.isMobile,
-  async (mobile, wasMobile) => {
-    if (mobile !== false || wasMobile !== true) return;
-    await nextTick();
-    const body = scrollBody();
-    const active = body?.querySelector<HTMLElement>(
-      ".akaza-navigation-menu-link[data-akaza-active], .akaza-navigation-menu-trigger[data-akaza-active]",
-    );
-    if (!body || !active) return;
-    const viewport = body.getBoundingClientRect();
-    const row = active.getBoundingClientRect();
-    const offset =
-      row.top < viewport.top ? row.top - viewport.top : Math.max(0, row.bottom - viewport.bottom);
-    if (offset)
-      body.scrollTo({
-        top: body.scrollTop + offset,
-        behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches
-          ? "instant"
-          : "smooth",
-      });
-  },
+  [() => props.modelValue, navigationItems],
+  () => void revealActive(),
   { flush: "post" },
 );
 defineExpose({

@@ -22,6 +22,12 @@ const basicItems: MenuItem[] = [
   { type: "separator" },
   { label: "Sign out" },
 ];
+const alignedItems: MenuItem[] = [
+  { label: "Theme", value: "theme", submenu: { anchor: "trigger", align: "start", sideOffset: 9 }, children: [{ label: "Light" }, { label: "Dark" }, { label: "System" }] },
+  { label: "Help", value: "help", submenu: { anchor: "trigger", align: "start", sideOffset: 9 }, children: [{ label: "Documentation" }, { label: "Support" }] },
+  { label: "Profile" },
+  { label: "Sign out" },
+];
 
 // ── 2. Groups (auto separators) ─────────────────────────────────────────────
 const groupedItems: MenuItem[][] = [
@@ -435,6 +441,18 @@ function onMenuSelect(item: MenuItem, details: AkazaChangeEventDetails) {
         <div v-if="eventLog.length" :class="eventLogClass">
           <code v-for="(entry, i) in eventLog" :key="i" :class="eventEntry">{{ entry }}</code>
         </div>
+      </div>
+    </div>
+    <div class="mb-8">
+      <div class="mb-3">
+        <span class="block text-sm font-medium text-foreground">Submenu alignment</span>
+        <span class="text-xs text-muted-foreground">Each submenu aligns with the top of its hovered or keyboard-focused item.</span>
+      </div>
+      <div :class="canvasRow">
+        <Menu :items="alignedItems" teleport="body" :ui="menuUi">
+          <template #trigger="{ toggle, triggerProps }"><button :class="buttonGhost" type="button" v-bind="triggerProps" @click="toggle">Aligned account menu</button></template>
+          <template #item="{ item, hasSubmenu }"><span>{{ item.label }}</span><span v-if="hasSubmenu" aria-hidden="true" class="ml-auto">&gt;</span></template>
+        </Menu>
       </div>
     </div>
   </section>

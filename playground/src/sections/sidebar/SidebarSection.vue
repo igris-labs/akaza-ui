@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { NavigationMenuItem } from "akaza-ui";
+import type { NavigationMenuItem, SidebarSizeChangeEventDetails } from "akaza-ui";
 import { ref } from "vue";
 import { NavigationMenu, Sidebar } from "akaza-ui";
 import {
@@ -21,6 +21,10 @@ const mobileOpen = ref(false);
 const size = ref(224);
 const selected = ref("overview");
 const projectSelected = ref("website");
+const lastResize = ref("No resize yet.");
+function onResize(size: number, details: SidebarSizeChangeEventDetails) {
+  lastResize.value = `${details.previousSize}px to ${size}px, reason: ${details.reason}, event: ${details.event?.type ?? "none"}`;
+}
 
 const navigation: NavigationMenuItem[] = [
   { label: "Overview", value: "overview" },
@@ -71,6 +75,7 @@ function shortLabel(item: NavigationMenuItem) {
             :min-size="176"
             :max-size="320"
             aria-label="Workspace navigation"
+            @size-change="onResize"
             :ui="sidebarUi"
           >
             <template #header="{ collapsed, toggleCollapsed }">
@@ -117,6 +122,7 @@ function shortLabel(item: NavigationMenuItem) {
             <p class="text-sm font-semibold text-foreground">Workspace</p>
             <p class="mt-1 text-xs text-muted-foreground">Drag the divider or focus it and use Arrow keys.</p>
             <code :class="[codePill, 'mt-4 inline-flex']">selected: {{ selected }}, collapsed: {{ iconCollapsed }}, size: {{ size }}px</code>
+            <output aria-label="Last sidebar resize" class="mt-2 block break-words font-mono text-xs text-muted-foreground">{{ lastResize }}</output>
           </div>
         </div>
       </div>

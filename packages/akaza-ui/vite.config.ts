@@ -23,11 +23,10 @@ export default defineConfig({
         nuxt: resolve(__dirname, "src/nuxt.ts"),
       },
       formats: ["es", "cjs"],
-      fileName: (format, entryName) =>
-        `${entryName}.${format === "es" ? "js" : "cjs"}`,
+      fileName: (format, entryName) => `${entryName}.${format === "es" ? "js" : "cjs"}`,
     },
     rollupOptions: {
-      external: ["vue", "@nuxt/kit"],
+      external: ["vue", "@nuxt/kit", /^@ui-sdk\/core(?:\/|$)/],
       output: {
         // Keep color conversions removable from applications importing unrelated controls.
         manualChunks(id) {

@@ -15,7 +15,10 @@ Built for Vue 3, not adapted from React. Every primitive uses `v-model`, named s
 
 ## Requirements
 
+- Node.js `>=22.12.0` for tooling and server-side rendering, including CommonJS consumers
 - Vue `>=3.5.0`
+
+ESM and CommonJS exports are supported. The shared `@ui-sdk/core` runtime is external to both builds; CommonJS uses Node.js support for requiring synchronous ESM.
 
 ## Installation
 

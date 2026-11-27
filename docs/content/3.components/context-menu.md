@@ -49,6 +49,18 @@ const items = [
 
 Items with `children` accept the same [submenu positioning options](/components/menu#menusubmenuoptions) as Menu. Use `submenu: { anchor: "parent", align: "end" }` to align a submenu with its parent popup's bottom.
 
+### Touch and pen
+
+Hold the target for `longPressDelay` milliseconds to open it. Moving more than
+10 pixels, releasing, a browser pointer cancellation, Escape, or losing focus
+cancels the pending hold. Set `longPressDelay` to `0` to disable it. Mouse users
+can right-click; keyboard users can use `Shift + F10` or the Context Menu key.
+Long press does not replace those alternatives.
+
+The `long-press` change keeps the original pointer event. Canceling the change
+or refusing a controlled update leaves the menu closed. SDK owns hold timing
+and cancellation; there is no second component timer.
+
 ### Checkbox and radio items
 
 Context menus support the same checkbox and radio item shape as `Menu`. Checkbox items stay open by default because `closeOnSelect` only applies to normal action items.
@@ -170,21 +182,25 @@ The generated root uses `display: contents`, so it does not change the trigger s
 
 Popup transitions follow their placement side and last `120ms`. Set `--akaza-context-menu-duration` to change the duration. Reduced-motion mode removes the visible transition.
 
-Context menus join the shared floating-layer stack. `--akaza-z-layer-base` sets its base (default `1200`); `--akaza-z-context-menu` overrides the context panel's z-index. Nested panels use [Menu's collision positioning and styling hooks](/components/menu#styling-hooks), including `data-akaza-side` for their resolved side.
+The SDK owns native top-layer presentation, nesting, dismissal, positioning, and exit presence. `teleport` changes the DOM parent; inline panels also escape ancestor clipping where native top-layer support is available. The shared popup adapter allocates `--akaza-layer-order` for CSS fallback stacking. `--akaza-z-layer-base` and `--akaza-z-context-menu` remain fallback styling hooks, not controls for native top-layer order or SDK dismissal. Nested panels use [Menu's collision positioning and styling hooks](/components/menu#styling-hooks), including `data-akaza-side` for their resolved side.
+
+Existing `akaza-context-menu-enter-*` and `akaza-context-menu-leave-*` transition classes remain. Content exposes `data-akaza-state="closed"` while its SDK-managed exit finishes. Accepted keyboard closes and selections restore focus only while focus still belongs to the menu, so commands can move focus to another task. `restoreFocus="false"` opts out of that restoration.
 
 ### Positioning Variables
 
-The root panel uses a virtual pointer anchor, so its anchor width and height are zero. It can open above or to the left of the pointer near viewport edges, and updates on viewport resize.
+The root panel uses a virtual pointer anchor, so its anchor width and height are zero. SDK positioning can flip it to the left of the pointer and shift it vertically near viewport edges. It updates on viewport resize, including when the original pointer position is outside the resized window. Clicking elsewhere on the context-menu surface closes the menu.
 
 | Variable | Meaning |
 | --- | --- |
 | `--akaza-context-menu-anchor-width` | Anchor width in pixels. |
 | `--akaza-context-menu-anchor-height` | Anchor height in pixels. |
-| `--akaza-context-menu-available-width` | Viewport width after collision padding. |
-| `--akaza-context-menu-available-height` | Viewport height after collision padding. |
+| `--akaza-context-menu-available-width` | Available width at the resolved placement. |
+| `--akaza-context-menu-available-height` | Available height at the resolved placement. |
 | `--akaza-context-menu-transform-origin` | Origin matching the resolved side and alignment. |
 
 ### Keyboard
+
+Typeahead ignores case and accents, skips disabled items, and clears after 500ms. Repeat a letter to cycle matches. Space continues an active query; otherwise it activates the focused item.
 
 | Key | Behavior |
 |-----|----------|
@@ -193,6 +209,9 @@ The root panel uses a virtual pointer anchor, so its anchor width and height are
 | `Enter` / `Space` | Select or toggle highlighted item. |
 | `ArrowRight` / `ArrowLeft` | Open/close submenu; reversed in RTL, even after a visual collision flip. |
 | `Escape` | Close the current submenu level, or the context menu when at its root. |
+| `Tab` / `Shift+Tab` | Leave the menu through SDK popup focus handling without trapping focus. |
 | `Shift+F10` / Context Menu key | Open at focused target. |
 
 Touch and pen users can open the menu with a long press. Moving more than 10px before delay cancels it.
+
+Each submenu keeps its own tab stop and highlight. Closing it restores focus to its parent item. Stable item values preserve focus across data updates. Composition and Ctrl/Meta/Alt shortcuts do not navigate or activate items.

@@ -172,6 +172,8 @@ Use `#thumb` when the thumb needs visible value text or custom markup.
 
 ## Range accessibility and forms
 
+Pointer moves are sampled once per animation frame. Release applies the final pointer position before `value-commit`, which waits for Vue model updates. Pointer cancellation or lost capture ends dragging without a commit; it does not undo previously accepted changes. Disabling, resetting, or unmounting stops pending pointer work and releases capture.
+
 Every thumb has a unique id: the first uses `id` (or the generated Field id); later thumbs append `-2`, `-3`, and so on. Use `ariaLabels` for distinct endpoint names. Each thumb reports bounds constrained by its neighbors and `minStepsBetweenThumbs`.
 
 Disabling the slider disables all serialization inputs, including each range value. Native disabled fieldsets also block pointer/keyboard changes. Visual track thickness, thumb size, colors, and focus rings belong in `ui`.

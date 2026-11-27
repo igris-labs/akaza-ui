@@ -2,7 +2,9 @@
 import type { ComponentPublicInstance } from "vue";
 import type { RatingProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
+import { isComposing } from "@ui-sdk/core";
 import { computed, inject, nextTick, onMounted, onUpdated, ref, useId } from "vue";
+import { useRovingGroup } from "../../composables/internal/sdk/useRovingGroup";
 import { createChangeDetails as createDetails } from "../../utils/changeEvent";
 import { useFieldControl } from "../../utils/useFieldControl";
 import { useFormReset } from "../../utils/useFormReset";
@@ -40,9 +42,7 @@ const field = inject(fieldContextKey, null);
 const autoId = useId();
 const rootRef = ref<HTMLElement | null>(null);
 const hiddenRef = ref<HTMLInputElement | null>(null);
-const radioRefs = ref<Array<HTMLButtonElement | null>>([]);
 const hoveredValue = ref<number | null>(null);
-const focusedValue = ref<number | null>(null);
 const focused = ref(false);
 const touched = ref(false);
 const validationActive = ref(false);
@@ -53,6 +53,7 @@ const safeLength = computed(() => Math.max(1, Math.floor(length)));
 const safeStep = computed(() => Math.min(1, Math.max(0.01, step)));
 const items = computed(() => Array.from({ length: safeLength.value }, (_, index) => index + 1));
 const values = computed(() => items.value.flatMap(stepsForItem));
+const valueKeys = computed(() => values.value.map(String));
 const resolvedId = computed(() => id ?? field?.inputId.value ?? `akaza-rating-${autoId}`);
 const resolvedName = computed(() => name ?? field?.name.value);
 const isDisabled = computed(() => disabled || field?.disabled.value || false);
@@ -64,7 +65,13 @@ const isFilled = computed(() => normalizedValue.value > 0);
 const isDirty = computed(() => model.value !== initialValue);
 const isInvalid = computed(() => invalid || field?.invalid.value || nativeInvalid.value || false);
 const state = computed(() => isFilled.value ? "selected" : "empty");
-const tabStopValue = computed(() => focusedValue.value ?? (normalizedValue.value > 0 ? normalizedValue.value : values.value[0]));
+const roving = useRovingGroup({
+  keys: () => valueKeys.value,
+  disabled: () => isDisabled.value,
+  preferred: () => String(normalizedValue.value || values.value[0]),
+  orientation: () => "both",
+  loop: () => loop,
+});
 
 registerControl({
   dirty: isDirty,
@@ -105,7 +112,7 @@ useFormReset(() => hiddenRef.value, () => {
   validationActive.value = false;
   nativeInvalid.value = false;
   hoveredValue.value = null;
-  focusedValue.value = null;
+  roving.remember(String(normalize(initialValue) || values.value[0]));
 });
 
 function updateValidity(reveal = validationActive.value) {
@@ -116,7 +123,7 @@ function updateValidity(reveal = validationActive.value) {
 }
 
 function setValue(value: number, reason: string, event?: Event): boolean {
-  if (isDisabled.value || readOnly) return false;
+  if (isDisabled.value || readOnly || hiddenRef.value?.matches(":disabled")) return false;
   const next = clearable && normalize(value) === normalizedValue.value && reason === "trigger" ? 0 : normalize(value);
   if (next === normalizedValue.value) return true;
   const change = createDetails(reason, event);
@@ -125,7 +132,7 @@ function setValue(value: number, reason: string, event?: Event): boolean {
   validationActive.value = true;
   touched.value = true;
   model.value = next;
-  focusedValue.value = next || values.value[0] || null;
+  roving.remember(String(next || values.value[0]));
   nextTick(updateValidity);
   return true;
 }
@@ -152,53 +159,24 @@ function stepWidth(value: number, item: number): number {
   return Math.min(100, Math.max(0, (value - (item - 1)) * 100));
 }
 
-function setRadioRef(element: Element | ComponentPublicInstance | null, index: number) {
-  radioRefs.value[index] = element as HTMLButtonElement | null;
+function setRadioRef(element: Element | ComponentPublicInstance | null, value: number) {
+  roving.bind(String(value), element as HTMLButtonElement | null);
 }
 
 function focusValue(value: number) {
-  const index = values.value.indexOf(value);
-  if (index < 0) return;
-  focusedValue.value = value;
-  radioRefs.value[index]?.focus();
-}
-
-function move(value: number, delta: number, event: KeyboardEvent) {
-  const index = values.value.indexOf(value);
-  if (index < 0) return;
-  let next = index + delta;
-  if (loop) next = (next + values.value.length) % values.value.length;
-  else next = Math.min(values.value.length - 1, Math.max(0, next));
-  const nextValue = values.value[next];
-  if (nextValue === undefined) return;
-  focusValue(nextValue);
-  setValue(nextValue, "keyboard", event);
+  if (values.value.includes(value)) roving.focus(String(value));
 }
 
 function onKeydown(value: number, event: KeyboardEvent) {
-  const previousKey = orientation === "vertical" ? "ArrowUp" : dir === "rtl" ? "ArrowRight" : "ArrowLeft";
-  const nextKey = orientation === "vertical" ? "ArrowDown" : dir === "rtl" ? "ArrowLeft" : "ArrowRight";
-  if (event.key === previousKey || event.key === nextKey) {
-    event.preventDefault();
-    move(value, event.key === nextKey ? 1 : -1, event);
-  } else if (event.key === "Home") {
-    event.preventDefault();
-    const next = values.value[0];
-    if (next !== undefined) {
-      focusValue(next);
-      setValue(next, "keyboard", event);
-    }
-  } else if (event.key === "End") {
-    event.preventDefault();
-    const next = values.value[values.value.length - 1];
-    if (next !== undefined) {
-      focusValue(next);
-      setValue(next, "keyboard", event);
-    }
-  } else if (event.key === " " || event.key === "Enter") {
+  if (event.defaultPrevented || isComposing(event) || isDisabled.value
+    || event.altKey || event.ctrlKey || event.metaKey) return;
+  if (event.key === " " || event.key === "Enter") {
     event.preventDefault();
     setValue(value, "trigger", event);
+    return;
   }
+  const movement = roving.keydown(event, event.currentTarget as HTMLElement);
+  if (movement) setValue(Number(movement.key), "keyboard", event);
 }
 
 function onFocusIn() {
@@ -310,13 +288,13 @@ onUpdated(updateValidity);
       <button
         v-for="(value, stepIndex) in stepsForItem(item)"
         :key="value"
-        :ref="(element) => setRadioRef(element, values.indexOf(value))"
+        :ref="(element) => setRadioRef(element, value)"
         type="button"
         role="radio"
         :aria-checked="normalizedValue === value"
         :aria-label="valueLabel(value)"
         :aria-disabled="isDisabled || undefined"
-        :tabindex="tabStopValue === value && !isDisabled ? 0 : -1"
+        :tabindex="roving.tabIndex(String(value))"
         :disabled="isDisabled"
         :class="ui?.radio"
         :style="{
@@ -332,7 +310,6 @@ onUpdated(updateValidity);
         :data-akaza-value="value"
         :data-akaza-disabled="isDisabled || undefined"
         @click="setValue(value, 'trigger', $event)"
-        @focus="focusedValue = value"
         @keydown="onKeydown(value, $event)"
         @mouseenter="setHover(value, $event)"
       >

@@ -1,7 +1,10 @@
-import { mount } from "@vue/test-utils";
-import { describe, expect, it, vi } from "vitest";
+import { enableAutoUnmount, mount } from "@vue/test-utils";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { defineComponent, ref } from "vue";
 import { Rating } from "@/components/rating";
+
+enableAutoUnmount(afterEach);
+afterEach(() => { document.body.innerHTML = ""; });
 
 describe("rating", () => {
   it("supports fractional values with radio-group semantics", async () => {
@@ -31,8 +34,9 @@ describe("rating", () => {
         return { value };
       },
       template: `<Rating v-model="value" />`,
-    }));
+    }), { attachTo: document.body });
 
+    wrapper.get<HTMLButtonElement>(".akaza-rating-radio[data-akaza-value='2']").element.focus();
     await wrapper.get(".akaza-rating-radio[data-akaza-value='2']").trigger("keydown", { key: "ArrowRight" });
     expect((wrapper.vm as unknown as { value: number }).value).toBe(3);
   });

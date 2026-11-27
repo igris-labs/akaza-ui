@@ -15,7 +15,19 @@ export interface UseTypeaheadReturn {
   reset: () => void;
 }
 
-/** Buffered text only; matching and keyboard/focus policy belong to the caller. */
+/**
+ * Collect typed characters into a query that clears after a short pause.
+ * Call in setup and read the query ref or the string returned by push().
+ * It does not listen for keys, match items, or move focus.
+ *
+ * @example
+ * ```ts
+ * import { useTypeahead } from "akaza-ui";
+ *
+ * const { push } = useTypeahead({ timeout: 500 });
+ * const query = push("a"); // "a"
+ * ```
+ */
 export function useTypeahead(options: UseTypeaheadOptions = {}): UseTypeaheadReturn {
   const query = ref("");
   let timer: ReturnType<typeof setTimeout> | undefined;

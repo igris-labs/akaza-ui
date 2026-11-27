@@ -65,6 +65,8 @@ export * from "./composables/data-table";
 export * from "./composables/disclosure";
 export * from "./composables/form-reset";
 export * from "./composables/overlay";
+export * from "./composables/roving-focus";
+export * from "./composables/selection";
 export * from "./composables/sidebar";
 export * from "./composables/toast";
 export * from "./composables/typeahead";

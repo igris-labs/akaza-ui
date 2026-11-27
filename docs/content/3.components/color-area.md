@@ -28,14 +28,14 @@ const color = ref("#56d799");
 const areaUi = {
   root: "aspect-square w-full rounded-lg data-[akaza-focused]:ring-2 data-[akaza-focused]:ring-ring",
   area: "rounded-lg",
-  thumb: "size-5 rounded-full border-2 border-neutral-400 bg-white shadow-sm",
+  thumb: "size-5 rounded-full border-2 border-white bg-[var(--akaza-color)] shadow-[0_0_0_1px_#0008]",
 };
 const sliderUi = {
   root: "h-6 w-full rounded-md data-[akaza-disabled]:opacity-50",
   axis: "peer outline-none",
   track: "h-3 w-full rounded-full bg-muted",
   thumb:
-    "size-6 rounded-full border-2 border-neutral-400 bg-white shadow-sm peer-data-[akaza-focus-visible]:ring-2 peer-data-[akaza-focus-visible]:ring-ring peer-data-[akaza-focus-visible]:ring-offset-2 peer-data-[akaza-focus-visible]:ring-offset-background",
+    "size-6 rounded-full border-2 border-white bg-[var(--akaza-color)] shadow-[0_0_0_1px_#0008] peer-data-[akaza-focus-visible]:ring-2 peer-data-[akaza-focus-visible]:ring-ring peer-data-[akaza-focus-visible]:ring-offset-2 peer-data-[akaza-focus-visible]:ring-offset-background",
 };
 </script>
 
@@ -138,14 +138,14 @@ const format = ref<ColorFormat>("hex");
 const ui = {
   root: "aspect-square w-64 max-w-full rounded-lg data-[akaza-focused]:ring-2 data-[akaza-focused]:ring-ring",
   area: "rounded-lg",
-  thumb: "size-5 rounded-full border-2 border-neutral-400 bg-white shadow-sm",
+  thumb: "size-5 rounded-full border-2 border-white bg-[var(--akaza-color)] shadow-[0_0_0_1px_#0008]",
 };
 const sliderUi = {
   root: "h-6 w-full rounded-md data-[akaza-disabled]:opacity-50",
   axis: "peer outline-none",
   track: "h-3 w-full rounded-full bg-muted",
   thumb:
-    "size-6 rounded-full border-2 border-neutral-400 bg-white shadow-sm peer-data-[akaza-focus-visible]:ring-2 peer-data-[akaza-focus-visible]:ring-ring peer-data-[akaza-focus-visible]:ring-offset-2 peer-data-[akaza-focus-visible]:ring-offset-background",
+    "size-6 rounded-full border-2 border-white bg-[var(--akaza-color)] shadow-[0_0_0_1px_#0008] peer-data-[akaza-focus-visible]:ring-2 peer-data-[akaza-focus-visible]:ring-ring peer-data-[akaza-focus-visible]:ring-offset-2 peer-data-[akaza-focus-visible]:ring-offset-background",
 };
 </script>
 
@@ -303,6 +303,8 @@ Use a color value such as `#56d799` or `oklch(0.65 0.2 250)`. CSS variables, `cu
 
 ## Behavior
 
+Pointer moves are sampled once per animation frame. Release applies the final position before `value-commit`, after Vue model updates. Pointer cancellation or lost capture ends dragging without committing or undoing accepted changes. Disabled, read-only, incompatible channels, reset, and unmount stop pending pointer work and release capture.
+
 The area has two native range inputs, one per axis, and one visible thumb. Drag to change both channels. Press Tab to focus each channel and use the keyboard to edit it. Disabled and read-only controls prevent changes.
 
 Choose two different channels from the same color space, such as RGB red/green or OKLCH chroma/lightness. Unsupported or repeated channels disable the area. The preview uses sRGB, but the value can contain colors outside sRGB. Opacity stays unchanged unless you choose alpha as an axis.
@@ -364,7 +366,7 @@ Form state attributes: `data-akaza-disabled`, `data-akaza-readonly`, `data-akaza
 
 Use `class` or `ui.root` to style the root. Use the other `ui` keys for inner parts. Set sizes, borders, and colors in your own styles.
 
-The thumb exposes `--akaza-color` but does not force a background. Use `ui.thumb: 'bg-white'` for a white handle, or `bg-[var(--akaza-color)]` for a color-filled handle.
+The thumb exposes `--akaza-color` but does not force a background. Use `ui.thumb: 'bg-[var(--akaza-color)]'` to show the selected color, or `bg-transparent` for a clear center.
 
 ### Keyboard
 

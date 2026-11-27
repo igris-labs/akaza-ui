@@ -2,6 +2,7 @@
 import type { TimeFieldProps, TimeFieldSegment, TimeValue } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
 import { Time, toTime } from "@internationalized/date";
+import { isComposing } from "@ui-sdk/core";
 import { computed, inject, nextTick, onMounted, reactive, ref, useId, useTemplateRef, watch } from "vue";
 import { createChangeDetails as createDetails } from "../../utils/changeEvent";
 import { useFieldControl } from "../../utils/useFieldControl";
@@ -217,7 +218,12 @@ function commitSegments(reason: string, event?: Event): boolean {
     return false;
   }
   const changed = setValue(value, reason, event);
-  if (changed) emit("value-commit", value, createDetails(reason, event).details);
+  if (changed) {
+    emit("value-commit", value, createDetails(reason, event).details);
+    nextTick(() => {
+      if (timeKey(model.value) !== timeKey(value ? snapValue(value) : undefined)) syncSegments(model.value);
+    });
+  }
   return changed;
 }
 
@@ -242,27 +248,34 @@ function updateValidity(reveal = validationActive.value) {
   syncValidity(input, reveal);
 }
 
-const { segmentRefs, setSegmentRef, focusSegment, moveFocus } = useSegmentFocus<TimeFieldSegment, TimeFieldSegment | "dayPeriod">({
+const { segmentRefs, setSegmentRef, bindPart, focusSegment, moveFocus } = useSegmentFocus<TimeFieldSegment, TimeFieldSegment | "dayPeriod">({
   parts: () => focusableParts.value,
   focusOptions: { preventScroll: true },
   getExtraElement: part => part === "dayPeriod" ? rootRef.value?.querySelector<HTMLButtonElement>(".akaza-time-field-day-period") ?? null : null,
 });
 
-function onSegmentInput(segment: TimeFieldSegment, event: Event) {
+async function onSegmentInput(segment: TimeFieldSegment, event: Event) {
+  if (isDisabled.value || readOnly || isComposing(event as InputEvent)) return;
   validationActive.value = true;
   const input = event.currentTarget as HTMLInputElement;
   const value = input.value.replace(/\D/g, "").slice(0, 2);
   values[segment] = value;
   input.value = value;
-  if (autoAdvance && value.length === 2) moveFocus(segment, 1);
-  commitSegments("input", event);
+  const next = candidate();
+  const changed = commitSegments("input", event);
+  if (next) {
+    if (!changed) return;
+    await nextTick();
+    if (timeKey(model.value) !== timeKey(snapValue(next))) return;
+  }
+  if (autoAdvance && value.length === 2 && document.activeElement === input) moveFocus(segment, 1);
 }
 
 function incrementSegment(segment: TimeFieldSegment, multiplier: number, event: KeyboardEvent) {
   const min = segmentMin(segment);
   const max = segmentMax(segment);
   const fallback = segment === "hour" ? displayHour(asTime(baseValue.value).hour) : asTime(baseValue.value)[segment];
-  let value = (Number(values[segment]) || fallback) + segmentStep(segment) * multiplier;
+  let value = (values[segment] === "" ? fallback : Number(values[segment])) + segmentStep(segment) * multiplier;
   while (value > max) value = min + (value - max - 1);
   while (value < min) value = max - (min - value - 1);
   values[segment] = String(value).padStart(2, "0");
@@ -271,6 +284,8 @@ function incrementSegment(segment: TimeFieldSegment, multiplier: number, event: 
 }
 
 function onSegmentKeydown(segment: TimeFieldSegment, event: KeyboardEvent) {
+  if (event.defaultPrevented || isDisabled.value || isComposing(event) || event.altKey || event.ctrlKey || event.metaKey) return;
+  if (readOnly && !["ArrowLeft", "ArrowRight", "Backspace"].includes(event.key)) return;
   if (event.key === "ArrowUp" || event.key === "ArrowDown") {
     event.preventDefault();
     incrementSegment(segment, event.key === "ArrowUp" ? 1 : -1, event);
@@ -297,6 +312,8 @@ function toggleDayPeriod(event?: Event) {
 }
 
 function onDayPeriodKeydown(event: KeyboardEvent) {
+  if (event.defaultPrevented || isDisabled.value || isComposing(event) || event.altKey || event.ctrlKey || event.metaKey) return;
+  if (readOnly && !["ArrowLeft", "ArrowRight"].includes(event.key)) return;
   if (event.key === "ArrowUp" || event.key === "ArrowDown" || event.key === "Home" || event.key === "End") {
     event.preventDefault();
     if (event.key === "Home") dayPeriod.value = "am";
@@ -315,6 +332,7 @@ function onDayPeriodKeydown(event: KeyboardEvent) {
 }
 
 function onPaste(event: ClipboardEvent) {
+  if (isDisabled.value || readOnly) return;
   const text = event.clipboardData?.getData("text") ?? "";
   const groups = text.match(/\d+/g);
   if (!groups || groups.length < includedSegments.value.length) return;
@@ -413,6 +431,7 @@ defineExpose({
         </span>
         <button
           v-else-if="part.type === 'dayPeriod'"
+          :ref="element => bindPart(element as HTMLButtonElement | null, 'dayPeriod')"
           type="button"
           :disabled="isDisabled"
           :aria-label="`Day period, ${dayPeriodLabels[dayPeriod]}`"

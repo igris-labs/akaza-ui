@@ -13,6 +13,7 @@ export interface AccordionItem {
 export interface AccordionUi {
   root?: string;
   item?: string;
+  header?: string;
   trigger?: string;
   icon?: string;
   contentWrapper?: string;
@@ -36,6 +37,8 @@ export interface AccordionProps {
   /** Disable all items. */
   disabled?: boolean;
   orientation?: "vertical" | "horizontal";
+  /** Heading level for each trigger's accessible header. @default 3 */
+  headingLevel?: 1 | 2 | 3 | 4 | 5 | 6;
   /** When true, unmounts content from DOM when closed. Defaults to false (keeps mounted, hides via CSS). */
   unmountOnHide?: boolean;
   as?: string;

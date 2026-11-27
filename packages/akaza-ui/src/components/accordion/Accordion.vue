@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import type { AccordionItem, AccordionProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
-import { onKeyStroke } from "@vueuse/core";
-import { useId, useTemplateRef } from "vue";
+import { computed, useId } from "vue";
+import Panel from "../../composables/internal/sdk/Panel.vue";
+import { useRovingGroup } from "../../composables/internal/sdk/useRovingGroup";
 import { createChangeDetails } from "../../utils/changeEvent";
-import { nextEnabledIndex } from "../../utils/useRovingFocus";
 
 const {
   items,
@@ -16,6 +16,7 @@ const {
   collapsible = false,
   disabled = false,
   orientation = "vertical",
+  headingLevel = 3,
   unmountOnHide = false,
   as = "div",
   ui,
@@ -27,8 +28,19 @@ const emit = defineEmits<{
 
 const model = defineModel<string | string[]>({ default: "" });
 
-const rootRef = useTemplateRef<HTMLElement>("rootRef");
 const idBase = useId();
+const itemByKey = computed(() => new Map(items.map(item => [getValue(item), item])));
+const keys = computed(() => [...itemByKey.value.keys()]);
+const roving = useRovingGroup({
+  keys: () => keys.value,
+  disabled: key => {
+    const item = itemByKey.value.get(key);
+    return !item || isItemDisabled(item);
+  },
+  preferred: () => undefined,
+  orientation: () => orientation,
+  loop: () => true,
+});
 
 function getValue(item: AccordionItem): string {
   if (valueKey) return String(item[valueKey]);
@@ -81,33 +93,15 @@ function panelId(item: AccordionItem): string {
   return `akaza-accordion-panel-${idBase}-${getValue(item)}`;
 }
 
-onKeyStroke(["ArrowDown", "ArrowUp", "ArrowRight", "ArrowLeft", "Home", "End"], (e) => {
-  if (!rootRef.value) return;
-  const triggers = Array.from(
-    rootRef.value.querySelectorAll<HTMLElement>(".akaza-accordion-trigger:not([disabled])"),
-  ).filter(trigger => trigger.closest(".akaza-accordion") === rootRef.value);
-  if (!triggers.includes(document.activeElement as HTMLElement)) return;
-
-  const isVertical = orientation === "vertical";
-  const isPrev = (isVertical && e.key === "ArrowUp") || (!isVertical && e.key === "ArrowLeft");
-  const isNext = (isVertical && e.key === "ArrowDown") || (!isVertical && e.key === "ArrowRight");
-  if (!isPrev && !isNext && e.key !== "Home" && e.key !== "End") return;
-
-  e.preventDefault();
-  const currentIdx = triggers.indexOf(document.activeElement as HTMLElement);
-  let next = currentIdx;
-  if (isPrev || isNext) next = nextEnabledIndex(triggers, currentIdx, isNext ? 1 : -1, true);
-  else if (e.key === "Home") next = 0;
-  else if (e.key === "End") next = triggers.length - 1;
-
-  triggers[next]?.focus();
-});
+function onTriggerKeydown(event: KeyboardEvent) {
+  if (event.target !== event.currentTarget) return;
+  roving.keydown(event, event.currentTarget as HTMLElement);
+}
 </script>
 
 <template>
   <component
     :is="as"
-    ref="rootRef"
     :data-akaza-orientation="orientation"
     :class="ui?.root"
     class="akaza-accordion"
@@ -120,82 +114,81 @@ onKeyStroke(["ArrowDown", "ArrowUp", "ArrowRight", "ArrowLeft", "Home", "End"], 
       :class="ui?.item"
       class="akaza-accordion-item"
     >
-      <button
-        :id="triggerId(item)"
-        type="button"
-        :aria-expanded="isOpen(item)"
-        :aria-controls="panelId(item)"
-        :disabled="isItemDisabled(item)"
-        :class="ui?.trigger"
-        :data-akaza-state="isOpen(item) ? 'open' : 'closed'"
-        :data-akaza-disabled="isItemDisabled(item) ? '' : undefined"
-        class="akaza-accordion-trigger"
-        @click="toggle(item, $event)"
-      >
-        <slot
-          name="trigger"
-          :item="item"
-          :value="getValue(item)"
-          :is-open="isOpen(item)"
-          :toggle="() => toggle(item)"
+      <div role="heading" :aria-level="headingLevel" :class="ui?.header" class="akaza-accordion-header">
+        <button
+          :id="triggerId(item)"
+          :ref="(element) => roving.bind(getValue(item), element as HTMLElement | null)"
+          type="button"
+          :aria-expanded="isOpen(item)"
+          :aria-controls="panelId(item)"
+          :disabled="isItemDisabled(item)"
+          :class="ui?.trigger"
+          :data-akaza-state="isOpen(item) ? 'open' : 'closed'"
+          :data-akaza-disabled="isItemDisabled(item) ? '' : undefined"
+          class="akaza-accordion-trigger"
+          @click="toggle(item, $event)"
+          @keydown="onTriggerKeydown"
         >
-          {{ getLabel(item) }}
-        </slot>
-
-        <slot name="icon" :is-open="isOpen(item)" :item="item">
-          <svg
-            :class="ui?.icon"
-            class="akaza-accordion-icon"
-            :data-akaza-state="isOpen(item) ? 'open' : 'closed'"
-            xmlns="http://www.w3.org/2000/svg"
-            width="16"
-            height="16"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="2"
-            stroke-linecap="round"
-            stroke-linejoin="round"
-            aria-hidden="true"
+          <slot
+            name="trigger"
+            :item="item"
+            :value="getValue(item)"
+            :is-open="isOpen(item)"
+            :toggle="() => toggle(item)"
           >
-            <polyline points="6 9 12 15 18 9" />
-          </svg>
-        </slot>
-      </button>
+            {{ getLabel(item) }}
+          </slot>
 
-      <div
+          <slot name="icon" :is-open="isOpen(item)" :item="item">
+            <svg
+              :class="ui?.icon"
+              class="akaza-accordion-icon"
+              :data-akaza-state="isOpen(item) ? 'open' : 'closed'"
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <polyline points="6 9 12 15 18 9" />
+            </svg>
+          </slot>
+        </button>
+      </div>
+
+      <Panel
         :id="panelId(item)"
         role="region"
         :aria-labelledby="triggerId(item)"
-        :aria-hidden="!isOpen(item) || undefined"
-        :inert="!isOpen(item) || undefined"
+        :open="isOpen(item)"
+        :unmount-on-hide="unmountOnHide"
+        prefix="akaza-accordion"
+        :trigger="element => element.previousElementSibling?.querySelector('button') ?? undefined"
+        :ui="ui"
         :class="ui?.contentWrapper"
-        class="akaza-accordion-content"
-        :data-akaza-state="isOpen(item) ? 'open' : 'closed'"
       >
-        <div :class="ui?.contentInner" class="akaza-accordion-content-inner">
-          <div :class="ui?.content" class="akaza-accordion-content-body">
-            <template v-if="!unmountOnHide || isOpen(item)">
-              <slot
-                v-if="item.slot && $slots[item.slot]"
-                :name="item.slot"
-                :item="item"
-                :value="getValue(item)"
-                :is-open="isOpen(item)"
-              />
-              <slot
-                v-else
-                name="content"
-                :item="item"
-                :value="getValue(item)"
-                :is-open="isOpen(item)"
-              >
-                {{ getContent(item) }}
-              </slot>
-            </template>
-          </div>
-        </div>
-      </div>
+        <slot
+          v-if="item.slot && $slots[item.slot]"
+          :name="item.slot"
+          :item="item"
+          :value="getValue(item)"
+          :is-open="isOpen(item)"
+        />
+        <slot
+          v-else
+          name="content"
+          :item="item"
+          :value="getValue(item)"
+          :is-open="isOpen(item)"
+        >
+          {{ getContent(item) }}
+        </slot>
+      </Panel>
     </div>
   </component>
 </template>
@@ -219,13 +212,26 @@ onKeyStroke(["ArrowDown", "ArrowUp", "ArrowRight", "ArrowLeft", "Home", "End"], 
     }
 
   .akaza-accordion-content {
-    display: grid;
-    grid-template-rows: 0fr;
-    transition: grid-template-rows 0.15s ease-out;
+    display: block;
+    height: var(--akaza-accordion-content-height, auto);
+    overflow: hidden;
+    transition: height 0.15s ease-out;
   }
 
-  .akaza-accordion-content[data-akaza-state="open"] {
-    grid-template-rows: 1fr;
+  .akaza-accordion-content[data-starting-style],
+  .akaza-accordion-content[data-ending-style] {
+    height: 0;
+  }
+
+  .akaza-accordion-content[hidden] {
+    display: none !important;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .akaza-accordion-content,
+    .akaza-accordion-icon {
+      transition: none;
+    }
   }
 
   .akaza-accordion-content-inner {

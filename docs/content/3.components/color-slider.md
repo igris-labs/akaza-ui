@@ -39,7 +39,7 @@ const color = ref("#56d799");
         axis: 'peer outline-none',
         track: 'h-3 w-full rounded-full',
         thumb:
-          'size-6 rounded-full border-2 border-neutral-400 bg-white shadow-sm peer-data-[akaza-focus-visible]:ring-2 peer-data-[akaza-focus-visible]:ring-ring peer-data-[akaza-focus-visible]:ring-offset-2 peer-data-[akaza-focus-visible]:ring-offset-background',
+          'size-6 rounded-full border-2 border-white bg-[var(--akaza-color)] shadow-[0_0_0_1px_#0008] peer-data-[akaza-focus-visible]:ring-2 peer-data-[akaza-focus-visible]:ring-ring peer-data-[akaza-focus-visible]:ring-offset-2 peer-data-[akaza-focus-visible]:ring-offset-background',
       }"
     />
     <div class="flex items-center gap-3">
@@ -146,7 +146,11 @@ Use a color value such as `#56d799` or `oklch(0.65 0.2 250)`. CSS variables, `cu
 
 ## Behavior
 
+Pointer moves are sampled once per animation frame. Release applies the final position before `value-commit`, after Vue model updates. Pointer cancellation or lost capture ends dragging without committing or undoing accepted changes. Disabled, read-only, unsupported channels, reset, and unmount stop pending pointer work and release capture.
+
 The slider uses a visually hidden native range input for keyboard and screen reader support. Style the visible track and thumb through `ui`.
+
+The native range proxy accepts fractional channel values (`step="any"`) so an untouched converted color remains valid without rounding it. The `step` prop still controls pointer, keyboard, and native-input change snapping; it does not quantize the initial color.
 
 For a keyboard focus ring on the thumb, set `ui.axis` to `peer outline-none` and use `peer-data-[akaza-focus-visible]` classes on `ui.thumb`. The root and axis expose `data-akaza-focus-visible` for keyboard focus. `data-akaza-focused` also includes focus from a pointer.
 
@@ -154,7 +158,7 @@ For a vertical slider, give the root a height and the track a width and full hei
 
 Hue tracks stay visible for gray and transparent colors. Other channel tracks show opaque colors. The alpha track shows transparency against your background. The component positions the thumb; do not add transforms to position it.
 
-The thumb exposes `--akaza-color` but does not force a background. Use `ui.thumb: 'bg-white'` for a white handle, or `bg-[var(--akaza-color)]` for a color-filled handle.
+The thumb exposes `--akaza-color` but does not force a background. Use `ui.thumb: 'bg-[var(--akaza-color)]'` to show the selected color, or `bg-transparent` for a clear center.
 
 ## API Reference
 

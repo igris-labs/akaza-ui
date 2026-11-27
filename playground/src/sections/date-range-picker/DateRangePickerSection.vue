@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { CalendarDateRange, CalendarDateValue } from "akaza-ui";
+import type { AkazaChangeEventDetails, CalendarDateRange, CalendarDateValue } from "akaza-ui";
 import { CalendarDate } from "@internationalized/date";
 import { ref, shallowRef } from "vue";
 import { DateRangePicker, Field } from "akaza-ui";
@@ -24,6 +24,12 @@ const fixed = shallowRef<CalendarDateRange>({
   start: new CalendarDate(2026, 8, 10),
 });
 const controlledOpen = ref(false);
+const guardedOpen = ref(false);
+const keepCalendarOpen = ref(false);
+
+function guardCalendar(open: boolean, details: AkazaChangeEventDetails) {
+  if (!open && keepCalendarOpen.value) details.cancel();
+}
 
 function unavailable(date: CalendarDateValue) {
   return [16, 17].includes(date.day);
@@ -93,6 +99,14 @@ function unavailable(date: CalendarDateValue) {
             <template #footer>Start remains August 10. Choose checkout date.</template>
           </DateRangePicker>
           <code :class="codePill">popup: {{ controlledOpen ? "open" : "closed" }}</code>
+        </div>
+      </div>
+      <div>
+        <h3 :class="exampleTitle">Cancelable calendar dismissal</h3>
+        <div :class="canvasCol">
+          <label class="flex items-center gap-2 text-sm"><input v-model="keepCalendarOpen" type="checkbox">Keep calendar open</label>
+          <DateRangePicker v-model:open="guardedOpen" aria-label="Guarded range" calendar-label="Guarded range calendar" close-label="Done" :placeholder="new CalendarDate(2026, 8, 12)" :ui="dateRangePickerUi" @open-change="guardCalendar" />
+          <output :class="codePill">calendar: {{ guardedOpen ? "open" : "closed" }}</output>
         </div>
       </div>
     </div>

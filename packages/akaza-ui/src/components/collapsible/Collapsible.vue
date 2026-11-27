@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import type { CollapsibleProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
-import { useId } from "vue";
+import { useId, useTemplateRef } from "vue";
+import Panel from "../../composables/internal/sdk/Panel.vue";
 import { createChangeDetails, resolveAction } from "../../utils/changeEvent";
 
 const { as = "div", disabled = false, unmountOnHide = false, ui } = defineProps<CollapsibleProps>();
@@ -13,6 +14,7 @@ const emit = defineEmits<{
 const model = defineModel<boolean>({ default: false });
 
 const panelId = `akaza-collapsible-panel-${useId()}`;
+const trigger = useTemplateRef<HTMLButtonElement>("trigger");
 
 function handleChange(nextOpen: boolean, reason: string, event?: Event) {
   if (disabled && nextOpen) return;
@@ -47,6 +49,7 @@ defineExpose({ open, close, toggle });
     class="akaza-collapsible"
   >
     <button
+      ref="trigger"
       type="button"
       :aria-expanded="model"
       :aria-controls="panelId"
@@ -85,30 +88,22 @@ defineExpose({ open, close, toggle });
       </slot>
     </button>
 
-    <div
+    <Panel
       :id="panelId"
       role="region"
-      :aria-hidden="!model || undefined"
-      :inert="!model || undefined"
+      :open="model"
+      :unmount-on-hide="unmountOnHide"
+      prefix="akaza-collapsible"
+      :trigger="() => trigger ?? undefined"
+      :ui="ui"
       :class="ui?.contentWrapper"
-      class="akaza-collapsible-content"
-      :data-akaza-state="model ? 'open' : 'closed'"
     >
-      <div :class="ui?.contentInner" class="akaza-collapsible-content-inner">
-        <div
-          :class="ui?.content"
-          class="akaza-collapsible-content-body"
-        >
-          <template v-if="!unmountOnHide || model">
-            <slot
-              name="content"
-              :is-open="model"
-              :close="close"
-            />
-          </template>
-        </div>
-      </div>
-    </div>
+      <slot
+        name="content"
+        :is-open="model"
+        :close="close"
+      />
+    </Panel>
   </component>
 </template>
 
@@ -131,13 +126,26 @@ defineExpose({ open, close, toggle });
     }
 
   .akaza-collapsible-content {
-    display: grid;
-    grid-template-rows: 0fr;
-    transition: grid-template-rows 0.15s ease-out;
+    display: block;
+    height: var(--akaza-collapsible-content-height, auto);
+    overflow: hidden;
+    transition: height 0.15s ease-out;
   }
 
-  .akaza-collapsible-content[data-akaza-state="open"] {
-    grid-template-rows: 1fr;
+  .akaza-collapsible-content[data-starting-style],
+  .akaza-collapsible-content[data-ending-style] {
+    height: 0;
+  }
+
+  .akaza-collapsible-content[hidden] {
+    display: none !important;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .akaza-collapsible-content,
+    .akaza-collapsible-icon {
+      transition: none;
+    }
   }
 
   .akaza-collapsible-content-inner {

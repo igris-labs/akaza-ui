@@ -137,6 +137,22 @@ Remove inactive panels from the DOM instead of hiding them.
 </template>
 ```
 
+### Right-to-left
+
+Set `dir="rtl"` on a parent. Horizontal arrow keys follow that direction. In manual mode, moving focus does not change the selected panel.
+
+```vue
+<template>
+  <div dir="rtl">
+    <Tabs v-model="active" :items="tabs" activation-mode="manual">
+      <template #panel-account>Account settings.</template>
+      <template #panel-security>Security settings.</template>
+      <template #panel-notifications>Notification preferences.</template>
+    </Tabs>
+  </div>
+</template>
+```
+
 ## API Reference
 
 ### Props
@@ -205,4 +221,4 @@ Remove inactive panels from the DOM instead of hiding them.
 | `Enter` / `Space` | Activates focused tab. Required in manual activation mode. |
 | `Tab` | Moves from active tab into active panel or next focusable control. |
 
-Automatic mode activates during arrow movement. Manual mode moves focus only until activation.
+Automatic mode activates during arrow movement. Manual mode moves focus only until activation. Disabled tabs are skipped. Horizontal arrows follow inherited text direction; `Home` and `End` use item order. Modified arrow keys and IME composition do not move focus. Use `details.cancel()` in `value-change` to keep the selected panel unchanged.

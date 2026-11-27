@@ -29,7 +29,7 @@ function formatValue(value: SliderValue): string {
 }
 
 function onCommit(value: SliderValue, details: AkazaChangeEventDetails) {
-  commitLog.value = `value-commit: ${formatValue(value)}, reason: ${details.reason}`;
+  commitLog.value = `value-commit: ${formatValue(value)}, reason: ${details.reason}, event: ${details.event?.type ?? "none"}`;
 }
 </script>
 

@@ -142,7 +142,37 @@ function useSidebarState(options: UseSidebarOptions): UseSidebarReturn {
   };
 }
 
+/**
+ * Control one rendered Sidebar through its template ref. Call in setup.
+ * Actions before mount do nothing. The Sidebar can still cancel a change.
+ *
+ * @example
+ * ```ts
+ * import type { SidebarController } from "akaza-ui";
+ * import { useSidebar } from "akaza-ui";
+ * import { useTemplateRef } from "vue";
+ *
+ * // Use ref="navigation" on the Sidebar.
+ * const sidebar = useSidebar(useTemplateRef<SidebarController>("navigation"));
+ * // Bind sidebar.toggle to an external button's click event.
+ * ```
+ */
 export function useSidebar(target: SidebarTarget): UseSidebarTargetReturn;
+/**
+ * Share app-owned Sidebar state. Pass writable refs for open and collapsed.
+ * Call in setup and bind the same refs to Sidebar's models. The composable
+ * returns state and actions; it does not render a sidebar or emit events.
+ *
+ * @example
+ * ```ts
+ * import { useSidebar } from "akaza-ui";
+ * import { ref } from "vue";
+ *
+ * const open = ref(false);
+ * const collapsed = ref(false);
+ * const { isMobile, toggle } = useSidebar({ open, collapsed });
+ * ```
+ */
 export function useSidebar(options?: UseSidebarOptions): UseSidebarReturn;
 export function useSidebar(targetOrOptions: SidebarTarget | UseSidebarOptions = {}): UseSidebarReturn | UseSidebarTargetReturn {
   return isRef(targetOrOptions)

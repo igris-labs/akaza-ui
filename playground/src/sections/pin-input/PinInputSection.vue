@@ -21,6 +21,7 @@ const accessCode = ref("AK");
 const masked = ref("12");
 const lastEvent = ref("Enter all six digits.");
 const uppercase = /^[A-Z]$/;
+const fixedCode = "12";
 
 function onComplete(value: string, details: AkazaChangeEventDetails) {
   lastEvent.value = `complete: ${value}, reason: ${details.reason}`;
@@ -49,6 +50,20 @@ function onComplete(value: string, details: AkazaChangeEventDetails) {
         <div :class="canvasCol">
           <PinInput v-model="accessCode" :length="4" :allowed-chars="uppercase" aria-label="Uppercase access code" :ui="pinInputUi" />
           <code :class="codePill">code: {{ accessCode || "(empty)" }}</code>
+        </div>
+      </div>
+
+      <div>
+        <h3 :class="exampleTitle">Controlled parent rejection</h3>
+        <div :class="canvasCol">
+          <PinInput
+            :model-value="fixedCode"
+            :length="4"
+            aria-label="Parent-controlled code"
+            :ui="pinInputUi"
+            @update:model-value="() => undefined"
+          />
+          <code :class="codePill">parent value: {{ fixedCode }}</code>
         </div>
       </div>
 

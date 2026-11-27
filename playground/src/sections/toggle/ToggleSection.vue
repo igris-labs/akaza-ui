@@ -14,6 +14,7 @@ const bold = ref(false);
 const iconPressed = ref(false);
 const disabled = ref(false);
 const uiPressed = ref(false);
+const customPressed = ref(false);
 </script>
 
 <template>
@@ -57,6 +58,12 @@ const uiPressed = ref(false);
       <Toggle v-model="disabled" :disabled="true" :ui="{ root: toggleRoot }">
         Italic
       </Toggle>
+    </div>
+
+    <p class="text-xs font-medium text-muted-foreground mb-2">Custom root</p>
+    <div :class="[canvasRow, 'mb-6']">
+      <Toggle v-model="customPressed" as="div" :ui="{ root: toggleRoot }">Custom toggle</Toggle>
+      <span class="text-sm text-muted-foreground">{{ customPressed ? "Pressed" : "Not pressed" }}</span>
     </div>
 
     <!-- ui prop -->

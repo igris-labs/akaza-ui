@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import type { EditableProps, EditableState } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
+import { isComposing } from "@ui-sdk/core";
 import { computed, inject, nextTick, onMounted, onUpdated, ref, useId } from "vue";
+import { useInlineEdit } from "../../composables/internal/sdk/useInlineEdit";
 import { createChangeDetails as createDetails } from "../../utils/changeEvent";
 import { useFieldControl } from "../../utils/useFieldControl";
 import { useFormReset } from "../../utils/useFormReset";
@@ -43,7 +45,6 @@ const autoId = useId();
 const rootRef = ref<HTMLElement | null>(null);
 const inputRef = ref<HTMLInputElement | HTMLTextAreaElement | null>(null);
 const hiddenRef = ref<HTMLInputElement | null>(null);
-const editing = ref(startWithEditMode);
 const draft = ref(model.value ?? "");
 const focused = ref(false);
 const preserveSelectionOnPointerUp = ref(false);
@@ -61,6 +62,13 @@ const isEmpty = computed(() => !(model.value ?? "").length);
 const isFilled = computed(() => !isEmpty.value);
 const isDirty = computed(() => model.value !== initialValue);
 const isInvalid = computed(() => invalid || field?.invalid.value || nativeInvalid.value || false);
+const session = useInlineEdit({
+  value: () => model.value ?? "",
+  disabled: () => isDisabled.value || readOnly,
+  initialEditing: startWithEditMode,
+  commit: commitDraft,
+});
+const { editing } = session;
 const state = computed(() => editing.value ? "editing" : "preview");
 const previewPlaceholder = computed(() => typeof placeholder === "string" ? placeholder : (placeholder.preview ?? "Enter text..."));
 const editPlaceholder = computed(() => typeof placeholder === "string" ? placeholder : (placeholder.edit ?? "Enter text..."));
@@ -79,7 +87,7 @@ useFormReset(() => hiddenRef.value, () => {
   validationActive.value = false;
   nativeInvalid.value = false;
   draft.value = initialValue ?? "";
-  editing.value = startWithEditMode;
+  session.reset(startWithEditMode);
 });
 
 function updateValidity(reveal = validationActive.value) {
@@ -106,9 +114,8 @@ function emitState(next: EditableState, reason: string, event?: Event) {
 }
 
 function edit(event?: Event) {
-  if (isDisabled.value || readOnly || editing.value) return;
+  if (!session.start(event)) return;
   draft.value = model.value ?? "";
-  editing.value = true;
   emitState("edit", event ? "trigger" : "programmatic", event);
   focusInput();
 }
@@ -122,9 +129,18 @@ function setDraft(value: string, event?: Event): boolean {
 }
 
 function submit(event?: Event, reason = "submit"): boolean {
-  if (isDisabled.value || readOnly || !editing.value) return false;
+  if (!session.end(draft.value, reason, event)) return false;
+  touched.value = true;
+  nativeInvalid.value = false;
+  validationMessage.value = "";
+  emitState("submit", reason, event);
+  nextTick(updateValidity);
+  return true;
+}
+
+function commitDraft(value: string, reason: string, event?: Event): boolean {
   validationActive.value = true;
-  if (isRequired.value && !draft.value.length) {
+  if (isRequired.value && !value.length) {
     nativeInvalid.value = true;
     validationMessage.value = "Enter a value.";
     focusInput();
@@ -132,20 +148,14 @@ function submit(event?: Event, reason = "submit"): boolean {
   }
 
   const valueChange = createDetails(reason, event);
-  emit("value-change", draft.value, valueChange.details);
+  emit("value-change", value, valueChange.details);
   if (valueChange.canceled()) return false;
 
   const submitChange = createDetails(reason, event);
-  emit("submit", draft.value, submitChange.details);
+  emit("submit", value, submitChange.details);
   if (submitChange.canceled()) return false;
 
-  model.value = draft.value;
-  editing.value = false;
-  touched.value = true;
-  nativeInvalid.value = false;
-  validationMessage.value = "";
-  emitState("submit", reason, event);
-  nextTick(updateValidity);
+  model.value = value;
   return true;
 }
 
@@ -156,7 +166,7 @@ function cancel(event?: Event) {
   emit("cancel", value, change.details);
   if (change.canceled()) return;
   draft.value = value;
-  editing.value = false;
+  session.cancel();
   touched.value = true;
   emitState("cancel", change.details.reason, event);
 }
@@ -185,7 +195,7 @@ function onInputPointerUp(event: PointerEvent) {
 }
 
 function onInputKeydown(event: KeyboardEvent) {
-  if (event.isComposing) return;
+  if (isComposing(event)) return;
   if (event.key === "Escape") {
     event.preventDefault();
     cancel(event);

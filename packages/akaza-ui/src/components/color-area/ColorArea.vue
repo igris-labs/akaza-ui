@@ -2,11 +2,11 @@
 import type { ColorAreaProps } from ".";
 import type { ColorChannel } from "../../composables/color";
 import type { AkazaChangeEventDetails } from "../../types";
-import { computed, useTemplateRef } from "vue";
+import { computed, nextTick, useTemplateRef, watch } from "vue";
 import { channelInfo, clamp, round } from "../../composables/color/engine";
 import { useColorCanvas } from "../../composables/color/useColorCanvas";
 import { useColorControl } from "../../composables/color/useColorControl";
-import { useColorInteraction } from "../../composables/color/useColorInteraction";
+import { usePointerDrag } from "../../composables/internal/sdk/usePointerDrag";
 
 const props = defineProps<ColorAreaProps>();
 const emit = defineEmits<{
@@ -18,7 +18,17 @@ const root = useTemplateRef<HTMLElement>("root");
 const canvas = useTemplateRef<HTMLCanvasElement>("canvas");
 const input = useTemplateRef<HTMLInputElement>("input");
 const xInput = useTemplateRef<HTMLInputElement>("xInput");
-const control = useColorControl(model, props, emit, input, () =>
+let reconcilingPointer = false;
+const colorModel = computed({
+  get: () => model.value,
+  set: (value: string) => { if (!reconcilingPointer) model.value = value; },
+});
+function emitColor(event: "value-change" | "value-commit", value: string, details: AkazaChangeEventDetails) {
+  if (reconcilingPointer) return;
+  if (event === "value-change") emit("value-change", value, details);
+  else emit("value-commit", value, details);
+}
+const control = useColorControl(colorModel, props, emitColor, input, () =>
   xInput.value?.focus({ preventScroll: true }),
 );
 const space = computed(() => props.colorSpace ?? "hsb");
@@ -52,29 +62,43 @@ function set(changes: Partial<Record<ColorChannel, number>>, reason: string, eve
   control.color.setChannels(space.value, changes, reason, event);
   control.changed();
 }
-const pointer = useColorInteraction(
-  root,
-  () => control.blocked() || !compatible.value,
-  (event) => {
-    const rect = canvas.value?.getBoundingClientRect();
-    if (!rect || !rect.width || !rect.height || !xInfo.value || !yInfo.value) return;
-    const fraction = clamp((event.clientX - rect.left) / rect.width);
-    set(
-      {
-        [x.value]:
-          xInfo.value.min +
-          (props.dir === "rtl" ? 1 - fraction : fraction) * (xInfo.value.max - xInfo.value.min),
-        [y.value]:
-          yInfo.value.min +
-          clamp(1 - (event.clientY - rect.top) / rect.height) * (yInfo.value.max - yInfo.value.min),
-      },
-      "pointer",
-      event,
-    );
-  },
-  (event) => control.color.commit("pointer", event),
-  () => xInput.value?.focus({ preventScroll: true }),
-);
+const pointer = usePointerDrag(() => control.blocked() || !compatible.value);
+watch(control.resetVersion, () => pointer.cancel(), { flush: "sync" });
+function updatePointer(event: PointerEvent) {
+  const rect = canvas.value?.getBoundingClientRect();
+  if (!rect || !rect.width || !rect.height || !xInfo.value || !yInfo.value) return;
+  const fraction = clamp((event.clientX - rect.left) / rect.width);
+  set(
+    {
+      [x.value]:
+        xInfo.value.min +
+        (props.dir === "rtl" ? 1 - fraction : fraction) * (xInfo.value.max - xInfo.value.min),
+      [y.value]:
+        yInfo.value.min +
+        clamp(1 - (event.clientY - rect.top) / rect.height) * (yInfo.value.max - yInfo.value.min),
+    },
+    "pointer",
+    event,
+  );
+  nextTick(() => {
+    if (!root.value || control.inherited || control.color.value.value === model.value) return;
+    // Restore the accepted color when a controlled parent refuses the optimistic pointer value.
+    reconcilingPointer = true;
+    try { control.color.setValue(model.value); }
+    finally { reconcilingPointer = false; }
+  });
+}
+function onPointerdown(event: PointerEvent) {
+  if (!root.value || !pointer.start(root.value, event, {
+    onMove: updatePointer,
+    onEnd(event, canceled) {
+      if (!canceled) control.color.commit("pointer", event);
+    },
+  })) return;
+  event.preventDefault();
+  xInput.value?.focus({ preventScroll: true });
+  updatePointer(event);
+}
 function keydown(event: KeyboardEvent, channel: ColorChannel) {
   if (
     ![
@@ -132,11 +156,7 @@ function keydown(event: KeyboardEvent, channel: ColorChannel) {
     class="akaza-color-area"
     @focusin="control.onFocus"
     @focusout="control.onBlur"
-    @pointerdown="pointer.onPointerdown"
-    @pointermove="pointer.onPointermove"
-    @pointerup="pointer.onPointerup"
-    @pointercancel="pointer.onPointercancel"
-    @lostpointercapture="pointer.onLostpointercapture"
+    @pointerdown="onPointerdown"
   >
     <canvas
       ref="canvas"

@@ -4,6 +4,11 @@ defineProps<{ docs?: boolean }>();
 const emit = defineEmits<{ menu: [] }>();
 const route = useRoute();
 const searchOpen = useState("docs-search-open", () => false);
+// SSR markup is visible before async startup binds the search handlers.
+const searchReady = ref(false);
+onNuxtReady(() => {
+  searchReady.value = true;
+});
 const { data: navigation } = await useDocsNavigation();
 const category = computed(() =>
   navigation.value?.find(
@@ -63,6 +68,7 @@ const title = computed(() => pageTitle(navigation.value));
         aria-haspopup="dialog"
         aria-keyshortcuts="Control+K Meta+K"
         title="Search documentation (Ctrl/Cmd+K)"
+        :disabled="!searchReady"
         @click="searchOpen = true"
       >
         <Icon
@@ -106,6 +112,7 @@ const title = computed(() => pageTitle(navigation.value));
         aria-haspopup="dialog"
         aria-keyshortcuts="Control+K Meta+K"
         title="Search documentation (Ctrl/Cmd+K)"
+        :disabled="!searchReady"
         @click="searchOpen = true"
       >
         <Icon

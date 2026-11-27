@@ -10,8 +10,9 @@ import { Tooltip } from "../../ui/tooltip";
       direction="top"
       :delay-duration="200"
     >
-      <template #trigger>
+      <template #trigger="{ triggerProps }">
         <ExampleButton
+          v-bind="triggerProps"
           class="size-9 items-center justify-center"
           aria-label="Settings"
         >
@@ -41,8 +42,9 @@ import { Tooltip } from "../../ui/tooltip";
       direction="top"
       :delay-duration="200"
     >
-      <template #trigger>
+      <template #trigger="{ triggerProps }">
         <ExampleButton
+          v-bind="triggerProps"
           class="size-9 items-center justify-center"
           aria-label="Notifications"
         >
@@ -68,8 +70,9 @@ import { Tooltip } from "../../ui/tooltip";
       direction="top"
       :delay-duration="200"
     >
-      <template #trigger>
+      <template #trigger="{ triggerProps }">
         <ExampleButton
+          v-bind="triggerProps"
           class="size-9 items-center justify-center"
           aria-label="Help"
         >

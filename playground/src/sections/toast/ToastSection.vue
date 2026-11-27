@@ -107,6 +107,7 @@ function showCustom() {
     action: {
       label: "Inspect",
       altText: "Inspect custom notification",
+      closeOnSelect: false,
       onSelect: () => undefined,
     },
   });

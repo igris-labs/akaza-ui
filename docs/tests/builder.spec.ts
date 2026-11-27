@@ -81,5 +81,10 @@ test("documentation status badges appear on desktop and mobile", async ({ page }
     await expect(
       navigation.getByRole("link", { name: "Color Slider NEW", exact: true }),
     ).toBeVisible();
+    for (const name of ["useRovingFocus NEW", "useSelection NEW"]) {
+      const link = navigation.getByRole("link", { name, exact: true });
+      await expect(link).toBeVisible();
+      await expect(link.getByText("NEW", { exact: true })).toHaveClass(/\btext-success\b/);
+    }
   }
 });

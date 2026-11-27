@@ -9,6 +9,10 @@ navigation:
 
 Popup placement flips when preferred side lacks room, clamps to viewport, and follows anchor/content resize and ancestor scrolling.
 
+The popup uses the browser's native top layer when available. The input keeps native focus, text editing, and active-descendant navigation; opening does not move focus into the list. Hidden form inputs remain inline.
+
+`open-change` can cancel opening or dismissal. A controlled parent that refuses a close keeps content interactive and leaves input focus and search intact. An accepted outside press does not return focus from the clicked control.
+
 ## Anatomy
 
 - **`#option`**: Custom selectable option row content.
@@ -138,6 +142,8 @@ Creation is app-controlled: Akaza emits requested text and your app decides whet
 
 Object values use identity by default. Supply `isEqual` when values are recreated and `serializeValue` when submitting them in a form.
 
+Numeric and string values remain distinct. Toggling an option keeps other selected objects and disabled or filtered-out values unchanged. Canceling `value-change`, or refusing the controlled model update, leaves the next selection action based on the accepted model. Choosing an already-selected single option still emits one selection request. Clear and tag removal keep their separate `clear` and `remove` reasons.
+
 ```vue
 <Combobox
   v-model="assignee"
@@ -169,7 +175,7 @@ Object values use identity by default. Supply `isEqual` when values are recreate
 
 ## Async results and composition
 
-Result updates preserve the active option by value. If that option disappears, Combobox clears its active target. Enter during IME composition does not select an option.
+Result updates preserve the active option by value, using `isEqual` when supplied. If that option disappears, Combobox highlights the first enabled result, or clears its active target when none remain. Canceled or rejected controlled search requests preserve the accepted results and highlight. Enter during IME composition does not select an option.
 
 Custom option slots retain component identity during ordinary updates, preserving local state and focus.
 
@@ -270,6 +276,8 @@ A native form reset restores the initial model and clears interaction state. Cal
 
 ### Styling Hooks
 
+The popup uses SDK fixed positioning and matches the input width. SDK owns its coordinates; `ui.content` can style its appearance without adding placement transforms. Outside pointer presses use the shared popup dismissal stack. Native scrollbar presses keep the popup open.
+
 | UI key | CSS class | Data attrs |
 |--------|-----------|------------|
 | `root` | `akaza-combobox` | `data-akaza-state`, `data-akaza-disabled`, `data-akaza-invalid`, `data-akaza-filled`, `data-akaza-focused` |
@@ -299,9 +307,13 @@ Popup transitions follow their placement side and last `120ms`. Set `--akaza-com
 
 Using the popup scrollbar or mouse wheel keeps the list open. After a scrollbar gesture moves focus away from the input, focus returns without resetting your search. Moving focus to an outside control or clicking outside still closes the popup.
 
+An arrow opens at the first enabled result; subsequent arrows move highlight without selecting. `:loop="false"` stops at either edge. Home and End navigate results only while open; closed inputs retain native caret movement. Highlight scrolling stays inside the options viewport.
+
+Navigation and activation ignore prevented events, IME composition (including legacy key code 229), and Ctrl/Meta/Alt combinations. Disabled native fieldsets and read-only controls block these actions.
+
 | Key | Behavior |
 |-----|----------|
-| `ArrowDown` / `ArrowUp` | Open popup and move highlight. |
+| `ArrowDown` / `ArrowUp` | Open at first enabled result; move highlight when open. |
 | `Enter` | Select highlighted option or request creation for unmatched text. |
-| `Home` / `End` | Move to first/last enabled visible option. |
+| `Home` / `End` | Move to first/last enabled visible option while open. |
 | `Escape` | Close popup. |

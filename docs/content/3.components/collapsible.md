@@ -20,6 +20,9 @@ The trigger button is rendered by the component. Use the `ui.trigger` prop to ad
 ## Usage
 
 ::component-preview
+---
+fitContent: true
+---
   :::examples-collapsible-demo
   :::
 ::
@@ -102,7 +105,9 @@ const panel = ref();
 
 ### Unmount on hide
 
-Remove the content from the DOM when collapsed, instead of hiding it.
+Remove slot content after the closing CSS transition finishes, instead of
+retaining it hidden. Region, inner, and body wrappers remain mounted. Reopening
+during exit preserves the current slot instance.
 
 ```vue
 <template>
@@ -110,10 +115,21 @@ Remove the content from the DOM when collapsed, instead of hiding it.
     <template #trigger>
       <span>Toggle</span>
     </template>
-    <template #content>Only in DOM when open.</template>
+    <template #content>Mounted while open and during exit.</template>
   </Collapsible>
 </template>
 ```
+
+By default, slot content stays mounted so form drafts and local state survive
+closing. Closed content is inert and hidden from assistive technology, even
+before hydration or without the package stylesheet. The region receives `hidden`
+after exit completes. There is no `forceMount` prop; default retention is the
+existing keep-mounted API.
+
+The public SDK `bindPanel` coordinates sizing, CSS completion, and focus recovery.
+Opening does not autofocus content. Closing around focused content returns focus
+to the trigger without stealing outside focus. Canceled changes and controlled
+parent refusal do not start an exit.
 
 ## API Reference
 
@@ -122,7 +138,7 @@ Remove the content from the DOM when collapsed, instead of hiding it.
 | Prop | Type | Default | Description |
 |------|------|---------|-------------|
 | `disabled` | `boolean` | `false` | Prevents the panel from being toggled. |
-| `unmountOnHide` | `boolean` | `false` | Remove content from the DOM when closed. |
+| `unmountOnHide` | `boolean` | `false` | Remove slot content after its closing transition; otherwise retain it hidden. |
 | `as` | `string` | `"div"` | Root element tag. |
 | `ui` | `CollapsibleUi` | — | CSS class overrides. |
 
@@ -169,6 +185,36 @@ Remove the content from the DOM when collapsed, instead of hiding it.
 | `contentWrapper` | `akaza-collapsible-content` | `data-akaza-state` |
 | `contentInner` | `akaza-collapsible-content-inner` | — |
 | `content` | `akaza-collapsible-content-body` | — |
+
+The region exposes `--akaza-collapsible-content-height` and
+`--akaza-collapsible-content-width`: measured pixel sizes during animation, `auto`
+once open, and `0px` when closed. The default transition uses height rather than
+grid rows. Existing classes, wrappers, `ui` keys, and state attributes remain.
+
+The animated wrapper uses block flow so its contents keep a measurable natural
+height while closed. Put grid or flex content layouts on `ui.content`; shrinking
+the wrapper's grid rows to zero prevents height measurement.
+
+SDK-owned `data-starting-style` and `data-ending-style` mark entry and exit.
+Customize CSS through `ui.contentWrapper`; do not add another Vue `Transition`,
+timer, or presence manager to the region. SDK completion controls when it hides
+and when `unmountOnHide` removes the slot. Keep `[hidden]` regions `display: none`
+if overriding their display mode. Package CSS disables default panel and icon
+transitions under reduced motion; custom animations should honor it too.
+
+```css
+.custom-collapsible-panel {
+  height: var(--akaza-collapsible-content-height);
+  transition: height 240ms ease-out;
+}
+.custom-collapsible-panel[data-starting-style],
+.custom-collapsible-panel[data-ending-style] {
+  height: 0;
+}
+@media (prefers-reduced-motion: reduce) {
+  .custom-collapsible-panel { transition: none; }
+}
+```
 
 ### Keyboard
 

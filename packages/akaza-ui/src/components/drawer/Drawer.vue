@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import type { DrawerProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
-import { usePointerSwipe } from "@vueuse/core";
-import { computed, useId, useTemplateRef } from "vue";
+import { computed, nextTick, useId, useTemplateRef, watch } from "vue";
 import { useDrawer } from "../../composables/drawer";
+import { usePointerDrag } from "../../composables/internal/sdk/usePointerDrag";
+import { usePopup } from "../../composables/internal/sdk/usePopup";
 import { createChangeDetails, resolveAction } from "../../utils/changeEvent";
-import { useFocusBranch } from "../../utils/focusScope";
-import { useModalLifecycle } from "../../utils/useModalLifecycle";
 
 const {
   as = "div",
@@ -27,49 +26,50 @@ const emit = defineEmits<{
 }>();
 
 const DISMISS_THRESHOLD = 100;
-const TRANSITION_DURATION = 300;
 
 const model = defineModel<boolean>({ default: false });
-const { isOpen, open: _open, close: _close, toggle: _toggle } = useDrawer(model);
+const { isOpen, open: _open, close: _close } = useDrawer(model);
 
 const contentRef = useTemplateRef<HTMLElement>("contentRef");
 const overlayRef = useTemplateRef<HTMLElement>("overlayRef");
-useFocusBranch(contentRef);
 const titleId = useId();
 const descriptionId = useId();
-const { layerOrder, captureRestoreTarget } = useModalLifecycle({
+const popup = usePopup({
+  kind: "dialog",
   open: isOpen,
   content: contentRef,
-  overlay: overlayRef,
+  backdrop: overlayRef,
   modal: () => modal,
-  onEscape: event => close("escape", event),
+  get initialFocus() { return modal ? "auto" : "none"; },
+  transition: () => "akaza-drawer",
+  backdropTransition: () => "akaza-drawer-overlay",
+  request(nextOpen, sdkReason, event) {
+    if (sdkReason === "outside-press" && (!modal || !closeOnBackdropClick)) return;
+    const reason = sdkReason === "escape-key" ? "escape"
+      : sdkReason === "outside-press" ? "backdrop-click" : sdkReason;
+    handleChange(nextOpen, reason, event);
+  },
 });
-
+const { present, contentAttrs, backdropAttrs, style: popupStyle, layerOrder } = popup;
 
 function handleChange(nextOpen: boolean, reason: string, event?: Event) {
   const changeEvent = createChangeDetails(reason, event);
   emit('open-change', nextOpen, changeEvent.details);
   if (changeEvent.canceled()) return;
-  if (nextOpen) captureRestoreTarget(event);
   nextOpen ? _open() : _close();
 }
 
 function open(reasonOrEvent?: string | Event, event?: Event) {
   const details = resolveAction(reasonOrEvent, event);
-  handleChange(true, details.reason, details.event);
+  popup.setOpen(true, details.reason, details.event);
 }
 function close(reasonOrEvent?: string | Event, event?: Event) {
   const details = resolveAction(reasonOrEvent, event);
-  handleChange(false, details.reason, details.event);
+  popup.setOpen(false, details.reason, details.event);
 }
 function toggle(reasonOrEvent?: string | Event, event?: Event) {
   const details = resolveAction(reasonOrEvent, event);
-  handleChange(!isOpen.value, details.reason, details.event);
-}
-
-
-function onOverlayClick(event: MouseEvent) {
-  if (closeOnBackdropClick) close('backdrop-click', event);
+  popup.setOpen(!isOpen.value, details.reason, details.event);
 }
 
 const insetValue = computed(() =>
@@ -85,22 +85,12 @@ function getSwipeAxis(): "x" | "y" {
   return side === "left" || side === "right" ? "x" : "y";
 }
 
-function getOffscreenValue(axis: "x" | "y"): string {
-  if (axis === "x") return side === "right" ? "110%" : "-110%";
-  return side === "bottom" ? "110%" : "-110%";
-}
-
-// VueUse distanceX/Y = posStart - posEnd.
-// Swiping right → posEnd.x > posStart.x → distanceX < 0  → use -dX
-// Swiping left  → posEnd.x < posStart.x → distanceX > 0  → use  dX
-// Swiping down  → posEnd.y > posStart.y → distanceY < 0  → use -dY
-// Swiping up    → posEnd.y < posStart.y → distanceY > 0  → use  dY
 function getMovement(dX: number, dY: number): number {
   switch (side) {
-    case "right":  return Math.max(0, -dX);
-    case "left":   return Math.max(0, dX);
-    case "bottom": return Math.max(0, -dY);
-    case "top":    return Math.max(0, dY);
+    case "right":  return Math.max(0, dX);
+    case "left":   return Math.max(0, -dX);
+    case "bottom": return Math.max(0, dY);
+    case "top":    return Math.max(0, -dY);
     default:       return 0;
   }
 }
@@ -122,81 +112,54 @@ function clearSwipeVars() {
   overlayRef.value?.style.removeProperty("--drawer-swipe-progress");
 }
 
-const { distanceX, distanceY } = usePointerSwipe(contentRef, {
-  threshold: 10,
-  onSwipe() {
-    if (!swipeToClose || !contentRef.value) return;
-    const movement = getMovement(distanceX.value, distanceY.value);
-    if (movement <= 0) return;
-    contentRef.value.setAttribute("data-swiping", "");
-    setSwipeVars(movement);
-  },
-  onSwipeEnd() {
-    if (!contentRef.value) return;
-    const movement = getMovement(distanceX.value, distanceY.value);
-    if (swipeToClose && movement >= DISMISS_THRESHOLD) {
-      // Keep data-swiping on; onLeave() removes it and animates from current offset.
-      close('swipe');
-    } else {
-      // Snap back: restore transition, then clear var → animates to 0.
-      contentRef.value.removeAttribute("data-swiping");
-      clearSwipeVars();
-    }
-  },
-});
+const drag = usePointerDrag(() => !swipeToClose || !isOpen.value);
 
-// ─── JS transition hooks ──────────────────────────────────────────────────────
-//
-// We use :css="false" to avoid CSS specificity conflicts between
-// `.akaza-drawer[data-akaza-side]` (0,2,0) and Vue transition classes (0,1,0).
-// Instead, the CSS variable --drawer-swipe-movement-x/y is the single source
-// of truth for the transform value, which the CSS rule reads at all times.
-//
-// Enter: set var to offscreen → reflow → clear var → CSS transition to 0
-// Leave: remove data-swiping → reflow → set var to offscreen → CSS transition
-// Snap-back: [data-swiping] removed → clear var → CSS transition handles it
-
-function onBeforeEnter(el: Element) {
-  const h = el as HTMLElement;
-  h.style.transition = "none"; // suppress CSS transition during initial placement
-  h.style.setProperty(`--drawer-swipe-movement-${getSwipeAxis()}`, getOffscreenValue(getSwipeAxis()));
-}
-
-function onEnter(el: Element, done: () => void) {
-  const h = el as HTMLElement;
-  const axis = getSwipeAxis();
-  h.style.transition = ""; // restore CSS rule transition
-  void h.offsetWidth;       // commit offscreen position as "from" state
-  h.style.removeProperty(`--drawer-swipe-movement-${axis}`); // animate to 0
-
-  const fallback = setTimeout(done, TRANSITION_DURATION + 50);
-  h.addEventListener("transitionend", (e) => {
-    if ((e as TransitionEvent).propertyName === "transform") {
-      clearTimeout(fallback);
-      done();
-    }
-  }, { once: true });
-}
-
-function onLeave(el: Element, done: () => void) {
-  const h = el as HTMLElement;
-  h.removeAttribute("data-swiping"); // re-enable CSS transition if mid-swipe dismiss
-  const axis = getSwipeAxis();
-  void h.offsetWidth; // commit current position (may be at swipe offset) as "from"
-  h.style.setProperty(`--drawer-swipe-movement-${axis}`, getOffscreenValue(axis));
-
-  const fallback = setTimeout(done, TRANSITION_DURATION + 50);
-  h.addEventListener("transitionend", (e) => {
-    if ((e as TransitionEvent).propertyName === "transform") {
-      clearTimeout(fallback);
-      done();
-    }
-  }, { once: true });
-}
-
-function onAfterLeave() {
+function resetSwipe() {
+  contentRef.value?.removeAttribute("data-swiping");
   clearSwipeVars();
 }
+
+function onSwipePointerDown(event: PointerEvent) {
+  if (event.defaultPrevented || !contentRef.value) return;
+  const target = event.target as HTMLElement | null;
+  if (target?.closest("button, a, input, select, textarea, [contenteditable='true']")) return;
+  const element = contentRef.value;
+  const movement = (sample: PointerEvent) => getMovement(sample.clientX - event.clientX, sample.clientY - event.clientY);
+  drag.start(element, event, {
+    onMove(sample) {
+      const distance = movement(sample);
+      if (distance < 10) {
+        resetSwipe();
+        return;
+      }
+      element.setAttribute("data-swiping", "");
+      setSwipeVars(distance);
+    },
+    async onEnd(sample, canceled) {
+      if (canceled || movement(sample) < DISMISS_THRESHOLD) {
+        resetSwipe();
+        return;
+      }
+      // Keep the final offset until SDK exit styles apply, or snap back if the parent refuses.
+      setSwipeVars(movement(sample));
+      close("swipe", sample);
+      await nextTick();
+      if (isOpen.value) resetSwipe();
+      else element.removeAttribute("data-swiping");
+    },
+  });
+}
+
+watch([() => side, () => swipeToClose], () => {
+  drag.cancel();
+  resetSwipe();
+});
+
+watch(isOpen, (open) => {
+  if (open) return;
+  drag.cancel();
+  contentRef.value?.removeAttribute("data-swiping");
+});
 
 defineExpose({ open, close, toggle, titleId, descriptionId });
 </script>
@@ -214,86 +177,75 @@ defineExpose({ open, close, toggle, titleId, descriptionId });
     :to="typeof teleport === 'string' ? teleport : 'body'"
     :disabled="teleport === false"
   >
-    <Transition name="akaza-drawer-overlay">
-      <div
-        v-if="isOpen && modal"
-        ref="overlayRef"
-        :class="ui?.overlay"
-        :style="{ '--akaza-layer-order': layerOrder }"
-        class="akaza-drawer-overlay"
-        data-akaza-state="open"
-        @click="onOverlayClick"
-      />
-    </Transition>
-
-    <Transition
-      :css="false"
-      @before-enter="onBeforeEnter"
-      @enter="onEnter"
-      @leave="onLeave"
-      @after-leave="onAfterLeave"
+    <div
+      v-if="present && modal"
+      ref="overlayRef"
+      v-bind="backdropAttrs"
+      :class="ui?.overlay"
+      :style="{ '--akaza-layer-order': layerOrder }"
+      class="akaza-drawer-overlay"
+      :data-akaza-state="isOpen ? 'open' : 'closed'"
+    />
+    <component
+      :is="as"
+      v-if="present"
+      ref="contentRef"
+      v-bind="contentAttrs"
+      role="dialog"
+      :aria-modal="modal ? true : undefined"
+      :aria-labelledby="($slots.title || title) ? titleId : undefined"
+      :aria-label="!($slots.title || title) ? ariaLabel : undefined"
+      :aria-describedby="($slots.description || description) ? descriptionId : undefined"
+      :class="ui?.content"
+      :style="{ ...popupStyle, ...drawerStyle, '--akaza-layer-order': layerOrder }"
+      class="akaza-drawer"
+      :data-akaza-side="side"
+      :data-akaza-swipe-enabled="swipeToClose || undefined"
+      :data-akaza-state="isOpen ? 'open' : 'closed'"
+      tabindex="-1"
+      @pointerdown="onSwipePointerDown"
     >
-      <component
-        :is="as"
-        v-if="isOpen"
-        ref="contentRef"
-        role="dialog"
-        :aria-modal="modal ? true : undefined"
-        :aria-labelledby="($slots.title || title) ? titleId : undefined"
-        :aria-label="!($slots.title || title) ? ariaLabel : undefined"
-        :aria-describedby="($slots.description || description) ? descriptionId : undefined"
-        :class="ui?.content"
-        :style="{ ...drawerStyle, '--akaza-layer-order': layerOrder }"
-        class="akaza-drawer"
-        :data-akaza-side="side"
-        data-akaza-state="open"
-        tabindex="-1"
+      <!-- Handle bar area — render at top of panel before header -->
+      <slot name="handle" />
+
+      <div
+        v-if="$slots.header || $slots.title || title"
+        :class="ui?.header"
+        class="akaza-drawer-header"
       >
-        <!-- Handle bar area — render at top of panel before header -->
-        <slot name="handle" />
-
-        <div
-          v-if="$slots.header || $slots.title || title"
-          :class="ui?.header"
-          class="akaza-drawer-header"
-        >
-          <slot name="header" :close="close" :title-id="titleId">
-            <div :id="titleId" :class="ui?.title" class="akaza-drawer-title">
-              <slot name="title">{{ title }}</slot>
-            </div>
-          </slot>
-        </div>
-
-        <div :class="ui?.body" class="akaza-drawer-body">
-          <div
-            v-if="$slots.description || description"
-            :id="descriptionId"
-            :class="ui?.description"
-            class="akaza-drawer-description"
-          >
-            <slot name="description">{{ description }}</slot>
+        <slot name="header" :close="close" :title-id="titleId">
+          <div :id="titleId" :class="ui?.title" class="akaza-drawer-title">
+            <slot name="title">{{ title }}</slot>
           </div>
-          <slot name="body" :close="close" :description-id="descriptionId" />
-        </div>
+        </slot>
+      </div>
 
+      <div :class="ui?.body" class="akaza-drawer-body">
         <div
-          v-if="$slots.footer"
-          :class="ui?.footer"
-          class="akaza-drawer-footer"
+          v-if="$slots.description || description"
+          :id="descriptionId"
+          :class="ui?.description"
+          class="akaza-drawer-description"
         >
-          <slot name="footer" :close="close" />
+          <slot name="description">{{ description }}</slot>
         </div>
-      </component>
-    </Transition>
+        <slot name="body" :close="close" :description-id="descriptionId" />
+      </div>
+
+      <div
+        v-if="$slots.footer"
+        :class="ui?.footer"
+        class="akaza-drawer-footer"
+      >
+        <slot name="footer" :close="close" />
+      </div>
+    </component>
   </Teleport>
 </template>
 
 <style>
 @layer akaza-reset {
-  /* Positioning by side + inset.
-     transform uses the CSS variable as single source of truth.
-     CSS transition handles: enter, leave, and snap-back animations.
-     JS hooks (onEnter/onLeave) manipulate the variable to trigger transitions. */
+  /* SDK presence flags override swipe offsets only at the animation edges. */
 
   .akaza-drawer {
     position: fixed;
@@ -340,6 +292,32 @@ defineExpose({ open, close, toggle, titleId, descriptionId });
     transition: transform 300ms cubic-bezier(0.32, 0.72, 0, 1);
   }
 
+  .akaza-drawer[data-akaza-side="right"]:is([data-starting-style], [data-ending-style]) {
+    transform: translateX(110%);
+  }
+
+  .akaza-drawer[data-akaza-side="left"]:is([data-starting-style], [data-ending-style]) {
+    transform: translateX(-110%);
+  }
+
+  .akaza-drawer[data-akaza-side="top"]:is([data-starting-style], [data-ending-style]) {
+    transform: translateY(-110%);
+  }
+
+  .akaza-drawer[data-akaza-side="bottom"]:is([data-starting-style], [data-ending-style]) {
+    transform: translateY(110%);
+  }
+
+  .akaza-drawer[data-akaza-swipe-enabled][data-akaza-side="left"],
+  .akaza-drawer[data-akaza-swipe-enabled][data-akaza-side="right"] {
+    touch-action: pan-y;
+  }
+
+  .akaza-drawer[data-akaza-swipe-enabled][data-akaza-side="top"],
+  .akaza-drawer[data-akaza-swipe-enabled][data-akaza-side="bottom"] {
+    touch-action: pan-x;
+  }
+
   /* Disable transition while pointer is dragging */
   .akaza-drawer[data-swiping] {
     transition: none !important;
@@ -347,14 +325,35 @@ defineExpose({ open, close, toggle, titleId, descriptionId });
   }
 
   /* Overlay fade */
-  .akaza-drawer-overlay-enter-active,
-  .akaza-drawer-overlay-leave-active {
-    transition: opacity 0.3s ease;
+  .akaza-drawer-overlay {
+    transition-property: none;
   }
 
-  .akaza-drawer-overlay-enter-from,
-  .akaza-drawer-overlay-leave-to {
+  .akaza-drawer-overlay:is([data-akaza-state="closed"], .akaza-drawer-overlay-leave-to) {
     opacity: 0;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .akaza-drawer-overlay {
+      transition: opacity 300ms ease;
+    }
+
+    /* The SDK can reveal the backdrop before its entry classes reach the DOM. */
+    @starting-style {
+      .akaza-drawer-overlay {
+        opacity: 0;
+      }
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .akaza-drawer[data-akaza-side] {
+      transition-duration: 0s;
+    }
+
+    .akaza-drawer[data-akaza-side]:is([data-starting-style], [data-ending-style]) {
+      transform: none;
+    }
   }
 
   /* Auto-rendered title/description */

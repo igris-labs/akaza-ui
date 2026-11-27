@@ -60,6 +60,9 @@ const columns: DataTableColumn<Member>[] = [
 ];
 
 const selection = ref<DataTableRowKey[]>([]);
+const rowOrder = ref<DataTableRowKey[]>([]);
+const columnOrder = ref<string[]>([]);
+const resizeOnDrop = ref(false);
 const sorting = ref<DataTableSorting[]>([]);
 const pagination = ref<DataTablePaginationState>({ page: 1, pageSize: 4 });
 const globalFilter = ref("");
@@ -134,6 +137,8 @@ const stateData = computed(() => state.value === "ready" ? members.slice(0, 2) :
         <div :class="canvasCol">
           <DataTable
             v-model:selection="selection"
+            v-model:row-order="rowOrder"
+            v-model:column-order="columnOrder"
             v-model:sorting="sorting"
             v-model:pagination="pagination"
             v-model:global-filter="globalFilter"
@@ -147,10 +152,15 @@ const stateData = computed(() => state.value === "ready" ? members.slice(0, 2) :
             sticky-header
             column-reorder
             row-reorder
-            :column-resize="{ behavior: 'expand', keyboardStep: 16 }"
+            :column-resize="{ behavior: 'expand', keyboardStep: 16, update: resizeOnDrop ? 'end' : 'change' }"
             :ui="dataTableUi"
+            class="data-table-gestures"
           >
             <template #toolbar="{ table }">
+              <label class="inline-flex items-center gap-2 text-sm">
+                <input v-model="resizeOnDrop" type="checkbox">
+                Resize on drop
+              </label>
               <div class="flex min-w-0 flex-1 flex-wrap items-center gap-2">
                 <input
                   :value="globalFilter"
@@ -221,6 +231,8 @@ const stateData = computed(() => state.value === "ready" ? members.slice(0, 2) :
             <code :class="codePill">selected: {{ selection.join(", ") || "none" }}</code>
             <code :class="codePill">sort: {{ sorting[0]?.id || "none" }} {{ sorting[0]?.direction || "" }}</code>
             <code :class="codePill">page: {{ pagination.page }}</code>
+            <code :class="codePill">row order: {{ rowOrder.join(", ") || "default" }}</code>
+            <code :class="codePill">column order: {{ columnOrder.join(", ") || "default" }}</code>
           </div>
           <p class="text-xs text-muted-foreground">{{ lastAction }}</p>
         </div>
@@ -275,3 +287,15 @@ const stateData = computed(() => state.value === "ready" ? members.slice(0, 2) :
     </div>
   </section>
 </template>
+
+<style scoped>
+.data-table-gestures :deep([data-akaza-grabbed]) {
+  outline: 1px dashed currentColor;
+  outline-offset: -1px;
+}
+
+.data-table-gestures :deep([data-akaza-drop-target]) {
+  outline: 2px solid currentColor;
+  outline-offset: -2px;
+}
+</style>

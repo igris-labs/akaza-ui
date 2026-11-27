@@ -2,10 +2,10 @@
 import type { CSSProperties } from "vue";
 import type { TabsItem, TabsProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
-import { onKeyStroke } from "@vueuse/core";
+import { isComposing } from "@ui-sdk/core";
 import { computed, nextTick, onMounted, onUnmounted, ref, useId } from "vue";
+import { useRovingGroup } from "../../composables/internal/sdk/useRovingGroup";
 import { createChangeDetails } from "../../utils/changeEvent";
-import { nextEnabledIndex } from "../../utils/useRovingFocus";
 
 const {
   items,
@@ -46,12 +46,24 @@ const rovingValue = computed(() => {
   if (model.value && items.some((i) => i.value === model.value && !i.disabled)) return model.value;
   return items.find((i) => !i.disabled)?.value ?? "";
 });
+const roving = useRovingGroup({
+  keys: () => items.map(item => item.value),
+  disabled: key => {
+    const item = items.find(item => item.value === key);
+    return !item || Boolean(item.disabled);
+  },
+  preferred: () => rovingValue.value,
+  orientation: () => orientation,
+  loop: () => true,
+  remember: false,
+});
 
 // ── Element refs for indicator ─────────────────────────────────
 
 const tabEls: (HTMLElement | null)[] = [];
-function setTabRef(el: HTMLElement | null, index: number) {
+function setTabRef(el: HTMLElement | null, item: TabsItem, index: number) {
   tabEls[index] = el;
+  roving.bind(item.value, el);
 }
 
 const listRef = ref<HTMLElement | null>(null);
@@ -96,36 +108,20 @@ onUnmounted(() => {
 
 // ── Keyboard navigation ────────────────────────────────────────
 
-onKeyStroke(["ArrowRight", "ArrowLeft", "ArrowDown", "ArrowUp", "Home", "End"], (e) => {
-  if (!listRef.value?.contains(document.activeElement)) return;
-
-  const enabled = items.filter((i) => !i.disabled);
-  if (enabled.length === 0) return;
-
-  const isHorizontal = orientation === "horizontal";
-  const isPrev = (isHorizontal && e.key === "ArrowLeft") || (!isHorizontal && e.key === "ArrowUp");
-  const isNext = (isHorizontal && e.key === "ArrowRight") || (!isHorizontal && e.key === "ArrowDown");
-  if (!isPrev && !isNext && e.key !== "Home" && e.key !== "End") return;
-
-  e.preventDefault();
-
-  const focusedValue = (document.activeElement as HTMLElement)?.dataset?.akazaValue ?? "";
-  const fromIdx = enabled.findIndex((i) => i.value === focusedValue);
-  const currentIdx = fromIdx >= 0 ? fromIdx : enabled.findIndex((i) => i.value === model.value);
-
-  let nextIdx = currentIdx;
-  if (isPrev || isNext) nextIdx = nextEnabledIndex(enabled, currentIdx < 0 && isPrev ? 0 : currentIdx, isNext ? 1 : -1, true);
-  else if (e.key === "Home") nextIdx = 0;
-  else if (e.key === "End") nextIdx = enabled.length - 1;
-
-  const nextItem = enabled[nextIdx];
-  if (!nextItem) return;
-
-  const nextOrigIdx = items.findIndex((i) => i.value === nextItem.value);
-  tabEls[nextOrigIdx]?.focus();
-
-  if (activationMode === "automatic") activate(nextItem, e);
-});
+function onTabKeydown(event: KeyboardEvent) {
+  if (event.defaultPrevented || isComposing(event)) return;
+  if (event.key === "Enter" || event.key === " ") {
+    event.preventDefault();
+    const item = items.find(item => tabId(item) === (event.currentTarget as HTMLElement).id);
+    if (item) activate(item, event);
+    return;
+  }
+  const movement = roving.keydown(event, event.currentTarget as HTMLElement);
+  if (movement && activationMode === "automatic") {
+    const item = items.find(item => item.value === movement.key);
+    if (item) activate(item, event);
+  }
+}
 
 function activate(item: TabsItem, event?: Event) {
   if (item.disabled) return;
@@ -154,13 +150,13 @@ function activate(item: TabsItem, event?: Event) {
         v-for="(item, index) in items"
         :id="tabId(item)"
         :key="item.value"
-        :ref="(el) => setTabRef(el as HTMLElement | null, index)"
+        :ref="(el) => setTabRef(el as HTMLElement | null, item, index)"
         type="button"
         role="tab"
         :aria-selected="isActive(item)"
         :aria-controls="panelId(item)"
         :aria-disabled="item.disabled || undefined"
-        :tabindex="rovingValue === item.value ? 0 : -1"
+        :tabindex="roving.tabIndex(item.value)"
         :data-akaza-state="isActive(item) ? 'active' : 'inactive'"
         :data-akaza-value="item.value"
         :data-akaza-disabled="item.disabled || undefined"
@@ -168,8 +164,7 @@ function activate(item: TabsItem, event?: Event) {
         :class="ui?.tab"
         class="akaza-tab"
         @click="activate(item, $event)"
-        @keydown.enter.prevent="activate(item, $event)"
-        @keydown.space.prevent="activate(item, $event)"
+        @keydown="onTabKeydown"
       >
         <slot name="tab" :item="item" :is-active="isActive(item)" :select="() => activate(item)">
           {{ getLabel(item) }}

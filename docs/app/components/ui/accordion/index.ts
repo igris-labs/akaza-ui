@@ -14,7 +14,7 @@ export const accordionVariants = tv({
       "flex w-full items-center justify-between rounded-none text-left font-medium text-highlighted transition-colors duration-150 ease-interaction outline-none hover:bg-foreground/5 focus-visible:outline-1 focus-visible:-outline-offset-2 focus-visible:outline-ring focus-visible:outline-solid disabled:pointer-events-none disabled:opacity-50 data-akaza-disabled:pointer-events-none data-akaza-disabled:opacity-50 data-[akaza-state=open]:bg-foreground/3 motion-reduce:transition-none pointer-coarse:min-h-11",
     icon: "shrink-0 rotate-0 transform-none text-muted-foreground transition-transform duration-180 ease-interaction data-[akaza-state=open]:rotate-180 motion-reduce:transition-none",
     contentWrapper:
-      "grid grid-rows-[0fr] overflow-hidden transition-[grid-template-rows] duration-180 ease-interaction data-[akaza-state=open]:grid-rows-[1fr] motion-reduce:transition-none",
+      "block overflow-hidden transition-[height] duration-180 ease-interaction motion-reduce:transition-none",
     contentInner: "min-h-0 overflow-hidden",
     content: "text-muted-foreground",
   },

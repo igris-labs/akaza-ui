@@ -14,7 +14,7 @@ async function expectWithinViewport(content: Locator) {
   })).toBe(true);
 }
 
-test("pointer-anchored context menus flip both axes and track viewport resizing", async ({ page }) => {
+test("pointer-anchored context menus flip, clamp, and track viewport resizing", async ({ page }) => {
   const target = section(page, "context-menu").getByText("Right-click here", { exact: true });
   await target.evaluate(element => {
     const surface = element.parentElement!;
@@ -24,7 +24,7 @@ test("pointer-anchored context menus flip both axes and track viewport resizing"
   const content = page.locator(".akaza-context-menu-content").first();
   await expect(content).toBeVisible();
   await expect(content).toHaveAttribute("data-akaza-side", "left");
-  await expect(content).toHaveAttribute("data-akaza-align", "end");
+  await expect(content).toHaveAttribute("data-akaza-align", "start");
   await expectWithinViewport(content);
   await page.setViewportSize({ width: 640, height: 480 });
   await expectWithinViewport(content);
@@ -33,7 +33,7 @@ test("pointer-anchored context menus flip both axes and track viewport resizing"
   await expect(content).toBeHidden();
 });
 
-test("inline popovers use offset-parent coordinates without overriding consumer transforms", async ({ page }) => {
+test("inline popovers use SDK coordinates without overriding consumer transforms", async ({ page }) => {
   const trigger = section(page, "popover").getByRole("button", { name: "start", exact: true });
   await trigger.evaluate(element => {
     const root = element.closest<HTMLElement>(".akaza-popover-root")!;
@@ -61,6 +61,7 @@ test("preview arrows stay anchored through content resizing and viewport clampin
   await trigger.evaluate(element => {
     element.closest<HTMLElement>(".akaza-hover-preview-card-root")!.style.cssText = "position:fixed;left:4px;top:180px;z-index:2000";
   });
+  await page.keyboard.press("Tab");
   await trigger.focus();
   const content = page.locator('.akaza-hover-preview-card-content[data-akaza-state="open"]');
   await expect(content).toBeVisible();

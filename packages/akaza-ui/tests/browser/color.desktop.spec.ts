@@ -1,7 +1,20 @@
+import type { Locator } from "@playwright/test";
 import { expect, test } from "@playwright/test";
 import { openPlayground, section } from "./helpers";
 
 test.beforeEach(async ({ page }) => { await openPlayground(page); });
+
+async function expectActiveThumb(thumb: Locator) {
+  const color = await thumb.evaluate((element) => {
+    const sample = document.createElement("span");
+    sample.style.backgroundColor = getComputedStyle(element).getPropertyValue("--akaza-color");
+    element.append(sample);
+    const background = getComputedStyle(sample).backgroundColor;
+    sample.remove();
+    return background;
+  });
+  await expect(thumb).toHaveCSS("background-color", color);
+}
 
 test("color picker preserves output format, hue memory, and keyboard access", async ({ page }) => {
   const demo = section(page, "color-picker");
@@ -14,7 +27,7 @@ test("color picker preserves output format, hue memory, and keyboard access", as
   await expect(picker.getByRole("textbox")).toHaveValue(/^lch\(/);
   await demo.getByLabel("Output format").selectOption("display-p3");
   await expect(picker.getByRole("textbox")).toHaveValue(/^color\(display-p3 /);
-  await expect(picker.locator(".akaza-color-slider-thumb").first()).toHaveCSS("background-color", "rgb(255, 255, 255)");
+  await expectActiveThumb(picker.locator(".akaza-color-slider-thumb").first());
   const readonly = demo.locator(".akaza-color-picker[data-akaza-readonly]");
   const readonlyHue = readonly.getByRole("slider", { name: "Hue", exact: true });
   const previous = await readonlyHue.inputValue();
@@ -64,10 +77,19 @@ test("color area paints a nonblank plane and accepts pointer/channel input", asy
     return pixels.some(value => value !== 0) && pixels[0] !== pixels[(element.height - 1) * element.width * 4];
   })).toBe(true);
   await expect(area.getByRole("slider").first()).toHaveAttribute("aria-label", "Brand area Hue");
-  await expect(area.locator(".akaza-color-area-thumb")).toHaveCSS("background-color", "rgb(255, 255, 255)");
+  const thumb = area.locator(".akaza-color-area-thumb");
+  await expectActiveThumb(thumb);
+  const previousColor = await thumb.evaluate(element => getComputedStyle(element).backgroundColor);
   const size = await canvas.boundingBox();
-  expect(size?.width).toBe(size?.height);
+  if (!size) throw new Error("Missing color plane bounds");
+  // Firefox reports fractional CSS bounds even for an aspect-square canvas.
+  expect(size.width).toBeCloseTo(size.height, 3);
+  const bitmap = await canvas.evaluate(element => ({ width: element.width, height: element.height }));
+  expect(bitmap.width).toBeGreaterThan(0);
+  expect(bitmap.width).toBe(bitmap.height);
   await canvas.click({ position: { x: 60, y: 40 } });
+  await expect(thumb).not.toHaveCSS("background-color", previousColor);
+  await expectActiveThumb(thumb);
   const x = area.getByRole("slider").first();
   const y = area.getByRole("slider").last();
   await expect(x).toBeFocused();
@@ -110,6 +132,7 @@ test("color area lightness and opacity reach black, white, and transparent witho
   await opacity.focus();
   await opacity.press("Home");
   await expect(output).toHaveText("Current: #ffffff00");
+  await expectActiveThumb(controls.locator(".akaza-color-slider-thumb").last());
   await lightness.focus();
   for (let i = 0; i < 5; i++) await lightness.press("PageDown");
   await expect(lightness).toHaveValue("50");
@@ -173,7 +196,7 @@ test("color area output formats preserve its rainbow, handles, and other example
   const hue = await axes.first().inputValue();
   const saturation = await axes.last().inputValue();
   const otherValue = await demo.locator("output").first().textContent();
-  const output = demo.locator("output").nth(1);
+  const output = demo.getByRole("status", { name: "Formatted color", exact: true });
   const selector = demo.getByRole("combobox");
   await expect(selector.locator("option")).toHaveCount(17);
   const formats = await selector.locator("option").evaluateAll(options => options.map(option => option.value));
@@ -208,10 +231,22 @@ test("color field validates drafts, submits formatted output, and resets", async
 test("color palette uses semantic single and multiple selection", async ({ page }) => {
   const demo = section(page, "color-swatch-picker");
   const single = demo.getByRole("listbox", { name: "Brand palette" });
+  const red = single.getByRole("option", { name: "Red", exact: true });
+  await red.click();
+  await expect(red).toHaveAttribute("aria-selected", "true");
+  await demo.getByRole("listbox", { name: "Environment colors" }).getByRole("option", { name: "Production" }).click();
+  await expect(red).toHaveAttribute("aria-selected", "true");
+  await expect(demo.locator("output").first()).toHaveText("#ef4444");
   await single.getByRole("option", { name: "Blue", exact: true }).click();
   await expect(single.getByRole("option", { name: "Blue", exact: true })).toHaveAttribute("aria-selected", "true");
   await expect(single.getByRole("option", { name: "Blue", exact: true }).locator("svg")).toBeVisible();
   const multiple = demo.getByRole("listbox", { name: "Multiple colors" });
+  const viewport = (await multiple.boundingBox())!;
+  const rtlRed = (await multiple.getByRole("option", { name: "Red", exact: true }).boundingBox())!;
+  const rtlOrange = (await multiple.getByRole("option", { name: "Orange", exact: true }).boundingBox())!;
+  expect(viewport.x).toBeCloseTo((await single.boundingBox())!.x, 0);
+  expect(rtlRed.x).toBeGreaterThan(rtlOrange.x);
+  expect(viewport.x + viewport.width - rtlRed.x - rtlRed.width).toBeGreaterThanOrEqual(5);
   await multiple.getByRole("option", { name: "Red", exact: true }).click();
   await multiple.getByRole("option", { name: "Blue", exact: true }).click();
   await expect(multiple.locator('[aria-selected="true"]')).toHaveCount(2);
@@ -225,5 +260,8 @@ test("color palette uses semantic single and multiple selection", async ({ page 
   await multiple.press("Home");
   await expect(demo.locator(".akaza-color-swatch-picker").nth(1)).toHaveCSS("box-shadow", "none");
   await expect(multiple).toHaveCSS("outline-style", "none");
-  await expect(multiple.locator("[data-akaza-highlighted]")).not.toHaveCSS("box-shadow", "none");
+  await multiple.press("ArrowLeft");
+  await expect(multiple.getByRole("option", { name: "Orange", exact: true })).toHaveCSS("outline-width", "2px");
+  await expect(multiple.getByRole("option", { name: "Orange", exact: true })).toHaveCSS("outline-style", "dashed");
+  await expect(multiple.getByRole("option", { name: "Orange", exact: true })).toHaveAttribute("aria-selected", "false");
 });

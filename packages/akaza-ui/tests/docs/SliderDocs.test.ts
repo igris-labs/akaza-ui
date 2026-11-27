@@ -27,23 +27,30 @@ describe("slider documentation", () => {
     }
   });
 
-  it("keeps the complete vertical snippet identical to its live preview", () => {
+  it("keeps the headless vertical snippet and styled preview behavior aligned", async () => {
     const content = readFileSync(resolve(docs, "content/3.components/slider.md"), "utf8");
     const section = content.split("### Vertical slider\n")[1]!.split("\n### ")[0]!;
     const snippet = section.match(/```vue\n([\s\S]*?)\n```/)![1]!;
-    expect(snippet.trim()).toBe(readFileSync(resolve(docs, "app/components/examples/slider/Vertical.vue"), "utf8").trim());
     expect(section).toContain(":::examples-slider-vertical");
-    const { descriptor, errors } = parse(snippet);
-    expect(errors).toEqual([]);
-    compileScript(descriptor, { id: "vertical-slider" });
-    expect(compileTemplate({ source: descriptor.template!.content, filename: "Vertical.vue", id: "vertical-slider" }).errors).toEqual([]);
+    const preview = readFileSync(resolve(docs, "app/components/examples/slider/Vertical.vue"), "utf8");
+    for (const source of [snippet, preview]) {
+      const { descriptor, errors } = parse(source);
+      expect(errors).toEqual([]);
+      compileScript(descriptor, { id: "vertical-slider" });
+      expect(compileTemplate({ source: descriptor.template!.content, filename: "Vertical.vue", id: "vertical-slider" }).errors).toEqual([]);
+      expect(descriptor.template!.content).toContain('v-model="volume"');
+      expect(descriptor.template!.content).toContain('orientation="vertical"');
+      expect(descriptor.template!.content).toContain('aria-label="Volume"');
+    }
 
     const wrapper = mount(Vertical);
     const thumb = wrapper.get('[role="slider"]');
     expect(thumb.attributes("aria-orientation")).toBe("vertical");
-    expect(wrapper.get(".akaza-slider").classes()).toContain("h-40");
-    expect(wrapper.get(".akaza-slider-range").classes()).toContain("w-full");
-    expect(thumb.classes()).toContain("size-5");
+    expect(wrapper.get(".akaza-slider").attributes("data-akaza-orientation")).toBe("vertical");
+    expect(thumb.attributes("aria-valuenow")).toBe("60");
+    await thumb.trigger("keydown", { key: "ArrowUp" });
+    expect(thumb.attributes("aria-valuenow")).toBe("61");
+    expect(wrapper.text()).toContain("Volume: 61");
     wrapper.unmount();
   });
 });

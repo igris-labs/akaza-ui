@@ -117,6 +117,8 @@ describe("selection controls", () => {
 
     expect(toggle.attributes("tabindex")).toBe("0");
     await toggle.trigger("keydown", { key: " " });
+    expect((wrapper.vm as unknown as { pressed: boolean }).pressed).toBe(false);
+    await toggle.trigger("keyup", { key: " " });
     expect((wrapper.vm as unknown as { pressed: boolean }).pressed).toBe(true);
     expect(toggle.attributes("aria-pressed")).toBe("true");
   });

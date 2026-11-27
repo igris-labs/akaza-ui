@@ -132,4 +132,20 @@ function _useOverlay() {
   return { overlays, create };
 }
 
+/**
+ * Create and open overlays from setup. Mount OverlayProvider to render them.
+ * An overlay handle can reopen the same view, update its props, or close it.
+ * Await `open().result` to read the value passed on close.
+ *
+ * @example
+ * ```ts
+ * import { Dialog, useOverlay } from "akaza-ui";
+ *
+ * // Render <OverlayProvider /> in the app.
+ * const about = useOverlay().create(Dialog, { props: { title: "About" } });
+ * function showAbout() {
+ *   return about.open().result;
+ * }
+ * ```
+ */
 export const useOverlay = createAppState(_useOverlay);

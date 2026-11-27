@@ -10,8 +10,10 @@ describe("color documentation", () => {
     for (const heading of ["## Anatomy", "## Examples", "### Props", "### Emits", "### Slots", "### UI Options", "### Styling Hooks", "### Keyboard", "## Parity Notes"]) expect(content).toContain(heading);
     expect(content).toContain(`examples-${name}-demo`);
     const demo = readFileSync(resolve(__dirname, `../../../../docs/app/components/examples/${name}/Demo.vue`), "utf8");
-    expect(demo).toContain("[--ui-radius:0.25rem]");
-    for (const [, source] of content.matchAll(/```vue\n([\s\S]*?)\n```/g)) {
+    expect(demo).toContain('../color/styles"');
+    expect(demo).toContain(":ui=");
+    const sources = [demo, ...[...content.matchAll(/```vue\n([\s\S]*?)\n```/g)].map(match => match[1]!)];
+    for (const source of sources) {
       const { descriptor, errors } = parse(source!);
       expect(errors).toEqual([]);
       if (descriptor.scriptSetup) compileScript(descriptor, { id: name });

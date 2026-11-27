@@ -14,7 +14,8 @@ import {
   toCalendarDate,
   today,
 } from "@internationalized/date";
-import { computed, nextTick, onMounted, shallowRef } from "vue";
+import { createFocusRecovery, isComposing } from "@ui-sdk/core";
+import { computed, nextTick, onBeforeUnmount, onMounted, shallowRef } from "vue";
 import { createChangeDetails as createDetails } from "../../utils/changeEvent";
 
 const {
@@ -57,7 +58,8 @@ const initialDate = placeholderModel.value ?? firstSelected(model.value) ?? loca
 const internalPlaceholder = shallowRef<CalendarDateValue>(initialDate.copy());
 const focusedDate = shallowRef<CalendarDateValue>(initialDate.copy());
 const hoveredDate = shallowRef<CalendarDateValue>();
-const dayRefs = new Map<string, HTMLButtonElement>();
+const dayRefs = new Map<string, { element: HTMLButtonElement; dispose: () => void }>();
+let disposed = false;
 
 const safeNumberOfMonths = computed(() => Math.max(1, Math.floor(numberOfMonths)));
 const mode = computed(() => selectionMode ?? (multiple ? "multiple" : "single"));
@@ -74,6 +76,9 @@ const focusTarget = computed(() => {
     date = date.add({ days: 1 });
   }
   return undefined;
+});
+const recovery = createFocusRecovery({
+  fallback: () => !disposed && !disabled && focusTarget.value ? dayRefs.get(dateKey(focusTarget.value))?.element : undefined,
 });
 const selectedDates = computed(() => {
   if (Array.isArray(model.value)) return model.value;
@@ -238,7 +243,7 @@ function createDay(date: CalendarDateValue, month: CalendarDateValue): CalendarD
     outside,
     disabled: isDisabled(date, outside),
     unavailable: isUnavailable(date),
-    focused: Boolean(focusTarget.value && isSameDay(date, focusTarget.value)),
+    focused: Boolean(!outside && focusTarget.value && isSameDay(date, focusTarget.value)),
     rangeStart: isRangeStart(date),
     rangeEnd: isRangeEnd(date),
     inRange: mode.value === "range" && isSelected(date),
@@ -365,26 +370,41 @@ function nextPage(event?: Event): boolean {
   return !nextDisabled.value && changePlaceholder(value, "next", event);
 }
 
-function setDayRef(element: Element | ComponentPublicInstance | null, date: CalendarDateValue) {
+function setDayRef(element: Element | ComponentPublicInstance | null, date: CalendarDateValue, outside: boolean) {
+  if (outside) return;
   const key = dateKey(date);
-  if (element) dayRefs.set(key, element as HTMLButtonElement);
-  else dayRefs.delete(key);
+  const existing = dayRefs.get(key);
+  if (existing?.element === element) return;
+  existing?.dispose();
+  dayRefs.delete(key);
+  if (element) dayRefs.set(key, {
+    element: element as HTMLButtonElement,
+    dispose: recovery.bind(element as HTMLButtonElement, { key, props: {} }),
+  });
 }
 
 function focusCurrentDate() {
-  if (focusTarget.value) dayRefs.get(dateKey(focusTarget.value))?.focus({ preventScroll: true });
+  if (!disposed && !disabled && focusTarget.value) dayRefs.get(dateKey(focusTarget.value))?.element.focus({ preventScroll: true });
 }
 
 async function focusDate(date: CalendarDateValue, reason = "keyboard", event?: Event) {
-  focusedDate.value = date.copy();
+  if (disabled) return;
+  const origin = document.activeElement;
+  const previous = focusedDate.value;
   if (date.compare(visibleStart.value) < 0 || date.compare(visibleEnd.value) > 0) {
     if (!changePlaceholder(date, reason, event)) return;
   }
+  focusedDate.value = date.copy();
   await nextTick();
-  focusCurrentDate();
+  if (date.compare(visibleStart.value) < 0 || date.compare(visibleEnd.value) > 0) {
+    focusedDate.value = previous;
+    return;
+  }
+  if (document.activeElement === origin || (document.activeElement === document.body && !origin?.isConnected)) focusCurrentDate();
 }
 
 function onDayKeydown(date: CalendarDateValue, event: KeyboardEvent) {
+  if (event.defaultPrevented || disabled || isComposing(event) || event.altKey || event.ctrlKey || event.metaKey) return;
   let next: CalendarDateValue | undefined;
   if (event.key === "ArrowLeft") next = date.add({ days: dir === "rtl" ? 1 : -1 });
   else if (event.key === "ArrowRight") next = date.add({ days: dir === "rtl" ? -1 : 1 });
@@ -408,6 +428,11 @@ defineExpose({ focusDate, nextPage, previousPage, selectDate, placeholder });
 
 onMounted(() => {
   if (initialFocus && !disabled) nextTick(focusCurrentDate);
+});
+onBeforeUnmount(() => {
+  disposed = true;
+  dayRefs.forEach(binding => binding.dispose());
+  dayRefs.clear();
 });
 </script>
 
@@ -502,7 +527,7 @@ onMounted(() => {
               class="akaza-calendar-cell"
             >
               <button
-                :ref="(element) => setDayRef(element, day.date)"
+                :ref="(element) => setDayRef(element, day.date, day.outside)"
                 type="button"
                 :tabindex="!disabled && day.focused ? 0 : -1"
                 :aria-label="formatDayLabel(day.date)"

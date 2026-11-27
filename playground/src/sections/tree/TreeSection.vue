@@ -8,6 +8,7 @@ import type {
 } from "akaza-ui";
 import { ref } from "vue";
 import { Tree } from "akaza-ui";
+import { typeaheadHint, typeaheadItems } from "../typeahead";
 import {
   canvasCol,
   canvasGrid,
@@ -15,6 +16,7 @@ import {
   eventEntry,
   exampleStack,
   exampleTitle,
+  inputControl,
   sectionDescription,
   sectionTitle,
   treeUi,
@@ -53,6 +55,8 @@ const files: FileNode[] = [
 const selected = ref<TreeSelection>("tree");
 const expanded = ref<TreeKey[]>(["src", "components"]);
 const lastEvent = ref("No activation yet.");
+const typeaheadSelected = ref<TreeSelection>(null);
+const typeaheadNodes = typeaheadItems.map(item => ({ ...item, id: item.value }));
 
 const permissions = [
   {
@@ -67,6 +71,31 @@ const permissions = [
   },
 ];
 const selectedPermissions = ref<TreeKey[]>(["read"]);
+const typedKeyItems = [
+  { id: 1, label: "Numeric key: 1" },
+  { id: "1", label: "String key: 1" },
+  { id: "end", label: "Range end" },
+];
+const typedSelection = ref<TreeSelection>([1]);
+const cancelTypedSelection = ref(true);
+const cancelTypedFocus = ref(false);
+const refuseTypedSelection = ref(false);
+const typedEvent = ref("No selection request.");
+const typedFocusEvent = ref("No focus request.");
+
+function guardTypedSelection(value: TreeSelection, details: AkazaChangeEventDetails) {
+  if (cancelTypedSelection.value) details.cancel();
+  typedEvent.value = `${cancelTypedSelection.value ? "Canceled" : refuseTypedSelection.value ? "Refused" : "Accepted"}: ${JSON.stringify(value)}, reason: ${details.reason}`;
+}
+
+function updateTypedSelection(value: TreeSelection | undefined) {
+  if (!refuseTypedSelection.value) typedSelection.value = value ?? null;
+}
+
+function guardTypedFocus(key: TreeKey, details: AkazaChangeEventDetails) {
+  if (cancelTypedFocus.value) details.cancel();
+  typedFocusEvent.value = `${cancelTypedFocus.value ? "Canceled" : "Accepted"} focus: ${JSON.stringify(key)}`;
+}
 
 const highlightItems = [{
   id: "components",
@@ -100,6 +129,8 @@ const virtualItems = Array.from({ length: 1000 }, (_, index) => ({
   kind: "file" as const,
 }));
 const virtualSelection = ref<TreeSelection>("result-1");
+const virtualEnabled = ref(true);
+const virtualOverscan = ref(6);
 
 function nodeIcon(kind: FileNode["kind"], expandedState: boolean): string {
   if (kind === "file") return "file";
@@ -204,6 +235,38 @@ async function loadChildren(_value: TreeKey[], details: TreeExpandedChangeEventD
       </div>
 
       <div>
+        <h3 :class="exampleTitle">Typed keys + cancelable selection</h3>
+        <div :class="canvasCol">
+          <label class="flex items-center gap-2 text-sm">
+            <input v-model="cancelTypedSelection" type="checkbox">
+            Cancel selection changes
+          </label>
+          <label class="flex items-center gap-2 text-sm">
+            <input v-model="cancelTypedFocus" type="checkbox" aria-label="Cancel Tree focus changes">
+            Cancel focus changes
+          </label>
+          <label class="flex items-center gap-2 text-sm">
+            <input v-model="refuseTypedSelection" type="checkbox" aria-label="Refuse Tree selection updates">
+            Refuse selection updates
+          </label>
+          <Tree
+            :model-value="typedSelection"
+            :items="typedKeyItems"
+            item-key="id"
+            selection-mode="multiple"
+            aria-label="Typed key selection"
+            :ui="treeUi"
+            @update:model-value="updateTypedSelection"
+            @selection-change="guardTypedSelection"
+            @focus-change="guardTypedFocus"
+          />
+          <code :class="codePill">selected: {{ JSON.stringify(typedSelection) }}</code>
+          <p :class="eventEntry">{{ typedEvent }}</p>
+          <p :class="eventEntry">{{ typedFocusEvent }}</p>
+        </div>
+      </div>
+
+      <div>
         <h3 :class="exampleTitle">Selection highlight scope</h3>
         <div :class="[canvasGrid, 'lg:grid-cols-3']">
           <div v-for="mode in highlightModes" :key="mode.id" class="grid content-start gap-2">
@@ -249,11 +312,21 @@ async function loadChildren(_value: TreeKey[], details: TreeExpandedChangeEventD
         <h3 :class="exampleTitle">Virtualized results + disabled state</h3>
         <div :class="[canvasGrid, 'sm:grid-cols-2']">
           <div class="grid gap-3">
+            <div class="flex flex-wrap items-center gap-4">
+              <label class="flex items-center gap-2 text-sm">
+                <input v-model="virtualEnabled" type="checkbox" aria-label="Virtualize Tree results">
+                Virtualize
+              </label>
+              <label class="flex items-center gap-2 text-sm">
+                Overscan
+                <input v-model.number="virtualOverscan" type="number" min="0" max="20" aria-label="Tree overscan" :class="[inputControl, 'w-20']">
+              </label>
+            </div>
             <Tree
               v-model="virtualSelection"
               :items="virtualItems"
               item-key="id"
-              :virtualize="{ height: 220, itemHeight: 36, overscan: 6 }"
+              :virtualize="virtualEnabled && { height: 220, itemHeight: 36, overscan: virtualOverscan }"
               aria-label="Virtualized results"
               :ui="treeUi"
             />
@@ -268,6 +341,14 @@ async function loadChildren(_value: TreeKey[], details: TreeExpandedChangeEventD
             :ui="treeUi"
           />
         </div>
+      </div>
+    </div>
+    <div class="mt-8">
+      <h3 :class="exampleTitle">Typeahead</h3>
+      <div :class="canvasCol">
+        <p :class="eventEntry">{{ typeaheadHint }}</p>
+        <Tree v-model="typeaheadSelected" :items="typeaheadNodes" item-key="id" aria-label="Typeahead tree" :ui="treeUi" />
+        <code :class="codePill">selected: {{ typeaheadSelected ?? "None" }}</code>
       </div>
     </div>
   </section>

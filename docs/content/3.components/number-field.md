@@ -86,6 +86,8 @@ Decimals work with `step`. By default, values snap to the nearest step.
 
 Add `scrub-label` or `#scrub` to let pointer users drag horizontally to change the value.
 
+Scrubbing samples pointer movement once per animation frame and includes the final release position. Its `value-commit` waits for Vue model updates. Pointer cancellation or lost capture ends scrubbing without a scrub commit; previously accepted changes remain. Disabled, read-only, `disableScrub`, reset, and unmount stop pending scrub work and release capture. Keyboard, buttons, and wheel behavior are unchanged.
+
 ```vue
 <template>
   <NumberField

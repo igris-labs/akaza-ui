@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import type { ComponentPublicInstance } from "vue";
 import type { StepperItem, StepperItemState, StepperProps, StepperValue } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
-import { computed, nextTick, ref, useId } from "vue";
+import { isComposing } from "@ui-sdk/core";
+import { computed, useId } from "vue";
+import { useRovingGroup } from "../../composables/internal/sdk/useRovingGroup";
 import { createChangeDetails as createDetails } from "../../utils/changeEvent";
-import { useRovingFocus } from "../../utils/useRovingFocus";
+import { nextEnabledIndex as nextPermittedIndex } from "../../utils/nextEnabledIndex";
 
 const {
   items,
@@ -32,8 +33,6 @@ const emit = defineEmits<{
 
 const model = defineModel<StepperValue>();
 const idBase = useId();
-const triggerRefs = ref<Array<HTMLButtonElement | null>>([]);
-const focusedIndex = ref(-1);
 
 const currentIndex = computed(() => {
   const selected = items.findIndex((item, index) => getValue(item, index) === model.value);
@@ -48,7 +47,17 @@ const state = computed(() => {
   if (currentIndex.value < 0) return "empty";
   return currentIndex.value === items.length - 1 ? "complete" : "active";
 });
-const roving = useRovingFocus({ items: () => items, isDisabled: (item, index) => !canActivate(item, index), loop: () => loop });
+const permittedIndices = computed(() => items.flatMap((item, index) => canActivate(item, index) ? [index] : []));
+const roving = useRovingGroup({
+  keys: () => items.map(getKey),
+  disabled: key => {
+    const index = items.findIndex((item, index) => getKey(item, index) === key);
+    return index < 0 || !canActivate(items[index]!, index);
+  },
+  preferred: () => currentIndex.value >= 0 ? getKey(items[currentIndex.value]!, currentIndex.value) : undefined,
+  orientation: () => orientation,
+  loop: () => loop,
+});
 
 const isFirstStep = computed(() => currentIndex.value <= firstEnabledIndex());
 const isLastStep = computed(() => currentIndex.value >= lastEnabledIndex());
@@ -58,6 +67,11 @@ const isNextDisabled = computed(() => !hasNext());
 function getValue(item: StepperItem, index: number): StepperValue {
   if (valueKey && item[valueKey] !== undefined) return item[valueKey] as StepperValue;
   return item.value ?? index + 1;
+}
+
+function getKey(item: StepperItem, index: number): string {
+  const value = getValue(item, index);
+  return `${typeof value}:${value}`;
 }
 
 function getTitle(item: StepperItem, index: number): string {
@@ -92,15 +106,15 @@ function canActivate(item: StepperItem, index: number): boolean {
 }
 
 function firstEnabledIndex(): number {
-  return roving.firstIndex.value;
+  return permittedIndices.value[0] ?? -1;
 }
 
 function lastEnabledIndex(): number {
-  return roving.lastIndex.value;
+  return permittedIndices.value[permittedIndices.value.length - 1] ?? -1;
 }
 
 function nextEnabledIndex(from: number, direction: 1 | -1): number {
-  const next = roving.nextIndex(from, direction);
+  const next = nextPermittedIndex(items, from, direction, loop, (item, index) => !canActivate(item, index));
   return next === from ? -1 : next;
 }
 
@@ -114,7 +128,7 @@ function goToIndex(index: number, reason = "programmatic", event?: Event): boole
   emit("value-change", value, change.details);
   if (change.canceled()) return false;
   model.value = value;
-  focusedIndex.value = index;
+  roving.remember(getKey(item, index));
   if (index === items.length - 1) emit("complete", value, createDetails("complete", event).details);
   return true;
 }
@@ -140,41 +154,22 @@ function prevStep(event?: Event): boolean {
   return goToIndex(nextEnabledIndex(currentIndex.value, -1), "previous", event);
 }
 
-function setTriggerRef(element: Element | ComponentPublicInstance | null, index: number) {
-  triggerRefs.value[index] = element as HTMLButtonElement | null;
-}
-
-function focusIndex(index: number) {
-  if (index < 0) return;
-  focusedIndex.value = index;
-  nextTick(() => triggerRefs.value[index]?.focus());
-}
-
 function tabIndex(item: StepperItem, index: number): 0 | -1 {
-  if (!canActivate(item, index)) return -1;
-  const target = focusedIndex.value >= 0 ? focusedIndex.value : currentIndex.value;
-  return index === target || (target < 0 && index === firstEnabledIndex()) ? 0 : -1;
+  return roving.tabIndex(getKey(item, index)) === 0 ? 0 : -1;
 }
 
 function onKeydown(index: number, event: KeyboardEvent) {
-  const previousKey = orientation === "vertical" ? "ArrowUp" : dir === "rtl" ? "ArrowRight" : "ArrowLeft";
-  const nextKey = orientation === "vertical" ? "ArrowDown" : dir === "rtl" ? "ArrowLeft" : "ArrowRight";
-  let next = -1;
-  if (event.key === previousKey || event.key === nextKey) {
-    next = nextEnabledIndex(index, event.key === nextKey ? 1 : -1);
-  } else if (event.key === "Home") {
-    next = firstEnabledIndex();
-  } else if (event.key === "End") {
-    next = lastEnabledIndex();
-  } else if (event.key === "Enter" || event.key === " ") {
+  if (event.defaultPrevented || isComposing(event) || !canActivate(items[index]!, index)) return;
+  if (event.key === "Enter" || event.key === " ") {
     event.preventDefault();
     goToIndex(index, "trigger", event);
     return;
   }
-  if (next < 0) return;
-  event.preventDefault();
-  focusIndex(next);
-  if (activationMode === "automatic") goToIndex(next, "keyboard", event);
+  const movement = roving.keydown(event, event.currentTarget as HTMLElement);
+  if (movement && activationMode === "automatic") {
+    const next = items.findIndex((item, index) => getKey(item, index) === movement.key);
+    goToIndex(next, "keyboard", event);
+  }
 }
 
 function triggerId(index: number): string {
@@ -225,7 +220,7 @@ defineExpose({ goToStep, hasNext, hasPrev, nextStep, prevStep });
       >
         <button
           :id="triggerId(index)"
-          :ref="(element) => setTriggerRef(element, index)"
+          :ref="element => roving.bind(getKey(item, index), element as HTMLElement | null)"
           type="button"
           :disabled="!canActivate(item, index)"
           :tabindex="tabIndex(item, index)"
@@ -239,7 +234,6 @@ defineExpose({ goToStep, hasNext, hasPrev, nextStep, prevStep });
           :data-state="itemState(item, index)"
           :data-akaza-disabled="!canActivate(item, index) || undefined"
           @click="goToIndex(index, 'trigger', $event)"
-          @focus="focusedIndex = index"
           @keydown="onKeydown(index, $event)"
         >
           <slot

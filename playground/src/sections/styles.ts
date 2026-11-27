@@ -514,8 +514,8 @@ export const navigationMenuUi = {
   link: 'inline-flex rounded-md px-3 py-1.5 text-sm font-medium text-muted-foreground no-underline transition-colors hover:bg-background hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring data-[akaza-state=active]:bg-background data-[akaza-state=active]:text-foreground data-[akaza-disabled]:cursor-not-allowed data-[akaza-disabled]:opacity-50',
   indicator: 'bottom-0 h-0.5 rounded-full bg-primary transition-[left,width]',
   content:
-    'w-full rounded-lg border border-border bg-popover p-2 text-popover-foreground shadow-lg',
-  viewport: 'w-full',
+    'w-max max-w-[calc(100vw-1rem)] rounded-lg border border-border bg-popover p-2 text-popover-foreground shadow-lg',
+  panel: 'w-max max-w-[min(36rem,calc(100vw-3rem))]',
   contentList: 'grid gap-1 sm:grid-cols-2',
   contentItem: 'min-w-0',
   contentLink:

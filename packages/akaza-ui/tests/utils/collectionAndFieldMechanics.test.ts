@@ -2,46 +2,44 @@ import { mount } from "@vue/test-utils";
 import { describe, expect, it, vi } from "vitest";
 import { defineComponent, nextTick, ref } from "vue";
 import { createChangeDetails } from "@/utils/changeEvent";
+import { nextEnabledIndex } from "@/utils/nextEnabledIndex";
 import { rangeEndpointDetails, useRangeFieldState } from "@/utils/useRangeFieldState";
-import { useRovingFocus } from "@/utils/useRovingFocus";
 import { useSegmentFocus } from "@/utils/useSegmentFocus";
 
-describe("roving index traversal", () => {
+describe("collection index traversal", () => {
   it("skips disabled items, loops, and derives boundaries from current data", () => {
     const items = ref([{ disabled: false }, { disabled: true }, { disabled: false }]);
     const loop = ref(true);
-    const roving = useRovingFocus({ items, isDisabled: item => item.disabled, loop });
-    expect(roving.firstIndex.value).toBe(0);
-    expect(roving.lastIndex.value).toBe(2);
-    expect(roving.nextIndex(0, 1)).toBe(2);
-    expect(roving.nextIndex(2, 1)).toBe(0);
-    expect(roving.nextIndex(0, -1)).toBe(2);
+    const next = (from: number, delta: number) => nextEnabledIndex(items.value, from, delta, loop.value, item => item.disabled);
+    expect(next(-1, 1)).toBe(0);
+    expect(next(items.value.length, -1)).toBe(2);
+    expect(next(0, 1)).toBe(2);
+    expect(next(2, 1)).toBe(0);
+    expect(next(0, -1)).toBe(2);
     loop.value = false;
-    expect(roving.nextIndex(2, 1)).toBe(-1);
-    expect(roving.nextIndex(0, -1)).toBe(-1);
+    expect(next(2, 1)).toBe(-1);
+    expect(next(0, -1)).toBe(-1);
     items.value[0]!.disabled = true;
-    expect(roving.firstIndex.value).toBe(2);
+    expect(next(-1, 1)).toBe(2);
     items.value = [];
-    expect(roving.lastIndex.value).toBe(-1);
-    expect(roving.nextIndex(0, 1)).toBe(-1);
+    expect(next(items.value.length, -1)).toBe(-1);
+    expect(next(0, 1)).toBe(-1);
   });
 
   it("handles all-disabled and single-enabled collections without an infinite loop", () => {
-    const roving = useRovingFocus({ items: [false, false], isDisabled: item => !item, loop: true });
-    expect(roving.firstIndex.value).toBe(-1);
-    expect(roving.nextIndex(0, 1)).toBe(-1);
-    const single = useRovingFocus({ items: [true], isDisabled: item => !item, loop: true });
-    expect(single.nextIndex(0, 1)).toBe(0);
-    expect(single.nextIndex(0, 0)).toBe(-1);
+    expect(nextEnabledIndex([false, false], -1, 1, true, item => !item)).toBe(-1);
+    expect(nextEnabledIndex([false, false], 0, 1, true, item => !item)).toBe(-1);
+    expect(nextEnabledIndex([true], 0, 1, true)).toBe(0);
+    expect(nextEnabledIndex([true], 0, 0, true)).toBe(-1);
   });
 
   it("keeps caller-owned activation policy reactive", () => {
     const current = ref(0);
-    const roving = useRovingFocus({ items: [0, 1, 2], isDisabled: (_item, index) => index > current.value + 1, loop: false });
-    expect(roving.lastIndex.value).toBe(1);
+    const next = (from: number, delta: number) => nextEnabledIndex([0, 1, 2], from, delta, false, (_item, index) => index > current.value + 1);
+    expect(next(3, -1)).toBe(1);
     current.value = 1;
-    expect(roving.lastIndex.value).toBe(2);
-    expect(roving.nextIndex(1, 1)).toBe(2);
+    expect(next(3, -1)).toBe(2);
+    expect(next(1, 1)).toBe(2);
   });
 });
 

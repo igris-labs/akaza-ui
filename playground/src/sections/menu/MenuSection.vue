@@ -1,6 +1,7 @@
 <script setup lang="ts">
-import { ref, computed } from "vue";
+import { ref, computed, useTemplateRef } from "vue";
 import { Menu } from "akaza-ui";
+import { typeaheadHint, typeaheadItems } from "../typeahead";
 import type { MenuItem, AkazaChangeEventDetails } from "akaza-ui";
 import {
   buttonGhost,
@@ -22,6 +23,32 @@ const basicItems: MenuItem[] = [
   { type: "separator" },
   { label: "Sign out" },
 ];
+const inlineOpen = ref(false);
+const keepOpen = ref(false);
+const commandTarget = useTemplateRef<HTMLInputElement>("commandTarget");
+const inlineItems: MenuItem[] = [
+  { label: "Focus next field", onSelect: () => commandTarget.value?.focus() },
+  { label: "Share", submenu: { anchor: "parent", align: "end" }, children: [{ label: "Copy link" }, { label: "Email" }] },
+];
+function onInlineOpenChange(next: boolean, details: AkazaChangeEventDetails) {
+  if (!next && keepOpen.value) details.cancel();
+}
+const focusWrap = ref(false);
+const focusOrderReversed = ref(false);
+const focusRadio = ref<Record<string, string>>({ focusSort: "name" });
+const focusItems = computed<MenuItem[][]>(() => {
+  const commands: MenuItem[] = [{ value: "first-command", label: "First command" }, { value: "last-command", label: "Last command" }];
+  return [
+    focusOrderReversed.value ? [...commands].reverse() : commands,
+    [
+      { type: "checkbox", value: "wrap", label: "Word wrap", checked: focusWrap.value, onUpdateChecked: value => { focusWrap.value = value; } },
+      { type: "radio", value: "name", label: "Sort by name", radioGroup: "focusSort" },
+      { type: "radio", value: "date", label: "Sort by date", radioGroup: "focusSort" },
+      { value: "unavailable-command", label: "Unavailable command", disabled: true },
+      { value: "nested-commands", label: "Nested commands", children: [{ value: "nested-first", label: "Nested first" }, { value: "nested-last", label: "Nested last" }] },
+    ],
+  ];
+});
 const alignedItems: MenuItem[] = [
   { label: "Theme", value: "theme", submenu: { anchor: "trigger", align: "start", sideOffset: 9 }, children: [{ label: "Light" }, { label: "Dark" }, { label: "System" }] },
   { label: "Help", value: "help", submenu: { anchor: "trigger", align: "start", sideOffset: 9 }, children: [{ label: "Documentation" }, { label: "Support" }] },
@@ -165,6 +192,7 @@ const eventItems: MenuItem[] = [
   { label: "Paste", value: "paste" },
 ];
 const eventLog = ref<string[]>([]);
+const typeaheadCommand = ref("None");
 function onMenuChange(open: boolean, details: AkazaChangeEventDetails) {
   eventLog.value = [`${open ? "open" : "close"} — reason: ${details.reason}`, ...eventLog.value].slice(0, 6);
 }
@@ -453,6 +481,59 @@ function onMenuSelect(item: MenuItem, details: AkazaChangeEventDetails) {
           <template #trigger="{ toggle, triggerProps }"><button :class="buttonGhost" type="button" v-bind="triggerProps" @click="toggle">Aligned account menu</button></template>
           <template #item="{ item, hasSubmenu }"><span>{{ item.label }}</span><span v-if="hasSubmenu" aria-hidden="true" class="ml-auto">&gt;</span></template>
         </Menu>
+      </div>
+    </div>
+    <div class="mb-8">
+      <div class="mb-3">
+        <span class="block text-sm font-medium text-foreground">Typeahead</span>
+        <span class="text-xs text-muted-foreground">{{ typeaheadHint }}</span>
+      </div>
+      <div :class="canvasCol">
+        <Menu :items="typeaheadItems" teleport="body" :ui="menuUi" @select="typeaheadCommand = $event.label ?? 'None'">
+          <template #trigger="{ toggle, triggerProps }">
+            <button type="button" :class="buttonGhost" v-bind="triggerProps" @click="toggle">Typeahead commands</button>
+          </template>
+        </Menu>
+        <code :class="codePill">command: {{ typeaheadCommand }}</code>
+      </div>
+    </div>
+    <div class="mb-8">
+      <div class="mb-3">
+        <span class="block text-sm font-medium text-foreground">Grouped focus and changing items</span>
+        <span class="text-xs text-muted-foreground">Checkbox and radio updates keep their focused row. Each submenu has its own focus group.</span>
+      </div>
+      <div :class="canvasCol">
+        <div class="flex flex-wrap gap-2">
+          <Menu v-model:radio-values="focusRadio" :items="focusItems" :close-on-select="false" teleport="body" :ui="menuUi">
+            <template #trigger="{ toggle, triggerProps }">
+              <span class="inline-flex flex-wrap gap-2">
+                <button type="button" :class="buttonGhost" v-bind="triggerProps" @click="toggle">Grouped focus commands</button>
+                <button type="button" :class="buttonGhost" @click="focusOrderReversed = !focusOrderReversed">Reverse command order</button>
+              </span>
+            </template>
+          </Menu>
+        </div>
+        <code :class="codePill">wrap: {{ focusWrap }}, sort: {{ focusRadio.focusSort }}</code>
+      </div>
+    </div>
+    <div class="mb-8">
+      <div :class="canvasCol">
+        <h3 class="text-sm font-medium text-foreground">Inline popup boundary</h3>
+        <label class="flex items-center gap-2 text-sm text-foreground">
+          <input v-model="keepOpen" type="checkbox"> Cancel close requests
+        </label>
+        <div class="overflow-hidden rounded-lg border border-border p-4">
+          <Menu v-model="inlineOpen" :items="inlineItems" :teleport="false" :ui="menuUi" @open-change="onInlineOpenChange">
+            <template #trigger="{ toggle, triggerProps }">
+              <button type="button" :class="buttonGhost" v-bind="triggerProps" @click="toggle">Inline commands</button>
+            </template>
+          </Menu>
+        </div>
+        <label class="flex flex-col gap-1 text-sm text-foreground">
+          Command focus target
+          <input ref="commandTarget" class="rounded-md border border-border bg-background px-3 py-2" placeholder="Next task">
+        </label>
+        <code :class="codePill">open: {{ inlineOpen }}</code>
       </div>
     </div>
   </section>

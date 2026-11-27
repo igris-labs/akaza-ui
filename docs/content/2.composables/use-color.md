@@ -62,6 +62,8 @@ CSS variables, `currentColor`, relative color expressions, gradients, and URLs a
 
 `useColor` keeps more precision than the returned string. Editing does not round the color on each step. It remembers hue and saturation when you pass through black, and hue when you pass through gray. Replacing the model or entering a valid text value replaces the stored color.
 
+Output is a CSS color string, not an engine object. Numeric precision and canonical spacing may change; do not use exact string equality to compare colors. The format names and forced-alpha behavior of `hexa`, `rgba`, and `hsla` remain part of the API.
+
 RGB and HEX cannot represent all LCH, OKLCH, or Display P3 colors. These outputs clip colors to sRGB. Changing the format back restores the original color while you keep the same `useColor` instance. If you store only the HEX string and create a new instance, you lose that extra color information.
 
 `isOutOfGamut` tells you whether the color falls outside sRGB. Areas and slider gradients show sRGB previews. Swatches use CSS OKLCH; their appearance depends on the browser and display.

@@ -6,11 +6,12 @@ test.beforeEach(async ({ page }) => openPlayground(page));
 test("tooltip and hover preview have focus alternatives to hover", async ({ page }) => {
   const tooltipTrigger = section(page, "tooltip").getByRole("button", { name: "Instant (0ms)" });
   await tooltipTrigger.hover();
-  await expect(page.locator(".akaza-tooltip-content")).toBeVisible();
+  await expect(page.getByRole("tooltip")).toBeVisible();
   await page.mouse.move(0, 0);
-  await expect(page.locator(".akaza-tooltip-content")).toBeHidden();
+  await expect(page.getByRole("tooltip")).toHaveCount(0);
+  await page.keyboard.press("Tab");
   await tooltipTrigger.focus();
-  await expect(page.locator(".akaza-tooltip-content")).toBeVisible();
+  await expect(page.getByRole("tooltip")).toBeVisible();
 
   const previewTrigger = section(page, "hover-preview-card").getByRole("link", { name: /Ada Lovelace/ });
   await previewTrigger.focus();
@@ -102,6 +103,19 @@ test("fullscreen dialog fills the visual viewport", async ({ page }) => {
   });
 });
 
+test("Toast stays clickable above a fullscreen modal", async ({ page }) => {
+  await section(page, "toast").getByRole("button", { name: "Error", exact: true }).click();
+  const toast = page.locator(".akaza-toast").last();
+  await expect(toast).toBeVisible();
+  await section(page, "dialog").getByRole("button", { name: "Open fullscreen" }).click();
+  const dialog = page.getByRole("dialog", { name: "Fullscreen dialog" });
+  await expect(dialog).toBeVisible();
+  expect(await toast.evaluate(element => element.closest("[inert]") === null)).toBe(true);
+  await toast.locator(".akaza-toast-close").click();
+  await expect(toast).toBeHidden();
+  await expect(dialog).toBeVisible();
+});
+
 test("nested dialogs isolate the background and dismiss only the top layer", async ({ page }) => {
   const dialogSection = section(page, "dialog");
   await dialogSection.getByRole("button", { name: "Open outer" }).click();
@@ -109,14 +123,14 @@ test("nested dialogs isolate the background and dismiss only the top layer", asy
     "xpath=ancestor::*[contains(concat(' ', normalize-space(@class), ' '), ' akaza-dialog-content ')][1]",
   );
   await expect(outer).toBeVisible();
-  await expect(page.locator("body")).toHaveCSS("overflow", "hidden");
+  await expect(page.locator("html")).toHaveCSS("overflow", "hidden");
 
   const innerTrigger = outer.getByRole("button", { name: "Open inner" });
   await innerTrigger.click();
   const inner = page.getByRole("dialog", { name: "Inner dialog" });
   await expect(inner).toBeVisible();
   await expect(outer).toHaveAttribute("inert", "");
-  await expect(outer).toHaveAttribute("aria-hidden", "true");
+  await expect(outer).toHaveAttribute("inert");
 
   const [outerZ, innerZ] = await Promise.all([
     outer.evaluate((element) => Number(getComputedStyle(element).zIndex)),
@@ -129,11 +143,11 @@ test("nested dialogs isolate the background and dismiss only the top layer", asy
   await expect(outer).toBeVisible();
   await expect(outer).not.toHaveAttribute("inert", "");
   await expect(innerTrigger).toBeFocused();
-  await expect(page.locator("body")).toHaveCSS("overflow", "hidden");
+  await expect(page.locator("html")).toHaveCSS("overflow", "hidden");
 
   await page.keyboard.press("Escape");
   await expect(outer).toBeHidden();
-  await expect(page.locator("body")).not.toHaveCSS("overflow", "hidden");
+  await expect(page.locator("html")).not.toHaveCSS("overflow", "hidden");
 });
 
 test("teleported popover tracks its trigger through scroll and resize", async ({ page }) => {

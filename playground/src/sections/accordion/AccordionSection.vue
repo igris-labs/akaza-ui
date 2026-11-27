@@ -90,16 +90,13 @@ const uiItems: AccordionItem[] = [
 
 // ── 8. unmountOnHide ─────────────────────────────────────────────────────────
 const unmountOpen = ref("");
+const retainedOpen = ref("");
+const retainedItems: AccordionItem[] = [{ value: "retained", label: "Retained draft" }];
 const unmountItems: AccordionItem[] = [
   {
     value: "lazy",
     label: "Lazy panel",
-    content: "This panel is removed from the DOM when closed — great for resetting forms or lazy-loading heavy content.",
-  },
-  {
-    value: "always",
-    label: "Always-mounted panel",
-    content: "This panel uses the default behaviour (unmountOnHide=false). It stays in the DOM hidden via CSS grid.",
+    content: "Slot content is removed after the closing transition completes.",
   },
 ];
 
@@ -110,6 +107,12 @@ const eventItems: AccordionItem[] = [
   { label: "Second panel", content: "Each change shows the new value and the reason." },
 ];
 const accLog = ref<string[]>([]);
+const horizontalOpen = ref("");
+const horizontalItems: AccordionItem[] = [
+  { value: "overview", label: "Overview", content: "Overview content." },
+  { value: "unavailable", label: "Unavailable", disabled: true },
+  { value: "details", label: "Details", content: "Details content." },
+];
 function onAccordionChange(value: string | string[], details: AkazaChangeEventDetails) {
   accLog.value = [`→ ${JSON.stringify(value)} — reason: ${details.reason}`, ...accLog.value].slice(0, 5);
 }
@@ -321,24 +324,39 @@ function onAccordionChange(value: string | string[], details: AkazaChangeEventDe
       <div class="mb-3">
         <span class="block text-sm font-medium text-foreground">unmountOnHide</span>
         <span class="text-xs text-muted-foreground">
-          When <code :class="inlineCode">unmount-on-hide</code> is set, closed panel content is removed from the DOM — useful for lazy-loading or resetting state on close.
+          Default retention preserves drafts. With <code :class="inlineCode">unmount-on-hide</code>, slot content is removed after its closing transition.
         </span>
       </div>
-      <div :class="canvas">
+      <div :class="canvasCol" data-panel-lifecycle="accordion">
+        <Accordion
+          v-model="retainedOpen"
+          :items="retainedItems"
+          collapsible
+          :ui="{ ...accordionUi, contentWrapper: 'panel-lifecycle-accordion' }"
+          :class="accordionRoot"
+        >
+          <template #content>
+            <label class="grid gap-1">
+              <span>Saved draft</span>
+              <input aria-label="Retained accordion draft" class="rounded border border-border bg-background px-2 py-1" value="Keep this draft">
+            </label>
+          </template>
+        </Accordion>
         <Accordion
           v-model="unmountOpen"
           :items="unmountItems"
           collapsible
           unmount-on-hide
-          :ui="accordionUi"
+          :ui="{ ...accordionUi, contentWrapper: 'panel-lifecycle-accordion' }"
           :class="accordionRoot"
         >
           <template #content="{ item, value }">
             <div>
               <p class="text-sm text-muted-foreground">{{ item.content }}</p>
-              <p v-if="value === 'lazy'" class="text-xs text-muted-foreground mt-2 font-mono">
-                Inspect the DOM — this node disappears when you close the panel.
-              </p>
+              <label v-if="value === 'lazy'" class="grid gap-1">
+                <span>Temporary draft</span>
+                <input aria-label="Unmounted accordion draft" class="rounded border border-border bg-background px-2 py-1" value="Reset on close">
+              </label>
             </div>
           </template>
         </Accordion>
@@ -368,5 +386,35 @@ function onAccordionChange(value: string | string[], details: AkazaChangeEventDe
         </div>
       </div>
     </div>
+    <div class="mb-8">
+      <div class="mb-3">
+        <span class="block text-sm font-medium text-foreground">Horizontal navigation, right-to-left</span>
+        <span class="text-xs text-muted-foreground">All enabled triggers remain in the Tab order. Arrow movement does not open a panel.</span>
+      </div>
+      <div :class="canvasCol">
+        <Accordion
+          v-model="horizontalOpen"
+          :items="horizontalItems"
+          orientation="horizontal"
+          dir="rtl"
+          role="group"
+          aria-label="RTL accordion"
+          collapsible
+          :heading-level="3"
+          :ui="accordionUi"
+          :class="accordionRoot"
+        />
+        <code :class="codePill">open: {{ horizontalOpen || 'None' }}</code>
+      </div>
+    </div>
   </section>
 </template>
+
+<style>
+.panel-lifecycle-accordion {
+  transition-duration: 240ms;
+}
+@media (prefers-reduced-motion: reduce) {
+  .panel-lifecycle-accordion { transition: none; }
+}
+</style>

@@ -156,7 +156,8 @@ Plain `class` also applies to the root button. Use `ui.root` when styling root t
 
 | Key | Behavior |
 |-----|----------|
-| `Enter` / `Space` | Activates native button and custom `as` roots. |
+| `Enter` | Activates on press. Native buttons and links keep browser behavior. |
+| `Space` | Activates on release, including custom roots with `role="button"`. |
 | `Tab` | Focuses enabled button, or a disabled button only with `focusableWhenDisabled`. |
 
 Non-button roots receive `role="button"`, keyboard activation, and tab behavior. Loading and disabled states block activation.

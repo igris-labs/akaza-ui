@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import type { ToggleGroupModel, ToggleGroupOption, ToggleGroupProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
+import { isComposing } from "@ui-sdk/core";
 import { computed, ref } from "vue";
+import { useRovingGroup } from "../../composables/internal/sdk/useRovingGroup";
+import { useSelectionGroup } from "../../composables/internal/sdk/useSelectionGroup";
 import { createChangeDetails } from "../../utils/changeEvent";
 import { useCheckableField } from "../../utils/useCheckableField";
-import { useRovingFocus } from "../../utils/useRovingFocus";
 
 const {
   options,
@@ -30,9 +32,7 @@ const emit = defineEmits<{
 }>();
 
 const model = defineModel<ToggleGroupModel>({ default: "" });
-const itemEls = ref<Array<HTMLElement | null>>([]);
 const inputRef = ref<HTMLInputElement | null>(null);
-const focusedIndex = ref(-1);
 
 const selectedValues = computed<string[]>(() => {
   if (Array.isArray(model.value)) return model.value;
@@ -67,85 +67,79 @@ function isSelected(option: ToggleGroupOption): boolean {
   return selectedValues.value.includes(getValue(option));
 }
 
-const roving = useRovingFocus({ items: () => options, isDisabled: isItemDisabled, loop: () => loop });
+const roving = useRovingGroup({
+  keys: () => options.map(getValue),
+  disabled: key => {
+    const option = options.find(option => getValue(option) === key);
+    return !option || isItemDisabled(option);
+  },
+  preferred: () => {
+    const selected = options.find(option => isSelected(option) && !isItemDisabled(option));
+    return selected ? getValue(selected) : undefined;
+  },
+  orientation: () => orientation,
+  loop: () => loop,
+  enabled: () => rovingFocus,
+});
 
 function getRovingIndex(): number {
-  if (options[focusedIndex.value] && !isItemDisabled(options[focusedIndex.value]!)) return focusedIndex.value;
-  const selectedIndex = options.findIndex((option) => isSelected(option) && !isItemDisabled(option));
-  if (selectedIndex >= 0) return selectedIndex;
-  return options.findIndex((option) => !isItemDisabled(option));
+  return options.findIndex(option => getValue(option) === roving.tabStop.value);
 }
 
 function getTabIndex(index: number): 0 | -1 {
-  if (disabled || isItemDisabled(options[index]!)) return -1;
-  if (!rovingFocus) return 0;
-  return index === getRovingIndex() ? 0 : -1;
+  return roving.tabIndex(getValue(options[index]!)) === 0 ? 0 : -1;
 }
 
-function setItemRef(el: HTMLElement | null, index: number) {
-  itemEls.value[index] = el;
+function setItemRef(el: HTMLElement | null, option: ToggleGroupOption) {
+  roving.bind(getValue(option), el);
 }
 
 function focusItem(index: number) {
-  focusedIndex.value = index;
-  itemEls.value[index]?.focus({ preventScroll: true });
+  if (index >= 0) roving.focus(getValue(options[index]!));
 }
 
-function nextValue(option: ToggleGroupOption): ToggleGroupModel {
-  const value = getValue(option);
-  if (type === "multiple") {
-    return isSelected(option)
-      ? selectedValues.value.filter((item) => item !== value)
-      : [...selectedValues.value, value];
-  }
-  if (isSelected(option)) return allowEmpty ? "" : value;
-  return value;
+function commit(values: string[], reason: string, event?: Event): boolean {
+  const next: ToggleGroupModel = type === "multiple" ? values : values[0] ?? "";
+  if (effectiveRequired.value && (Array.isArray(next) ? next.length === 0 : !next)) return false;
+  const changeEvent = createChangeDetails(reason, event);
+  emit("value-change", next, changeEvent.details);
+  if (changeEvent.canceled()) return false;
+  model.value = next;
+  bridge.onChange();
+  return true;
 }
+
+const selection = useSelectionGroup({
+  value: () => selectedValues.value,
+  order: () => options.map(getValue),
+  multiple: () => type === "multiple",
+  disabled: key => {
+    const option = options.find(option => getValue(option) === key);
+    return !option || isItemDisabled(option);
+  },
+  change: commit,
+});
 
 function select(option: ToggleGroupOption, event?: Event) {
   if (isItemDisabled(option) || inputRef.value?.matches(":disabled")) return;
-  const next = nextValue(option);
-  if (effectiveRequired.value && (Array.isArray(next) ? next.length === 0 : !next)) return;
-  const changeEvent = createChangeDetails(event ? "trigger" : "programmatic", event);
-  emit("value-change", next, changeEvent.details);
-  if (!changeEvent.canceled()) {
-    model.value = next;
-    bridge.onChange();
+  const reason = event ? "trigger" : "programmatic";
+  if (type === "single" && isSelected(option) && !allowEmpty) {
+    // Akaza emits an unchanged request when deselection is disallowed.
+    commit([getValue(option)], reason, event);
+  } else {
+    selection.select(getValue(option), type === "multiple" || allowEmpty, reason, event);
   }
 }
 
-function move(index: number, delta: number) {
-  const next = roving.nextIndex(index, delta);
-  if (next >= 0) focusItem(next);
-}
-
 function handleKeydown(event: KeyboardEvent, index: number) {
-  const isVertical = orientation === "vertical";
-  const isPrev = event.key === (isVertical ? "ArrowUp" : "ArrowLeft");
-  const isNext = event.key === (isVertical ? "ArrowDown" : "ArrowRight");
+  if (event.defaultPrevented || isComposing(event) || isItemDisabled(options[index]!)) return;
 
   if (event.key === "Enter" || event.key === " ") {
     event.preventDefault();
     select(options[index]!, event);
     return;
   }
-  if (!rovingFocus) return;
-  if (isPrev || isNext) {
-    event.preventDefault();
-    move(index, isNext ? 1 : -1);
-  } else if (event.key === "Home") {
-    event.preventDefault();
-    const first = options.findIndex((option) => !isItemDisabled(option));
-    if (first >= 0) focusItem(first);
-  } else if (event.key === "End") {
-    event.preventDefault();
-    for (let i = options.length - 1; i >= 0; i--) {
-      if (!isItemDisabled(options[i]!)) {
-        focusItem(i);
-        return;
-      }
-    }
-  }
+  roving.keydown(event, event.currentTarget as HTMLElement);
 }
 </script>
 
@@ -193,7 +187,7 @@ function handleKeydown(event: KeyboardEvent, index: number) {
       v-for="(option, index) in options"
       :id="index === getRovingIndex() ? bridge.field?.inputId.value : undefined"
       :key="getValue(option)"
-      :ref="(el) => setItemRef(el as HTMLElement | null, index)"
+      :ref="(el) => setItemRef(el as HTMLElement | null, option)"
       type="button"
       :aria-pressed="isSelected(option)"
       :disabled="isItemDisabled(option)"
@@ -204,7 +198,7 @@ function handleKeydown(event: KeyboardEvent, index: number) {
       class="akaza-toggle-group-item"
       @click="select(option, $event)"
       @keydown="handleKeydown($event, index)"
-      @focus="focusedIndex = index; bridge.onFocus()"
+      @focus="bridge.onFocus"
       @blur="bridge.onBlur"
     >
       <slot

@@ -1,11 +1,14 @@
 import type { FieldContext, FieldControlState } from "@/components/field/context";
 import { mount } from "@vue/test-utils";
 import { describe, expect, it, vi } from "vitest";
-import { computed, defineComponent, nextTick, ref } from "vue";
+import { computed, defineComponent, ref } from "vue";
+import { usePopup } from "@/composables/internal/sdk/usePopup";
 import { createChangeDetails } from "@/utils/changeEvent";
 import { clampNumber, snapToStep } from "@/utils/number";
 import { useFieldControl } from "@/utils/useFieldControl";
-import { useModalLifecycle } from "@/utils/useModalLifecycle";
+import { installPopupTestEnvironment, settlePopup } from "../components/popover/popupTestEnvironment";
+
+installPopupTestEnvironment();
 
 describe("shared change details", () => {
   it("keeps cancellation isolated and preserves the originating event", () => {
@@ -76,38 +79,46 @@ describe("shared Field bridge", () => {
   });
 });
 
-describe("shared modal lifecycle", () => {
+describe("shared SDK modal lifecycle", () => {
   function fixture() {
     return mount(defineComponent({
       setup() {
         const open = ref(true);
         const content = ref<HTMLElement | null>(null);
         const overlay = ref<HTMLElement | null>(null);
-        useModalLifecycle({ open, content, overlay, onEscape: () => { open.value = false; } });
-        return { open, content, overlay };
+        const popup = usePopup({
+          kind: "dialog", open, content, backdrop: overlay,
+          request: (next) => { open.value = next; },
+        });
+        return { open, content, overlay, ...popup };
       },
-      template: '<div><div v-if="open" ref="overlay"></div><div v-if="open" ref="content" tabindex="-1"><button>Inside</button></div></div>',
+      template: '<div><div v-if="present" ref="overlay" v-bind="backdropAttrs"></div><div v-if="present" ref="content" v-bind="contentAttrs" aria-label="Task"><button>Inside</button></div></div>',
     }), { attachTo: document.body });
   }
 
   it("does not activate a queued open after unmount", async () => {
     const overflow = document.body.style.overflow;
+    const rootOverflow = document.documentElement.style.overflow;
     const wrapper = fixture();
     wrapper.unmount();
-    await nextTick();
+    await settlePopup();
     expect(document.body.style.overflow).toBe(overflow);
+    expect(document.documentElement.style.overflow).toBe(rootOverflow);
     expect(document.querySelector('[aria-hidden="true"]')).toBeNull();
   });
 
   it("handles initially open state and restores body state after closing", async () => {
     const overflow = document.body.style.overflow;
+    const rootOverflow = document.documentElement.style.overflow;
     const wrapper = fixture();
-    await nextTick();
-    expect(document.body.style.overflow).toBe("hidden");
-    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true }));
-    await nextTick();
-    expect(wrapper.vm.open).toBe(false);
-    expect(document.body.style.overflow).toBe(overflow);
-    wrapper.unmount();
+    try {
+      await settlePopup();
+      expect(document.documentElement.style.overflow).toBe("hidden");
+      document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true }));
+      await settlePopup();
+      expect(wrapper.vm.open).toBe(false);
+      expect(document.body.style.overflow).toBe(overflow);
+      expect(document.documentElement.style.overflow).toBe(rootOverflow);
+    } finally { wrapper.unmount(); }
   });
 });

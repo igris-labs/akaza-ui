@@ -40,16 +40,16 @@ const color = ref("#3b82f6");
     aria-label="Brand color"
     :ui="{
       root: 'grid max-w-sm gap-3',
-      area: { root: 'h-44', thumb: 'size-4 rounded-full border-2 border-white' },
+      area: { root: 'h-44', thumb: 'size-4 rounded-full border-2 border-white bg-[var(--akaza-color)] shadow-[0_0_0_1px_#0008]' },
       hue: {
         root: 'h-6',
         track: 'h-3',
-        thumb: 'size-4 rounded-full border-2 border-white',
+        thumb: 'size-4 rounded-full border-2 border-white bg-[var(--akaza-color)] shadow-[0_0_0_1px_#0008]',
       },
       alpha: {
         root: 'h-6',
         track: 'h-3',
-        thumb: 'size-4 rounded-full border-2 border-white',
+        thumb: 'size-4 rounded-full border-2 border-white bg-[var(--akaza-color)] shadow-[0_0_0_1px_#0008]',
       },
       field: { input: 'h-9 w-full border px-3' },
       preview: { root: 'block size-9 border' },

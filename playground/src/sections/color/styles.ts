@@ -6,7 +6,7 @@ export const fieldUi = {
 export const areaUi = {
   root: "h-44 w-full max-w-sm rounded-md data-[akaza-focused]:ring-2 data-[akaza-focused]:ring-ring data-[akaza-disabled]:opacity-50",
   area: "rounded-md",
-  thumb: "size-5 rounded-full border-2 border-neutral-400 bg-white shadow-sm",
+  thumb: "size-5 rounded-full border-2 border-white bg-[var(--akaza-color)] shadow-[0_0_0_1px_#0008]",
 };
 export const hueAreaUi = {
   ...areaUi,
@@ -17,17 +17,17 @@ export const sliderUi = {
   root: "h-6 w-full max-w-sm rounded-md data-[akaza-disabled]:opacity-50",
   axis: "peer outline-none",
   track: "h-3 w-full rounded-full bg-muted",
-  thumb: "size-6 rounded-full border-2 border-neutral-400 bg-white shadow-sm peer-data-[akaza-focus-visible]:ring-2 peer-data-[akaza-focus-visible]:ring-ring peer-data-[akaza-focus-visible]:ring-offset-2 peer-data-[akaza-focus-visible]:ring-offset-background",
+  thumb: "size-6 rounded-full border-2 border-white bg-[var(--akaza-color)] shadow-[0_0_0_1px_#0008] peer-data-[akaza-focus-visible]:ring-2 peer-data-[akaza-focus-visible]:ring-ring peer-data-[akaza-focus-visible]:ring-offset-2 peer-data-[akaza-focus-visible]:ring-offset-background",
 };
 export const swatchUi = { root: "block size-9 shrink-0 rounded-md border border-border" };
 export const paletteUi = {
-  root: "w-full rounded-md",
-  viewport: "rounded-md outline-none",
-  content: "flex flex-wrap gap-2",
-  item: "relative rounded-md outline-none data-[akaza-highlighted]:ring-2 data-[akaza-highlighted]:ring-ring data-[akaza-state=checked]:ring-2 data-[akaza-state=checked]:ring-foreground/60 data-[akaza-disabled]:opacity-35",
+  root: "w-fit max-w-full rounded-md",
+  viewport: "rounded-md p-1.5 outline-none",
+  content: "flex flex-wrap gap-2 rtl:justify-end",
+  item: "relative rounded-md outline-offset-[3px] data-[akaza-highlighted]:outline-2 data-[akaza-highlighted]:outline-dashed data-[akaza-highlighted]:outline-foreground/75 data-[akaza-state=checked]:ring-2 data-[akaza-state=checked]:ring-foreground/60 data-[akaza-disabled]:opacity-35",
   swatch: "block size-10 rounded-md border border-white/25",
   label: "sr-only",
-  indicator: "pointer-events-none absolute inset-0 flex items-center justify-center text-white",
+  indicator: "pointer-events-none absolute inset-0 m-auto flex size-5 items-center justify-center rounded-full text-white data-[akaza-state=checked]:bg-black/70",
 };
 export const pickerUi = {
   root: "grid w-full max-w-sm gap-3",

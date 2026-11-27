@@ -348,6 +348,14 @@ Column sizes use pixels and a fixed table layout. `expand` changes total table w
 
 Row reorder is available only for flat, unsorted rows. Sorting or hierarchical depth disables native reorder buttons and controller moves, avoiding ambiguous source order. Filtered and paginated moves still operate on stable row keys in the full supplied array.
 
+Reorder handles use the SDK pickup/move/drop workflow. Press Space or Enter to pick up, use arrows or Home/End to choose a position, then Space or Enter to commit. Escape or Tab cancels. Pointer pickup requires the SDK's 3px movement threshold. Crossing a boundary by one pixel remains a click; a completed drag suppresses its following click.
+
+During a draft, the table retains its accepted DOM order and form contents. Handles expose `aria-pressed`, and rows/leaf headers expose `data-akaza-grabbed` and `data-akaza-drop-target` for feedback. Drop requests preserve the original event and the public `reorder` reason. A canceled request or refused controlled order clears the draft; the next gesture starts from the accepted model. Changes to visible keys, reorder eligibility, or sorting cancel an active reorder.
+
+Resize moves are sampled at most once per animation frame. Both live and `update: 'end'` resizing use the actual pointerup coordinates for the final width, not a stale move sample. End-only resizing emits nothing on pointercancel or Escape. Live sizing keeps widths already emitted before cancellation; it does not roll back accepted changes. Bounds, rounding, fit behavior, RTL, Home and double-click reset still use the table controller.
+
+The SDK owns reorder pickup/move/drop/cancel announcements through its shared assertive document region. `ui.liveRegion` continues to style the component's polite result/loading/error region, which no longer repeats reorder messages. The legacy `labels.moveBefore` and `labels.moveAfter` fields no longer format gesture announcements; SDK position messages replace them. Control names still use the other `labels` fields.
+
 ### Loading, error, and empty states
 
 State rows preserve the table structure and span every visible column. Replace their content without rebuilding the table.
@@ -550,12 +558,12 @@ The component instance exposes `getColumn`, `getRow`, `setFilter`, `clearFilter`
 | `headerContent` | `akaza-data-table-header-content` | — |
 | `sortTrigger`, `sortIndicator` | `akaza-data-table-sort-trigger`, `akaza-data-table-sort-indicator` | Native button attrs. |
 | `resizeHandle` | `akaza-data-table-resize-handle` | separator role and value ARIA. |
-| `columnReorderHandle` | `akaza-data-table-column-reorder-handle` | Native button attrs. |
+| `columnReorderHandle` | `akaza-data-table-column-reorder-handle` | Native button attrs, `aria-pressed`. |
 | `tbody` | `akaza-data-table-tbody` | — |
 | `row` | `akaza-data-table-row` | `data-akaza-row-key`, `data-akaza-row-index`, `data-akaza-depth`, `data-akaza-state`, `data-akaza-selected`, `data-akaza-expanded`, `data-akaza-disabled` |
 | `cell` | `akaza-data-table-cell` | `data-akaza-column`, `data-akaza-column-index`, `data-akaza-pinned` |
 | `cellContent` | `akaza-data-table-cell-content` | — |
-| row controls | `akaza-data-table-selection-control`, `akaza-data-table-expansion-trigger`, `akaza-data-table-reorder-handle` | Native input/button ARIA. |
+| row controls | `akaza-data-table-selection-control`, `akaza-data-table-expansion-trigger`, `akaza-data-table-reorder-handle` | Native input/button ARIA; reorder handles expose `aria-pressed`. |
 | expanded parts | `akaza-data-table-expanded-row`, `akaza-data-table-expanded-cell` | `data-akaza-state="expanded"` |
 | state parts | `akaza-data-table-loading-*`, `akaza-data-table-error-*`, `akaza-data-table-empty-*` | matching `data-akaza-state` on rows. |
 | footer parts | `akaza-data-table-tfoot`, `akaza-data-table-footer-row`, `akaza-data-table-footer-cell` | column/pinning attrs on cells. |
@@ -564,6 +572,8 @@ The component instance exposes `getColumn`, `getRow`, `setFilter`, `clearFilter`
 | `liveRegion` | `akaza-data-table-live-region` | `aria-live="polite"`. |
 
 Plain `class` applies to the outer root. Use `ui.table`, section keys, or per-column `ui` and `attrs` for granular control. DataTable ships only behavior-critical layout for overflow, sizing, sticky/pinned positioning, resize targets, and the live region.
+
+Rows and leaf header cells also expose `data-akaza-grabbed` and `data-akaza-drop-target` during reorder drafts. Style these hooks to distinguish the picked-up item and destination without changing CSS reading order.
 
 ### Keyboard
 
@@ -574,8 +584,11 @@ Plain `class` applies to the outer root. Use `ui.table`, section keys, or per-co
 | expansion control | `Enter` / `Space` | Opens or closes row details/children. |
 | resize separator | `ArrowLeft` / `ArrowRight` | Changes width by `keyboardStep`, respecting RTL. |
 | resize separator | `Home` | Restores the definition width or 150px. |
-| column reorder handle | `ArrowLeft` / `ArrowRight` | Moves the column one visible position. |
-| row reorder handle | `ArrowUp` / `ArrowDown` | Moves the row one visible position. |
+| reorder handle | `Enter` / `Space` | Picks up, then drops the draft on the next activation. |
+| column reorder handle, picked up | `ArrowLeft` / `ArrowRight` | Moves the draft one visible position, respecting RTL. |
+| row reorder handle, picked up | `ArrowUp` / `ArrowDown` | Moves the draft one reorderable visible position. |
+| reorder handle, picked up | `Home` / `End` | Moves the draft to the first/last visible position. |
+| reorder handle, picked up | `Escape` / `Tab` | Cancels the draft; Tab continues normal focus navigation. |
 | pagination | `Tab`, `Enter`, `Space` | Uses native Pagination button/link behavior. |
 
 Pointer dragging and touch Pointer Events use the same resize and reorder actions. The table does not add spreadsheet-style arrow navigation to ordinary data cells; native table reading and normal document tab order remain intact.

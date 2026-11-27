@@ -44,13 +44,14 @@ const colors = [
     :items="colors"
     aria-label="Brand palette"
     :ui="{
-      viewport: 'rounded-md outline-none',
-      content: 'flex flex-wrap gap-2',
-      item: 'relative rounded-md data-[akaza-state=checked]:ring-2 data-[akaza-state=checked]:ring-foreground/60 data-[akaza-highlighted]:ring-2 data-[akaza-highlighted]:ring-ring',
+      root: 'w-fit max-w-full',
+      viewport: 'rounded-md p-1.5 outline-none',
+      content: 'flex flex-wrap gap-2 rtl:justify-end',
+      item: 'relative rounded-md outline-offset-[3px] data-[akaza-highlighted]:outline-2 data-[akaza-highlighted]:outline-dashed data-[akaza-highlighted]:outline-foreground/75 data-[akaza-state=checked]:ring-2 data-[akaza-state=checked]:ring-foreground/60',
       swatch: 'block size-10 rounded-md border border-white/25',
       label: 'sr-only',
       indicator:
-        'pointer-events-none absolute inset-0 flex items-center justify-center text-white',
+        'pointer-events-none absolute inset-0 m-auto flex size-5 items-center justify-center rounded-full text-white data-[akaza-state=checked]:bg-black/70',
     }"
   >
     <template #indicator="{ isSelected }">
@@ -102,7 +103,7 @@ Use `#indicator` to add a checkmark to the selected color. The labels remain ava
 
 ### Multiple selection and RTL
 
-Toggle several colors, use Shift with navigation to extend selection, and skip disabled options.
+Use Shift with arrow keys to select a range. Gray has `disabled: true`, so it cannot be selected and ranges skip it. The first swatch is on the right in RTL, but the palette stays with the example content.
 
 ```vue
 <template>
@@ -137,12 +138,13 @@ Replace the swatch, label, and indicator. The option wrapper still handles selec
 ```vue
 <template>
   <ColorSwatchPicker
-    v-model="color"
+    v-model="environmentColor"
     :items="customItems"
     :ui="{
       ...paletteUi,
+      root: 'w-full',
       content: 'grid gap-2',
-      item: 'flex items-center gap-3 rounded-md border border-border p-2 data-[akaza-state=checked]:bg-accent',
+      item: `${paletteUi.item} flex items-center gap-3 border border-border p-2 data-[akaza-state=checked]:bg-accent`,
     }"
     aria-label="Environment colors"
   >
@@ -248,9 +250,13 @@ Use `class` or `ui.root` to style the root. Use the other `ui` keys for inner pa
 | Orientation arrow keys | Move the highlighted option, respecting RTL, wrapping, and disabled entries. |
 | `Home` / `End` | Highlight first/last enabled option. |
 | `Enter` / `Space` | Select/toggle the highlighted color. |
-| Shift+navigation | Extend selection in multiple mode. |
+| Shift+orientation arrow | Extend selection in multiple mode. |
 | Ctrl/Cmd+A | Select all enabled colors in multiple mode. |
 | Character keys | Typeahead by option label. |
+
+Typeahead ignores case and accents, skips disabled options, and cycles matching labels when you repeat a letter. Type a prefix within 500 ms between keys. Space extends an active query; otherwise it selects the highlighted color.
+
+Keyboard focus stays on the listbox, not individual swatches. Highlighting a color does not select it. Set `loop=false` to stop at either end. Read-only pickers allow highlight movement but reject selection changes. IME composition and modified shortcuts are ignored, except Ctrl/Cmd+A in multiple mode.
 
 ## Parity Notes
 

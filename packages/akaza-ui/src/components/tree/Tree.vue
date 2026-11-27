@@ -14,9 +14,11 @@ import type {
   TreeSlots,
   TreeVirtualOptions,
 } from ".";
-import { useVirtualList } from "@vueuse/core";
-import { computed, nextTick, onUpdated, ref, useId } from "vue";
-import { useTypeahead } from "../../composables/typeahead";
+import { createFocusRecovery, createTreeCollection, isComposing, toggleTreeChecked } from "@ui-sdk/core";
+import { computed, nextTick, onBeforeUnmount, onUpdated, ref, useId } from "vue";
+import { useCollectionSelection } from "../../composables/internal/sdk/useCollectionSelection";
+import { useCollectionVirtualizer } from "../../composables/internal/sdk/useCollectionVirtualizer";
+import { useTypeaheadSearch } from "../../composables/internal/sdk/useTypeaheadSearch";
 import { createChangeDetails } from "../../utils/changeEvent";
 
 defineOptions({ inheritAttrs: false });
@@ -74,9 +76,13 @@ const model = defineModel<TreeSelection>();
 const expandedModel = defineModel<TreeKey[]>("expanded");
 const instanceId = `akaza-tree-${useId().replace(/:/g, "")}`;
 const itemRefs = new Map<TreeKey, HTMLElement>();
+const viewportRef = ref<HTMLElement | null>(null);
 const focusedKey = ref<TreeKey | null>(null);
 const selectionAnchor = ref<TreeKey | null>(null);
-const { push: pushTypeahead } = useTypeahead({ resetOnRepeatedCharacter: true });
+let focusedAncestors: TreeKey[] = [];
+let unmounting = false;
+let applyingFocus = false;
+const recoveryBindings = new Map<TreeKey, { element: HTMLElement; props: { ancestors: TreeKey[] }; cleanup: () => void }>();
 
 function readAccessor<TValue>(item: T, accessor: TreeAccessor<T, TValue> | undefined): TValue | undefined {
   if (!accessor) return undefined;
@@ -113,51 +119,77 @@ function resolveSlot(item: T): string | undefined {
   return typeof slot === "string" && slot ? slot : undefined;
 }
 
+function sdkKey(key: TreeKey): string {
+  // SDK keys are strings; public numeric and string keys must remain distinct.
+  return `${typeof key}:${String(key)}`;
+}
+
 const treeData = computed(() => {
-  const nodes: InternalNode[] = [];
-  const nodeMap = new Map<TreeKey, InternalNode>();
-  const childrenByParent = new Map<TreeKey | null, TreeKey[]>();
-  const stack = [...props.items].reverse().map((item, index) => ({
+  const entries: Omit<InternalNode, "depth" | "siblingIndex" | "siblingCount">[] = [];
+  const keyById = new Map<string, TreeKey>();
+  const stack = [...props.items].reverse().map(item => ({
     item,
     parentKey: null as TreeKey | null,
-    depth: 1,
-    siblingIndex: props.items.length - index - 1,
-    siblingCount: props.items.length,
   }));
 
   while (stack.length) {
     const entry = stack.pop()!;
     const key = resolveKey(entry.item);
-    if (nodeMap.has(key)) throw new TypeError(`[akaza-ui] Tree item keys must be unique. Duplicate key: ${String(key)}`);
+    const id = sdkKey(key);
+    if (keyById.has(id)) throw new TypeError(`[akaza-ui] Tree item keys must be unique. Duplicate key: ${String(key)}`);
+    keyById.set(id, key);
     const children = resolveChildren(entry.item);
-    const node: InternalNode = {
+    entries.push({
       ...entry,
       key,
-      sourceIndex: nodes.length,
+      sourceIndex: entries.length,
       label: resolveLabel(entry.item),
       slot: resolveSlot(entry.item),
       isBranch: children.length > 0 || Boolean(props.hasChildren?.(entry.item)),
       isDisabled: resolveBoolean(entry.item, props.disabledKey, false),
       isSelectable: resolveBoolean(entry.item, props.selectableKey, true),
-    };
-    nodes.push(node);
-    nodeMap.set(key, node);
-    const siblings = childrenByParent.get(entry.parentKey) ?? [];
-    siblings.push(key);
-    childrenByParent.set(entry.parentKey, siblings);
+    });
 
     for (let index = children.length - 1; index >= 0; index--) {
       stack.push({
         item: children[index]!,
         parentKey: key,
-        depth: entry.depth + 1,
-        siblingIndex: index,
-        siblingCount: children.length,
       });
     }
   }
 
-  return { nodes, nodeMap, childrenByParent };
+  const collection = createTreeCollection(entries.map(node => ({
+    key: sdkKey(node.key),
+    parent: node.parentKey === null ? null : sdkKey(node.parentKey),
+    branch: node.isBranch,
+  })));
+  const nodes: InternalNode[] = entries.map((node) => {
+    const id = sdkKey(node.key);
+    const position = collection.position(id);
+    return {
+      ...node,
+      depth: collection.level(id),
+      siblingIndex: position.index - 1,
+      siblingCount: position.size,
+    };
+  });
+  const nodeMap = new Map(nodes.map(node => [node.key, node]));
+  return { nodes, nodeMap, collection, keyById };
+});
+
+const focusRecovery = createFocusRecovery<{ ancestors: TreeKey[] }>({
+  fallback: (lost) => {
+    if (unmounting) return;
+    const key = focusFallback(lost.props.ancestors);
+    const element = key === null ? undefined : itemRefs.get(key);
+    if (!element || key === null) return;
+    const change = createDetails(treeData.value.nodeMap.get(key)!, "focus");
+    emit("focus-change", key, change.details);
+    if (change.canceled()) return;
+    focusedKey.value = key;
+    focusedAncestors = ancestorKeys(key);
+    return element;
+  },
 });
 
 const initialExpanded = props.defaultExpanded ?? treeData.value.nodes
@@ -191,29 +223,20 @@ const virtualOptions = computed<Required<TreeVirtualOptions>>(() => ({
   overscan: typeof props.virtualize === "object" ? props.virtualize.overscan ?? 5 : 5,
 }));
 
-function childrenOf(key: TreeKey): TreeKey[] {
-  return treeData.value.childrenByParent.get(key) ?? [];
+function fromSdkKeys(keys: readonly string[]): TreeKey[] {
+  return keys.map(key => treeData.value.keyById.get(key)!);
+}
+
+function childrenOf(key: TreeKey | null): TreeKey[] {
+  return fromSdkKeys(treeData.value.collection.children(key === null ? null : sdkKey(key)));
 }
 
 function descendantKeys(key: TreeKey): TreeKey[] {
-  const result: TreeKey[] = [];
-  const stack = [...childrenOf(key)].reverse();
-  while (stack.length) {
-    const childKey = stack.pop()!;
-    result.push(childKey);
-    stack.push(...childrenOf(childKey).reverse());
-  }
-  return result;
+  return fromSdkKeys(treeData.value.collection.descendants(sdkKey(key)));
 }
 
 function ancestorKeys(key: TreeKey): TreeKey[] {
-  const result: TreeKey[] = [];
-  let parentKey = treeData.value.nodeMap.get(key)?.parentKey ?? null;
-  while (parentKey !== null) {
-    result.push(parentKey);
-    parentKey = treeData.value.nodeMap.get(parentKey)?.parentKey ?? null;
-  }
-  return result;
+  return fromSdkKeys(treeData.value.collection.ancestors(sdkKey(key))).reverse();
 }
 
 function selectableDescendantKeys(key: TreeKey): TreeKey[] {
@@ -252,18 +275,10 @@ function isIndeterminate(key: TreeKey): boolean {
   return selected > 0 && selected < total;
 }
 
-const visibleInternalNodes = computed(() => {
-  const visible: InternalNode[] = [];
-  const visibleKeys = new Set<TreeKey>();
-  for (const node of treeData.value.nodes) {
-    const parentVisible = node.parentKey === null || visibleKeys.has(node.parentKey);
-    const parentExpanded = node.parentKey === null || expandedKeySet.value.has(node.parentKey);
-    if (!parentVisible || !parentExpanded) continue;
-    visible.push(node);
-    visibleKeys.add(node.key);
-  }
-  return visible;
-});
+const visibleInternalNodes = computed(() =>
+  fromSdkKeys(treeData.value.collection.visible(expandedKeys.value.map(sdkKey)))
+    .map(key => treeData.value.nodeMap.get(key)!),
+);
 
 function toPublicNode(node: InternalNode, index = visibleInternalNodes.value.findIndex(item => item.key === node.key)): TreeNode<T> {
   return {
@@ -291,24 +306,32 @@ function toPublicNode(node: InternalNode, index = visibleInternalNodes.value.fin
 const visibleNodes = computed<readonly TreeNode<T>[]>(() =>
   visibleInternalNodes.value.map((node, index) => toPublicNode(node, index)),
 );
+const typeahead = useTypeaheadSearch({
+  items: () => visibleNodes.value,
+  label: node => props.textValue?.(node.item) ?? node.label,
+  disabled: node => node.isDisabled,
+});
 const selectedItems = computed<readonly T[]>(() => props.selectionMode === "none"
   ? []
   : treeData.value.nodes.filter(node => selectedKeySet.value.has(node.key)).map(node => node.item));
 
 const {
-  list: virtualRows,
+  rows: virtualRows,
   scrollTo: scrollToVirtualIndex,
-  containerProps: virtualContainerProps,
-  wrapperProps: virtualWrapperProps,
-} = useVirtualList(visibleNodes, {
+  wrapperStyle: virtualWrapperStyle,
+} = useCollectionVirtualizer({
+  rows: () => visibleNodes.value,
+  key: node => sdkKey(node.key),
   itemHeight: () => virtualOptions.value.itemHeight,
-  overscan: typeof props.virtualize === "object" ? props.virtualize.overscan ?? 5 : 5,
+  overscan: () => virtualOptions.value.overscan,
+  enabled: () => Boolean(props.virtualize),
+  viewport: viewportRef,
 });
 const renderedRows = computed(() => props.virtualize
   ? virtualRows.value
   : visibleNodes.value.map((data, index) => ({ data, index })));
 const viewportStyle = computed<StyleValue>(() => props.virtualize
-  ? [virtualContainerProps.style, { height: `var(--akaza-tree-virtual-height, ${virtualOptions.value.height}px)` }]
+  ? { overflow: "auto", height: `var(--akaza-tree-virtual-height, ${virtualOptions.value.height}px)` }
   : undefined);
 
 function eventReason(event: Event | undefined, fallback = "programmatic"): string {
@@ -374,7 +397,7 @@ function selectKey(key: TreeKey, event?: Event, force?: boolean): boolean {
     return changed;
   }
 
-  const keys = new Set(selectedKeySet.value);
+  let keys = new Set(selectedKeySet.value);
   let selecting = force ?? !keys.has(key);
   const hasModifier = event instanceof MouseEvent || event instanceof KeyboardEvent
     ? event.ctrlKey || event.metaKey
@@ -383,13 +406,26 @@ function selectKey(key: TreeKey, event?: Event, force?: boolean): boolean {
     keys.clear();
     selecting = true;
   }
-  if (selecting) keys.add(key);
-  else keys.delete(key);
+  if (selecting !== keys.has(key)) {
+    const publicKeyById = new Map([...keys, key].map(value => [sdkKey(value), value]));
+    // Cascading SDK strategies reinterpret branch keys; Akaza propagation stays explicit below.
+    keys = new Set(toggleTreeChecked(treeData.value.collection, [...keys].map(sdkKey), sdkKey(key), {
+      strategy: "independent",
+    }).map(id => publicKeyById.get(id)!));
+  }
   applySelectionPropagation(keys, key, selecting);
   const changed = commitSelection(orderedKeys(keys), node, reason, event);
   if (changed && !(event instanceof KeyboardEvent && event.shiftKey)) selectionAnchor.value = key;
   return changed;
 }
+
+// SDK proposes a filtered range; only Akaza commits propagation and additive selection.
+let rangeProposal: TreeKey[] = [];
+const rangeSelection = useCollectionSelection<TreeKey>({
+  value: () => [],
+  equals: Object.is,
+  change: (value) => { rangeProposal = value; return true; },
+});
 
 function selectRange(key: TreeKey, event: KeyboardEvent | MouseEvent, anchorKey = selectionAnchor.value): boolean {
   const node = treeData.value.nodeMap.get(key);
@@ -400,15 +436,15 @@ function selectRange(key: TreeKey, event: KeyboardEvent | MouseEvent, anchorKey 
   const anchorIndex = visibleNodes.value.findIndex(item => item.key === resolvedAnchor);
   const targetIndex = visibleNodes.value.findIndex(item => item.key === key);
   if (anchorIndex < 0 || targetIndex < 0) return selectKey(key, event);
-  if (selectionAnchor.value === null && resolvedAnchor !== null && resolvedAnchor !== undefined) selectionAnchor.value = resolvedAnchor;
-  const [start, end] = anchorIndex <= targetIndex ? [anchorIndex, targetIndex] : [targetIndex, anchorIndex];
+  rangeSelection.replaceRange(visibleNodes.value.map(item => ({ value: item.key, disabled: !item.isSelectable })), anchorIndex, targetIndex, "range", event);
   const keys = new Set<TreeKey>(event.ctrlKey || event.metaKey ? selectedKeySet.value : []);
-  for (const rangeNode of visibleNodes.value.slice(start, end + 1)) {
-    if (!rangeNode.isSelectable) continue;
-    keys.add(rangeNode.key);
-    applySelectionPropagation(keys, rangeNode.key, true);
+  for (const rangeKey of rangeProposal) {
+    keys.add(rangeKey);
+    applySelectionPropagation(keys, rangeKey, true);
   }
-  return commitSelection(orderedKeys(keys), node, "range", event);
+  const changed = commitSelection(orderedKeys(keys), node, "range", event);
+  if (changed && selectionAnchor.value === null && resolvedAnchor !== null && resolvedAnchor !== undefined) selectionAnchor.value = resolvedAnchor;
+  return changed;
 }
 
 function commitExpanded(keys: Set<TreeKey>, node: InternalNode, nextExpanded: boolean, reason: string, event?: Event): boolean {
@@ -448,7 +484,7 @@ function expandSiblings(key: TreeKey, event: KeyboardEvent): boolean {
   const node = treeData.value.nodeMap.get(key);
   if (!node) return false;
   const keys = new Set(expandedKeySet.value);
-  for (const siblingKey of treeData.value.childrenByParent.get(node.parentKey) ?? []) {
+  for (const siblingKey of childrenOf(node.parentKey)) {
     const sibling = treeData.value.nodeMap.get(siblingKey);
     if (sibling?.isBranch && !sibling.isDisabled) keys.add(siblingKey);
   }
@@ -456,12 +492,30 @@ function expandSiblings(key: TreeKey, event: KeyboardEvent): boolean {
 }
 
 function setItemRef(element: Element | ComponentPublicInstance | null, key: TreeKey) {
-  if (element) itemRefs.set(key, element as HTMLElement);
-  else itemRefs.delete(key);
+  const current = recoveryBindings.get(key);
+  if (element) {
+    const target = element as HTMLElement;
+    itemRefs.set(key, target);
+    const bindingProps = { ancestors: ancestorKeys(key) };
+    if (current?.element === target) {
+      current.props.ancestors = bindingProps.ancestors;
+      return;
+    }
+    current?.cleanup();
+    recoveryBindings.set(key, {
+      element: target,
+      props: bindingProps,
+      cleanup: focusRecovery.bind(target, { key: sdkKey(key), props: bindingProps }),
+    });
+  } else {
+    itemRefs.delete(key);
+    current?.cleanup();
+    recoveryBindings.delete(key);
+  }
 }
 
 function setViewportRef(element: Element | ComponentPublicInstance | null) {
-  virtualContainerProps.ref.value = element as HTMLElement | null;
+  viewportRef.value = element as HTMLElement | null;
 }
 
 function focusKey(key?: TreeKey, event?: Event, applySelection = true): boolean {
@@ -476,10 +530,26 @@ function focusKey(key?: TreeKey, event?: Event, applySelection = true): boolean 
     if (change.canceled()) return false;
     focusedKey.value = target.key;
   }
+  focusedAncestors = ancestorKeys(target.key);
   if (applySelection && props.selectOnFocus) selectKey(target.key, event, true);
   if (props.virtualize) scrollToVirtualIndex(target.index);
-  nextTick(() => itemRefs.get(target.key)?.focus({ preventScroll: true }));
+  if (itemRefs.get(target.key) !== viewportRef.value?.ownerDocument.activeElement) {
+    nextTick(() => {
+      if (unmounting || focusedKey.value !== target.key) return;
+      applyingFocus = true;
+      try {
+        itemRefs.get(target.key)?.focus({ preventScroll: true });
+      } finally {
+        applyingFocus = false;
+      }
+    });
+  }
   return true;
+}
+
+function onItemFocus(key: TreeKey, event: FocusEvent) {
+  // The accepted focus action already applied its selection policy, including Shift suppression.
+  if (!applyingFocus) focusKey(key, event);
 }
 
 function activateKey(key: TreeKey, event?: Event): boolean {
@@ -548,7 +618,7 @@ function itemStyle(node: TreeNode<T>): CSSProperties {
   } as CSSProperties;
 }
 
-function isInteractiveTarget(event: MouseEvent): boolean {
+function isInteractiveTarget(event: MouseEvent | KeyboardEvent): boolean {
   const target = event.target as HTMLElement | null;
   const current = event.currentTarget as HTMLElement | null;
   const interactive = target?.closest("button, a, input, select, textarea, [contenteditable='true'], [data-akaza-tree-ignore]");
@@ -558,10 +628,10 @@ function isInteractiveTarget(event: MouseEvent): boolean {
 function onRowClick(node: TreeNode<T>, event: MouseEvent) {
   if (node.isDisabled || isInteractiveTarget(event)) return;
   const previousFocusedKey = focusedKey.value;
-  focusKey(node.key, event, false);
+  const focused = focusKey(node.key, event, false);
   if (props.expandOnClick && node.isBranch) toggleExpanded(node.key, event);
   if (event.shiftKey && props.selectionMode === "multiple") {
-    selectRange(node.key, event, selectionAnchor.value ?? previousFocusedKey);
+    if (focused) selectRange(node.key, event, selectionAnchor.value ?? previousFocusedKey);
   } else {
     selectKey(node.key, event, props.selectOnFocus ? true : undefined);
   }
@@ -573,8 +643,7 @@ function moveFocus(node: TreeNode<T>, delta: number, event: KeyboardEvent) {
   while (index >= 0 && index < visibleNodes.value.length) {
     const next = visibleNodes.value[index];
     if (next && !next.isDisabled) {
-      focusKey(next.key, event, !event.shiftKey);
-      if (event.shiftKey) selectRange(next.key, event, selectionAnchor.value ?? node.key);
+      if (focusKey(next.key, event, !event.shiftKey) && event.shiftKey) selectRange(next.key, event, selectionAnchor.value ?? node.key);
       return;
     }
     index += delta;
@@ -582,7 +651,12 @@ function moveFocus(node: TreeNode<T>, delta: number, event: KeyboardEvent) {
 }
 
 function onKeydown(node: TreeNode<T>, event: KeyboardEvent) {
-  if (props.disabled) return;
+  if (props.disabled || event.defaultPrevented || isComposing(event) || isInteractiveTarget(event)) return;
+  if (props.typeahead && event.key === " " && typeahead.active()) {
+    const match = typeahead.search(event, node.index);
+    if (match >= 0) focusKey(visibleNodes.value[match]!.key, event);
+    return;
+  }
   const nextKey = props.orientation === "vertical" ? "ArrowDown" : props.dir === "rtl" ? "ArrowLeft" : "ArrowRight";
   const previousKey = props.orientation === "vertical" ? "ArrowUp" : props.dir === "rtl" ? "ArrowRight" : "ArrowLeft";
   const expandKey = props.orientation === "vertical" ? props.dir === "rtl" ? "ArrowLeft" : "ArrowRight" : "ArrowDown";
@@ -609,16 +683,14 @@ function onKeydown(node: TreeNode<T>, event: KeyboardEvent) {
     const target = visibleNodes.value.find(item => !item.isDisabled);
     if (target) {
       const anchorKey = selectionAnchor.value ?? node.key;
-      focusKey(target.key, event, !event.shiftKey);
-      if (event.shiftKey) selectRange(target.key, event, anchorKey);
+      if (focusKey(target.key, event, !event.shiftKey) && event.shiftKey) selectRange(target.key, event, anchorKey);
     }
   } else if (event.key === "End") {
     event.preventDefault();
     const target = [...visibleNodes.value].reverse().find(item => !item.isDisabled);
     if (target) {
       const anchorKey = selectionAnchor.value ?? node.key;
-      focusKey(target.key, event, !event.shiftKey);
-      if (event.shiftKey) selectRange(target.key, event, anchorKey);
+      if (focusKey(target.key, event, !event.shiftKey) && event.shiftKey) selectRange(target.key, event, anchorKey);
     }
   } else if (event.key === "*") {
     event.preventDefault();
@@ -632,45 +704,36 @@ function onKeydown(node: TreeNode<T>, event: KeyboardEvent) {
     activateKey(node.key, event);
   } else if (props.selectionMode === "multiple" && event.key.toLowerCase() === "a" && (event.ctrlKey || event.metaKey)) {
     event.preventDefault();
+    if (props.readOnly) return;
     const keys = new Set(treeData.value.nodes.filter(item => item.isSelectable && !item.isDisabled).map(item => item.key));
     commitSelection(orderedKeys(keys), treeData.value.nodeMap.get(node.key)!, "select-all", event);
-  } else if (props.typeahead && event.key.length === 1 && !event.altKey && !event.ctrlKey && !event.metaKey) {
-    const character = event.key.toLocaleLowerCase();
-    const typeaheadQuery = pushTypeahead(character);
-    const candidates = [...visibleNodes.value.slice(node.index + 1), ...visibleNodes.value.slice(0, node.index + 1)];
-    const match = candidates.find((candidate) => {
-      const value = props.textValue?.(candidate.item) ?? candidate.label;
-      return !candidate.isDisabled && value.toLocaleLowerCase().startsWith(typeaheadQuery);
-    });
-    if (match) focusKey(match.key, event);
+  } else if (props.typeahead) {
+    const match = typeahead.search(event, node.index);
+    if (match >= 0) focusKey(visibleNodes.value[match]!.key, event);
   }
 }
 
-function normalizeFocus() {
-  if (!visibleNodes.value.length) {
-    focusedKey.value = null;
-    return;
-  }
-  if (focusedKey.value !== null && visibleNodes.value.some(node => node.key === focusedKey.value)) return;
-  let key = focusedKey.value;
-  while (key !== null) {
-    const parentKey = treeData.value.nodeMap.get(key)?.parentKey ?? null;
-    if (parentKey !== null && visibleNodes.value.some(node => node.key === parentKey)) {
-      focusedKey.value = parentKey;
-      return;
-    }
-    key = parentKey;
-  }
-  focusedKey.value = visibleNodes.value.find(node => node.isSelected && !node.isDisabled)?.key
+function focusFallback(ancestors = focusedAncestors): TreeKey | null {
+  const enabled = new Set(visibleNodes.value.filter(node => !node.isDisabled).map(node => node.key));
+  if (focusedKey.value !== null && enabled.has(focusedKey.value)) return focusedKey.value;
+  return ancestors.find(key => enabled.has(key))
+    ?? visibleNodes.value.find(node => node.isSelected && !node.isDisabled)?.key
     ?? visibleNodes.value.find(node => !node.isDisabled)?.key
     ?? null;
 }
 
+function normalizeFocus() {
+  focusedKey.value = focusFallback();
+  if (focusedKey.value !== null) focusedAncestors = ancestorKeys(focusedKey.value);
+}
+
 function tabIndex(node: TreeNode<T>): 0 | -1 {
-  const target = focusedKey.value
-    ?? visibleNodes.value.find(item => item.isSelected && !item.isDisabled)?.key
-    ?? visibleNodes.value.find(item => !item.isDisabled)?.key;
-  return Object.is(node.key, target) ? 0 : -1;
+  if (node.isDisabled) return -1;
+  const candidates = props.virtualize ? renderedRows.value.map(row => row.data) : visibleNodes.value;
+  const target = candidates.find(item => Object.is(item.key, focusedKey.value) && !item.isDisabled)
+    ?? candidates.find(item => item.isSelected && !item.isDisabled)
+    ?? candidates.find(item => !item.isDisabled);
+  return Object.is(node.key, target?.key) ? 0 : -1;
 }
 
 function getNode(key: TreeKey): TreeNode<T> | undefined {
@@ -713,6 +776,11 @@ defineExpose({
 });
 
 onUpdated(normalizeFocus);
+onBeforeUnmount(() => {
+  unmounting = true;
+  for (const binding of recoveryBindings.values()) binding.cleanup();
+  recoveryBindings.clear();
+});
 </script>
 
 <template>
@@ -743,7 +811,6 @@ onUpdated(normalizeFocus);
       :class="props.ui?.viewport"
       :style="viewportStyle"
       class="akaza-tree-viewport"
-      @scroll="props.virtualize && virtualContainerProps.onScroll()"
     >
       <div v-if="!visibleNodes.length" :class="props.ui?.empty" class="akaza-tree-empty">
         <slot name="empty" :tree="tree">{{ props.labels?.empty ?? "No items." }}</slot>
@@ -752,7 +819,7 @@ onUpdated(normalizeFocus);
         v-else
         role="presentation"
         :class="props.ui?.virtualWrapper"
-        :style="props.virtualize ? virtualWrapperProps.style : undefined"
+        :style="props.virtualize ? virtualWrapperStyle : undefined"
         class="akaza-tree-virtual-wrapper"
       >
         <TransitionGroup name="akaza-tree-item" :css="props.transition && !props.virtualize">
@@ -762,6 +829,8 @@ onUpdated(normalizeFocus);
             :key="row.data.key"
             :ref="element => setItemRef(element, row.data.key)"
             role="treeitem"
+            :aria-label="$slots[itemSlotName(row.data)] ? row.data.label : undefined"
+            :aria-labelledby="$slots[itemSlotName(row.data)] ? undefined : `${itemId(row.data)}-label`"
             :tabindex="tabIndex(row.data)"
             :aria-level="row.data.depth"
             :aria-posinset="row.data.siblingIndex + 1"
@@ -782,7 +851,7 @@ onUpdated(normalizeFocus);
             :data-akaza-selectable="row.data.isSelectable || undefined"
             :data-akaza-loading="row.data.isLoading || undefined"
             :data-akaza-depth="row.data.depth"
-            @focus="focusKey(row.data.key, $event)"
+            @focus="onItemFocus(row.data.key, $event)"
             @keydown="onKeydown(row.data, $event)"
           >
             <div
@@ -838,6 +907,7 @@ onUpdated(normalizeFocus);
                   </span>
                   <span :class="props.ui?.text" class="akaza-tree-text">
                     <span
+                      :id="`${itemId(row.data)}-label`"
                       :class="[props.ui?.label, props.selectionHighlight === 'label' && ['akaza-tree-selection', props.ui?.selection]]"
                       class="akaza-tree-label"
                       :data-akaza-selected="row.data.isSelected || undefined"
@@ -855,7 +925,7 @@ onUpdated(normalizeFocus);
               </span>
             </div>
             <div
-              v-if="row.data.isBranch && row.data.isExpanded && row.data.isLoading && !treeData.childrenByParent.get(row.data.key)?.length"
+              v-if="row.data.isBranch && row.data.isExpanded && row.data.isLoading && !childrenOf(row.data.key).length"
               role="status"
               :class="props.ui?.loading"
               class="akaza-tree-loading"

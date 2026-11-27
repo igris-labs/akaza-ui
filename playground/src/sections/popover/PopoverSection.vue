@@ -12,6 +12,7 @@ import {
   eventEntry,
   eventLog as eventLogClass,
   inlineCode,
+  inputControl,
   popoverContent,
   sectionDescription,
   sectionTitle,
@@ -185,7 +186,7 @@ function onOpenChangeCancelEscape(open: boolean, details: AkazaChangeEventDetail
         <span class="block text-sm font-medium text-foreground">triggerProps (ARIA)</span>
         <span class="text-xs text-muted-foreground">
           Spread <code :class="inlineCode">triggerProps</code> onto the trigger element to get
-          <code :class="inlineCode">aria-haspopup</code>, <code :class="inlineCode">aria-expanded</code>, and <code :class="inlineCode">aria-controls</code> automatically.
+          <code :class="inlineCode">aria-expanded</code> and <code :class="inlineCode">aria-controls</code> automatically.
         </span>
       </div>
       <div :class="canvasRow">
@@ -212,6 +213,7 @@ function onOpenChangeCancelEscape(open: boolean, details: AkazaChangeEventDetail
         <span class="text-xs text-muted-foreground">
           Emits <code :class="inlineCode">(open, details)</code> with <code :class="inlineCode">details.reason</code>:
           <code :class="inlineCode">outside-click</code>, <code :class="inlineCode">escape</code>, <code :class="inlineCode">programmatic</code>.
+          Native button actions report <code :class="inlineCode">trigger</code>.
         </span>
       </div>
       <div :class="canvasCol">
@@ -223,7 +225,7 @@ function onOpenChangeCancelEscape(open: boolean, details: AkazaChangeEventDetail
             <div class="grid gap-1.5">
               <p class="m-0 text-sm font-semibold text-foreground">Trigger a close</p>
               <p class="m-0 text-xs text-muted-foreground">Press Escape, click outside, or use the button.</p>
-              <button :class="buttonLink" @click="close">Close (programmatic)</button>
+              <button :class="buttonLink" @click="close()">Close (programmatic)</button>
             </div>
           </template>
         </Popover>
@@ -251,6 +253,10 @@ function onOpenChangeCancelEscape(open: boolean, details: AkazaChangeEventDetail
             <div class="grid gap-1.5">
               <p class="m-0 text-sm font-semibold text-foreground">Escape is blocked</p>
               <p class="m-0 text-xs text-muted-foreground">Click outside or use the button to close.</p>
+              <label class="grid gap-1 text-xs text-foreground">
+                Protected popover note
+                <input type="text" :class="inputControl">
+              </label>
               <button :class="buttonLink" @click="close">Close</button>
             </div>
           </template>
@@ -285,6 +291,37 @@ function onOpenChangeCancelEscape(open: boolean, details: AkazaChangeEventDetail
           </template>
           <template #content>
             <p class="m-0 text-sm font-semibold text-foreground">No animation</p>
+          </template>
+        </Popover>
+      </div>
+    </div>
+
+    <div class="mb-8">
+      <span class="mb-3 block text-sm font-medium text-foreground">Nested teleported popovers</span>
+      <div :class="canvasRow">
+        <Popover teleport="body" :ui="{ content: popoverContent }">
+          <template #trigger="{ toggle, triggerProps }">
+            <button type="button" :class="buttonPrimary" v-bind="triggerProps" @click="toggle">Parent popover</button>
+          </template>
+          <template #content>
+            <div class="grid gap-3">
+              <label class="grid gap-1 text-xs text-foreground">
+                Parent note
+                <input type="text" :class="inputControl">
+              </label>
+              <Popover teleport="body" :ui="{ content: popoverContent }">
+                <template #trigger="{ toggle, triggerProps }">
+                  <button type="button" :class="buttonGhost" v-bind="triggerProps" @click="toggle">Child popover</button>
+                </template>
+                <template #content="{ close }">
+                  <label class="grid gap-1 text-xs text-foreground">
+                    Child note
+                    <input type="text" :class="inputControl">
+                  </label>
+                  <button type="button" :class="buttonLink" @click="close('apply', $event)">Apply child</button>
+                </template>
+              </Popover>
+            </div>
           </template>
         </Popover>
       </div>

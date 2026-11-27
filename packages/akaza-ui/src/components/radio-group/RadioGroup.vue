@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import type { RadioGroupProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
+import { isComposing } from "@ui-sdk/core";
 import { computed, useTemplateRef } from "vue";
+import { useRovingGroup } from "../../composables/internal/sdk/useRovingGroup";
 import { createChangeDetails } from "../../utils/changeEvent";
 import { useCheckableField } from "../../utils/useCheckableField";
-import { useRovingFocus } from "../../utils/useRovingFocus";
 
 const {
   options,
@@ -58,15 +59,24 @@ function isItemDisabled(option: any): boolean {
   return option?.disabled === true;
 }
 
-const roving = useRovingFocus({ items: () => options, isDisabled: isItemDisabled, loop: () => loop });
+const roving = useRovingGroup({
+  keys: () => options.map(getValue),
+  disabled: key => {
+    const index = options.findIndex(option => getValue(option) === key);
+    return index < 0 || isItemDisabled(options[index]);
+  },
+  preferred: () => model.value,
+  orientation: () => "both",
+  loop: () => loop,
+  remember: false,
+});
 
 // Roving tabindex: only the selected (or first enabled) item has tabindex=0
-const itemEls: (HTMLElement | null)[] = [];
-function setItemRef(el: HTMLElement | null, index: number) {
-  itemEls[index] = el;
+function setItemRef(el: HTMLElement | null, option: unknown) {
+  roving.bind(getValue(option), el);
 }
 function focusItem(index: number) {
-  itemEls[index]?.focus();
+  if (index >= 0) roving.focus(getValue(options[index]));
 }
 
 function getRovingIndex(): number {
@@ -76,8 +86,7 @@ function getRovingIndex(): number {
 }
 
 function getTabIndex(index: number): 0 | -1 {
-  if (effectiveDisabled.value) return -1;
-  return index === getRovingIndex() ? 0 : -1;
+  return roving.tabIndex(getValue(options[index])) === 0 ? 0 : -1;
 }
 
 function select(option: any, event?: Event) {
@@ -90,11 +99,7 @@ function select(option: any, event?: Event) {
 }
 
 function handleKeyDown(event: KeyboardEvent, index: number) {
-  const isVertical = orientation === "vertical";
-  const isPrev = event.key === (isVertical ? "ArrowUp" : "ArrowLeft");
-  const isNext = event.key === (isVertical ? "ArrowDown" : "ArrowRight");
-  const isHome = event.key === "Home";
-  const isEnd = event.key === "End";
+  if (event.defaultPrevented || isComposing(event) || isItemDisabled(options[index])) return;
   const isSpace = event.key === " ";
 
   if (isSpace) {
@@ -103,15 +108,10 @@ function handleKeyDown(event: KeyboardEvent, index: number) {
     return;
   }
 
-  if (!isPrev && !isNext && !isHome && !isEnd) return;
-  event.preventDefault();
-
-  const next = isHome ? roving.firstIndex.value : isEnd ? roving.lastIndex.value : roving.nextIndex(index, isPrev ? -1 : 1);
-  const target = next < 0 ? index : next;
-
-  if (target !== index) {
-    select(options[target], event);
-    focusItem(target);
+  const movement = roving.keydown(event, event.currentTarget as HTMLElement);
+  if (movement && movement.key !== movement.from) {
+    const target = options.find(option => getValue(option) === movement.key);
+    if (target !== undefined) select(target, event);
   }
 }
 </script>
@@ -166,7 +166,7 @@ function handleKeyDown(event: KeyboardEvent, index: number) {
 
       <button
         :id="index === getRovingIndex() ? bridge.field?.inputId.value : undefined"
-        :ref="(el) => setItemRef(el as HTMLElement | null, index)"
+        :ref="(el) => setItemRef(el as HTMLElement | null, option)"
         type="button"
         role="radio"
         :aria-checked="model === getValue(option)"

@@ -2,6 +2,7 @@
 import type { StyleValue } from "vue";
 import type { ButtonProps } from ".";
 import { computed, ref, useAttrs } from "vue";
+import { useButtonKeys } from "../../composables/internal/sdk/useButtonKeys";
 
 defineOptions({ inheritAttrs: false });
 
@@ -20,6 +21,7 @@ const autoLoading = ref(false);
 
 const isLoading = computed(() => loading || autoLoading.value);
 const isDisabled = computed(() => disabled || isLoading.value);
+const buttonKeys = useButtonKeys(() => isDisabled.value);
 const rootStyle = computed(() => attrs.style as StyleValue);
 const rootAttrs = computed(() => {
   const {
@@ -71,12 +73,6 @@ async function handleClick(event: MouseEvent) {
   }
 }
 
-function handleKeydown(event: KeyboardEvent) {
-  if (as === "button") return;
-  if (event.key !== "Enter" && event.key !== " ") return;
-  event.preventDefault();
-  (event.currentTarget as HTMLElement).click();
-}
 </script>
 
 <template>
@@ -96,7 +92,8 @@ function handleKeydown(event: KeyboardEvent) {
     :style="rootStyle"
     class="akaza-button"
     @click.capture="handleClick"
-    @keydown="handleKeydown"
+    @keydown="buttonKeys.keydown"
+    @keyup="buttonKeys.keyup"
   >
     <slot v-if="!isLoading" />
     <slot

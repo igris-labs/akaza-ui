@@ -153,6 +153,8 @@ Inside [Field](/components/field), PinInput inherits `id`, `name`, required/disa
 
 `value-change` fires before the model updates. This can reject a specific sequence without manually restoring the model.
 
+If a controlled parent refuses an update, cells retain their previous positions and the refused value does not emit `complete`. IME keys, including legacy key code 229, do not navigate or delete cells.
+
 ```vue
 <template>
   <PinInput

@@ -165,6 +165,8 @@ Inside [Field](/components/field), TagsInput inherits `id`, `name`, required/dis
 
 `add`, `remove`, `value-change`, and `input-change` are cancelable. Cancel the earliest relevant event to stop the operation.
 
+After keyboard deletion, focus recovers to the next tag, the previous tag at the end, or the input when no tags remain. Recovery does not take focus back from another control. IME keys, including legacy key code 229, do not add, navigate, or delete tags.
+
 ```vue
 <template>
   <TagsInput

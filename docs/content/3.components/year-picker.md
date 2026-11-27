@@ -180,6 +180,8 @@ Boundaries and matcher props use complete date values but are compared at year p
 
 ### Keyboard
 
+Canceled or parent-refused page changes keep the current focus and tab stop. If an external page change removes the focused cell, focus recovers on the new page without taking focus from another control. IME composition and Ctrl, Command, or Alt shortcuts do not navigate the grid.
+
 | Key | Behavior |
 |-----|----------|
 | `ArrowLeft` / `ArrowRight` | Moves one year, reversed in RTL. |

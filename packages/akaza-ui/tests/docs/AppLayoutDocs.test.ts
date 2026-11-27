@@ -1,7 +1,9 @@
 import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
-import { mount } from "@vue/test-utils";
-import { describe, expect, it } from "vitest";
+import { getByRole } from "@testing-library/vue";
+import { DOMWrapper, enableAutoUnmount, mount } from "@vue/test-utils";
+import { afterEach, describe, expect, it } from "vitest";
+import { nextTick } from "vue";
 import { compileScript, compileTemplate, parse } from "vue/compiler-sfc";
 import Builder from "../../../../docs/app/components/examples/app-layout/Builder.vue";
 import BuilderPreview from "../../../../docs/app/components/examples/app-layout/BuilderPreview.vue";
@@ -9,20 +11,33 @@ import BuilderSelect from "../../../../docs/app/components/examples/app-layout/B
 import Demo from "../../../../docs/app/components/examples/app-layout/Demo.vue";
 import Example from "../../../../docs/app/components/examples/app-layout/Example.vue";
 
+enableAutoUnmount(afterEach);
+
 function mountBuilder() {
   return mount(Builder, {
+    attachTo: document.body,
     global: {
       stubs: {
         BuilderPreview: true,
         ComponentCode: { template: "<div><slot /></div>" },
         ClientOnly: { template: "<div><slot /></div>" },
-        MDC: { props: ["value"], template: "<pre>{{ value }}</pre>" },
+        DocsCode: { props: ["code"], template: "<pre>{{ code }}</pre>" },
         MDCRenderer: true,
         UButton: { props: ["label"], template: "<button>{{ label }}</button>" },
         UIcon: true,
       },
     },
   });
+}
+
+function toggleControl(wrapper: ReturnType<typeof mountBuilder>, name: string, role: "switch" | "checkbox" = "switch") {
+  return getByRole(wrapper.element, role, { name, exact: true });
+}
+
+async function setToggle(wrapper: ReturnType<typeof mountBuilder>, name: string, checked: boolean, role: "switch" | "checkbox" = "switch") {
+  const control = toggleControl(wrapper, name, role);
+  if (control.getAttribute("aria-checked") !== String(checked)) control.click();
+  await nextTick();
 }
 
 function verifyCode(source: string) {
@@ -62,10 +77,13 @@ describe("app layout documentation", () => {
 
   it("keeps side placement and sizes independent and resets the preview", async () => {
     const wrapper = mountBuilder();
-    await wrapper.get('input[type="checkbox"]').setValue(false);
-    await wrapper.findAll("label").find(label => label.text() === "Right sidebar")!.get("input").setValue(true);
+    await setToggle(wrapper, "Header", false);
+    await setToggle(wrapper, "Right sidebar", true);
     await wrapper.findAllComponents(BuilderSelect).find(control => control.props("label") === "Left placement")!.get("select").setValue("overlay");
-    await wrapper.findAll('input[type="range"]')[1]!.setValue(224);
+    const width = new DOMWrapper(getByRole(wrapper.element, "slider", { name: /^Right width:/ }));
+    await width.trigger("keydown", { key: "End" });
+    await width.trigger("keydown", { key: "ArrowLeft" });
+    await width.trigger("keydown", { key: "ArrowLeft" });
     const props = wrapper.getComponent(BuilderPreview).props();
     expect(props.showHeader).toBe(false);
     expect(props.layout).toMatchObject({ left: "overlay", right: "inline" });
@@ -82,7 +100,7 @@ describe("app layout documentation", () => {
     for (let mask = 0; mask < 16; mask++) {
       const regions = ["Header", "Left sidebar", "Right sidebar", "Footer"];
       for (const [index, name] of regions.entries()) {
-        await wrapper.findAll("label").find(label => label.text() === name)!.get("input").setValue(Boolean(mask & (1 << index)));
+        await setToggle(wrapper, name, Boolean(mask & (1 << index)));
       }
       const markdown = wrapper.get("pre").text();
       const source = markdown.replace(/^```vue\n/, "").replace(/\n```$/, "");
@@ -99,7 +117,7 @@ describe("app layout documentation", () => {
     const wrapper = mountBuilder();
     const select = (label: string) => wrapper.findAllComponents(BuilderSelect).find(control => control.props("label") === label)!.get("select");
     await select("Scrolling").setValue("page");
-    await wrapper.findAll("label").find(label => label.text() === "Sticky header")!.get("input").setValue(true);
+    await setToggle(wrapper, "Sticky header", true, "checkbox");
     await select("Left collapse").setValue("offcanvas");
     await select("Responsive preview").setValue("mobile");
     expect(wrapper.getComponent(BuilderPreview).props()).toMatchObject({ scroll: "page", stickyHeader: true, leftCollapsible: "offcanvas", rightCollapsible: "icon", mobile: true });
@@ -113,20 +131,19 @@ describe("app layout documentation", () => {
   it("keeps hidden region settings visible but disabled without losing their values", async () => {
     const wrapper = mountBuilder();
     const select = (label: string) => wrapper.findAllComponents(BuilderSelect).find(control => control.props("label") === label)!.get("select");
-    const toggle = (label: string) => wrapper.findAll("label").find(control => control.text() === label)!.get("input");
     expect(select("Right placement").element.matches(":disabled")).toBe(true);
     await select("Left collapse").setValue("offcanvas");
-    await toggle("Left sidebar").setValue(false);
+    await setToggle(wrapper, "Left sidebar", false);
     expect(select("Left collapse").element.matches(":disabled")).toBe(true);
     expect(select("Responsive preview").element.matches(":disabled")).toBe(true);
-    await toggle("Left sidebar").setValue(true);
+    await setToggle(wrapper, "Left sidebar", true);
     expect(select("Left collapse").element.matches(":disabled")).toBe(false);
     expect(wrapper.getComponent(BuilderPreview).props("leftCollapsible")).toBe("offcanvas");
     await select("Scrolling").setValue("page");
     await select("Left placement").setValue("overlay");
-    expect(toggle("Sticky left sidebar").element.matches(":disabled")).toBe(true);
+    expect(toggleControl(wrapper, "Sticky left sidebar", "checkbox").matches(":disabled")).toBe(true);
     await select("Left placement").setValue("inline");
-    expect(toggle("Sticky left sidebar").element.matches(":disabled")).toBe(false);
+    expect(toggleControl(wrapper, "Sticky left sidebar", "checkbox").matches(":disabled")).toBe(false);
     wrapper.unmount();
   });
 
@@ -148,7 +165,7 @@ describe("app layout documentation", () => {
     await select("Header width").setValue("left");
     await select("Footer width").setValue("right");
     await select("Scrolling").setValue("page");
-    await wrapper.findAll("label").find(label => label.text() === "Sticky left sidebar")!.get("input").setValue(true);
+    await setToggle(wrapper, "Sticky left sidebar", true, "checkbox");
     expect(wrapper.getComponent(BuilderPreview).props()).toMatchObject({ layout: { header: "left", footer: "right" }, stickyLeft: true, stickyRight: false });
     const source = wrapper.get("pre").text().replace(/^```vue\n/, "").replace(/\n```$/, "");
     verifyCode(source);

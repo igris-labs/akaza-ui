@@ -20,6 +20,7 @@ import {
 
 const office = shallowRef<TimeValue>(new Time(9, 30));
 const precise = shallowRef<TimeValue>(new Time(14, 7, 30));
+const showSeconds = ref(true);
 const requiredTime = shallowRef<TimeValue>();
 const submitted = ref("Not submitted.");
 
@@ -57,9 +58,14 @@ function unavailable(value: TimeValue) {
       <div>
         <h3 :class="exampleTitle">Seconds + 15-minute snapping</h3>
         <div :class="canvasCol">
+          <label class="flex items-center gap-2">
+            <input v-model="showSeconds" type="checkbox">
+            Seconds
+          </label>
           <TimeField
             v-model="precise"
-            granularity="second"
+            aria-label="Snapped time"
+            :granularity="showSeconds ? 'second' : 'minute'"
             :hour-cycle="24"
             :step="{ minute: 15 }"
             step-snapping

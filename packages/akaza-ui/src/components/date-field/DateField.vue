@@ -3,12 +3,10 @@ import type { DateFieldProps, DateFieldSegment } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
 import type { CalendarDateValue, CalendarModelValue, CalendarProps } from "../calendar";
 import { getLocalTimeZone, toCalendarDate, today } from "@internationalized/date";
-import { onClickOutside } from "@vueuse/core";
-import { computed, inject, nextTick, onBeforeUnmount, onMounted, reactive, ref, useId, useTemplateRef, watch } from "vue";
+import { isComposing } from "@ui-sdk/core";
+import { computed, inject, nextTick, onMounted, reactive, ref, useId, useTemplateRef, watch } from "vue";
+import { usePopup } from "../../composables/internal/sdk/usePopup";
 import { createChangeDetails as createDetails, resolveAction } from "../../utils/changeEvent";
-import { useDismissableLayer } from "../../utils/dismissableLayer";
-import { useFloatingPosition } from "../../utils/floatingPosition";
-import { useFocusBranch } from "../../utils/focusScope";
 import { useFieldControl } from "../../utils/useFieldControl";
 import { useFormReset } from "../../utils/useFormReset";
 import { useSegmentFocus } from "../../utils/useSegmentFocus";
@@ -56,7 +54,6 @@ const rootRef = useTemplateRef<HTMLElement>("rootRef");
 const hiddenRef = useTemplateRef<HTMLInputElement>("hiddenRef");
 const calendarTriggerRef = useTemplateRef<HTMLButtonElement>("calendarTriggerRef");
 const calendarContentRef = useTemplateRef<HTMLElement>("calendarContentRef");
-useFocusBranch(calendarContentRef);
 const values = reactive<Record<DateFieldSegment, string>>({ day: "", month: "", year: "" });
 const focusedSegment = ref<DateFieldSegment | null>(null);
 const touched = ref(false);
@@ -79,18 +76,26 @@ const state = computed(() => isFilled.value ? "filled" : "empty");
 const baseDate = computed<CalendarDateValue>(() => model.value ?? placeholder ?? today(getLocalTimeZone()));
 const parts = computed(() => getParts());
 const firstSegment = computed(() => parts.value.find(({ type }) => type !== "literal")?.type);
-const { actualAlign: calendarActualAlign, actualSide: calendarActualSide, style: calendarPositionStyle } = useFloatingPosition({
-  reference: rootRef,
-  floating: calendarContentRef,
-  active: () => showCalendar && calendarOpen.value,
+let closeReason: string | undefined;
+let openRequestAccepted = false;
+const popup = usePopup({
+  kind: "popover",
+  open: computed({ get: () => showCalendar && calendarOpen.value, set: value => { calendarOpen.value = value; } }),
+  content: calendarContentRef,
+  contentId: calendarId,
+  trigger: () => calendarTriggerRef.value,
+  anchor: () => rootRef.value,
+  initialFocus: "none",
+  finalFocus: "none",
   side: () => calendarSide,
   align: () => calendarAlign,
   sideOffset: () => calendarSideOffset,
+  collisionPadding: () => 8,
   cssVarPrefix: "akaza-date-field-calendar",
+  transition: () => "akaza-date-field-calendar",
+  request: commitCalendarOpen,
 });
-const { layerOrder, register: registerCalendarLayer, unregister: unregisterCalendarLayer } = useDismissableLayer((event) => {
-  closeCalendar("escape", event);
-});
+const { present, contentAttrs, triggerAttrs, actualAlign: calendarActualAlign, actualSide: calendarActualSide, style: calendarPositionStyle, layerOrder } = popup;
 const calendarContentStyle = computed(() => ({
   ...calendarPositionStyle.value,
   "--akaza-layer-order": layerOrder.value,
@@ -146,7 +151,7 @@ function segmentMin(_segment: DateFieldSegment): number {
 }
 
 function segmentMax(segment: DateFieldSegment): number {
-  if (segment === "month") return 12;
+  if (segment === "month") return baseDate.value.calendar.getMonthsInYear(toCalendarDate(baseDate.value).set({ year: Number(values.year) || baseDate.value.year }));
   if (segment === "year") return 9999;
   const month = Number(values.month) || baseDate.value.month;
   const year = Number(values.year) || baseDate.value.year;
@@ -205,7 +210,12 @@ function commitSegments(reason: string, event?: Event): boolean {
     return false;
   }
   const changed = setValue(date, reason, event);
-  if (changed) emit("value-commit", date, createDetails(reason, event).details);
+  if (changed) {
+    emit("value-commit", date, createDetails(reason, event).details);
+    nextTick(() => {
+      if (model.value?.toString() !== date?.toString()) syncSegments(model.value);
+    });
+  }
   return changed;
 }
 
@@ -234,14 +244,21 @@ const { segmentRefs, setSegmentRef, focusSegment, moveFocus } = useSegmentFocus<
   parts: () => parts.value.filter(part => part.type !== "literal").map(part => part.type as DateFieldSegment),
 });
 
-function onSegmentInput(segment: DateFieldSegment, event: Event) {
+async function onSegmentInput(segment: DateFieldSegment, event: Event) {
+  if (isDisabled.value || readOnly || isComposing(event as InputEvent)) return;
   validationActive.value = true;
   const input = event.currentTarget as HTMLInputElement;
   const value = input.value.replace(/\D/g, "").slice(0, segmentMaxLength(segment));
   values[segment] = value;
   input.value = value;
-  if (autoAdvance && value.length === segmentMaxLength(segment)) moveFocus(segment, 1);
-  commitSegments("input", event);
+  const date = candidate();
+  const changed = commitSegments("input", event);
+  if (date) {
+    if (!changed) return;
+    await nextTick();
+    if (model.value?.toString() !== date.toString()) return;
+  }
+  if (autoAdvance && value.length === segmentMaxLength(segment) && document.activeElement === input) moveFocus(segment, 1);
 }
 
 function incrementSegment(segment: DateFieldSegment, amount: number, event: KeyboardEvent) {
@@ -257,6 +274,8 @@ function incrementSegment(segment: DateFieldSegment, amount: number, event: Keyb
 }
 
 function onSegmentKeydown(segment: DateFieldSegment, event: KeyboardEvent) {
+  if (event.defaultPrevented || isDisabled.value || isComposing(event) || event.altKey || event.ctrlKey || event.metaKey) return;
+  if (readOnly && !["ArrowLeft", "ArrowRight", "Backspace"].includes(event.key)) return;
   if (event.key === "ArrowUp") {
     event.preventDefault();
     incrementSegment(segment, 1, event);
@@ -289,6 +308,7 @@ function onSegmentKeydown(segment: DateFieldSegment, event: KeyboardEvent) {
 }
 
 function onPaste(event: ClipboardEvent) {
+  if (isDisabled.value || readOnly) return;
   const groups = event.clipboardData?.getData("text").match(/\d+/g);
   if (!groups || groups.length < 3) return;
   event.preventDefault();
@@ -318,14 +338,27 @@ function onFocusout(event: FocusEvent) {
 
 function setCalendarOpen(open: boolean, reason: string, event?: Event): boolean {
   if (!showCalendar || (open && isDisabled.value) || calendarOpen.value === open) return false;
+  openRequestAccepted = false;
+  popup.setOpen(open, reason, event);
+  return openRequestAccepted;
+}
+
+function commitCalendarOpen(open: boolean, sdkReason: string, event?: Event) {
+  if (!showCalendar || (open && isDisabled.value) || calendarOpen.value === open) return;
+  const reason = ({
+    "escape-key": "escape",
+    "outside-press": "outside-click",
+    "trigger-press": "trigger",
+    "focus-out": "blur",
+    "window-blur": "blur",
+    imperative: "programmatic",
+  } as Record<string, string>)[sdkReason] ?? sdkReason;
   const change = createDetails(reason, event);
   emit("calendar-open-change", open, change.details);
-  if (change.canceled()) return false;
+  if (change.canceled()) return;
+  openRequestAccepted = true;
+  closeReason = open ? undefined : reason;
   calendarOpen.value = open;
-  if (!open && reason !== "outside-click") {
-    nextTick(() => calendarTriggerRef.value?.focus({ preventScroll: true }));
-  }
-  return true;
 }
 
 function openCalendar(reasonOrEvent?: string | Event, event?: Event): boolean {
@@ -383,20 +416,13 @@ useFormReset(() => hiddenRef.value, () => {
 // Controlled updates must replace stateful partial segment text.
 watch(model, syncSegments, { immediate: true });
 watch(() => showCalendar && calendarOpen.value, (open) => {
-  if (open) registerCalendarLayer();
-  else unregisterCalendarLayer();
-}, { immediate: true });
-
-onClickOutside(rootRef, (event) => {
-  if (calendarOpen.value) closeCalendar("outside-click", event);
-}, { ignore: [calendarContentRef] });
+  const reason = closeReason;
+  closeReason = undefined;
+  if (!open && reason && reason !== "outside-click" && reason !== "blur") calendarTriggerRef.value?.focus({ preventScroll: true });
+}, { flush: "post" });
 
 onMounted(() => {
   updateValidity(false);
-});
-
-onBeforeUnmount(() => {
-  unregisterCalendarLayer();
 });
 
 defineExpose({
@@ -482,6 +508,7 @@ defineExpose({
     <button
       v-if="showCalendar"
       ref="calendarTriggerRef"
+      v-bind="triggerAttrs"
       type="button"
       :disabled="isDisabled"
       :aria-label="calendarLabel"
@@ -519,34 +546,35 @@ defineExpose({
     >
 
     <Teleport :to="typeof calendarTeleport === 'string' ? calendarTeleport : 'body'" :disabled="calendarTeleport === false">
-      <Transition name="akaza-date-field-calendar">
-        <div
-          v-if="showCalendar && calendarOpen"
-          :id="calendarId"
-          ref="calendarContentRef"
-          role="dialog"
-          :aria-label="calendarLabel"
-          :style="calendarContentStyle"
-          :class="ui?.calendarContent"
-          :data-akaza-side="calendarActualSide"
-          :data-akaza-align="calendarActualAlign"
-          data-akaza-state="open"
-          class="akaza-date-field-calendar-content"
+      <div
+        v-if="present"
+        v-bind="contentAttrs"
+        :id="calendarId"
+        ref="calendarContentRef"
+        :dir="dir"
+        role="dialog"
+        :aria-label="calendarLabel"
+        :style="calendarContentStyle"
+        :class="ui?.calendarContent"
+        :data-akaza-side="calendarActualSide"
+        :data-akaza-align="calendarActualAlign"
+        :data-akaza-state="calendarOpen ? 'open' : 'closed'"
+        :inert="!showCalendar || !calendarOpen || undefined"
+        class="akaza-date-field-calendar-content"
+      >
+        <slot
+          name="calendar"
+          :value="model"
+          :select="selectCalendarValue"
+          :close="closeCalendar"
         >
-          <slot
-            name="calendar"
-            :value="model"
-            :select="selectCalendarValue"
-            :close="closeCalendar"
-          >
-            <Calendar
-              v-bind="calendarPickerProps"
-              :model-value="model"
-              @value-change="onCalendarValueChange"
-            />
-          </slot>
-        </div>
-      </Transition>
+          <Calendar
+            v-bind="calendarPickerProps"
+            :model-value="model"
+            @value-change="onCalendarValueChange"
+          />
+        </slot>
+      </div>
     </Teleport>
   </div>
 </template>

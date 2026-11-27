@@ -1,50 +1,108 @@
 <script setup lang="ts">
 import type { MenuItem } from ".";
-import { computed, inject, nextTick, ref, useTemplateRef } from "vue";
-import { useTypeahead } from "../../composables/typeahead";
-import { useFloatingPosition } from "../../utils/floatingPosition";
+import { isComposing } from "@ui-sdk/core";
+import { computed, inject, nextTick, ref, useId, useTemplateRef, watch } from "vue";
+import { usePopup } from "../../composables/internal/sdk/usePopup";
+import { useRovingGroup } from "../../composables/internal/sdk/useRovingGroup";
+import { useTypeaheadSearch } from "../../composables/internal/sdk/useTypeaheadSearch";
 import SlotContent from "../../utils/SlotContent";
 import { useDelayedAction } from "../../utils/useDelayedAction";
 import { MENU_CONTEXT_KEY } from "./context";
 
 defineOptions({ name: "MenuPanel" });
 
-const { items, ariaLabelledby } = defineProps<{
+const { items, ariaLabelledby, open = true } = defineProps<{
   items: MenuItem[][];
   ariaLabelledby?: string;
+  open?: boolean;
 }>();
+const emit = defineEmits<{ navigate: [event: KeyboardEvent] }>();
 
 const ctx = inject(MENU_CONTEXT_KEY)!;
 
 const panelRef = useTemplateRef<HTMLElement>("panelRef");
+const groups = computed(() => {
+  const occurrences = new Map<string, number>();
+  return items.map(group => group.map(item => {
+    const identity = ctx.getItemValue(item);
+    const occurrence = occurrences.get(identity) ?? 0;
+    occurrences.set(identity, occurrence + 1);
+    return { item, key: JSON.stringify([identity, occurrence]) };
+  }));
+});
+const itemByKey = computed(() => new Map(groups.value.flat()
+  .filter(({ item }) => item.type !== "separator" && item.type !== "label")
+  .map(({ item, key }) => [key, item])));
+const keys = computed(() => [...itemByKey.value.keys()]);
+const elementKeys = new WeakMap<HTMLElement, string>();
+const hasFocused = ref(false);
+const roving = useRovingGroup({
+  keys: () => keys.value,
+  disabled: key => !itemByKey.value.has(key) || Boolean(itemByKey.value.get(key)?.disabled),
+  preferred: () => undefined,
+  orientation: () => "vertical",
+  loop: () => true,
+});
+
+function bindItem(key: string, element: HTMLElement | null) {
+  if (element) elementKeys.set(element, key);
+  roving.bind(key, element);
+}
+
+function onPanelFocus(event: FocusEvent) {
+  if ((event.target as HTMLElement).closest('[role="menu"]') === panelRef.value) hasFocused.value = true;
+}
 
 function findSubmenu(value: string) {
   return Array.from(panelRef.value?.querySelectorAll<HTMLElement>(".akaza-menu-submenu-content") ?? [])
     .find(element => element.dataset.akazaSubmenu === value)?.querySelector<HTMLElement>('[role="menu"]');
 }
 const activeSubmenu = ref<string | null>(null);
+const submenuClose = useDelayedAction();
+const renderedSubmenu = ref<string | null>(null);
+watch(activeSubmenu, (value) => {
+  if (value !== null) renderedSubmenu.value = value;
+}, { flush: "sync" });
 const submenuContent = ref<HTMLElement | null>(null);
-const submenuTrigger = computed(() => Array.from(panelRef.value?.querySelectorAll<HTMLElement>(".akaza-menu-submenu-trigger") ?? [])
-  .find(element => element.dataset.akazaValue === activeSubmenu.value && element.closest('[role="menu"]') === panelRef.value) ?? null);
-const submenuOptions = computed(() => items.flat().find(item => ctx.getItemValue(item) === activeSubmenu.value)?.submenu);
-const submenuAnchor = computed(() => submenuOptions.value?.anchor === "parent"
+const submenuId = `akaza-menu-submenu-${useId()}`;
+const submenuTriggerId = `${submenuId}-trigger`;
+function getSubmenuTrigger() {
+  return Array.from(panelRef.value?.querySelectorAll<HTMLElement>(".akaza-menu-submenu-trigger") ?? [])
+    .find(element => element.dataset.akazaValue === renderedSubmenu.value && element.closest('[role="menu"]') === panelRef.value) ?? null;
+}
+const submenuOptions = computed(() => items.flat().find(item => ctx.getItemValue(item) === renderedSubmenu.value)?.submenu);
+const submenuOpen = computed(() => open && activeSubmenu.value !== null);
+const submenuPopup = usePopup({
+  kind: "menu",
+  open: submenuOpen,
+  content: submenuContent,
+  trigger: getSubmenuTrigger,
+  anchor: () => submenuOptions.value?.anchor === "parent"
   ? panelRef.value?.closest<HTMLElement>(".akaza-menu-content, .akaza-context-menu-content, .akaza-menubar-content") ?? panelRef.value
-  : submenuTrigger.value);
-const submenuPosition = useFloatingPosition({
-  reference: submenuAnchor,
-  floating: submenuContent,
-  active: () => activeSubmenu.value !== null,
+  : getSubmenuTrigger(),
+  initialFocus: "none",
+  finalFocus: getSubmenuTrigger,
   side: () => ctx.dir === "rtl" ? "left" : "right",
   align: () => submenuOptions.value?.align ?? "start",
   sideOffset: () => submenuOptions.value?.sideOffset ?? 0,
   alignOffset: () => submenuOptions.value?.alignOffset ?? 0,
-  strategy: "fixed",
+  collisionPadding: () => 8,
   constrainSize: true,
   cssVarPrefix: "akaza-menu-submenu",
+  transition: () => "akaza-menu",
+  request(next) {
+    if (next) return;
+    submenuClose.cancel();
+    activeSubmenu.value = null;
+  },
 });
+const submenuStyle = computed(() => ({
+  ...submenuPopup.style.value,
+  "--akaza-layer-order": String(submenuPopup.layerOrder.value),
+}));
 
 function setSubmenuContent(element: HTMLElement | null, value: string) {
-  if (element && activeSubmenu.value === value) submenuContent.value = element;
+  if (element && renderedSubmenu.value === value) submenuContent.value = element;
   else if (!element && submenuContent.value?.dataset.akazaSubmenu === value) submenuContent.value = null;
 }
 
@@ -63,102 +121,95 @@ function getItems(container?: HTMLElement | null): HTMLElement[] {
 }
 
 function highlightItem(el: HTMLElement) {
-  const root = el.closest('[role="menu"]') as HTMLElement | null;
-  getItems(root).forEach((i) => {
-    i.removeAttribute("data-akaza-highlighted");
-    i.tabIndex = -1;
-  });
-  el.setAttribute("data-akaza-highlighted", "");
-  el.tabIndex = 0;
   el.focus({ preventScroll: true });
 }
 
 // ── Typeahead ────────────────────────────────────────────────────────────────
 
-const { push: pushTypeahead } = useTypeahead();
+const typeahead = useTypeaheadSearch({
+  items: getItems,
+  label: element => itemByKey.value.get(elementKeys.get(element) ?? "")?.label ?? element.textContent?.trim() ?? "",
+});
 
-function onTypeahead(char: string, itemEls: HTMLElement[]) {
-  const typeaheadBuffer = pushTypeahead(char.toLowerCase());
+function onTypeahead(event: KeyboardEvent, itemEls: HTMLElement[]) {
+  const match = typeahead.search(event, itemEls.indexOf(document.activeElement as HTMLElement));
+  if (match >= 0) highlightItem(itemEls[match]!);
+}
 
-  const match = itemEls.find((el) =>
-    el.textContent?.trim().toLowerCase().startsWith(typeaheadBuffer),
-  );
-  if (match) highlightItem(match);
+function onItemKeydown(event: KeyboardEvent, item: MenuItem, activate: (item: MenuItem, event: KeyboardEvent) => void) {
+  if (event.defaultPrevented || isComposing(event) || item.disabled || event.altKey || event.ctrlKey || event.metaKey) return;
+  if (event.key === " " && typeahead.active()) {
+    onTypeahead(event, getItems());
+  } else if (event.key === "Enter" || event.key === " ") {
+    event.preventDefault();
+    activate(item, event);
+  }
 }
 
 // ── Keyboard ─────────────────────────────────────────────────────────────────
 
 function onPanelKeydown(e: KeyboardEvent) {
+  if (e.defaultPrevented || isComposing(e) || e.altKey || e.ctrlKey || e.metaKey) return;
   const itemEls = getItems();
   if (!itemEls.length) return;
-  const current = itemEls.indexOf(document.activeElement as HTMLElement);
+  const focused = document.activeElement as HTMLElement;
+  if (!itemEls.includes(focused)) return;
+  if (e.key === " " && typeahead.active()) {
+    onTypeahead(e, itemEls);
+    return;
+  }
   const openSubmenuKey = ctx.dir === "rtl" ? "ArrowLeft" : "ArrowRight";
   const closeSubmenuKey = ctx.dir === "rtl" ? "ArrowRight" : "ArrowLeft";
 
   if (e.key === openSubmenuKey) {
-    e.preventDefault();
     const target = document.activeElement as HTMLElement;
     if (target?.getAttribute("aria-haspopup") === "menu") {
+      e.preventDefault();
       e.stopPropagation();
       const value = target.getAttribute("data-akaza-value");
-      if (value) {
+      if (value !== null) {
         cancelSubmenuClose();
         activeSubmenu.value = value;
         nextTick(() => {
+          if (!open || activeSubmenu.value !== value) return;
           const submenu = findSubmenu(value);
           const first = getItems(submenu)?.[0];
           if (first) highlightItem(first);
         });
       }
+    } else {
+      emit("navigate", e);
+      e.preventDefault();
     }
     return;
   }
 
-  if (e.key === closeSubmenuKey || e.key === "Escape") {
+  if (e.key === "Escape") return;
+  if (e.key === closeSubmenuKey) {
+    emit("navigate", e);
     e.preventDefault();
     return;
   }
 
-  switch (e.key) {
-    case "ArrowDown": {
-      e.preventDefault();
-      const next = itemEls[current < itemEls.length - 1 ? current + 1 : 0];
-      if (next) highlightItem(next);
-      break;
-    }
-    case "ArrowUp": {
-      e.preventDefault();
-      const prev = itemEls[current > 0 ? current - 1 : itemEls.length - 1];
-      if (prev) highlightItem(prev);
-      break;
-    }
-    case "Home": {
-      e.preventDefault();
-      const first = itemEls[0];
-      if (first) highlightItem(first);
-      break;
-    }
-    case "End": {
-      e.preventDefault();
-      const last = itemEls[itemEls.length - 1];
-      if (last) highlightItem(last);
-      break;
-    }
-    default: {
-      if (e.key.length === 1 && !e.ctrlKey && !e.metaKey) {
-        e.preventDefault();
-        onTypeahead(e.key, itemEls);
-      }
-    }
-  }
+  if (!roving.keydown(e, focused)) onTypeahead(e, itemEls);
 }
 
 // ── Submenu state (per-level) ────────────────────────────────────────────────
 
-const submenuClose = useDelayedAction();
+watch(() => open, (value) => {
+  if (value) return;
+  submenuClose.cancel();
+  activeSubmenu.value = null;
+}, { flush: "sync" });
+watch(() => items, () => {
+  if (activeSubmenu.value === null) return;
+  if (items.flat().some(item => ctx.getItemValue(item) === activeSubmenu.value && item.children && !item.disabled)) return;
+  submenuClose.cancel();
+  activeSubmenu.value = null;
+});
 
 function openSubmenu(item: MenuItem) {
-  if (item.disabled) return;
+  if (!open || item.disabled) return;
   submenuClose.cancel();
   activeSubmenu.value = ctx.getItemValue(item);
 }
@@ -166,6 +217,7 @@ function openSubmenu(item: MenuItem) {
 function openSubmenuAndFocus(item: MenuItem) {
   openSubmenu(item);
   nextTick(() => {
+    if (!open || activeSubmenu.value !== ctx.getItemValue(item)) return;
     const sub = findSubmenu(ctx.getItemValue(item));
     const first = getItems(sub)?.[0];
     if (first) highlightItem(first);
@@ -184,16 +236,13 @@ function cancelSubmenuClose() {
   submenuClose.cancel();
 }
 
-function onSubmenuKeydown(e: KeyboardEvent, item: MenuItem) {
+function onSubmenuKeydown(e: KeyboardEvent) {
+  if (isComposing(e) || e.altKey || e.ctrlKey || e.metaKey) return;
   const closeSubmenuKey = ctx.dir === "rtl" ? "ArrowRight" : "ArrowLeft";
-  if (e.key === closeSubmenuKey || e.key === "Escape") {
+  if (e.key === closeSubmenuKey) {
     e.preventDefault();
     e.stopPropagation();
-    submenuClose.cancel();
-    activeSubmenu.value = null;
-    const trigger = Array.from(panelRef.value?.querySelectorAll<HTMLElement>("[data-akaza-value]") ?? [])
-      .find(element => element.dataset.akazaValue === ctx.getItemValue(item));
-    trigger?.focus({ preventScroll: true });
+    submenuPopup.setOpen(false, "keyboard", e);
   }
 }
 
@@ -217,8 +266,9 @@ defineExpose({ panelRef, getItems, highlightItem });
     :class="ctx.ui?.panel"
     class="akaza-menu-panel"
     @keydown="onPanelKeydown"
+    @focusin="onPanelFocus"
   >
-    <template v-for="(group, gi) in items" :key="gi">
+    <template v-for="(group, gi) in groups" :key="gi">
       <div
         v-if="gi > 0"
         role="separator"
@@ -228,8 +278,8 @@ defineExpose({ panelRef, getItems, highlightItem });
 
       <div :class="ctx.ui?.group" class="akaza-menu-group" role="group">
         <template
-          v-for="(item, ii) in group"
-          :key="item.value ?? `${gi}-${ii}`"
+          v-for="{ item, key } in group"
+          :key="key"
         >
           <!-- ── Separator ──────────────────────────────────────────── -->
           <div
@@ -256,17 +306,18 @@ defineExpose({ panelRef, getItems, highlightItem });
           <!-- ── Checkbox item ──────────────────────────────────────── -->
           <div
             v-else-if="item.type === 'checkbox'"
+            :ref="(element) => bindItem(key, element as HTMLElement | null)"
             role="menuitemcheckbox"
             :aria-checked="item.checked ?? false"
             :aria-disabled="item.disabled || undefined"
             :data-akaza-disabled="item.disabled || undefined"
             :data-akaza-state="item.checked ? 'checked' : 'unchecked'"
-            :tabindex="-1"
+            :tabindex="roving.tabIndex(key)"
+            :data-akaza-highlighted="hasFocused && key === roving.tabStop.value ? '' : undefined"
             :class="[ctx.ui?.item, ctx.ui?.checkboxItem]"
             class="akaza-menu-item akaza-menu-checkbox-item"
             @click="ctx.onCheckboxSelect(item, $event)"
-            @keydown.enter.prevent="ctx.onCheckboxSelect(item, $event)"
-            @keydown.space.prevent="ctx.onCheckboxSelect(item, $event)"
+            @keydown="onItemKeydown($event, item, ctx.onCheckboxSelect)"
           >
             <SlotContent
               v-if="hasRootSlot(item.slot ?? 'checkbox-item')"
@@ -279,6 +330,7 @@ defineExpose({ panelRef, getItems, highlightItem });
           <!-- ── Radio item ─────────────────────────────────────────── -->
           <div
             v-else-if="item.type === 'radio'"
+            :ref="(element) => bindItem(key, element as HTMLElement | null)"
             role="menuitemradio"
             :aria-checked="ctx.isRadioChecked(item)"
             :aria-disabled="item.disabled || undefined"
@@ -286,12 +338,12 @@ defineExpose({ panelRef, getItems, highlightItem });
             :data-akaza-state="
               ctx.isRadioChecked(item) ? 'checked' : 'unchecked'
             "
-            :tabindex="-1"
+            :tabindex="roving.tabIndex(key)"
+            :data-akaza-highlighted="hasFocused && key === roving.tabStop.value ? '' : undefined"
             :class="[ctx.ui?.item, ctx.ui?.radioItem]"
             class="akaza-menu-item akaza-menu-radio-item"
             @click="ctx.onRadioSelect(item, $event)"
-            @keydown.enter.prevent="ctx.onRadioSelect(item, $event)"
-            @keydown.space.prevent="ctx.onRadioSelect(item, $event)"
+            @keydown="onItemKeydown($event, item, ctx.onRadioSelect)"
           >
             <SlotContent
               v-if="hasRootSlot(item.slot ?? 'radio-item')"
@@ -311,19 +363,23 @@ defineExpose({ panelRef, getItems, highlightItem });
             @mouseleave="closeSubmenuDelayed()"
           >
             <div
+              v-bind="renderedSubmenu === ctx.getItemValue(item) ? submenuPopup.triggerAttrs.value : {}"
+              :id="renderedSubmenu === ctx.getItemValue(item) ? submenuTriggerId : undefined"
+              :ref="(element) => bindItem(key, element as HTMLElement | null)"
               role="menuitem"
               aria-haspopup="menu"
               :aria-expanded="activeSubmenu === ctx.getItemValue(item)"
+              :aria-controls="activeSubmenu === ctx.getItemValue(item) ? submenuId : undefined"
               :aria-disabled="item.disabled || undefined"
               :data-akaza-disabled="item.disabled || undefined"
               :data-akaza-state="activeSubmenu === ctx.getItemValue(item) ? 'open' : 'closed'"
               :data-akaza-value="ctx.getItemValue(item)"
-              :tabindex="-1"
+              :tabindex="roving.tabIndex(key)"
+              :data-akaza-highlighted="hasFocused && key === roving.tabStop.value ? '' : undefined"
               :class="[ctx.ui?.item, ctx.ui?.submenuTrigger]"
               class="akaza-menu-item akaza-menu-submenu-trigger"
               @click="openSubmenuAndFocus(item)"
-              @keydown.enter.prevent="openSubmenuAndFocus(item)"
-              @keydown.space.prevent="openSubmenuAndFocus(item)"
+              @keydown="onItemKeydown($event, item, openSubmenuAndFocus)"
             >
               <SlotContent
                 v-if="hasRootSlot(item.slot ?? 'item')"
@@ -333,38 +389,41 @@ defineExpose({ panelRef, getItems, highlightItem });
               <template v-else>{{ item.label }}</template>
             </div>
 
-            <Transition name="akaza-menu" @after-enter="submenuPosition.update">
-              <div
-                v-if="activeSubmenu === ctx.getItemValue(item)"
-                :ref="(el) => setSubmenuContent(el as HTMLElement | null, ctx.getItemValue(item))"
-                :data-akaza-submenu="ctx.getItemValue(item)"
-                :data-akaza-side="submenuPosition.actualSide.value"
-                :data-akaza-align="submenuPosition.actualAlign.value"
-                :style="submenuPosition.style.value"
-                :class="ctx.ui?.submenuContent"
-                class="akaza-menu-content akaza-menu-submenu-content"
-                @keydown.stop="onSubmenuKeydown($event, item)"
-                @mouseenter="cancelSubmenuClose()"
-                @mouseleave="closeSubmenuDelayed()"
-              >
-                <!-- Recursive! -->
-                <MenuPanel :items="ctx.normalizeItems(item.children)" />
-              </div>
-            </Transition>
+            <div
+              v-if="submenuPopup.present.value && renderedSubmenu === ctx.getItemValue(item)"
+              v-bind="submenuPopup.contentAttrs.value"
+              :id="submenuId"
+              :ref="(el) => setSubmenuContent(el as HTMLElement | null, ctx.getItemValue(item))"
+              role="presentation"
+              :data-akaza-submenu="ctx.getItemValue(item)"
+              :data-akaza-state="submenuOpen ? 'open' : 'closed'"
+              :data-akaza-side="submenuPopup.actualSide.value"
+              :data-akaza-align="submenuPopup.actualAlign.value"
+              :style="submenuStyle"
+              :class="ctx.ui?.submenuContent"
+              class="akaza-menu-content akaza-menu-submenu-content"
+              @keydown.stop="onSubmenuKeydown"
+              @mouseenter="cancelSubmenuClose()"
+              @mouseleave="closeSubmenuDelayed()"
+            >
+              <!-- Recursive! -->
+              <MenuPanel :items="ctx.normalizeItems(item.children)" :open="submenuOpen" :aria-labelledby="submenuTriggerId" />
+            </div>
           </div>
 
           <!-- ── Regular item (default) ─────────────────────────────── -->
           <div
             v-else
+            :ref="(element) => bindItem(key, element as HTMLElement | null)"
             role="menuitem"
             :aria-disabled="item.disabled || undefined"
             :data-akaza-disabled="item.disabled || undefined"
-            :tabindex="-1"
+            :tabindex="roving.tabIndex(key)"
+            :data-akaza-highlighted="hasFocused && key === roving.tabStop.value ? '' : undefined"
             :class="ctx.ui?.item"
             class="akaza-menu-item"
             @click="ctx.onItemSelect(item, $event)"
-            @keydown.enter.prevent="ctx.onItemSelect(item, $event)"
-            @keydown.space.prevent="ctx.onItemSelect(item, $event)"
+            @keydown="onItemKeydown($event, item, ctx.onItemSelect)"
           >
             <SlotContent
               v-if="hasRootSlot(item.slot ?? 'item')"

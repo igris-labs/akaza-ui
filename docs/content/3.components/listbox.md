@@ -115,7 +115,7 @@ const search = ref("");
 
 ### Large data sets
 
-Set `virtualize` to render a bounded window with VueUse. Provide a stable row height; group and separator rows should use the same height in virtual mode.
+Set `virtualize` to render a bounded window with the SDK virtualizer. Provide a stable row height; group and separator rows should use the same height in virtual mode.
 
 ```vue
 <template>
@@ -131,9 +131,13 @@ Set `virtualize` to render a bounded window with VueUse. Provide a stable row he
 </template>
 ```
 
+The SDK determines the initial and overscan windows, including a bounded set of rows during SSR. Exact mounted row counts are not a public contract. Changing `overscan`, row height, or options refreshes the window without aligning it to the selection. Only accepted keyboard/typeahead moves and initial focus scroll to their target; pointer highlighting and manual scrolling do not snap back. `aria-activedescendant` is present only while its active option is mounted. Native form values do not depend on mounted rows.
+
 ### Object values
 
 Use `by` to compare objects and `serializeValue` to control submitted form values. The model keeps the original object.
+
+Numbers and strings remain distinct selections: `1` does not equal `"1"`. Toggling an option preserves other selected values, including disabled or currently filtered-out values. A replacement selection or Shift range replaces the entire selection, so it can remove those values. Shift ranges always replace, including Ctrl/Cmd+Shift-click; they do not merge with earlier selections.
 
 ```vue
 <template>
@@ -170,6 +174,10 @@ Inside [Field](/components/field), Listbox inherits `id`, `name`, required/disab
 ### Cancel a change
 
 Change events fire before state updates. Call `details.cancel()` to keep the current value, search, or highlight.
+
+Canceling `highlight-change` also prevents that move from scrolling the list or extending a Shift-selection range. A canceled `value-change` keeps selection unchanged but does not undo an accepted highlight move.
+
+A controlled parent may also refuse the model update. The next selection action reads the accepted model again. Selecting an already-selected single option still emits one `value-change` request. `required` validates an empty selection; it does not block a clear request.
 
 ```vue
 <template>
@@ -298,7 +306,7 @@ A native form reset restores the initial model and clears interaction state. Cal
 | `hiddenInput` | `akaza-listbox-hidden-input` | native validity attrs |
 | `filter` | `akaza-listbox-filter` | native disabled/read-only attrs |
 | `content` | `akaza-listbox-content` | listbox ARIA attrs, virtual height style |
-| `virtualWrapper` | `akaza-listbox-virtual-wrapper` | virtual transform/height style |
+| `virtualWrapper` | `akaza-listbox-virtual-wrapper` | virtual offset/height style |
 | `empty` | `akaza-listbox-empty` | - |
 | `groupLabel` | `akaza-listbox-group-label` | `role="presentation"` |
 | `separator` | `akaza-listbox-separator` | `role="presentation"`, `aria-hidden="true"` |
@@ -312,6 +320,8 @@ Plain `class` applies to the root wrapper. Use `ui.content` and `ui.option` for 
 
 ### Keyboard
 
+Typeahead ignores case and accents and skips disabled options. Repeat a letter to cycle matches. The query clears after 500ms. Space continues an active query; otherwise it selects the highlighted option. Typing only changes the highlight, not the selected value.
+
 | Key | Behavior |
 |-----|----------|
 | `ArrowDown` / `ArrowUp` | Move through a vertical list. |
@@ -322,3 +332,9 @@ Plain `class` applies to the root wrapper. Use `ui.content` and `ui.option` for 
 | `Ctrl+A` / `Cmd+A` | Select all enabled visible options in multiple mode. |
 | printable characters | Typeahead to a matching label. |
 | filter `Escape` | Clear non-empty filter text. |
+
+During list navigation, DOM focus stays on the listbox while `aria-activedescendant` identifies the highlighted, mounted option. Arrow movement does not select a value unless Shift extends a multiple-selection range. Read-only lists allow highlight movement without changing selection.
+
+`dir` applies to both the rendered direction and horizontal keyboard movement. Set `dir="rtl"` for right-to-left lists.
+
+IME composition and Ctrl/Meta/Alt shortcuts do not navigate or activate options. The exception is Ctrl/Cmd+A in multiple mode: it selects all enabled visible options, and repeating it does not clear selection. Filter editing keeps its native shortcut behavior.

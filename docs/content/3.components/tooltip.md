@@ -27,8 +27,8 @@ import { Tooltip } from "akaza-ui";
 
 <template>
   <Tooltip>
-    <template #trigger>
-      <button aria-label="Settings">⚙️</button>
+    <template #trigger="{ triggerProps }">
+      <button v-bind="triggerProps" aria-label="Settings">⚙️</button>
     </template>
 
     <template #content>Settings</template>
@@ -46,8 +46,8 @@ Use delay props to tune how quickly the tooltip appears and disappears.
 ```vue
 <template>
   <Tooltip :delay-duration="500">
-    <template #trigger>
-      <button>Hover me</button>
+    <template #trigger="{ triggerProps }">
+      <button v-bind="triggerProps">Hover me</button>
     </template>
     <template #content>Appears after 500ms</template>
   </Tooltip>
@@ -61,8 +61,8 @@ Use `direction` to choose the preferred side for the tooltip.
 ```vue
 <template>
   <Tooltip direction="right">
-    <template #trigger>
-      <button>ℹ️</button>
+    <template #trigger="{ triggerProps }">
+      <button v-bind="triggerProps" aria-label="Information">ℹ️</button>
     </template>
     <template #content>More information</template>
   </Tooltip>
@@ -76,8 +76,8 @@ Use `arrow` when the tooltip needs a visual pointer back to the trigger.
 ```vue
 <template>
   <Tooltip :arrow="true">
-    <template #trigger>
-      <button>Help</button>
+    <template #trigger="{ triggerProps }">
+      <button v-bind="triggerProps">Help</button>
     </template>
     <template #content>This is a tooltip with an arrow.</template>
   </Tooltip>
@@ -91,8 +91,8 @@ Use `disabled` when the trigger should render but the tooltip should not open.
 ```vue
 <template>
   <Tooltip :disabled="true">
-    <template #trigger>
-      <button>No tooltip here</button>
+    <template #trigger="{ triggerProps }">
+      <button v-bind="triggerProps">No tooltip here</button>
     </template>
     <template #content>You won't see this.</template>
   </Tooltip>
@@ -111,24 +111,32 @@ const open = ref(false);
 
 <template>
   <Tooltip v-model="open">
-    <template #trigger>
-      <button
-        @focus="open = true"
-        @blur="open = false"
-      >
+    <template #trigger="{ triggerProps }">
+      <button v-bind="triggerProps">
         Focus me
       </button>
     </template>
     <template #content>Controlled tooltip</template>
   </Tooltip>
+  <button @click="open = !open">Toggle externally</button>
 </template>
 ```
 
 ## Hover, SSR, and layers
 
-The transparent hit area bridges the gap between the trigger and tooltip content. Escape ignores `closeDelay` and closes the tooltip. Delay props remain reactive after mount.
+The transparent hit area bridges the gap between the trigger and tooltip content.
+The SDK owns hover handoff, hover delays, focus activation, dismissal, and presence.
+Keyboard focus opens immediately; `delayDuration` applies to hover. Escape ignores
+`closeDelay` and closes the tooltip without moving focus. Delay props remain reactive
+after mount; tooltips can open immediately when moving between recently used triggers.
 
-Open tooltips do not install browser listeners during SSR. Client tooltips participate in the shared popup layer order and modal ownership. Bind the slot's `triggerProps` to the actual focusable trigger so `aria-describedby` reaches the correct element.
+Open tooltips do not install browser listeners during SSR. Client tooltips use the
+SDK popup stack and native top layer where supported. Closed tooltip markup may
+remain mounted with SDK-owned hiding; mounted does not mean open. Named transition
+classes remain supported, while SDK presence owns exit completion. Bind the slot's
+`triggerProps` to the actual focusable trigger so `aria-describedby` reaches it.
+The SDK keeps that description relationship while the hidden tooltip is closed,
+including during SSR, so assistive technology can find the hint before focus.
 
 ## API Reference
 
@@ -142,7 +150,7 @@ Open tooltips do not install browser listeners during SSR. Client tooltips parti
 | `disabled` | `boolean` | `false` | Prevent the tooltip from showing. |
 | `arrow` | `boolean` | `false` | Show an arrow pointing to the trigger. |
 | `teleport` | `string \| false` | `"body"` | Teleport target. |
-| `transition` | `string \| false` | `"akaza-tooltip"` | Named Vue transition. |
+| `transition` | `string \| false` | `"akaza-tooltip"` | CSS transition class prefix, or `false` to disable transition classes. |
 | `ui` | `TooltipUi` | — | CSS class overrides. |
 
 ### Slots
@@ -172,14 +180,14 @@ Open tooltips do not install browser listeners during SSR. Client tooltips parti
 
 ### Positioning Variables
 
-Positioning leaves CSS transforms available for consumer styles and enter/leave transitions. The preferred direction falls back to another side when space is insufficient.
+SDK positioning leaves CSS transforms available for consumer styles and enter/leave transitions. The preferred direction flips to its opposite side when space is insufficient. The arrow follows the resolved placement.
 
 | Variable | Meaning |
 | --- | --- |
 | `--akaza-tooltip-anchor-width` | Anchor width in pixels. |
 | `--akaza-tooltip-anchor-height` | Anchor height in pixels. |
-| `--akaza-tooltip-available-width` | Viewport width after collision padding. |
-| `--akaza-tooltip-available-height` | Viewport height after collision padding. |
+| `--akaza-tooltip-available-width` | Available width at the resolved placement. |
+| `--akaza-tooltip-available-height` | Available height at the resolved placement. |
 | `--akaza-tooltip-transform-origin` | Origin matching the resolved side and alignment. |
 
 ### Keyboard
@@ -187,6 +195,6 @@ Positioning leaves CSS transforms available for consumer styles and enter/leave 
 | Key | Behavior |
 |-----|----------|
 | `Tab` / `Shift + Tab` | Focusing trigger or its child opens tooltip; leaving closes it. |
-| `Escape` | Closes topmost tooltip and restores trigger focus. |
+| `Escape` | Closes the topmost tooltip without moving focus. |
 
 Tooltip never requires pointer hover. Apply `triggerProps` to interactive trigger so `aria-describedby` reaches actual focus target.

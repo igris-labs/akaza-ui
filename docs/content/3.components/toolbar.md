@@ -7,6 +7,8 @@ navigation:
 
 `Toolbar` renders a `role="toolbar"` wrapper and an optional item array for common editor-style command strips. Generated commands use roving focus; text inputs keep native editing keys and a normal tab stop.
 
+For a toolbar with your own markup, use [useRovingFocus](/composables/use-roving-focus).
+
 ## Anatomy
 
 - **`#default`**: Additional custom content inside the toolbar.
@@ -82,6 +84,18 @@ Use `slot` on an item and render it with the matching named slot.
       <strong>{{ item.label }}</strong>
     </template>
   </Toolbar>
+</template>
+```
+
+### Right-to-left
+
+Set `dir="rtl"` on the toolbar or a parent. Horizontal arrows follow that direction. Inputs keep their own cursor keys and Tab stops.
+
+```vue
+<template>
+  <div dir="rtl">
+    <Toolbar :items="items" :loop="false" aria-label="Editor commands" />
+  </div>
 </template>
 ```
 
@@ -166,3 +180,5 @@ Use `slot` on an item and render it with the matching named slot.
 | `Home` / `End` | Move to first/last focusable item. |
 
 Generated buttons and links use one roving tab stop. Text inputs remain native tab stops and keep Arrow/Home/End cursor behavior; toolbar navigation never hijacks their editing keys.
+
+Arrow movement does not run commands. Disabled commands are skipped unless `focusableWhenDisabled` is true; those commands can take focus but cannot run. Horizontal arrows follow inherited text direction. `Home` and `End` use item order. Modified arrow keys, canceled key events, and IME composition are left alone.

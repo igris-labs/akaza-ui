@@ -2,6 +2,7 @@
 import type { NavigationMenuItem } from "akaza-ui";
 import { ref } from "vue";
 import { NavigationMenu } from "akaza-ui";
+import { typeaheadHint, typeaheadItems } from "../typeahead";
 import {
   canvasCol,
   codePill,
@@ -20,6 +21,14 @@ const collapsed = ref(true);
 const horizontalSelected = ref("components");
 const verticalSelected = ref("overview");
 const collapsedSelected = ref("overview");
+const typeaheadSelected = ref<string | null>(null);
+const rtlSelected = ref<string | null>("overview");
+const rtlItems: NavigationMenuItem[] = [
+  { value: "overview", label: "Overview" },
+  { value: "disabled", label: "Disabled", disabled: true },
+  { value: "workspace", label: "Workspace", children: [{ value: "team", label: "Team" }] },
+  { value: "help", label: "Help" },
+];
 
 const items: NavigationMenuItem[] = [
   {
@@ -199,6 +208,22 @@ function shortLabel(label: string) {
         </div>
         <code :class="codePill">selected: {{ collapsedSelected }}, collapsed: {{ collapsed }}, flyout: {{ collapsedOpen ?? "(closed)" }}</code>
       </div>
+    </div>
+    <div :class="[canvasCol, 'mt-8']">
+      <div>
+        <h3 :class="exampleLabelTitle">Typeahead</h3>
+        <p :class="exampleLabelDescription">{{ typeaheadHint }}</p>
+      </div>
+      <NavigationMenu v-model="typeaheadSelected" :items="typeaheadItems" aria-label="Typeahead navigation" :ui="{ ...navigationMenuUi, list: `${navigationMenuUi.list} flex-wrap` }" />
+      <code :class="codePill">selected: {{ typeaheadSelected ?? "None" }}</code>
+    </div>
+    <div :class="[canvasCol, 'mt-8']">
+      <div>
+        <h3 :class="exampleLabelTitle">RTL flyout focus</h3>
+        <p :class="exampleLabelDescription">Arrows move focus without selecting a page. Open Workspace with Arrow Down; Escape returns to its trigger.</p>
+      </div>
+      <NavigationMenu v-model="rtlSelected" :items="rtlItems" dir="rtl" content-mode="flyout" aria-label="RTL navigation" :ui="{ ...navigationMenuUi, list: `${navigationMenuUi.list} flex-wrap` }" />
+      <code :class="codePill">selected: {{ rtlSelected }}</code>
     </div>
   </section>
 </template>

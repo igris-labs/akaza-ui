@@ -1,9 +1,11 @@
 import { CalendarDate } from "@internationalized/date";
-import { mount } from "@vue/test-utils";
-import { describe, expect, it } from "vitest";
+import { enableAutoUnmount, mount } from "@vue/test-utils";
+import { afterEach, describe, expect, it } from "vitest";
 import { defineComponent, nextTick, shallowRef } from "vue";
 import { DateField } from "@/components/date-field";
 import { Field } from "@/components/field";
+
+enableAutoUnmount(afterEach);
 
 describe("date field", () => {
   it("renders locale-ordered spinbutton segments and updates the model", async () => {

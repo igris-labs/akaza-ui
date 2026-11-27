@@ -39,6 +39,7 @@ const openReactive = ref(false);
 const openCustomHeader = ref(false);
 const openNoSwipe = ref(false);
 const openEvents = ref(false);
+const keepOpenOnSwipe = ref(false);
 const drawerLog = ref<string[]>([]);
 
 const rightUi = { overlay: drawerOverlay, content: drawerPanelRight };
@@ -49,6 +50,7 @@ const reactiveUi = { overlay: drawerOverlayReactive, content: drawerPanelRight }
 const fullGhostButton = `${buttonGhost} w-full`;
 
 function onDrawerChange(open: boolean, details: AkazaChangeEventDetails) {
+  if (!open && details.reason === "swipe" && keepOpenOnSwipe.value) details.cancel();
   drawerLog.value = [`${open ? "open" : "close"} - reason: ${details.reason}`, ...drawerLog.value].slice(0, 5);
 }
 </script>
@@ -291,6 +293,10 @@ function onDrawerChange(open: boolean, details: AkazaChangeEventDetails) {
         </span>
       </div>
       <div :class="canvasCol">
+        <label class="flex items-center gap-2 text-sm text-foreground">
+          <input v-model="keepOpenOnSwipe" type="checkbox" />
+          Keep event demo open after swipe
+        </label>
         <Drawer
           v-model="openEvents"
           title="Event details demo"

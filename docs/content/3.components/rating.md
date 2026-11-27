@@ -5,7 +5,7 @@ navigation:
   icon: i-lucide-star
 ---
 
-`Rating` is a radio-group control for bounded scores. It supports fractional steps, hover previews, clearable values, RTL, vertical navigation, native validation, and custom slots.
+`Rating` is a radio-group control for bounded scores. It supports fractional steps, hover previews, clearable values, RTL, vertical layout, native validation, and custom slots.
 
 Use [Meter](/components/meter) to display a read-only score.
 
@@ -124,6 +124,27 @@ Inside [Field](/components/field), Rating inherits label, name, required, disabl
 </template>
 ```
 
+### Right-to-left and vertical layout
+
+Set `dir="rtl"` to reverse horizontal arrows. Both arrow pairs move through values in either layout. Set `loop=false` to stop at the first and last values.
+
+```vue
+<template>
+  <Rating
+    v-model="rating"
+    :step="0.5"
+    dir="rtl"
+    :loop="false"
+    aria-label="Quality"
+  />
+  <Rating
+    v-model="serviceRating"
+    orientation="vertical"
+    aria-label="Service"
+  />
+</template>
+```
+
 ## Fractional values
 
 Rendering, normalization, keyboard navigation, and submission use the same legal value grid. Arbitrary steps such as `0.3` are supported; the terminal maximum remains selectable even when the step does not divide it evenly. An accepted nonzero value corresponds to a rendered checked radio.
@@ -151,7 +172,7 @@ A native form reset restores the initial model and clears interaction state. Cal
 | `clearable` | `boolean` | `false` | Selecting the committed value clears it. |
 | `hoverable` | `boolean` | `false` | Previews pointer values before commit. |
 | `loop` | `boolean` | `true` | Loops arrow navigation at range boundaries. |
-| `orientation` | `"horizontal" \| "vertical"` | `"horizontal"` | Layout and arrow-key axis. |
+| `orientation` | `"horizontal" \| "vertical"` | `"horizontal"` | Visual layout and ARIA orientation. Both arrow pairs navigate. |
 | `dir` | `"ltr" \| "rtl"` | `"ltr"` | Horizontal navigation direction. |
 | `autoFocus` | `boolean` | `false` | Focuses selected or first value on mount. |
 | `id` | `string` | field/generated id | Native validity input id. |
@@ -221,8 +242,10 @@ Plain `class` applies to the radio-group root. Use item/fill/radio UI keys for c
 
 | Key | Behavior |
 |-----|----------|
-| `ArrowRight` / `ArrowLeft` | Move by `step` in horizontal mode, respecting RTL. |
-| `ArrowDown` / `ArrowUp` | Move by `step` in vertical mode. |
+| `ArrowRight` / `ArrowLeft` | Select the next/previous value, respecting RTL. |
+| `ArrowDown` / `ArrowUp` | Select the next/previous value in either layout. |
 | `Home` | Select the first value. |
 | `End` | Select the maximum value. |
 | `Space` / `Enter` | Select focused value; may clear it when `clearable`. |
+
+The group has one Tab stop while enabled. Read-only ratings allow focus movement without changing the value. Canceling `value-change` also keeps the selected value while focus moves. Disabled ratings have no Tab stop. IME composition and Ctrl/Meta/Alt shortcuts do not change the rating.

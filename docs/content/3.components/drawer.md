@@ -3,6 +3,9 @@ title: Drawer
 description: A panel that slides in from the edge of the viewport.
 navigation:
   icon: i-lucide-panel-right
+  badge:
+    label: UPDATED
+    color: warning
 ---
 
 A slide-in panel anchored to a viewport edge. Supports swipe-to-close on touch devices and all four sides. It is modal by default; use `:modal="false"` to keep the page interactive.
@@ -129,6 +132,10 @@ Use `side="bottom"` for mobile-style sheets and short task flows.
 
 Disable swipe dismissal when accidental close would be costly.
 
+Swipes follow the physical edge: left, right, up for `top`, and down for `bottom`, including in RTL layouts. Release at 100px or more requests closure with reason `swipe` and the native release event. Pointer cancellation, lost capture, a shorter swipe, and refused controlled changes snap back. Buttons, links, inputs, and editable content do not start a swipe. Shared SDK pointer tracking samples moves once per frame and includes final release coordinates.
+
+Swipe tracking does not change modality, focus handling, or backdrop dismissal. The shared Core popup adapter owns native popover top-layer presentation and presence; SDK starting/ending flags drive the slide and backdrop fade without Vue transition hooks or component timers. The final swipe offset remains until exit starts, and refused changes snap back. Disabling swipe also removes its touch-axis restriction.
+
 ```vue
 <template>
   <Drawer
@@ -231,7 +238,7 @@ Use `#header` when the drawer needs custom title actions.
 | UI key | CSS class | Data attrs |
 |--------|-----------|------------|
 | `overlay` | `akaza-drawer-overlay` | `data-akaza-state` |
-| `content` | `akaza-drawer` | `data-akaza-state`, `data-akaza-side`, `data-swiping` |
+| `content` | `akaza-drawer` | `data-akaza-state`, `data-akaza-side`, `data-akaza-swipe-enabled`, `data-swiping` |
 | `header` | `akaza-drawer-header` | — |
 | `title` | `akaza-drawer-title` | — |
 | `description` | `akaza-drawer-description` | — |
@@ -239,6 +246,10 @@ Use `#header` when the drawer needs custom title actions.
 | `footer` | `akaza-drawer-footer` | — |
 
 `Drawer` renders trigger slot content plus a teleported panel and, in modal mode, an overlay. Use `ui` keys instead of plain `class` fallthrough. Your markup supplies the `handle` slot.
+
+`teleport` chooses the DOM destination, not whether the panel uses the native top layer. SDK owns focus, modal background inertness, scroll locking, and popup stacking. Existing `ui` classes and CSS layer overrides still apply. `modal=false` leaves page controls and scrolling usable, does not move focus on open, and ignores outside presses.
+
+`open-change` remains cancelable with `details.cancel()`, and a controlled parent may refuse the requested model update. Escape reports `escape`, modal outside presses report `backdrop-click` subject to `closeOnBackdropClick`, and swipes report `swipe` with the release event. During exit, the panel and backdrop retain `data-akaza-state="closed"` until SDK presence finishes. Default motion is disabled for reduced-motion preferences.
 
 ### Keyboard
 

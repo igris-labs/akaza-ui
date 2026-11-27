@@ -7,8 +7,11 @@ import type {
   SidebarSlots,
 } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
+import { isComposing, matchesShortcut } from "@ui-sdk/core";
+import { clamp } from "@ui-sdk/core/number";
 import { useEventListener } from "@vueuse/core";
-import { computed, onBeforeUnmount, ref, useId, watch } from "vue";
+import { computed, ref, useId, watch } from "vue";
+import { usePointerDrag } from "../../composables/internal/sdk/usePointerDrag";
 import { useSidebar } from "../../composables/sidebar";
 import { createChangeDetails, resolveAction } from "../../utils/changeEvent";
 import { Drawer } from "../drawer";
@@ -71,7 +74,7 @@ const collapsedState = computed({
 });
 const minimumSize = computed(() => Math.max(0, props.minSize));
 const maximumSize = computed(() => Math.max(minimumSize.value, props.maxSize));
-const clampSize = (value: number) => Math.min(maximumSize.value, Math.max(minimumSize.value, value));
+const clampSize = (value: number) => clamp(value, minimumSize.value, maximumSize.value);
 const currentSize = computed({
   get: () => clampSize(sizeModel.value ?? internalSize.value),
   set: (value: number) => {
@@ -112,10 +115,8 @@ const slotProps = computed<SidebarSlotProps>(() => ({
 }));
 
 const panelId = `akaza-sidebar-${useId().replace(/:/g, "")}`;
-const isResizing = ref(false);
-let resizePointerId: number | null = null;
-let resizeStartX = 0;
-let resizeStartSize = 0;
+const pointer = usePointerDrag(() => !props.resizable || isMobile.value || effectiveCollapsed.value);
+const isResizing = pointer.dragging;
 
 const rootStyle = computed<CSSProperties>(() => ({
   "--akaza-sidebar-size": `${currentSize.value}px`,
@@ -218,27 +219,16 @@ function onMobileContentClick(event: MouseEvent) {
 }
 
 function onResizePointerDown(event: PointerEvent) {
-  if (event.button !== 0 || isMobile.value || effectiveCollapsed.value) return;
+  const startX = event.clientX;
+  const startSize = currentSize.value;
+  if (!pointer.start(event.currentTarget as HTMLElement, event, {
+    onMove(event) {
+      const delta = (event.clientX - startX) * (props.side === "left" ? 1 : -1);
+      changeSize(startSize + delta, "pointer", event);
+    },
+    onEnd: () => {},
+  })) return;
   event.preventDefault();
-  resizePointerId = event.pointerId;
-  resizeStartX = event.clientX;
-  resizeStartSize = currentSize.value;
-  isResizing.value = true;
-  (event.currentTarget as HTMLElement).setPointerCapture?.(event.pointerId);
-}
-
-function onResizePointerMove(event: PointerEvent) {
-  if (!isResizing.value || resizePointerId !== event.pointerId) return;
-  const delta = (event.clientX - resizeStartX) * (props.side === "left" ? 1 : -1);
-  changeSize(resizeStartSize + delta, "pointer", event);
-}
-
-function stopResize(event?: PointerEvent) {
-  if (!isResizing.value) return;
-  const target = event?.currentTarget as HTMLElement | undefined;
-  if (event && target?.hasPointerCapture?.(event.pointerId)) target.releasePointerCapture(event.pointerId);
-  isResizing.value = false;
-  resizePointerId = null;
 }
 
 function onResizeKeydown(event: KeyboardEvent) {
@@ -255,10 +245,11 @@ function onResizeKeydown(event: KeyboardEvent) {
 }
 
 function onShortcut(event: KeyboardEvent) {
-  if (!props.keyboardShortcut || !(event.metaKey || event.ctrlKey) || event.altKey) return;
-  if (event.key.toLocaleLowerCase() !== props.keyboardShortcut.toLocaleLowerCase()) return;
+  if (!props.keyboardShortcut || !(event.metaKey || event.ctrlKey) || event.altKey || event.defaultPrevented || isComposing(event)) return;
+  const shortcut = [event.ctrlKey && "Control", event.metaKey && "Meta", event.shiftKey && "Shift", props.keyboardShortcut].filter(Boolean).join("+");
+  if (!matchesShortcut(event, shortcut)) return;
   const target = event.target instanceof HTMLElement ? event.target : null;
-  if (target?.matches("input, textarea, select, [contenteditable='true']")) return;
+  if (target?.closest("input, textarea, select, [contenteditable]:not([contenteditable='false'])")) return;
   event.preventDefault();
   toggle("shortcut", event);
 }
@@ -266,11 +257,9 @@ function onShortcut(event: KeyboardEvent) {
 useEventListener("keydown", onShortcut);
 
 watch(isMobile, (mobile) => {
-  stopResize();
+  pointer.cancel();
   if (!mobile && openState.value) closeMobile("responsive");
 });
-
-onBeforeUnmount(() => stopResize());
 
 defineExpose({
   openValue: openState,
@@ -347,10 +336,6 @@ defineExpose({
       @dblclick="resetSize('resize-reset', $event)"
       @keydown="onResizeKeydown"
       @pointerdown="onResizePointerDown"
-      @pointermove="onResizePointerMove"
-      @pointerup="stopResize"
-      @pointercancel="stopResize"
-      @lostpointercapture="stopResize"
     >
       <slot name="resize-handle" v-bind="slotProps" />
     </div>

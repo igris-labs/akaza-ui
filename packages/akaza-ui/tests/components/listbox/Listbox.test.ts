@@ -96,7 +96,7 @@ describe("listbox", () => {
 
     const rendered = wrapper.findAll("[role='option']");
     expect(rendered.length).toBeGreaterThan(0);
-    expect(rendered.length).toBeLessThan(options.length);
+    expect(rendered.length).toBeLessThanOrEqual(Math.ceil(80 / 20) + 2 * 5 + 1);
     expect(wrapper.find("[role='listbox']").attributes("style")).toContain("80px");
 
     const listbox = wrapper.get("[role='listbox']").element as HTMLElement;

@@ -1,14 +1,38 @@
 import { enableAutoUnmount, flushPromises, mount } from "@vue/test-utils";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ContextMenu } from "@/components/context-menu";
 import { Menu } from "@/components/menu";
 import { Menubar } from "@/components/menubar";
 import { Popover } from "@/components/popover";
+import { installPopupTestEnvironment, settlePopup } from "../popover/popupTestEnvironment";
 
 enableAutoUnmount(afterEach);
+installPopupTestEnvironment();
+let resizeCallbacks: ResizeObserverCallback[];
+beforeEach(() => {
+  resizeCallbacks = [];
+  vi.stubGlobal("ResizeObserver", class {
+    constructor(callback: ResizeObserverCallback) { resizeCallbacks.push(callback); }
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  });
+  vi.spyOn(document.documentElement, "clientWidth", "get").mockReturnValue(window.innerWidth);
+  vi.spyOn(document.documentElement, "clientHeight", "get").mockReturnValue(window.innerHeight);
+  vi.spyOn(HTMLElement.prototype, "getClientRects").mockImplementation(function (this: HTMLElement) {
+    return [this.getBoundingClientRect()] as unknown as DOMRectList;
+  });
+  vi.spyOn(HTMLElement.prototype, "offsetWidth", "get").mockImplementation(function (this: HTMLElement) {
+    return this.getBoundingClientRect().width;
+  });
+  vi.spyOn(HTMLElement.prototype, "offsetHeight", "get").mockImplementation(function (this: HTMLElement) {
+    return this.getBoundingClientRect().height;
+  });
+});
 afterEach(() => {
   vi.restoreAllMocks();
   vi.useRealTimers();
+  vi.unstubAllGlobals();
 });
 
 const children = [{ value: "share", label: "Share", children: [{ label: "Email" }, { label: "Link" }] }];
@@ -25,6 +49,7 @@ describe("menu submenu collisions", () => {
     await row.trigger("mouseenter");
     expect(row.get(".stable-item").element).toBe(label);
     await wrapper.get(".akaza-menu-submenu-content").trigger("keydown", { key: "ArrowLeft" });
+    await settlePopup();
     expect(wrapper.find(".akaza-menu-submenu-content").exists()).toBe(false);
     expect(row.get(".stable-item").element).toBe(label);
     await wrapper.get(".akaza-menu-submenu-trigger").trigger("click");
@@ -60,7 +85,7 @@ describe("menu submenu collisions", () => {
       const updated = [{ ...branch, submenu: { ...branch.submenu, align: "start" as const } }];
       await wrapper.setProps({ items: component === "Menubar" ? [{ value: "file", children: updated }] : updated });
       await flushPromises();
-      expect(style.top).toBe(anchor === "parent" ? "48px" : "98px");
+      await vi.waitFor(() => expect(style.top).toBe(anchor === "parent" ? "48px" : "98px"));
     });
 
     it.each(["ltr", "rtl"] as const)(`${component} keeps keyboard focus through pending hover dismissal in %s`, async (dir) => {
@@ -120,9 +145,11 @@ describe("menu submenu collisions", () => {
 
       x = window.innerWidth / 2;
       window.dispatchEvent(new Event("resize"));
+      for (const callback of resizeCallbacks) callback([], {} as ResizeObserver);
       await flushPromises();
-      expect(submenu.attributes("data-akaza-side")).toBe(dir === "ltr" ? "right" : "left");
+      await vi.waitFor(() => expect(submenu.attributes("data-akaza-side")).toBe(dir === "ltr" ? "right" : "left"));
       await submenu.trigger("keydown", { key: dir === "ltr" ? "ArrowLeft" : "ArrowRight" });
+      await settlePopup();
       expect(wrapper.find(".akaza-menu-submenu-content").exists()).toBe(false);
       expect(document.activeElement).toBe(trigger.element);
       expect(trigger.attributes("aria-expanded")).toBe("false");
@@ -130,8 +157,8 @@ describe("menu submenu collisions", () => {
   }
 });
 
-describe("shared menu layer order", () => {
-  it("registers context menus and menubars after an existing popover", async () => {
+describe("sdk menu presentation", () => {
+  it("keeps CSS visual order through the shared popup adapter", async () => {
     const popover = mount(Popover, { props: { modelValue: true, teleport: false }, slots: { default: "Popover" } });
     await flushPromises();
     const context = mount(ContextMenu, { props: { modelValue: true, items: children, teleport: false } });
@@ -145,6 +172,8 @@ describe("shared menu layer order", () => {
     expect(popoverOrder).toBeGreaterThan(0);
     expect(contextOrder).toBeGreaterThan(popoverOrder);
     expect(menubarOrder).toBeGreaterThan(contextOrder);
+    expect(context.get(".akaza-context-menu-content").attributes("data-slot")).toBe("akaza-menu-popup-content");
+    expect(menubar.get(".akaza-menubar-content").attributes("data-slot")).toBe("akaza-menu-popup-content");
     await context.setProps({ modelValue: false });
     await flushPromises();
     await context.setProps({ modelValue: true });

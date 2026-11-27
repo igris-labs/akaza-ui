@@ -1,5 +1,6 @@
 import type { Color, Mode } from "culori";
 import type { ColorChannel, ColorChannelInfo, ColorFormat, ColorSpace } from "./types";
+import { clamp as clampValue, roundTo } from "@ui-sdk/core/number";
 import {
   converter,
   formatCss,
@@ -25,6 +26,7 @@ import {
   useMode,
 } from "culori/fn";
 
+// SDK beta.17 lacks A98/ProPhoto/Rec.2020; keep one engine until it supports every public format.
 // Keep registration removable when an application imports no color primitives.
 const engine = /* @__PURE__ */ (() => {
   for (const mode of [
@@ -69,9 +71,9 @@ const modes: Record<string, Mode> = {
   "xyz-d65": "xyz65",
 };
 export const colorMode = (space: ColorSpace | ColorFormat): Mode => modes[space] ?? (space as Mode);
-export const clamp = (value: number, min = 0, max = 1) => Math.min(max, Math.max(min, value));
+export const clamp = (value: number, min = 0, max = 1): number => clampValue(value, min, max);
 // Stable DOM/CSS output across server and browser math implementations; retain raw state precision.
-export const round = (value: number) => Number(value.toFixed(6));
+export const round = (value: number): number => roundTo(value, 6);
 
 /** CSS literals only: unresolved variables, currentColor, relative colors, and URLs are rejected. */
 export function parseColor(value: string): ColorData | null {

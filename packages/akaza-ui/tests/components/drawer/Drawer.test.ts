@@ -4,11 +4,14 @@ import { defineComponent, ref } from "vue";
 import { Dialog } from "@/components/dialog";
 import { Drawer } from "@/components/drawer";
 import { Select } from "@/components/select";
+import { popupEnvironment, settled } from "../dialog/popup-fixture";
 
+popupEnvironment();
 enableAutoUnmount(afterEach);
 afterEach(() => {
   document.body.innerHTML = "";
   document.body.style.overflow = "";
+  document.documentElement.style.overflow = "";
 });
 
 function backgroundInput() {
@@ -34,6 +37,7 @@ describe("drawer modality", () => {
     expect(background.inert).not.toBe(true);
     expect(background.hasAttribute("aria-hidden")).toBe(false);
     expect(document.body.style.overflow).toBe("");
+    expect(document.documentElement.style.overflow).toBe("");
     expect(document.activeElement).toBe(background);
     panel.querySelector("button")!.focus();
     background.focus();
@@ -51,22 +55,23 @@ describe("drawer modality", () => {
     });
     await flushPromises();
     expect(wrapper.get(".akaza-drawer").attributes("aria-modal")).toBe("true");
+    await settled();
     expect(wrapper.find(".akaza-drawer-overlay").exists()).toBe(true);
-    expect(document.body.style.overflow).toBe("hidden");
-    expect(background.getAttribute("aria-hidden")).toBe("true");
-    background.focus();
-    expect(document.activeElement).toBe(wrapper.get(".akaza-drawer button").element);
+    expect(document.documentElement.style.overflow).toBe("hidden");
+    expect(background.inert).toBe(true);
+    // jsdom has no layout, so SDK auto focus can choose the content fallback.
+    expect(wrapper.get(".akaza-drawer").element.contains(document.activeElement)).toBe(true);
     await wrapper.setProps({ modal: false });
     await flushPromises();
     expect(wrapper.find(".akaza-drawer-overlay").exists()).toBe(false);
-    expect(background.hasAttribute("aria-hidden")).toBe(false);
-    expect(document.body.style.overflow).toBe("");
+    expect(background.inert).not.toBe(true);
+    expect(document.documentElement.style.overflow).toBe("");
     background.focus();
     expect(document.activeElement).toBe(background);
     await wrapper.setProps({ modal: true });
     await flushPromises();
-    expect(background.getAttribute("aria-hidden")).toBe("true");
-    expect(document.body.style.overflow).toBe("hidden");
+    expect(background.inert).toBe(true);
+    expect(document.documentElement.style.overflow).toBe("hidden");
   });
 
   it("supports cancelable Escape dismissal without trapping nonmodal focus", async () => {
@@ -79,7 +84,7 @@ describe("drawer modality", () => {
       },
     });
     await flushPromises();
-    window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true }));
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true }));
     await flushPromises();
     expect(document.querySelector(".akaza-drawer")).not.toBeNull();
     expect(wrapper.emitted("open-change")?.[0]?.[1]).toMatchObject({ reason: "escape" });
@@ -102,12 +107,12 @@ describe("drawer modality", () => {
           </template>
         </Dialog>`,
     }), { attachTo: document.body });
-    await flushPromises();
+    await settled();
     const search = document.querySelector<HTMLInputElement>(".akaza-select-search-input")!;
     expect(search.closest('[aria-hidden="true"]')).toBeNull();
     search.focus();
     expect(document.activeElement).toBe(search);
-    expect(document.body.style.overflow).toBe("hidden");
+    expect(document.documentElement.style.overflow).toBe("hidden");
   });
 
   it("restores focus when closing with focus in a logically owned portal", async () => {

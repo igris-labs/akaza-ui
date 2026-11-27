@@ -5,6 +5,7 @@ import { palette, paletteUi, swatchUi } from "../color/styles";
 import { canvasCol, exampleStack, exampleTitle, sectionDescription, sectionTitle } from "../styles";
 const color = ref("#2a9d6f");
 const colors = ref<string[]>([]);
+const environmentColor = ref("");
 const customItems = [
   { value: "#22c55e", label: "Production" },
   { value: "#f59e0b", label: "Staging" },
@@ -53,8 +54,8 @@ const customItems = [
       <div>
         <h3 :class="exampleTitle">Multiple selection and RTL</h3>
         <p class="mb-3 max-w-2xl text-xs leading-5 text-muted-foreground">
-          Toggle several colors, use Shift with navigation to extend selection, and skip disabled
-          options.
+          Use Shift with arrow keys to select a range. Gray is disabled and skipped. Navigation
+          stops at the first and last enabled colors.
         </p>
         <div :class="canvasCol">
           <ColorSwatchPicker
@@ -62,6 +63,7 @@ const customItems = [
             :items="palette"
             multiple
             dir="rtl"
+            :loop="false"
             format="lch"
             :ui="paletteUi"
             aria-label="Multiple colors"
@@ -95,12 +97,13 @@ const customItems = [
         </p>
         <div :class="canvasCol">
           <ColorSwatchPicker
-            v-model="color"
+            v-model="environmentColor"
             :items="customItems"
             :ui="{
               ...paletteUi,
+              root: 'w-full',
               content: 'grid gap-2',
-              item: 'flex items-center gap-3 rounded-md border border-border p-2 data-[akaza-state=checked]:bg-accent',
+              item: `${paletteUi.item} flex items-center gap-3 border border-border p-2 data-[akaza-state=checked]:bg-accent`,
             }"
             aria-label="Environment colors"
           >

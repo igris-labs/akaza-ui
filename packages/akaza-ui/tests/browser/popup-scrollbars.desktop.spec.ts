@@ -1,5 +1,12 @@
-import { expect, test } from "@playwright/test";
+import { test as base, expect } from "@playwright/test";
 import { openPlayground, section } from "./helpers";
+
+const test = base.extend({
+  // Playwright's headless Firefox forces scrollbar-width:none in its UA stylesheet.
+  headless: async ({ browserName, headless }, use) => {
+    await use(browserName === "firefox" ? false : headless);
+  },
+});
 
 test.beforeEach(async ({ page }) => {
   await openPlayground(page);
@@ -41,6 +48,10 @@ for (const kind of ["combobox", "select", "autocomplete"] as const) {
     expect(metrics.overflow).toBeGreaterThan(0);
     const box = await viewport.boundingBox();
     if (!box) throw new Error("Popup viewport is missing");
+    const triggerBox = await control.boundingBox();
+    const contentBox = await content.boundingBox();
+    if (!triggerBox || !contentBox) throw new Error("Control geometry is missing");
+    expect(Math.abs(contentBox.width - triggerBox.width)).toBeLessThan(2);
     const x = box.x + box.width - metrics.gutter / 2;
 
     await page.mouse.move(x, box.y + box.height - 8);

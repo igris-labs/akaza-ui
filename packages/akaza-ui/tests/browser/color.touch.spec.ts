@@ -13,8 +13,10 @@ test("touch selects colors without overflow on narrow screens", async ({ page })
   await tap(page, controls.locator(".akaza-color-slider-track").last());
   await expect(controls.getByRole("slider", { name: "Opacity", exact: true })).toHaveValue("50");
   const palette = section(page, "color-swatch-picker").getByRole("listbox", { name: "Brand palette" });
-  await tap(page, palette.getByRole("option", { name: "Green", exact: true }));
-  await expect(palette.getByRole("option", { name: "Green", exact: true })).toHaveAttribute("aria-selected", "true");
+  const red = palette.getByRole("option", { name: "Red", exact: true });
+  await expect(red).toHaveAttribute("aria-selected", "false");
+  await tap(page, red);
+  await expect(red).toHaveAttribute("aria-selected", "true");
   const trigger = section(page, "color-picker").getByRole("button", { name: "Choose color", exact: true });
   await tap(page, trigger);
   const popup = page.locator(".akaza-popover-content");

@@ -19,11 +19,13 @@ import type {
 } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
 import type { PaginationUi } from "../pagination";
-import { computed, onBeforeUnmount, ref, useAttrs, useId, useSlots } from "vue";
+import { bindDrag } from "@ui-sdk/core";
+import { computed, onBeforeUnmount, useAttrs, useId, useSlots } from "vue";
 import { useDataTable } from "../../composables/data-table";
 import { createChangeDetails as changeDetails } from "../../utils/changeEvent";
 import { Pagination } from "../pagination";
 import DataTableRender from "./DataTableRender";
+import { useTableReorder } from "./useTableReorder";
 
 defineOptions({ inheritAttrs: false });
 
@@ -87,7 +89,6 @@ const attrs = useAttrs();
 const slots = useSlots();
 const instanceId = `akaza-data-table-${useId().replace(/:/g, "")}`;
 const selectionGroupName = `${instanceId}-selection`;
-const interactionMessage = ref("");
 
 const table = useDataTable<T>({
   data: () => props.data,
@@ -142,8 +143,6 @@ const labels = computed(() => ({
   resizeColumn: props.labels?.resizeColumn ?? ((label: string) => `Resize ${label} column`),
   reorderColumn: props.labels?.reorderColumn ?? ((label: string) => `Reorder ${label} column`),
   reorderRow: props.labels?.reorderRow ?? ((index: number) => `Reorder row ${index + 1}`),
-  moveBefore: props.labels?.moveBefore ?? "Moved before",
-  moveAfter: props.labels?.moveAfter ?? "Moved after",
   loading: props.labels?.loading ?? "Loading results",
   empty: props.labels?.empty ?? props.emptyLabel,
   error: props.labels?.error ?? props.errorLabel,
@@ -167,7 +166,6 @@ const nestedPaginationUi = computed<PaginationUi>(() => ({
   ...(props.ui?.paginationLast && { last: props.ui.paginationLast }),
 }));
 const liveMessage = computed(() => {
-  if (interactionMessage.value) return interactionMessage.value;
   if (props.loading) return labels.value.loading;
   if (props.error) return labels.value.error;
   return `${table.filteredRowCount.value} result${table.filteredRowCount.value === 1 ? "" : "s"}`;
@@ -278,49 +276,55 @@ function setPaginationPage(page: number, details: AkazaChangeEventDetails) {
   if (!table.setPage(page, details.event)) details.cancel();
 }
 
-interface ResizeSession {
-  column: DataTableColumnInstance<T>;
-  pointerId: number;
-  startX: number;
-  startSize: number;
-  latestSize: number;
-}
+const columnGestures = useTableReorder({
+  keys: () => table.columns.value.map(column => column.id),
+  disabled: key => !props.columnReorder || table.getColumn(key)?.definition.reorderable === false,
+  label: key => { const column = table.getColumn(key); return column && columnLabel(column); },
+  horizontal: true,
+  rtl: () => props.dir === "rtl",
+  move: (source, target, event) => table.moveColumn(source, target, event),
+});
+const reorderRows = computed(() => new Map(table.rows.value.filter(row => row.canReorder).map(row => [rowDomId(row), row])));
+const rowGestures = useTableReorder({
+  keys: () => [...reorderRows.value.keys()],
+  disabled: key => !props.rowReorder || !reorderRows.value.get(key)?.canReorder,
+  label: key => { const row = reorderRows.value.get(key); return row && labels.value.reorderRow(row.index); },
+  move: (source, target, event) => {
+    const sourceRow = reorderRows.value.get(source);
+    const targetRow = reorderRows.value.get(target);
+    return Boolean(sourceRow && targetRow && table.moveRow(sourceRow.id, targetRow.id, event));
+  },
+});
 
-let resizeSession: ResizeSession | undefined;
+let stopResize: (() => void) | undefined;
 
 function resizeOptions() {
   return typeof props.columnResize === "object" ? props.columnResize : {};
 }
 
 function startResize(column: DataTableColumnInstance<T>, event: PointerEvent) {
-  if (!props.columnResize || column.definition.resizable === false || event.button > 0) return;
+  if (stopResize || columnGestures.busy() || rowGestures.busy() || event.defaultPrevented
+    || !props.columnResize || column.definition.resizable === false || event.button !== 0 || event.isPrimary === false) return;
   event.preventDefault();
-  resizeSession = {
-    column,
-    pointerId: event.pointerId,
-    startX: event.clientX,
-    startSize: column.size,
-    latestSize: column.size,
-  };
-  window.addEventListener("pointermove", onResizeMove);
-  window.addEventListener("pointerup", endResize);
-  window.addEventListener("pointercancel", endResize);
-}
-
-function onResizeMove(event: PointerEvent) {
-  if (!resizeSession || event.pointerId !== resizeSession.pointerId) return;
+  const startX = event.clientX;
+  const startSize = column.size;
   const direction = props.dir === "rtl" ? -1 : 1;
-  resizeSession.latestSize = resizeSession.startSize + (event.clientX - resizeSession.startX) * direction;
-  if (resizeOptions().update !== "end") table.resizeColumn(resizeSession.column.id, resizeSession.latestSize, event);
-}
-
-function endResize(event: PointerEvent) {
-  if (!resizeSession || event.pointerId !== resizeSession.pointerId) return;
-  if (resizeOptions().update === "end") table.resizeColumn(resizeSession.column.id, resizeSession.latestSize, event);
-  resizeSession = undefined;
-  window.removeEventListener("pointermove", onResizeMove);
-  window.removeEventListener("pointerup", endResize);
-  window.removeEventListener("pointercancel", endResize);
+  const endOnly = resizeOptions().update === "end";
+  let lastRequested: number | undefined;
+  function request(pointer: PointerEvent) {
+    const size = startSize + (pointer.clientX - startX) * direction;
+    if (size === lastRequested) return;
+    lastRequested = size;
+    table.resizeColumn(column.id, size, pointer);
+  }
+  stopResize = bindDrag(event.currentTarget as HTMLElement, event, {
+    cancelOnEscape: true,
+    onMove: sample => { if (!endOnly) request(sample.event); },
+    onEnd: (release, canceled) => {
+      stopResize = undefined;
+      if (!canceled) request(release);
+    },
+  });
 }
 
 function resizeWithKeyboard(column: DataTableColumnInstance<T>, event: KeyboardEvent) {
@@ -336,114 +340,14 @@ function resizeWithKeyboard(column: DataTableColumnInstance<T>, event: KeyboardE
   table.resizeColumn(column.id, column.size + direction * step, event);
 }
 
-interface ReorderSession {
-  type: "column" | "row";
-  source: DataTableRowKey | string;
-  target: DataTableRowKey | string;
-  pointerId: number;
+
+function startReorder(type: "column" | "row", key: string, event: PointerEvent) {
+  const reorder = type === "column" ? columnGestures : rowGestures;
+  const other = type === "column" ? rowGestures : columnGestures;
+  if (!stopResize && !other.busy()) reorder.pointerdown(key, event);
 }
 
-let reorderSession: ReorderSession | undefined;
-
-function startReorder(type: "column" | "row", source: DataTableRowKey | string, event: PointerEvent) {
-  if (event.button > 0) return;
-  if (type === "row" && !table.getRow(source)?.canReorder) return;
-  reorderSession = { type, source, target: source, pointerId: event.pointerId };
-  (event.currentTarget as HTMLElement).setPointerCapture?.(event.pointerId);
-  window.addEventListener("pointermove", onReorderMove);
-  window.addEventListener("pointerup", endReorder);
-  window.addEventListener("pointercancel", cancelReorder);
-}
-
-function announce(message: string) {
-  interactionMessage.value = "";
-  queueMicrotask(() => {
-    interactionMessage.value = message;
-  });
-}
-
-function reorderMessage(type: "column" | "row", source: DataTableRowKey | string, target: DataTableRowKey | string) {
-  if (type === "column") {
-    const sourceColumn = table.getColumn(String(source));
-    const targetColumn = table.getColumn(String(target));
-    if (!sourceColumn || !targetColumn) return "";
-    const sourceIndex = table.columns.value.findIndex(column => column.id === sourceColumn.id);
-    const targetIndex = table.columns.value.findIndex(column => column.id === targetColumn.id);
-    const relation = sourceIndex < targetIndex ? labels.value.moveAfter : labels.value.moveBefore;
-    return `${columnLabel(sourceColumn)} ${relation} ${columnLabel(targetColumn)}`;
-  }
-  const sourceRow = table.getRow(source);
-  const targetRow = table.getRow(target);
-  if (!sourceRow || !targetRow) return "";
-  const relation = sourceRow.index < targetRow.index ? labels.value.moveAfter : labels.value.moveBefore;
-  return `${labels.value.reorderRow(sourceRow.index)} ${relation} ${labels.value.reorderRow(targetRow.index)}`;
-}
-
-function onReorderMove(event: PointerEvent) {
-  if (!reorderSession || event.pointerId !== reorderSession.pointerId) return;
-  const target = document.elementFromPoint(event.clientX, event.clientY);
-  const selector = reorderSession.type === "column" ? "[data-akaza-column]" : "[data-akaza-row-id]";
-  const element = target?.closest<HTMLElement>(selector);
-  const value = reorderSession.type === "column" ? element?.dataset.akazaColumn : element?.dataset.akazaRowId;
-  if (value === undefined) return;
-  reorderSession.target = reorderSession.type === "column"
-    ? value
-    : table.rows.value.find((row) => rowDomId(row) === value)?.id ?? reorderSession.target;
-}
-
-function endReorder(event: PointerEvent) {
-  if (!reorderSession || event.pointerId !== reorderSession.pointerId) return;
-  if (reorderSession.source !== reorderSession.target) {
-    const message = reorderMessage(reorderSession.type, reorderSession.source, reorderSession.target);
-    let changed = false;
-    if (reorderSession.type === "column") {
-      changed = table.moveColumn(String(reorderSession.source), String(reorderSession.target), event);
-    } else {
-      changed = table.moveRow(reorderSession.source, reorderSession.target, event);
-    }
-    if (changed && message) announce(message);
-  }
-  cancelReorder();
-}
-
-function cancelReorder() {
-  reorderSession = undefined;
-  window.removeEventListener("pointermove", onReorderMove);
-  window.removeEventListener("pointerup", endReorder);
-  window.removeEventListener("pointercancel", cancelReorder);
-}
-
-function reorderColumnWithKeyboard(column: DataTableColumnInstance<T>, event: KeyboardEvent) {
-  if (event.key !== "ArrowLeft" && event.key !== "ArrowRight") return;
-  event.preventDefault();
-  const delta = (event.key === "ArrowRight" ? 1 : -1) * (props.dir === "rtl" ? -1 : 1);
-  const currentIndex = table.columns.value.findIndex((item) => item.id === column.id);
-  const target = table.columns.value[currentIndex + delta];
-  if (target) {
-    const message = reorderMessage("column", column.id, target.id);
-    if (table.moveColumn(column.id, target.id, event) && message) announce(message);
-  }
-}
-
-function reorderRowWithKeyboard(row: DataTableRow<T>, event: KeyboardEvent) {
-  if (event.key !== "ArrowUp" && event.key !== "ArrowDown") return;
-  event.preventDefault();
-  const delta = event.key === "ArrowDown" ? 1 : -1;
-  if (!row.canReorder) return;
-  const currentIndex = table.rows.value.findIndex(item => item.id === row.id);
-  const target = table.rows.value[currentIndex + delta];
-  if (target?.canReorder) {
-    const message = reorderMessage("row", row.id, target.id);
-    if (table.moveRow(row.id, target.id, event) && message) announce(message);
-  }
-}
-
-onBeforeUnmount(() => {
-  window.removeEventListener("pointermove", onResizeMove);
-  window.removeEventListener("pointerup", endResize);
-  window.removeEventListener("pointercancel", endResize);
-  cancelReorder();
-});
+onBeforeUnmount(() => stopResize?.());
 
 defineExpose({
   table,
@@ -511,6 +415,7 @@ defineExpose({
             <th
               v-for="header in group.headers"
               :key="header.id"
+              :ref="element => { if (!header.column.definition.children?.length) columnGestures.bind(header.column.id, element); }"
               v-bind="table.getHeaderAttrs(header)"
               :colspan="header.colSpan"
               :rowspan="header.rowSpan"
@@ -523,6 +428,8 @@ defineExpose({
               :data-akaza-state="header.column.sorted || 'unsorted'"
               :data-state="header.column.sorted || 'unsorted'"
               :data-akaza-pinned="header.column.pinned || undefined"
+              :data-akaza-grabbed="columnGestures.grabbed(header.column.id) || undefined"
+              :data-akaza-drop-target="columnGestures.target(header.column.id) || undefined"
               :style="pinStyle(header.column)"
             >
               <div :class="ui?.headerContent" class="akaza-data-table-header-content">
@@ -564,10 +471,11 @@ defineExpose({
                   v-if="columnReorder && header.column.definition.reorderable !== false && !header.column.definition.children?.length"
                   type="button"
                   :aria-label="labels.reorderColumn(columnLabel(header.column))"
+                  :aria-pressed="columnGestures.grabbed(header.column.id)"
                   :class="ui?.columnReorderHandle"
                   class="akaza-data-table-column-reorder-handle"
                   @pointerdown="startReorder('column', header.column.id, $event)"
-                  @keydown="reorderColumnWithKeyboard(header.column, $event)"
+                  @keydown="columnGestures.keydown(header.column.id, $event)"
                 >
                   <slot name="column-reorder-handle" :column="header.column">⋮⋮</slot>
                 </button>
@@ -612,6 +520,7 @@ defineExpose({
           </tr>
           <template v-for="row in table.rows.value" v-else :key="rowDomId(row)">
             <tr
+              :ref="element => rowGestures.bind(rowDomId(row), element)"
               v-bind="rowAttributes(row)"
               :class="ui?.row"
               class="akaza-data-table-row"
@@ -624,6 +533,8 @@ defineExpose({
               :data-akaza-selected="row.selected || undefined"
               :data-akaza-expanded="row.expanded || undefined"
               :data-akaza-disabled="row.disabled || undefined"
+              :data-akaza-grabbed="rowGestures.grabbed(rowDomId(row)) || undefined"
+              :data-akaza-drop-target="rowGestures.target(rowDomId(row)) || undefined"
               @click="onRowClick(row, $event)"
               @contextmenu="onRowContextmenu(row, $event)"
             >
@@ -672,12 +583,13 @@ defineExpose({
                       type="button"
                       :disabled="!context.row.canReorder"
                       :aria-label="labels.reorderRow(context.row.index)"
+                      :aria-pressed="rowGestures.grabbed(rowDomId(context.row))"
                       :class="ui?.reorderHandle"
                       class="akaza-data-table-reorder-handle"
                       :data-akaza-disabled="!context.row.canReorder || undefined"
                       @click.stop
-                      @pointerdown.stop="startReorder('row', context.row.id, $event)"
-                      @keydown="reorderRowWithKeyboard(context.row, $event)"
+                      @pointerdown.stop="startReorder('row', rowDomId(context.row), $event)"
+                      @keydown="rowGestures.keydown(rowDomId(context.row), $event)"
                     >
                       <slot name="reorder-handle" :row="context.row">⋮⋮</slot>
                     </button>

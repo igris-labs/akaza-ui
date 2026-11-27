@@ -213,6 +213,8 @@ Enable the generated separator with `resizable`. Size uses pixels and supports c
 
 The resize handle supports pointer, pen, touch, and keyboard input. Double-click resets to `defaultSize`.
 
+Pointer resizing samples movement once per animation frame and applies the final release position. Every `size-change` remains cancelable and includes the currently accepted `previousSize`. Pointer cancellation or lost capture stops resizing without undoing accepted sizes. Collapsing, switching to mobile, turning off `resizable`, or unmounting drops pending pointer work and releases capture.
+
 ### Right sidebar
 
 Placement also changes pointer and keyboard resize direction.
@@ -230,6 +232,8 @@ Placement also changes pointer and keyboard resize direction.
 ```
 
 ### Keyboard shortcut
+
+`keyboard-shortcut="b"` matches Ctrl+B or Command+B, including the physical B key on other keyboard layouts. Shift is allowed. Alt, IME composition, already-handled events, and events inside text inputs or editable content are ignored. Each Sidebar handles its own shortcut; give independent sidebars different keys.
 
 Global shortcuts are opt-in to avoid application conflicts. `keyboardShortcut="b"` uses Command+B on macOS and Ctrl+B elsewhere.
 

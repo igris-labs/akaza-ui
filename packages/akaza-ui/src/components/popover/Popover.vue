@@ -2,13 +2,9 @@
 import type { CSSProperties } from "vue";
 import type { PopoverProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
-import { onClickOutside } from "@vueuse/core";
-import { computed, nextTick, onUnmounted, useId, useTemplateRef, watch } from "vue";
-import { usePopover } from "../../composables/popover";
+import { computed, useId, useTemplateRef } from "vue";
+import { usePopup } from "../../composables/internal/sdk/usePopup";
 import { createChangeDetails, resolveAction } from "../../utils/changeEvent";
-import { useDismissableLayer } from "../../utils/dismissableLayer";
-import { useFloatingPosition } from "../../utils/floatingPosition";
-import { useFocusBranch } from "../../utils/focusScope";
 
 const {
   side = "bottom",
@@ -24,91 +20,72 @@ const emit = defineEmits<{
 }>();
 
 const model = defineModel<boolean>({ default: false });
-const { open: _open, close: _close } = usePopover(model);
+const popoverId = useId();
+const rootRef = useTemplateRef<HTMLElement>("rootRef");
+const contentRef = useTemplateRef<HTMLElement>("contentRef");
+
+const { present, contentAttrs, triggerAttrs, style, actualSide, actualAlign, layerOrder, setOpen } = usePopup({
+  kind: "popover",
+  open: model,
+  content: contentRef,
+  contentId: popoverId,
+  trigger: getTriggerFocusTarget,
+  anchor: () => rootRef.value,
+  initialFocus: "none",
+  finalFocus: getTriggerFocusTarget,
+  side: () => side,
+  align: () => align,
+  sideOffset: () => sideOffset,
+  collisionPadding: () => 4,
+  cssVarPrefix: "akaza-popover",
+  transition: () => transition,
+  request: handleChange,
+});
 
 function handleChange(nextOpen: boolean, reason: string, event?: Event) {
-  const changeEvent = createChangeDetails(reason, event);
+  const akazaReason = reason === "escape-key" ? "escape"
+    : reason === "outside-press" ? "outside-click"
+      : reason === "trigger-press" ? "trigger"
+        : reason === "imperative" ? "programmatic" : reason;
+  const changeEvent = createChangeDetails(akazaReason, event);
   emit("open-change", nextOpen, changeEvent.details);
-  if (changeEvent.canceled()) return;
-  nextOpen ? _open() : _close();
+  if (!changeEvent.canceled()) model.value = nextOpen;
 }
 
 function open(reasonOrEvent?: string | Event, event?: Event) {
   const details = resolveAction(reasonOrEvent, event);
-  handleChange(true, details.reason, details.event);
+  setOpen(true, details.reason, details.event);
 }
 function close(reasonOrEvent?: string | Event, event?: Event) {
   const details = resolveAction(reasonOrEvent, event);
-  handleChange(false, details.reason, details.event);
+  setOpen(false, details.reason, details.event);
 }
 function toggle(reasonOrEvent?: string | Event, event?: Event) {
   const details = resolveAction(reasonOrEvent, event);
-  handleChange(!model.value, details.reason, details.event);
+  setOpen(!model.value, details.reason, details.event);
 }
-
-const popoverId = useId();
-const rootRef = useTemplateRef<HTMLElement>("rootRef");
-const contentRef = useTemplateRef<HTMLElement>("contentRef");
-useFocusBranch(contentRef);
-const { layerOrder, register, unregister } = useDismissableLayer((event?: KeyboardEvent) => {
-  close("escape", event);
-  nextTick(() => getTriggerFocusTarget()?.focus());
-});
 
 function getTriggerFocusTarget() {
   const root = rootRef.value;
   if (!root) return null;
   const selector = "button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex='-1'])";
-  return root.matches(selector) ? root : root.querySelector<HTMLElement>(selector);
+  return [...root.querySelectorAll<HTMLElement>(selector)].find(element => !contentRef.value?.contains(element)) ?? root;
 }
-
-onClickOutside(
-  rootRef,
-  (e) => {
-    if (model.value) close("outside-click", e);
-  },
-  { ignore: [contentRef] },
-);
 
 // ── Positioning ───────────────────────────────────────────────────────────────
 
-const { style: positionStyle, actualSide } = useFloatingPosition({
-  reference: rootRef,
-  floating: contentRef,
-  active: model,
-  side: () => side,
-  align: () => align,
-  sideOffset: () => sideOffset,
-  collisionPadding: 4,
-  fallbackSides: ["bottom", "top", "right", "left"],
-  strategy: () => teleport === false ? "absolute" : "fixed",
-  cssVarPrefix: "akaza-popover",
-});
 const contentStyle = computed<CSSProperties>(() => ({
-  ...positionStyle.value,
+  ...style.value,
   // Positioning must not override consumer or enter/leave transforms.
   transform: undefined,
   transformOrigin: undefined,
   "--akaza-layer-order": layerOrder.value,
 }));
 
-watch(model, async (open, _previous, cleanup) => {
-  let canceled = false;
-  cleanup(() => { canceled = true; });
-  if (open) {
-    await nextTick();
-    if (!canceled) register();
-  } else {
-    unregister();
-  }
-}, { immediate: true });
-
-onUnmounted(unregister);
-
 // ── Trigger ARIA props ────────────────────────────────────────────────────────
 
 const triggerProps = computed(() => ({
-  "aria-haspopup": "dialog" as const,
+  "data-slot": triggerAttrs.value["data-slot"],
   "aria-expanded": model.value,
   "aria-controls": model.value ? popoverId : undefined,
 }));
@@ -132,24 +109,20 @@ defineExpose({ open, close, toggle });
       :trigger-props="triggerProps"
     />
     <Teleport :to="typeof teleport === 'string' ? teleport : 'body'" :disabled="teleport === false">
-      <Transition
-        v-bind="typeof transition === 'string' ? { name: transition } : {}"
-        :css="transition !== false"
+      <div
+        v-if="present"
+        v-bind="contentAttrs"
+        :id="popoverId"
+        ref="contentRef"
+        :class="ui?.content"
+        :style="contentStyle"
+        :data-akaza-side="actualSide"
+        :data-akaza-align="actualAlign"
+        :data-akaza-state="model ? 'open' : 'closed'"
+        class="akaza-popover-content"
       >
-        <div
-          v-if="model"
-          :id="popoverId"
-          ref="contentRef"
-          :class="ui?.content"
-          :style="contentStyle"
-          :data-akaza-side="actualSide"
-          :data-akaza-align="align"
-          data-akaza-state="open"
-          class="akaza-popover-content"
-        >
-          <slot name="content" :close="close" />
-        </div>
-      </Transition>
+        <slot name="content" :close="close" />
+      </div>
     </Teleport>
   </div>
 </template>

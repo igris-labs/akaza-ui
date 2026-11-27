@@ -1,13 +1,10 @@
 <script setup lang="ts">
 import type { MenuItem, MenuProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
-import { onClickOutside } from "@vueuse/core";
-import { computed, nextTick, onUnmounted, provide, useId, useSlots, useTemplateRef, watch } from "vue";
+import { computed, nextTick, provide, shallowRef, useId, useSlots, useTemplateRef, watch } from "vue";
+import { usePopup } from "../../composables/internal/sdk/usePopup";
 import { useMenu } from "../../composables/menu";
 import { createChangeDetails, resolveAction } from "../../utils/changeEvent";
-import { useDismissableLayer } from "../../utils/dismissableLayer";
-import { useFloatingPosition } from "../../utils/floatingPosition";
-import { useFocusBranch } from "../../utils/focusScope";
 import { MENU_CONTEXT_KEY } from "./context";
 import MenuPanel from "./MenuPanel.vue";
 import { getMenuItemValue as getItemValue, normalizeMenuItems as normalizeItems, useMenuActions } from "./useMenuActions";
@@ -34,34 +31,34 @@ const emit = defineEmits<{
 }>();
 
 const model = defineModel<boolean>({ default: false });
-const { isOpen, open: _open, close: _close, toggle: _toggle } = useMenu(model);
+const { isOpen, open: _open, close: _close } = useMenu(model);
+const rootRef = useTemplateRef<HTMLElement>("rootRef");
+const contentRef = useTemplateRef<HTMLElement>("contentRef");
+const openingTrigger = shallowRef<HTMLElement | null>(null);
+
+function getTrigger() {
+  const root = rootRef.value;
+  if (openingTrigger.value && root?.contains(openingTrigger.value)) return openingTrigger.value;
+  return root?.querySelector<HTMLElement>('[aria-haspopup="menu"]:not(.akaza-menu-submenu-trigger)') ?? null;
+}
 
 function handleChange(nextOpen: boolean, reason: string, event?: Event) {
+  if (nextOpen === isOpen.value) return;
+  reason = reason === "escape-key" ? "escape" : reason === "outside-press" ? "outside-click" : reason;
   const changeEvent = createChangeDetails(reason, event);
   emit("open-change", nextOpen, changeEvent.details);
   if (changeEvent.canceled()) return;
+  if (nextOpen) {
+    const target = event?.currentTarget;
+    openingTrigger.value = target instanceof HTMLElement && rootRef.value?.contains(target)
+      ? target
+      : getTrigger();
+  }
   nextOpen ? _open() : _close();
 }
 
-function open(reasonOrEvent?: string | Event, event?: Event) {
-  const details = resolveAction(reasonOrEvent, event);
-  handleChange(true, details.reason, details.event);
-}
-function close(reasonOrEvent?: string | Event, event?: Event) {
-  const details = resolveAction(reasonOrEvent, event);
-  handleChange(false, details.reason, details.event);
-}
-function toggle(reasonOrEvent?: string | Event, event?: Event) {
-  const details = resolveAction(reasonOrEvent, event);
-  handleChange(!isOpen.value, details.reason, details.event);
-}
-
 const menuId = useId();
-const rootRef = useTemplateRef<HTMLElement>("rootRef");
-const contentRef = useTemplateRef<HTMLElement>("contentRef");
-useFocusBranch(contentRef);
 const panelRef = useTemplateRef<InstanceType<typeof MenuPanel>>("panelRef");
-const { layerOrder, register, unregister } = useDismissableLayer((event?: KeyboardEvent) => close("escape", event));
 
 // ── Normalize items to groups ────────────────────────────────────────────────
 
@@ -71,54 +68,47 @@ const normalizedGroups = computed(() => normalizeItems(items));
 
 // ── Positioning ──────────────────────────────────────────────────────────────
 
-const localPositionStyle = computed(() => {
-  const offset = `${sideOffset}px`;
-  const s: Record<string, string> = {};
-
-  if (side === "bottom") s.top = `calc(100% + ${offset})`;
-  else if (side === "top") s.bottom = `calc(100% + ${offset})`;
-  else if (side === "right") s.left = `calc(100% + ${offset})`;
-  else if (side === "left") s.right = `calc(100% + ${offset})`;
-
-  if (side === "top" || side === "bottom") {
-    if (align === "start") s.left = "0";
-    else if (align === "end") s.right = "0";
-    else {
-      s.left = "50%";
-      s.transform = "translateX(-50%)";
-    }
-  } else {
-    if (align === "start") s.top = "0";
-    else if (align === "end") s.bottom = "0";
-    else {
-      s.top = "50%";
-      s.transform = "translateY(-50%)";
-    }
-  }
-
-  return s;
-});
-
-const { style: fixedPositionStyle } = useFloatingPosition({
-  reference: rootRef,
-  floating: contentRef,
-  active: () => isOpen.value && teleport !== false,
+const popup = usePopup({
+  kind: "menu",
+  open: isOpen,
+  content: contentRef,
+  // Include other trigger-slot controls without changing placement or return focus.
+  trigger: () => getTrigger() ? rootRef.value : null,
+  anchor: getTrigger,
+  initialFocus: "none",
+  finalFocus: getTrigger,
   side: () => side,
   align: () => align,
   sideOffset: () => sideOffset,
-  strategy: "fixed",
-  collisionPadding: 4,
-  flip: false,
+  collisionPadding: () => 4,
   cssVarPrefix: "akaza-menu",
+  constrainSize: true,
+  transition: () => "akaza-menu",
+  request: handleChange,
 });
-const positionStyle = computed(() =>
-  teleport === false ? localPositionStyle.value : fixedPositionStyle.value,
-);
+const { present, contentAttrs, triggerAttrs, actualSide, actualAlign } = popup;
 const layeredPositionStyle = computed(() => ({
-  ...positionStyle.value,
-  ...(teleport !== false && { transform: undefined, transformOrigin: undefined }),
-  "--akaza-layer-order": String(layerOrder.value),
+  ...popup.style.value,
+  transform: undefined,
+  transformOrigin: undefined,
+  "--akaza-layer-order": String(popup.layerOrder.value),
 }));
+
+function open(reasonOrEvent?: string | Event, event?: Event) {
+  const details = resolveAction(reasonOrEvent, event);
+  const target = details.event?.currentTarget;
+  if (target instanceof HTMLElement && rootRef.value?.contains(target)) openingTrigger.value = target;
+  popup.setOpen(true, details.reason, details.event);
+}
+function close(reasonOrEvent?: string | Event, event?: Event) {
+  const details = resolveAction(reasonOrEvent, event);
+  popup.setOpen(false, details.reason, details.event);
+}
+function toggle(reasonOrEvent?: string | Event, event?: Event) {
+  const details = resolveAction(reasonOrEvent, event);
+  if (isOpen.value) close(details.reason, details.event);
+  else open(details.reason, details.event);
+}
 
 
 watch(isOpen, async (val, _previous, cleanup) => {
@@ -127,21 +117,12 @@ watch(isOpen, async (val, _previous, cleanup) => {
   if (val) {
     await nextTick();
     if (canceled) return;
-    register();
     const first = panelRef.value?.getItems()?.[0];
     if (first) panelRef.value?.highlightItem(first);
-  } else {
-    unregister();
   }
 }, { immediate: true });
 
-onUnmounted(unregister);
-
 // ── Dismiss ──────────────────────────────────────────────────────────────────
-
-onClickOutside(rootRef, (e) => {
-  if (isOpen.value) close("outside-click", e);
-}, { ignore: [contentRef] });
 
 // Boundary keydown on the content wrapper — prevents menu keyboard events
 // from leaking to the rest of the page (e.g. scrolling, triggering other components).
@@ -158,11 +139,6 @@ const NAV_KEYS = new Set([
 function onContentKeydown(e: KeyboardEvent) {
   if (NAV_KEYS.has(e.key) || (e.key.length === 1 && !e.ctrlKey && !e.metaKey)) {
     e.stopPropagation();
-  }
-  // Escape at the content boundary = close the entire menu
-  if (e.key === "Escape") {
-    e.preventDefault();
-    close("escape", e);
   }
 }
 
@@ -200,6 +176,7 @@ provide(MENU_CONTEXT_KEY, {
 // ── Trigger props for ARIA ───────────────────────────────────────────────────
 
 const triggerProps = computed(() => ({
+  ...triggerAttrs.value,
   "aria-haspopup": "menu" as const,
   "aria-expanded": isOpen.value,
   "aria-controls": isOpen.value ? menuId : undefined,
@@ -211,6 +188,9 @@ defineExpose({ open, close, toggle });
 <template>
   <div
     ref="rootRef"
+    :role="getTrigger() ? 'group' : undefined"
+    :aria-labelledby="getTrigger()?.getAttribute('aria-labelledby') || getTrigger()?.id || undefined"
+    :aria-label="getTrigger()?.getAttribute('aria-label') || getTrigger()?.textContent?.trim()"
     :dir="dir"
     :class="ui?.root"
     :data-akaza-state="isOpen ? 'open' : 'closed'"
@@ -226,43 +206,45 @@ defineExpose({ open, close, toggle });
     />
 
     <Teleport v-if="teleport !== false" :to="typeof teleport === 'string' ? teleport : 'body'">
-      <Transition name="akaza-menu">
-        <component
-          :is="as"
-          v-if="isOpen"
-          :id="menuId"
-          ref="contentRef"
-          :class="ui?.content"
-          :style="layeredPositionStyle"
-          :data-akaza-side="side"
-          :data-akaza-align="align"
-          data-akaza-state="open"
-          class="akaza-menu-content"
-          @keydown="onContentKeydown"
-        >
-          <MenuPanel ref="panelRef" :items="normalizedGroups" />
-        </component>
-      </Transition>
+      <component
+        :is="as"
+        v-if="present"
+        v-bind="contentAttrs"
+        :id="menuId"
+        ref="contentRef"
+        role="presentation"
+        :dir="dir"
+        :class="ui?.content"
+        :style="layeredPositionStyle"
+        :data-akaza-side="actualSide"
+        :data-akaza-align="actualAlign"
+        :data-akaza-state="isOpen ? 'open' : 'closed'"
+        class="akaza-menu-content"
+        @keydown="onContentKeydown"
+      >
+        <MenuPanel ref="panelRef" :items="normalizedGroups" :open="isOpen" />
+      </component>
     </Teleport>
 
     <template v-if="teleport === false">
-      <Transition name="akaza-menu">
-        <component
-          :is="as"
-          v-if="isOpen"
-          :id="menuId"
-          ref="contentRef"
-          :class="ui?.content"
-          :style="layeredPositionStyle"
-          :data-akaza-side="side"
-          :data-akaza-align="align"
-          data-akaza-state="open"
-          class="akaza-menu-content"
-          @keydown="onContentKeydown"
-        >
-          <MenuPanel ref="panelRef" :items="normalizedGroups" />
-        </component>
-      </Transition>
+      <component
+        :is="as"
+        v-if="present"
+        v-bind="contentAttrs"
+        :id="menuId"
+        ref="contentRef"
+        role="presentation"
+        :dir="dir"
+        :class="ui?.content"
+        :style="layeredPositionStyle"
+        :data-akaza-side="actualSide"
+        :data-akaza-align="actualAlign"
+        :data-akaza-state="isOpen ? 'open' : 'closed'"
+        class="akaza-menu-content"
+        @keydown="onContentKeydown"
+      >
+        <MenuPanel ref="panelRef" :items="normalizedGroups" :open="isOpen" />
+      </component>
     </template>
   </div>
 </template>

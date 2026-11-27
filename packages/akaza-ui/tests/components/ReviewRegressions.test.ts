@@ -1,9 +1,9 @@
 import { CalendarDate, HebrewCalendar, Time } from "@internationalized/date";
 import { mount } from "@vue/test-utils";
 import { afterEach, describe, expect, it } from "vitest";
-import { defineComponent, h, nextTick, ref, Teleport } from "vue";
-import { Checkbox, CheckboxGroup, Combobox, DateField, DateRangeField, Dialog, Editable, Field, Form, Input, Listbox, Meter, MonthPicker, NumberField, PinInput, Progress, Rating, Select, Slider, Switch, TagsInput, TimeField, TimeRangeField, ToggleGroup, Toolbar } from "@/index";
-import { useFocusBranch } from "@/utils/focusScope";
+import { defineComponent, h, nextTick, ref } from "vue";
+import { Checkbox, CheckboxGroup, Combobox, DateField, DateRangeField, Dialog, Editable, Field, Form, Input, Listbox, Meter, MonthPicker, NumberField, PinInput, Popover, Progress, Rating, Select, Slider, Switch, TagsInput, TimeField, TimeRangeField, ToggleGroup, Toolbar } from "@/index";
+import { installPopupTestEnvironment, settlePopup } from "./popover/popupTestEnvironment";
 
 const mounted: Array<{ unmount: () => void }> = [];
 function track<T extends { unmount: () => void }>(wrapper: T): T {
@@ -15,6 +15,7 @@ afterEach(() => {
   document.body.innerHTML = "";
   document.body.style.overflow = "";
 });
+installPopupTestEnvironment();
 
 describe("review regressions", () => {
   it("uses the same clamped Progress value for ARIA and visual state", async () => {
@@ -149,17 +150,19 @@ describe("review regressions", () => {
   });
 
   it("keeps a modal's logically owned portal focusable", async () => {
-    const Branch = defineComponent({
-      setup() {
-        const input = ref<HTMLElement | null>(null);
-        useFocusBranch(input);
-        return () => h(Teleport, { to: "body" }, h("input", { ref: input, id: "owned-input" }));
-      },
+    const ChildPopup = defineComponent({
+      components: { Popover },
+      template: `<Popover teleport="body" :transition="false">
+        <template #trigger="{ toggle, triggerProps }"><button id="child-trigger" v-bind="triggerProps" @click="toggle">Edit draft</button></template>
+        <template #content><input id="owned-input" aria-label="Draft"></template>
+      </Popover>`,
     });
-    track(mount(Dialog, { props: { modelValue: true }, slots: { body: () => [h("button", "inside"), h(Branch)] }, attachTo: document.body }));
-    await nextTick();
-    await nextTick();
+    track(mount(Dialog, { props: { modelValue: true, transition: false }, slots: { body: () => [h("button", "inside"), h(ChildPopup)] }, attachTo: document.body }));
+    await settlePopup();
+    document.getElementById("child-trigger")!.click();
+    await settlePopup();
     const input = document.getElementById("owned-input")!;
+    expect(input.closest(".akaza-popover-content")?.parentElement).toBe(document.body);
     input.focus();
     expect(document.activeElement).toBe(input);
     expect(input.closest('[aria-hidden="true"]')).toBeNull();

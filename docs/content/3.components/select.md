@@ -9,7 +9,9 @@ navigation:
 
 Popup placement flips when preferred side lacks room, clamps to viewport, and follows anchor/content resize and ancestor scrolling.
 
-Set `teleport="body"` inside a scrolling or overflow-hidden container so the options are not clipped. Inline rendering remains the default.
+The popup uses the browser's native top layer when available, including when rendered inline. `teleport` controls its DOM parent; inline rendering remains the default. The hidden native select stays in the field's form.
+
+`open-change` can cancel any opening or dismissal request. A controlled parent that refuses the update keeps the popup interactive, preserves focus, and does not mark its content inert. Focus returns after an accepted selection or Escape close, not after an outside press.
 
 Use `autocomplete` to filter the list. Use [Combobox](/components/combobox) when the text input is the main control.
 
@@ -100,11 +102,13 @@ const projects = [
 ```
 ::
 
-Use a CSS selector for another portal target, or `:teleport="false"` to keep the popup inline. The target must exist when the popup renders. Keep targets outside clipping ancestors. Portaled options use fixed positioning and keep the trigger's width, limited to the viewport.
+Use a CSS selector for another portal target, or `:teleport="false"` to keep the popup inline. The target must exist when the popup renders. Inline and portaled options use fixed positioning and keep the trigger's width, limited to the available space. Native top-layer presentation escapes clipping without changing the DOM parent; a portal also avoids clipping in the fallback presentation.
 
 Style portaled options through `ui.content`, `ui.option`, and the other popup parts. CSS selectors scoped beneath the Select root do not reach a portaled popup. Tab and Shift+Tab close a portaled search and continue from the trigger's position in the page.
 
 ### Multiple selection
+
+Multiple selection toggles one value without dropping other selected values, including disabled or currently filtered-out options. Option values are normalized to strings; use Listbox or Combobox when numeric and string identity must remain distinct. Native form submission includes each selected enabled option under the same field name.
 
 Set `multiple` and bind `v-model` to `string[]`. Selected options stay open so users can toggle more than one item.
 
@@ -355,12 +359,18 @@ Native `data-akaza-invalid` appears after interaction or invalid submit. Control
 
 ### Keyboard
 
+Type on the focused trigger to highlight an enabled option without selecting it. Matching ignores case and accents. Repeat a letter to cycle matches; the query clears after 500ms. Space continues an active query, otherwise it opens the list or selects the highlighted option. Autocomplete text uses the search input instead.
+
 Using the popup scrollbar or mouse wheel keeps the list open. After a scrollbar gesture moves focus away, focus returns to the trigger, or to the search input when autocomplete is enabled. Moving focus to an outside control or clicking outside still closes the popup.
+
+Opening with an arrow highlights the selected enabled option, or the first enabled result. Subsequent arrows move highlight without selecting. Set `:loop="false"` to stop at either edge. Home and End target the first and last enabled result, including when opening from the trigger. Only the options viewport scrolls.
+
+Navigation and activation ignore prevented events, IME composition (including legacy key code 229), and Ctrl/Meta/Alt combinations. Disabled native fieldsets also block these actions. Search and open requests must be accepted before they can replace the active target.
 
 | Key | Behavior |
 |-----|----------|
 | `Enter` / `Space` | Open select, or select/toggle highlighted option. |
-| `ArrowDown` / `ArrowUp` | Open select and move highlight. |
+| `ArrowDown` / `ArrowUp` | Open at selected/first enabled option; move highlight when open. |
 | `Home` / `End` | Move highlight to first/last enabled option. |
 | `Escape` | Close popup. |
 | printable character | Typeahead to matching option label. |

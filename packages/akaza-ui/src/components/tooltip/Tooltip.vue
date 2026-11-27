@@ -1,10 +1,8 @@
 <script setup lang="ts">
 import type { TooltipProps } from ".";
-import { computed, nextTick, onUnmounted, ref, useId, useTemplateRef, watch } from "vue";
-import { useTooltip } from "../../composables/tooltip";
-import { useDismissableLayer } from "../../utils/dismissableLayer";
-import { useFloatingPosition } from "../../utils/floatingPosition";
-import { useFocusBranch } from "../../utils/focusScope";
+import { computed, useId, useTemplateRef } from "vue";
+import { usePopup } from "../../composables/internal/sdk/usePopup";
+import { resolveAction } from "../../utils/changeEvent";
 
 const {
   direction = "top",
@@ -18,61 +16,42 @@ const {
 } = defineProps<TooltipProps>();
 
 const model = defineModel<boolean>({ default: false });
-const { open: _open, close: _close } = useTooltip(model, {
-  get delayDuration() { return delayDuration; },
-  get closeDelay() { return closeDelay; },
-});
-
-function open() { if (!disabled) _open(); }
-function close() { if (!disabled || model.value) _close(); }
 
 const tooltipId = useId();
 const triggerRef = useTemplateRef<HTMLElement>("triggerRef");
 const contentRef = useTemplateRef<HTMLElement>("contentRef");
-useFocusBranch(contentRef);
-
-const { style: positionStyle, actualSide: actualDirection, update: computePosition } = useFloatingPosition({
-  reference: triggerRef,
-  floating: contentRef,
-  active: model,
+const arrowRef = useTemplateRef<HTMLElement>("arrowRef");
+const { present, contentAttrs, triggerAttrs, arrowAttrs, style, actualSide: actualDirection, layerOrder, setOpen } = usePopup({
+  kind: "tooltip",
+  open: model,
+  content: contentRef,
+  contentId: tooltipId,
+  trigger: () => triggerRef.value?.querySelector<HTMLElement>("button,a[href],input,select,textarea,[tabindex]") ?? triggerRef.value,
+  anchor: () => triggerRef.value,
+  initialFocus: "none",
+  finalFocus: "none",
+  disabled: () => disabled,
+  delay: () => delayDuration,
+  closeDelay: () => closeDelay,
   side: () => direction,
-  align: "center",
-  sideOffset: 8,
-  collisionPadding: 4,
-  fallbackSides: ["top", "bottom", "right", "left"],
-  strategy: "fixed",
+  align: () => "center",
+  sideOffset: () => 8,
+  collisionPadding: () => 4,
+  arrow: arrowRef,
   cssVarPrefix: "akaza-tooltip",
+  transition: () => transition,
+  request: next => { if (!disabled || !next) model.value = next; },
 });
-const posStyle = computed(() => ({ ...positionStyle.value, transform: undefined, transformOrigin: undefined }));
+const posStyle = computed(() => ({ ...style.value, transform: undefined, transformOrigin: undefined }));
 
-const posReady = ref(false);
-const { layerOrder, register, unregister } = useDismissableLayer((event?: KeyboardEvent) => {
-  event?.preventDefault();
-  _close();
-  model.value = false;
-});
-
-watch(model, async (val, _old, cleanup) => {
-  if (typeof window === "undefined") return;
-  let canceled = false;
-  cleanup(() => { canceled = true; });
-  if (val) {
-    posReady.value = false;
-    await nextTick();
-    if (canceled) return;
-    register();
-    computePosition();
-    posReady.value = true;
-  } else {
-    posReady.value = false;
-    unregister();
-  }
-}, { immediate: true });
-
-onUnmounted(unregister);
+function close(reasonOrEvent?: string | Event, event?: Event) {
+  const details = resolveAction(reasonOrEvent, event);
+  setOpen(false, details.reason, details.event);
+}
 
 const triggerProps = computed(() => ({
-  "aria-describedby": model.value ? tooltipId : undefined,
+  "data-slot": triggerAttrs.value["data-slot"],
+  "aria-describedby": triggerAttrs.value["aria-describedby"],
   "data-akaza-state": model.value ? "open" : "closed",
 }));
 </script>
@@ -81,14 +60,10 @@ const triggerProps = computed(() => ({
   <span :class="ui?.root" class="akaza-tooltip-root">
     <span
       ref="triggerRef"
-      :aria-describedby="model ? tooltipId : undefined"
+      :aria-describedby="triggerAttrs['aria-describedby']"
       :data-akaza-state="model ? 'open' : 'closed'"
       :class="ui?.trigger"
       class="akaza-tooltip-trigger"
-      @mouseenter="open"
-      @mouseleave="close"
-      @focusin="open"
-      @focusout="close"
     >
       <slot
         name="trigger"
@@ -100,32 +75,28 @@ const triggerProps = computed(() => ({
       :to="typeof teleport === 'string' ? teleport : 'body'"
       :disabled="teleport === false"
     >
-      <Transition
-        v-bind="typeof transition === 'string' ? { name: transition } : {}"
-        :css="transition !== false"
+      <div
+        v-if="present"
+        v-bind="contentAttrs"
+        :id="tooltipId"
+        ref="contentRef"
+        role="tooltip"
+        :class="ui?.content"
+        :data-akaza-state="model ? 'open' : 'closed'"
+        :data-akaza-side="actualDirection"
+        :style="[posStyle, { '--akaza-layer-order': layerOrder }]"
+        class="akaza-tooltip-content"
       >
-        <div
-          v-if="model"
-          :id="tooltipId"
-          ref="contentRef"
-          role="tooltip"
-          :class="ui?.content"
-          data-akaza-state="open"
-          :data-akaza-side="actualDirection"
-          :style="[posStyle, { '--akaza-layer-order': layerOrder }, posReady ? {} : { visibility: 'hidden' }]"
-          class="akaza-tooltip-content"
-          @mouseenter="open"
-          @mouseleave="close"
-        >
-          <slot name="content" :close="close" />
-          <span
-            v-if="arrow"
-            :class="ui?.arrow"
-            class="akaza-tooltip-arrow"
-            aria-hidden="true"
-          />
-        </div>
-      </Transition>
+        <slot name="content" :close="close" />
+        <span
+          v-if="arrow"
+          v-bind="arrowAttrs"
+          ref="arrowRef"
+          :class="ui?.arrow"
+          class="akaza-tooltip-arrow"
+          aria-hidden="true"
+        />
+      </div>
     </Teleport>
   </span>
 </template>
@@ -160,32 +131,24 @@ const triggerProps = computed(() => ({
 
   .akaza-tooltip-content[data-akaza-side="top"] .akaza-tooltip-arrow {
     bottom: -4px;
-    left: 50%;
-    margin-left: -4px;
     border-top: none;
     border-left: none;
   }
 
   .akaza-tooltip-content[data-akaza-side="bottom"] .akaza-tooltip-arrow {
     top: -4px;
-    left: 50%;
-    margin-left: -4px;
     border-bottom: none;
     border-right: none;
   }
 
   .akaza-tooltip-content[data-akaza-side="left"] .akaza-tooltip-arrow {
     right: -4px;
-    top: 50%;
-    margin-top: -4px;
     border-top: none;
     border-right: none;
   }
 
   .akaza-tooltip-content[data-akaza-side="right"] .akaza-tooltip-arrow {
     left: -4px;
-    top: 50%;
-    margin-top: -4px;
     border-bottom: none;
     border-left: none;
   }

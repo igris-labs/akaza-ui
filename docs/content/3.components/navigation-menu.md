@@ -230,7 +230,7 @@ Pass the containing sidebar's `collapsed` slot value to Navigation Menu. In auto
 </Sidebar>
 ```
 
-Use `content-mode="inline"` or `content-mode="flyout"` to override automatic presentation. Collapsed vertical flyouts teleport to `body` by default so a scrollable sidebar cannot clip them.
+Use `content-mode="inline"` or `content-mode="flyout"` to override automatic presentation. Collapsed vertical flyouts teleport to `body` by default. Flyouts also use the browser's top layer when supported, so scrolling containers do not clip them. The `teleport` prop still controls their DOM parent. Inline navigation stays in normal flow.
 
 ### Custom flyout items
 
@@ -246,6 +246,18 @@ Use `#item` for richer content while the component keeps generated list and link
   </NavigationMenu>
 </template>
 ```
+
+## Flyout focus
+
+Flyout triggers use one Tab stop. Arrow keys move focus without selecting a destination; horizontal movement follows `dir`. `Home` and `End` use item order. Disabled entries, labels, and separators are skipped. Keep item values stable when reordering.
+
+```vue
+<template>
+  <NavigationMenu v-model="selected" :items="items" dir="rtl" content-mode="flyout" aria-label="Workspace navigation" />
+</template>
+```
+
+Items with `to` use the registered `RouterLink`. Set `as` to your own link component when using a different wrapper, such as NuxtLink. Focus targets the rendered element; keyboard focus alone does not route. The inline navigation mode keeps its separate nested-navigation keyboard behavior.
 
 ## API Reference
 
@@ -393,6 +405,8 @@ Use `#item` for richer content while the component keeps generated list and link
 Flyouts use side-aware transitions. Switching triggers animates both panels and resizes the viewport. Inline disclosure height uses `--akaza-navigation-menu-inline-duration`. Change flyout motion with `--akaza-navigation-menu-duration`, `--akaza-navigation-menu-panel-duration`, `--akaza-navigation-menu-resize-duration`, and `--akaza-navigation-menu-slide-distance`. Reduced-motion mode removes visible movement.
 
 ### Keyboard
+
+Flyout triggers support case- and accent-insensitive typeahead. Repeat a letter to cycle enabled matches. The query clears after 500ms. Space continues an active query; typing does not select or navigate to an item. Inline navigation keeps its existing arrow-key behavior.
 
 | Key                               | Behavior                                                                                                                                                              |
 | --------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

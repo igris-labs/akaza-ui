@@ -209,6 +209,8 @@ Previous/next move by calendar year, not a fixed twelve months. This includes ca
 
 ### Keyboard
 
+Canceled or parent-refused page changes keep the current focus and tab stop. If an external page change removes the focused cell, focus recovers on the new page without taking focus from another control. IME composition and Ctrl, Command, or Alt shortcuts do not navigate the grid.
+
 | Key | Behavior |
 |-----|----------|
 | `ArrowLeft` / `ArrowRight` | Moves one month, reversed in RTL. |

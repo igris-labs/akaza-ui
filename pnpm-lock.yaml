@@ -128,6 +128,9 @@ importers:
       typescript:
         specifier: ^6.0.2
         version: 6.0.2
+      vite:
+        specifier: 7.3.1
+        version: 7.3.1(@types/node@24.12.0)(jiti@2.6.1)(lightningcss@1.32.0)(terser@5.46.1)(yaml@2.8.2)
       vue-tsc:
         specifier: ^3.2.6
         version: 3.2.6(typescript@6.0.2)
@@ -140,6 +143,9 @@ importers:
       '@tanstack/vue-table':
         specifier: ^9.1.2
         version: 9.1.2(vue@3.5.30(typescript@5.9.3))
+      '@ui-sdk/core':
+        specifier: 0.1.0-beta.17
+        version: 0.1.0-beta.17
       '@vueuse/core':
         specifier: ^13.1.0
         version: 13.9.0(vue@3.5.30(typescript@5.9.3))
@@ -4224,6 +4230,9 @@ packages:
   '@typescript-eslint/visitor-keys@8.57.2':
     resolution: {integrity: sha512-zhahknjobV2FiD6Ee9iLbS7OV9zi10rG26odsQdfBO/hjSzUQbkIYgda+iNKK1zNiW2ey+Lf8MU5btN17V3dUw==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
+
+  '@ui-sdk/core@0.1.0-beta.17':
+    resolution: {integrity: sha512-wBWNqT0Qf1sE6fqD1XuBnSGBFcY6+cek1z7rKl/r4j2bsv2or9i7z44PLy0J9hmflm3IJ5MLW0P4ur2H9BCIvg==}
 
   '@ungap/structured-clone@1.3.0':
     resolution: {integrity: sha512-WmoN8qaIAo7WTYWbAZuG8PYEhn5fkz7dZrqTBZ7dtt//lL2Gwms1IcnQ5yHqjDfX8Ft5j4YzDM23f87zBfDe9g==}
@@ -13641,6 +13650,8 @@ snapshots:
     dependencies:
       '@typescript-eslint/types': 8.57.2
       eslint-visitor-keys: 5.0.1
+
+  '@ui-sdk/core@0.1.0-beta.17': {}
 
   '@ungap/structured-clone@1.3.0': {}
 

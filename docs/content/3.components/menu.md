@@ -302,18 +302,26 @@ Changes to `ui`, radio values, and close-on-select settings remain reactive in n
 | `submenuTrigger` | `akaza-menu-submenu-trigger` | `data-akaza-state`, `data-akaza-disabled`, `data-akaza-highlighted` |
 | `submenuContent` | `akaza-menu-submenu-content` | `data-akaza-submenu`, `data-akaza-side`, `data-akaza-align` |
 
-Submenus expose `--akaza-menu-submenu-anchor-width`, `--akaza-menu-submenu-anchor-height`, `--akaza-menu-submenu-available-width`, `--akaza-menu-submenu-available-height`, and `--akaza-menu-submenu-transform-origin`. Use `data-akaza-side` for the resolved placement. Menus and their submenus use the shared floating-layer base, `--akaza-z-layer-base` (default `1200`); `--akaza-z-menu` overrides their z-index.
+Submenus expose `--akaza-menu-submenu-anchor-width`, `--akaza-menu-submenu-anchor-height`, `--akaza-menu-submenu-available-width`, `--akaza-menu-submenu-available-height`, and `--akaza-menu-submenu-transform-origin`. Use `data-akaza-side` for the resolved placement.
+
+### Popup Presentation
+
+The SDK owns native top-layer presentation, nesting, dismissal, positioning, and exit presence. `teleport` changes the DOM parent, not top-layer ordering: supported browsers let inline menus escape ancestor clipping too. Keep popup styles in `ui.content` and `ui.submenuContent`; descendant selectors do not cross Teleport.
+
+The existing `akaza-menu-enter-*` and `akaza-menu-leave-*` CSS hooks remain. Closing content stays mounted until its SDK exit finishes and exposes `data-akaza-state="closed"` during that exit. The shared popup adapter allocates `--akaza-layer-order` for CSS fallback stacking, including nested panels. `--akaza-z-layer-base` and `--akaza-z-menu` remain fallback styling hooks, not controls for native top-layer order or SDK dismissal.
+
+Controls beside the main trigger in `#trigger` remain inside the menu's interaction boundary. The root groups those controls under the trigger's accessible name; positioning and SDK return focus still use the actual trigger button.
 
 ### Positioning Variables
 
-These variables are available on teleported root panels (`teleport="body"` or another target). Inline root panels keep their existing CSS-based positioning. Submenus use the separate `--akaza-menu-submenu-*` variables listed above.
+These variables are available on inline and teleported root panels. SDK positioning follows the trigger, flips at viewport edges, and uses fixed coordinates in both cases. `teleport` controls the DOM parent, not the positioning strategy. Submenus use the separate `--akaza-menu-submenu-*` variables listed above.
 
 | Variable | Meaning |
 | --- | --- |
 | `--akaza-menu-anchor-width` | Anchor width in pixels. |
 | `--akaza-menu-anchor-height` | Anchor height in pixels. |
-| `--akaza-menu-available-width` | Viewport width after collision padding. |
-| `--akaza-menu-available-height` | Viewport height after collision padding. |
+| `--akaza-menu-available-width` | Available width at the resolved placement. |
+| `--akaza-menu-available-height` | Available height at the resolved placement. |
 | `--akaza-menu-transform-origin` | Origin matching the resolved side and alignment. |
 
 ### Keyboard
@@ -326,6 +334,13 @@ These variables are available on teleported root panels (`teleport="body"` or an
 | `ArrowRight` | Opens focused submenu and moves into it; reversed in RTL. |
 | `ArrowLeft` | Closes submenu and restores submenu-trigger focus; reversed in RTL. |
 | `Escape` | Closes submenu level or whole menu. |
-| Printable characters | Typeahead focuses first matching item within 500 ms buffer. |
+| `Tab` / `Shift+Tab` | Leaves the menu through SDK popup focus handling; focus is not trapped. |
+| Printable characters | Focuses a matching enabled item. Repeating a letter cycles matches. |
 
 Opening focuses first enabled item. Trigger keyboard activation comes from trigger element supplied by user; apply `triggerProps` and use a native button.
+
+Typeahead ignores case and accents. The query clears after 500ms. Space continues an active query; otherwise it activates the focused item. Typing alone does not select an item.
+
+Closing from the keyboard returns focus to the trigger, unless the selected action moves focus elsewhere. Clicking outside keeps focus on the outside control.
+
+Each panel has its own tab stop and highlight, including nested panels. Use stable item values when replacing or reordering data. Items without values use their labels; repeated labels remain separate rows. Changing a checkbox or radio value keeps that row focused. IME composition and Ctrl/Meta/Alt shortcuts do not move or activate menu items.

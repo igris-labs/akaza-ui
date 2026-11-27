@@ -319,7 +319,7 @@ test("pagination, navigation menu, menubar, and toolbar support both modalities"
   await expect(page.locator('.akaza-navigation-menu-content[data-akaza-side="right"]')).toBeVisible();
   await page.keyboard.press("Escape");
 
-  const menubar = section(page, "menubar").getByRole("menubar", { name: "Editor menu" });
+  const menubar = section(page, "menubar").getByRole("menubar", { name: "Editor menu", exact: true });
   const file = menubar.getByRole("menuitem", { name: "File", exact: true });
   await file.scrollIntoViewIfNeeded();
   await file.focus();

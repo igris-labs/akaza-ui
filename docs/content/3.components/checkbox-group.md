@@ -187,6 +187,8 @@ The group uses one native validation proxy. A required empty group remains inval
 
 Field metadata and validation apply to the group. Parent select-all changes enabled values and preserves disabled selections. Native reset restores the initial selection unless canceled.
 
+Numeric and string values stay distinct (`1` and `"1"` can both be selected). `allValues` controls the parent's scope, including values without a rendered option. Values outside that scope remain selected. Canceling a group change or refusing a controlled update keeps both the parent and child checkbox state derived from the accepted model. `required` validates an empty group without preventing a clear request.
+
 ## API Reference
 
 ### Props

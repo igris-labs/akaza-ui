@@ -199,11 +199,16 @@ describe("data table", () => {
     expect(wrapper.emitted("update:columnSizing")?.[0]?.[0]).toMatchObject({ name: 160 });
 
     const columnHandle = wrapper.get("th[data-akaza-column='name'] .akaza-data-table-column-reorder-handle");
+    await columnHandle.trigger("keydown", { key: " " });
     await columnHandle.trigger("keydown", { key: "ArrowRight" });
+    expect(wrapper.emitted("update:columnOrder")).toBeUndefined();
+    await columnHandle.trigger("keydown", { key: "Enter" });
     expect(wrapper.emitted("update:columnOrder")?.[0]?.[0]).toEqual(["reorder", "role", "name"]);
 
     const rowHandle = wrapper.findAll(".akaza-data-table-reorder-handle")[0]!;
+    await rowHandle.trigger("keydown", { key: " " });
     await rowHandle.trigger("keydown", { key: "ArrowDown" });
+    await rowHandle.trigger("keydown", { key: "Enter" });
     expect(wrapper.emitted("update:rowOrder")?.[0]?.[0]).toEqual([2, 1, 3]);
   });
 

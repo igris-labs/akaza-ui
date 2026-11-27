@@ -16,6 +16,8 @@ navigation:
 
 The viewport and each toast root remain library-owned so live-region, queue, swipe, limit, and lifecycle behavior cannot be removed accidentally.
 
+Pointer tracking uses the shared SDK drag binding. Move events are sampled once per animation frame; release uses the final pointer coordinates, even without a preceding move. Pointer cancellation or lost capture snaps back without dismissal. Swiping pauses the timeout until release. Interactive content remains clickable and does not start a swipe.
+
 ## Usage
 
 ::component-preview
@@ -141,6 +143,10 @@ const manager = provideToastManager(createToastManager({ duration: 6000 }));
 
 Call `useToast()` during component setup and use the returned manager in event handlers. Server calls outside setup require a manager because Akaza UI does not store toast data in process-global state. A provided manager takes precedence over the default manager.
 
+The manager starts countdowns when a toast is added, even without a mounted viewport. `limit` controls visibility, not countdowns. Closing keeps a toast in the queue during `removeDelay`; `remove()` removes it immediately. Independent application and viewport pauses must all be released before a countdown resumes.
+
+The viewport uses the browser's top layer when supported and registers as persistent with SDK dismissal layers. It stays above later popups, remains usable while a modal is open, and does not dismiss the modal when pressed. Its DOM position still follows `teleport`. Existing `role`, `aria-live`, and `aria-atomic` attributes remain on toast roots; messages are not duplicated through a second announcer.
+
 Viewport padding is application styling. For example, pass `ui.viewport: 'w-[min(100vw,24rem)] p-4'` to keep notifications inset from screen edges.
 
 ## API Reference
@@ -173,7 +179,7 @@ Viewport padding is application styling. For example, pass `ui.viewport: 'w-[min
 |-------|---------|-------------|
 | `action-error` | `(error, toast)` | Action rejected or threw; toast remains open. |
 | `swipe-start` | `(toast, event)` | Swipe interaction started. |
-| `swipe-move` | `(toast, event)` | Pointer moved during swipe. |
+| `swipe-move` | `(toast, event)` | Latest pointer position, sampled once per frame; final release position is flushed before completion. |
 | `swipe-cancel` | `(toast, event)` | Swipe ended below threshold or was canceled. |
 | `swipe-end` | `(toast, event)` | Swipe crossed threshold and closed toast. |
 

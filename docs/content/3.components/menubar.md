@@ -96,6 +96,27 @@ Plain items without `children` are commands. Bind default `v-model` to control t
 />
 ```
 
+## Focus and direction
+
+Set `dir="rtl"` for right-to-left movement. Triggers keep their remembered tab stop by item value when reordered. Disabled triggers are skipped. From an open panel, the horizontal arrows move to the adjacent menu; a submenu's open/close keys take priority. Escape returns focus to the menu's trigger unless the close is canceled.
+
+```vue
+<script setup lang="ts">
+import { Menubar } from "akaza-ui";
+import { ref } from "vue";
+
+const open = ref<string | null>(null);
+const items = [
+  { value: "file", label: "File", children: [{ label: "New file" }] },
+  { value: "edit", label: "Edit", children: [{ label: "Undo" }] },
+];
+</script>
+
+<template>
+  <Menubar v-model="open" :items="items" dir="rtl" :loop="false" aria-label="Application menu" />
+</template>
+```
+
 ## API Reference
 
 ### Props
@@ -105,7 +126,7 @@ Plain items without `children` are commands. Bind default `v-model` to control t
 | `items` | `MenubarItem[]` | required | Top-level menu items. Items with `children` open panels. |
 | `loop` | `boolean` | `true` | Left/right focus wraps. |
 | `dir` | `"ltr" \| "rtl"` | `"ltr"` | Reverses horizontal arrow behavior for RTL. |
-| `teleport` | `string \| false` | `"body"` | Popup target. Set `false` for inline panels; ancestor overflow and stacking then apply. |
+| `teleport` | `string \| false` | `"body"` | Popup DOM target. Set `false` for inline panels; native top-layer presentation is unchanged. |
 | `disabled` | `boolean` | `false` | Disables the menubar. |
 | `closeOnSelect` | `boolean` | `true` | Closes after normal item selection. |
 | `radioValues` | `Record<string, string>` | — | State for radio groups inside panels. |
@@ -155,9 +176,13 @@ Popup transitions follow their placement side and last `120ms`. Set `--akaza-men
 
 ### Keyboard
 
+Typeahead works across top-level triggers and within each open panel. It ignores case and accents and skips disabled items. Repeat a letter to cycle matches. The query clears after 500ms. Space continues an active query instead of activating a command.
+
 Submenus use [Menu's viewport collision positioning](/components/menu#submenus). Horizontal arrows follow `dir` even when a submenu flips visually. Opening a submenu does not switch the top-level menu.
 
-Menubar panels join the shared floating-layer stack and teleport to `body` by default so ancestor clipping and stacking contexts do not trap them. Set `--akaza-z-layer-base` (default `1200`) globally to change its base or set `--akaza-z-menubar` on the popup to override its z-index. Use `ui.content` for popup styles; descendant selectors from the menubar root do not cross Teleport. Nested panels share Menu's styling hooks.
+The SDK owns native top-layer presentation, nesting, dismissal, positioning, and exit presence. Panels teleport to `body` by default; `:teleport="false"` changes the DOM parent without disabling native top-layer presentation. Use `ui.content` for popup styles; descendant selectors from the menubar root do not cross Teleport. Nested panels share Menu's styling hooks.
+
+Existing `akaza-menubar-enter-*` and `akaza-menubar-leave-*` transition classes remain. A closing panel keeps its last menu's items mounted until its exit finishes, with `data-akaza-state="closed"`. The shared popup adapter allocates `--akaza-layer-order` for CSS fallback stacking. `--akaza-z-layer-base` and `--akaza-z-menubar` remain fallback styling hooks, not controls for native top-layer order or SDK dismissal. A selected command may move focus elsewhere without the menubar taking it back.
 
 | Key | Behavior |
 |-----|----------|
@@ -169,3 +194,6 @@ Menubar panels join the shared floating-layer stack and teleport to `body` by de
 | `Home` / `End` | Focus first/last enabled top-level item. |
 | Character keys | Typeahead across top-level items. |
 | `Escape` | Close the open panel and return focus to its trigger. |
+| `Tab` / `Shift+Tab` | Leave the menu through SDK popup focus handling without trapping focus. |
+
+Panel navigation skips disabled items across groups. Each nested submenu owns its own tab stop and highlight. Checkbox and radio updates preserve the focused row when item values stay stable. Composition and Ctrl/Meta/Alt shortcuts do not navigate or activate panel items.

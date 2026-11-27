@@ -2,15 +2,16 @@
 import type { Slot } from "vue";
 import type { ComboboxModelValue, ComboboxOption, ComboboxProps, ComboboxValue } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
-import { computed, inject, onBeforeUnmount, onMounted, onUpdated, ref, useId, useSlots, useTemplateRef, watch } from "vue";
+import { isComposing } from "@ui-sdk/core";
+import { computed, inject, onMounted, onUpdated, ref, useId, useSlots, useTemplateRef, watch } from "vue";
+import { useCollectionSelection } from "../../composables/internal/sdk/useCollectionSelection";
+import { useListNavigation } from "../../composables/internal/sdk/useListNavigation";
+import { usePopup } from "../../composables/internal/sdk/usePopup";
 import { createChangeDetails } from "../../utils/changeEvent";
-import { useDismissableLayer } from "../../utils/dismissableLayer";
-import { useFloatingPosition } from "../../utils/floatingPosition";
-import { useFocusBranch } from "../../utils/focusScope";
+import { scrollWithin } from "../../utils/scrollWithin";
 import { useFieldControl } from "../../utils/useFieldControl";
 import { useFormReset } from "../../utils/useFormReset";
 import { usePopupInteraction } from "../../utils/usePopupInteraction";
-import { nextEnabledIndex } from "../../utils/useRovingFocus";
 import { fieldContextKey } from "../field/context";
 
 const {
@@ -70,7 +71,6 @@ const rootRef = useTemplateRef<HTMLElement>("rootRef");
 const inputRef = useTemplateRef<HTMLInputElement>("inputRef");
 const hiddenRef = useTemplateRef<HTMLInputElement>("hiddenRef");
 const contentRef = useTemplateRef<HTMLElement>("contentRef");
-useFocusBranch(contentRef);
 const optionRefs = ref<Array<HTMLElement | null>>([]);
 const slots = useSlots() as Record<string, Slot | undefined>;
 const focused = ref(false);
@@ -83,7 +83,6 @@ const { isInternalFocusMove } = usePopupInteraction({
   content: contentRef,
   open: openModel,
   focusTarget: inputRef,
-  onOutsidePointerDown: event => setOpen(false, "outside-click", event),
 });
 const initialValue: ComboboxModelValue = Array.isArray(model.value) ? [...model.value] : model.value;
 
@@ -112,6 +111,16 @@ const filteredOptions = computed(() => {
   });
 });
 const hasVisibleOption = computed(() => filteredOptions.value.some(isSelectableOption));
+const navigationItems = computed(() => filteredOptions.value.map((option, index) => ({
+  value: `${contentId}-option-${index}`,
+  label: getLabel(option),
+  disabled: isItemDisabled(option),
+})));
+const navigation = useListNavigation({
+  items: () => navigationItems.value,
+  active: () => navigationItems.value[activeIndex.value]?.value ?? null,
+  loop: () => loop,
+});
 watch(filteredOptions, (current, previous) => {
   const active = previous[activeIndex.value];
   const preserved = active ? current.findIndex(option => !isItemDisabled(option) && valuesEqual(getValue(option), getValue(active))) : -1;
@@ -131,22 +140,26 @@ const inputValue = computed(() => {
   if (openModel.value) return searchModel.value;
   return selectedOptions.value.map((option) => getLabel(option)).join(", ");
 });
-const { actualAlign, actualSide, style: contentStyle } = useFloatingPosition({
-  reference: inputRef,
-  floating: contentRef,
-  active: () => openModel.value,
+let closeReason: string | undefined;
+const popup = usePopup({
+  kind: "combobox",
+  open: openModel,
+  content: contentRef,
+  contentId,
+  trigger: () => inputRef.value,
+  anchor: () => rootRef.value,
+  initialFocus: "none",
+  finalFocus: "none",
   side: () => side,
   align: () => align,
   sideOffset: () => sideOffset,
-  matchWidth: true,
+  collisionPadding: () => 8,
+  matchWidth: () => true,
   cssVarPrefix: "akaza-combobox",
+  transition: () => "akaza-combobox",
+  request: commitOpen,
 });
-const { layerOrder, register: registerDismissable, unregister: unregisterDismissable } = useDismissableLayer(
-  (event?: KeyboardEvent) => {
-    setOpen(false, "escape", event);
-    inputRef.value?.focus();
-  },
-);
+const { present, contentAttrs, triggerAttrs: popupTriggerAttrs, actualAlign, actualSide, style: contentStyle, layerOrder } = popup;
 const layeredContentStyle = computed(() => ({
   ...contentStyle.value,
   "--akaza-layer-order": layerOrder.value,
@@ -231,12 +244,29 @@ function updateValidity(reveal = validationActive.value) {
 }
 
 function setOpen(next: boolean, reason: string, event?: Event) {
-  if ((isDisabled.value || readOnly) && next) return;
+  if ((isDisabled.value || readOnly || hiddenRef.value?.matches(":disabled")) && next) return;
   if (openModel.value === next) return;
+  popup.setOpen(next, reason, event);
+}
+
+function commitOpen(next: boolean, sdkReason: string, event?: Event) {
+  if ((isDisabled.value || readOnly || hiddenRef.value?.matches(":disabled")) && next) return;
+  if (openModel.value === next) return;
+  const reason = ({
+    "escape-key": "escape",
+    "outside-press": "outside-click",
+    "trigger-press": "trigger",
+    "trigger-focus": "focus",
+    "focus-out": "blur",
+    "window-blur": "blur",
+    imperative: "programmatic",
+  } as Record<string, string>)[sdkReason] ?? sdkReason;
   const changeEvent = createChangeDetails(reason, event);
   emit("open-change", next, changeEvent.details);
   if (changeEvent.canceled()) return;
+  closeReason = next ? undefined : reason;
   openModel.value = next;
+  if (openModel.value !== next) return;
   if (next) activeIndex.value = findEnabledIndex();
   else activeIndex.value = -1;
 }
@@ -262,30 +292,36 @@ function setOptionRef(el: HTMLElement | null, index: number) {
 }
 
 function focusOption(index: number) {
+  if (!openModel.value || loading || readOnly || hiddenRef.value?.matches(":disabled")) return;
+  const option = filteredOptions.value[index];
+  if (!option || isItemDisabled(option)) return;
   activeIndex.value = index;
-  optionRefs.value[index]?.scrollIntoView?.({ block: "nearest" });
+  scrollWithin(optionRefs.value[index], contentRef.value?.querySelector<HTMLElement>(".akaza-combobox-viewport"));
 }
 
-function getNextValue(option: ComboboxOption): ComboboxModelValue {
-  const value = getValue(option);
-  if (!multiple) return value;
-  return isOptionSelected(option)
-    ? selectedValues.value.filter((item) => !valuesEqual(item, value))
-    : [...selectedValues.value, value];
-}
-
-function selectOption(option: ComboboxOption, event?: Event) {
-  if (loading || readOnly || isItemDisabled(option)) return;
+function commitSelection(values: ComboboxValue[], reason: string, event?: Event): boolean {
   validationActive.value = true;
-  const value = getNextValue(option);
-  const changeEvent = createChangeDetails(event ? "select" : "programmatic", event);
+  const value = multiple ? values : values[0] ?? nullableValue;
+  const changeEvent = createChangeDetails(reason, event);
   emit("value-change", value, changeEvent.details);
-  if (changeEvent.canceled()) return;
+  if (changeEvent.canceled()) return false;
   model.value = value;
   if (resetSearchOnSelect) setSearch("", "select", event);
   if (!multiple) setOpen(false, "select", event);
   updateValidity();
-  inputRef.value?.focus();
+  if (multiple) inputRef.value?.focus();
+  return true;
+}
+
+const selection = useCollectionSelection<ComboboxValue>({
+  value: () => selectedValues.value,
+  equals: valuesEqual,
+  change: commitSelection,
+});
+
+function selectOption(option: ComboboxOption, event?: Event) {
+  if (loading || readOnly || hiddenRef.value?.matches(":disabled") || isItemDisabled(option)) return;
+  selection.select(getValue(option), multiple, event ? "select" : "programmatic", event);
 }
 
 function removeValue(value: ComboboxValue, event?: Event) {
@@ -319,11 +355,11 @@ function createOption(event?: Event) {
   if (!changeEvent.canceled()) setOpen(false, "create", event);
 }
 
-function move(delta: number) {
-  if (loading || !filteredOptions.value.length) return;
-  const from = activeIndex.value < 0 ? findEnabledIndex() : activeIndex.value;
-  const next = nextEnabledIndex(filteredOptions.value, from, delta, loop, isItemDisabled);
-  if (next >= 0) focusOption(next);
+function move(step: number | "first" | "last", event: KeyboardEvent) {
+  if (!openModel.value || loading || readOnly || isDisabled.value || hiddenRef.value?.matches(":disabled")) return;
+  const target = navigation.move(step, event);
+  const index = navigationItems.value.findIndex(item => item.value === target);
+  if (index >= 0) focusOption(index);
 }
 
 function onInput(event: Event) {
@@ -334,16 +370,17 @@ function onInput(event: Event) {
     return;
   }
   if (openOnInput) setOpen(true, "input", event);
-  activeIndex.value = findEnabledIndex();
+  if (searchModel.value === target.value) activeIndex.value = findEnabledIndex();
+  else target.value = inputValue.value;
   updateValidity();
 }
 
 function onKeydown(event: KeyboardEvent) {
-  if (event.isComposing) return;
+  if (isDisabled.value || readOnly || hiddenRef.value?.matches(":disabled") || event.defaultPrevented || isComposing(event) || event.ctrlKey || event.metaKey || event.altKey) return;
   if (event.key === "ArrowDown" || event.key === "ArrowUp") {
     event.preventDefault();
     if (!openModel.value) setOpen(true, "keyboard", event);
-    else move(event.key === "ArrowDown" ? 1 : -1);
+    else move(event.key === "ArrowDown" ? 1 : -1, event);
   } else if (event.key === "Enter") {
     if (openModel.value && activeIndex.value >= 0) {
       event.preventDefault();
@@ -360,16 +397,11 @@ function onKeydown(event: KeyboardEvent) {
   } else if (event.key === "Home") {
     if (openModel.value) {
       event.preventDefault();
-      focusOption(findEnabledIndex());
+      move("first", event);
     }
   } else if (event.key === "End" && openModel.value) {
     event.preventDefault();
-    for (let i = filteredOptions.value.length - 1; i >= 0; i--) {
-      if (!isItemDisabled(filteredOptions.value[i]!)) {
-        focusOption(i);
-        break;
-      }
-    }
+    move("last", event);
   }
 }
 
@@ -407,17 +439,15 @@ watch(isDisabled, (value) => {
   if (value && openModel.value) setOpen(false, "disabled");
 }, { immediate: true });
 watch(openModel, (open) => {
+  const reason = closeReason;
+  closeReason = undefined;
   if (open) {
-    registerDismissable();
     activeIndex.value = findEnabledIndex();
   } else {
-    unregisterDismissable();
+    if (reason === "escape" || reason === "select") inputRef.value?.focus({ preventScroll: true });
     activeIndex.value = -1;
   }
-}, { immediate: true });
-onBeforeUnmount(() => {
-  unregisterDismissable();
-});
+}, { immediate: true, flush: "post" });
 
 function hasOptionSlot(option: ComboboxOption) {
   return Boolean(slots[option.slot ?? "option"]);
@@ -482,6 +512,7 @@ function hasOptionSlot(option: ComboboxOption) {
     </div>
 
     <input
+      v-bind="{ ...popupTriggerAttrs, ...stateAttrs }"
       :id="resolvedId"
       ref="inputRef"
       role="combobox"
@@ -499,7 +530,6 @@ function hasOptionSlot(option: ComboboxOption) {
       :aria-invalid="isInvalid || undefined"
       :aria-readonly="readOnly || undefined"
       :class="ui?.input"
-      v-bind="stateAttrs"
       class="akaza-combobox-input"
       @focus="onFocus"
       @click="onClick"
@@ -519,120 +549,120 @@ function hasOptionSlot(option: ComboboxOption) {
       <slot name="clear">×</slot>
     </button>
 
-    <Transition name="akaza-combobox">
-      <div
-        v-if="openModel"
-        :id="contentId"
-        ref="contentRef"
-        role="listbox"
-        :aria-labelledby="resolvedId"
-        :aria-multiselectable="multiple || undefined"
-        :aria-busy="loading || undefined"
-        :data-akaza-side="actualSide"
-        :data-akaza-align="actualAlign"
-        :style="layeredContentStyle"
-        data-akaza-state="open"
-        :class="ui?.content"
-        class="akaza-combobox-content"
-      >
-        <div :class="ui?.viewport" class="akaza-combobox-viewport">
+    <div
+      v-if="present"
+      v-bind="contentAttrs"
+      :id="contentId"
+      ref="contentRef"
+      role="listbox"
+      :aria-labelledby="resolvedId"
+      :aria-multiselectable="multiple || undefined"
+      :aria-busy="loading || undefined"
+      :data-akaza-side="actualSide"
+      :data-akaza-align="actualAlign"
+      :style="layeredContentStyle"
+      :data-akaza-state="openModel ? 'open' : 'closed'"
+      :inert="!openModel || undefined"
+      :class="ui?.content"
+      class="akaza-combobox-content"
+    >
+      <div :class="ui?.viewport" class="akaza-combobox-viewport">
+        <div
+          v-if="loading"
+          :class="ui?.loading"
+          class="akaza-combobox-loading"
+        >
+          <slot name="loading">Loading…</slot>
+        </div>
+        <div
+          v-else-if="!hasVisibleOption && !canCreate"
+          :class="ui?.empty"
+          class="akaza-combobox-empty"
+        >
+          <slot name="empty">{{ emptyLabel }}</slot>
+        </div>
+        <template
+          v-for="(option, index) in filteredOptions"
+          v-else
+          :key="`${option.type ?? 'item'}:${getFormValue(getValue(option)) || getLabel(option) || index}`"
+        >
           <div
-            v-if="loading"
-            :class="ui?.loading"
-            class="akaza-combobox-loading"
+            v-if="option.type === 'label'"
+            role="presentation"
+            :class="ui?.groupLabel"
+            class="akaza-combobox-group-label"
           >
-            <slot name="loading">Loading…</slot>
-          </div>
-          <div
-            v-else-if="!hasVisibleOption && !canCreate"
-            :class="ui?.empty"
-            class="akaza-combobox-empty"
-          >
-            <slot name="empty">{{ emptyLabel }}</slot>
-          </div>
-          <template
-            v-for="(option, index) in filteredOptions"
-            v-else
-            :key="`${option.type ?? 'item'}:${getFormValue(getValue(option)) || getLabel(option) || index}`"
-          >
-            <div
-              v-if="option.type === 'label'"
-              role="presentation"
-              :class="ui?.groupLabel"
-              class="akaza-combobox-group-label"
-            >
-              <slot name="group-label" :option="option" :label="getLabel(option)">
-                {{ getLabel(option) }}
-              </slot>
-            </div>
-            <div
-              v-else-if="option.type === 'separator'"
-              role="separator"
-              :class="ui?.separator"
-              class="akaza-combobox-separator"
-            />
-            <div
-              v-else
-              :id="`${contentId}-option-${index}`"
-              :ref="(el) => setOptionRef(el as HTMLElement | null, index)"
-              role="option"
-              :aria-selected="isOptionSelected(option)"
-              :aria-disabled="isItemDisabled(option) || undefined"
-              :data-akaza-state="isOptionSelected(option) ? 'checked' : 'unchecked'"
-              :data-akaza-highlighted="activeIndex === index || undefined"
-              :data-akaza-disabled="isItemDisabled(option) || undefined"
-              :class="ui?.option"
-              class="akaza-combobox-option"
-              @mousedown.prevent
-              @click="selectOption(option, $event)"
-              @mouseenter="highlightOnHover && !isItemDisabled(option) && focusOption(index)"
-            >
-              <slot
-                v-if="hasOptionSlot(option)"
-                :name="option.slot ?? 'option'"
-                :option="option"
-                :value="getValue(option)"
-                :label="getLabel(option)"
-                :description="getDescription(option)"
-                :is-selected="isOptionSelected(option)"
-                :is-highlighted="activeIndex === index"
-                :is-disabled="isItemDisabled(option)"
-                :select="(event?: Event) => selectOption(option, event)"
-              />
-              <template v-else>
-                <span :class="ui?.indicator" class="akaza-combobox-indicator" aria-hidden="true">
-                  {{ isOptionSelected(option) ? "✓" : "" }}
-                </span>
-                <span :class="ui?.optionText" class="akaza-combobox-option-text">
-                  <span :class="ui?.optionLabel" class="akaza-combobox-option-label">
-                    {{ getLabel(option) }}
-                  </span>
-                  <span
-                    v-if="getDescription(option)"
-                    :class="ui?.optionDescription"
-                    class="akaza-combobox-option-description"
-                  >
-                    {{ getDescription(option) }}
-                  </span>
-                </span>
-              </template>
-            </div>
-          </template>
-          <div
-            v-if="!loading && canCreate"
-            role="option"
-            :class="ui?.create"
-            class="akaza-combobox-create"
-            @mousedown.prevent
-            @click="createOption($event)"
-          >
-            <slot name="create" :search="searchModel" :create="(event?: Event) => createOption(event)">
-              {{ createLabel(searchModel.trim()) }}
+            <slot name="group-label" :option="option" :label="getLabel(option)">
+              {{ getLabel(option) }}
             </slot>
           </div>
+          <div
+            v-else-if="option.type === 'separator'"
+            role="separator"
+            :class="ui?.separator"
+            class="akaza-combobox-separator"
+          />
+          <div
+            v-else
+            :id="`${contentId}-option-${index}`"
+            :ref="(el) => setOptionRef(el as HTMLElement | null, index)"
+            role="option"
+            :aria-selected="isOptionSelected(option)"
+            :aria-disabled="isItemDisabled(option) || undefined"
+            :data-akaza-state="isOptionSelected(option) ? 'checked' : 'unchecked'"
+            :data-akaza-highlighted="activeIndex === index || undefined"
+            :data-akaza-disabled="isItemDisabled(option) || undefined"
+            :class="ui?.option"
+            class="akaza-combobox-option"
+            @mousedown.prevent
+            @click="selectOption(option, $event)"
+            @mouseenter="highlightOnHover && !isItemDisabled(option) && focusOption(index)"
+          >
+            <slot
+              v-if="hasOptionSlot(option)"
+              :name="option.slot ?? 'option'"
+              :option="option"
+              :value="getValue(option)"
+              :label="getLabel(option)"
+              :description="getDescription(option)"
+              :is-selected="isOptionSelected(option)"
+              :is-highlighted="activeIndex === index"
+              :is-disabled="isItemDisabled(option)"
+              :select="(event?: Event) => selectOption(option, event)"
+            />
+            <template v-else>
+              <span :class="ui?.indicator" class="akaza-combobox-indicator" aria-hidden="true">
+                {{ isOptionSelected(option) ? "✓" : "" }}
+              </span>
+              <span :class="ui?.optionText" class="akaza-combobox-option-text">
+                <span :class="ui?.optionLabel" class="akaza-combobox-option-label">
+                  {{ getLabel(option) }}
+                </span>
+                <span
+                  v-if="getDescription(option)"
+                  :class="ui?.optionDescription"
+                  class="akaza-combobox-option-description"
+                >
+                  {{ getDescription(option) }}
+                </span>
+              </span>
+            </template>
+          </div>
+        </template>
+        <div
+          v-if="!loading && canCreate"
+          role="option"
+          :class="ui?.create"
+          class="akaza-combobox-create"
+          @mousedown.prevent
+          @click="createOption($event)"
+        >
+          <slot name="create" :search="searchModel" :create="(event?: Event) => createOption(event)">
+            {{ createLabel(searchModel.trim()) }}
+          </slot>
         </div>
       </div>
-    </Transition>
+    </div>
   </div>
 </template>
 
@@ -657,26 +687,9 @@ function hasOptionSlot(option: ComboboxOption) {
   }
 
   .akaza-combobox-content {
-    position: absolute;
+    transform-origin: var(--akaza-combobox-transform-origin);
     z-index: var(--akaza-z-combobox, calc(var(--akaza-z-layer-base, 1200) + var(--akaza-layer-order, 0) + 1));
-    min-width: 100%;
-  }
-
-  .akaza-combobox-content[data-akaza-side="bottom"] {
-    top: calc(100% + var(--akaza-combobox-side-offset, 6px));
-  }
-
-  .akaza-combobox-content[data-akaza-side="top"] {
-    bottom: calc(100% + var(--akaza-combobox-side-offset, 6px));
-  }
-
-  .akaza-combobox-content[data-akaza-align="center"] {
-    left: 50%;
-    transform: translateX(-50%);
-  }
-
-  .akaza-combobox-content[data-akaza-align="end"] {
-    right: 0;
+    min-width: 0;
   }
 
   .akaza-combobox-viewport {

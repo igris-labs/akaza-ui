@@ -3,7 +3,8 @@ import type { ComponentPublicInstance } from "vue";
 import type { AkazaChangeEventDetails } from "../../types";
 import type { CalendarDateRange, CalendarDateValue, CalendarModelValue, CalendarRangeFixedDate } from "../calendar";
 import { getLocalTimeZone, toCalendar, toCalendarDate, today } from "@internationalized/date";
-import { computed, nextTick, onMounted, shallowRef } from "vue";
+import { createFocusRecovery, isComposing } from "@ui-sdk/core";
+import { computed, nextTick, onBeforeUnmount, onMounted, shallowRef } from "vue";
 import { createChangeDetails as createDetails } from "../../utils/changeEvent";
 
 export interface PeriodPickerUi {
@@ -93,12 +94,22 @@ const initialDate = placeholderModel.value ?? firstSelected(model.value) ?? loca
 const internalPlaceholder = shallowRef(normalize(initialDate));
 const focusedValue = shallowRef(normalize(initialDate));
 const hoveredValue = shallowRef<CalendarDateValue>();
-const itemRefs = new Map<string, HTMLButtonElement>();
+const itemRefs = new Map<string, { element: HTMLButtonElement; dispose: () => void }>();
+let disposed = false;
 
 const safeColumns = computed(() => Math.max(1, Math.floor(columns)));
 const safeItemsPerPage = computed(() => Math.max(1, Math.floor(itemsPerPage)));
 const placeholder = computed(() => normalize(placeholderModel.value ?? internalPlaceholder.value));
 const pageStart = computed(() => placeholder.value.set({ month: 1, day: 1 }));
+const focusTarget = computed(() => {
+  const count = kind === "month" ? pageStart.value.calendar.getMonthsInYear(toCalendarDate(pageStart.value)) : safeItemsPerPage.value;
+  const end = addPeriod(pageStart.value, count - 1);
+  return focusedValue.value.compare(pageStart.value) >= 0 && focusedValue.value.compare(end) <= 0
+    ? focusedValue.value : pageStart.value;
+});
+const recovery = createFocusRecovery({
+  fallback: () => !disposed && !disabled ? itemRefs.get(key(focusTarget.value))?.element : undefined,
+});
 const selectedValues = computed(() => {
   if (Array.isArray(model.value)) return model.value;
   if (isRange(model.value)) return [model.value.start, model.value.end].filter(Boolean) as CalendarDateValue[];
@@ -240,7 +251,7 @@ function createItem(value: CalendarDateValue): PeriodPickerItem {
     today: same(value, currentToday),
     disabled: disabled || isDisabled(value),
     unavailable: isUnavailable(value),
-    focused: same(value, focusedValue.value),
+    focused: same(value, focusTarget.value),
     rangeStart: Boolean(range?.start && same(value, range.start)),
     rangeEnd: Boolean(range?.end && same(value, range.end)),
     inRange: selectionMode === "range" && isSelected(value),
@@ -294,11 +305,6 @@ function changePlaceholder(value: CalendarDateValue, reason: string, event?: Eve
   if (change.canceled()) return false;
   internalPlaceholder.value = next;
   placeholderModel.value = next;
-  nextTick(() => {
-    if (!visibleItems.value.some(item => same(item.date, focusedValue.value))) {
-      focusedValue.value = pageStart.value.copy();
-    }
-  });
   return true;
 }
 
@@ -375,25 +381,40 @@ function nextPage(event?: Event): boolean {
 }
 
 function setItemRef(element: Element | ComponentPublicInstance | null, value: CalendarDateValue) {
-  if (element) itemRefs.set(key(value), element as HTMLButtonElement);
-  else itemRefs.delete(key(value));
+  const itemKey = key(value);
+  const existing = itemRefs.get(itemKey);
+  if (existing?.element === element) return;
+  existing?.dispose();
+  itemRefs.delete(itemKey);
+  if (element) itemRefs.set(itemKey, {
+    element: element as HTMLButtonElement,
+    dispose: recovery.bind(element as HTMLButtonElement, { key: itemKey, props: {} }),
+  });
 }
 
 function focusCurrentValue() {
-  itemRefs.get(key(focusedValue.value))?.focus({ preventScroll: true });
+  if (!disposed && !disabled) itemRefs.get(key(focusTarget.value))?.element.focus({ preventScroll: true });
 }
 
 async function focusValue(value: CalendarDateValue, reason = "keyboard", event?: Event) {
+  if (disabled) return;
+  const origin = document.activeElement;
+  const previous = focusedValue.value;
   const next = normalize(value);
-  focusedValue.value = next;
   if (!visibleItems.value.some(item => same(item.date, next))) {
     if (!changePlaceholder(next, reason, event)) return;
   }
+  focusedValue.value = next;
   await nextTick();
-  focusCurrentValue();
+  if (!visibleItems.value.some(item => same(item.date, next))) {
+    focusedValue.value = previous;
+    return;
+  }
+  if (document.activeElement === origin || (document.activeElement === document.body && !origin?.isConnected)) focusCurrentValue();
 }
 
 function onItemKeydown(value: CalendarDateValue, event: KeyboardEvent) {
+  if (event.defaultPrevented || disabled || isComposing(event) || event.altKey || event.ctrlKey || event.metaKey) return;
   const index = visibleItems.value.findIndex(item => same(item.date, value));
   let next: CalendarDateValue | undefined;
   if (event.key === "ArrowLeft") next = addPeriod(value, dir === "rtl" ? 1 : -1);
@@ -426,6 +447,11 @@ defineExpose({ focusValue, nextPage, placeholder, previousPage, selectValue });
 
 onMounted(() => {
   if (initialFocus && !disabled) nextTick(focusCurrentValue);
+});
+onBeforeUnmount(() => {
+  disposed = true;
+  itemRefs.forEach(binding => binding.dispose());
+  itemRefs.clear();
 });
 </script>
 

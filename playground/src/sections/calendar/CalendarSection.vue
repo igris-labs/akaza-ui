@@ -117,7 +117,7 @@ function isWeekend(date: CalendarDateValue) {
             fixed-weeks
             paged-navigation
             :number-of-months="2"
-            :placeholder="new CalendarDate(2026, 8, 1)"
+            :placeholder="new CalendarDate(2026, 8, 31)"
             :ui="calendarUi"
           >
             <template #day="{ label, today }">

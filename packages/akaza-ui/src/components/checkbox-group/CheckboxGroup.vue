@@ -3,6 +3,7 @@ import type { CheckboxGroupOption, CheckboxGroupProps, CheckboxGroupValue } from
 import type { AkazaChangeEventDetails } from "../../types";
 import type { CheckboxUi, CheckboxValue } from "../checkbox";
 import { computed, provide, useTemplateRef } from "vue";
+import { useCollectionSelection } from "../../composables/internal/sdk/useCollectionSelection";
 import { createChangeDetails } from "../../utils/changeEvent";
 import { useCheckableField } from "../../utils/useCheckableField";
 import { Checkbox } from "../checkbox";
@@ -95,21 +96,33 @@ function isChecked(option: CheckboxGroupOption): boolean {
   return model.value.includes(getValue(option));
 }
 
-function setOption(option: CheckboxGroupOption, checked: boolean, details: AkazaChangeEventDetails) {
-  if (isItemDisabled(option)) return;
-  const value = getValue(option);
-  const next = checked
-    ? [...new Set([...model.value, value])]
-    : model.value.filter((item) => item !== value);
-
-  const changeEvent = createChangeDetails(details.reason, details.event);
+function commitValues(next: CheckboxGroupValue[], reason: string, event?: Event): boolean {
+  const changeEvent = createChangeDetails(reason, event);
   emit("value-change", next, changeEvent.details);
-  if (changeEvent.canceled()) {
-    details.cancel();
-    return;
-  }
+  if (changeEvent.canceled()) return false;
   model.value = next;
   bridge.onChange();
+  return true;
+}
+
+const selection = useCollectionSelection<CheckboxGroupValue>({
+  value: () => model.value,
+  equals: (left, right) => left === right,
+  change: (values, reason, event) => commitValues(values.length > model.value.length ? [...new Set(values)] : values, reason, event),
+});
+
+function setOption(option: CheckboxGroupOption, checked: boolean, details: AkazaChangeEventDetails) {
+  if (isItemDisabled(option) || validationRef.value?.matches(":disabled")) return;
+  const value = getValue(option);
+  // CheckboxGroup uses includes for checked state but strict equality for removal.
+  if (typeof value === "number" && Number.isNaN(value)) {
+    if (!commitValues(checked ? [...new Set([...model.value, value])] : [...model.value], details.reason, details.event)) details.cancel();
+    return;
+  }
+  const accepted = checked === model.value.includes(value)
+    ? commitValues(checked ? [...new Set(model.value)] : [...model.value], details.reason, details.event)
+    : selection.select(value, true, details.reason, details.event);
+  if (!accepted || model.value.includes(value) !== checked) details.cancel();
 }
 
 function setAll(value: CheckboxValue, details: AkazaChangeEventDetails) {
@@ -117,14 +130,7 @@ function setAll(value: CheckboxValue, details: AkazaChangeEventDetails) {
   const checked = value === true;
   const retained = model.value.filter(item => !enabledOptionValues.value.includes(item));
   const targetValues = checked ? [...retained, ...enabledOptionValues.value] : retained;
-  const changeEvent = createChangeDetails(details.reason, details.event);
-  emit("value-change", targetValues, changeEvent.details);
-  if (changeEvent.canceled()) {
-    details.cancel();
-    return;
-  }
-  model.value = targetValues;
-  bridge.onChange();
+  if (!commitValues(targetValues, details.reason, details.event) || parentState.value !== value) details.cancel();
 }
 </script>
 
@@ -192,7 +198,7 @@ function setAll(value: CheckboxValue, details: AkazaChangeEventDetails) {
 
     <div
       v-for="option in options"
-      :key="String(getValue(option))"
+      :key="`${typeof getValue(option)}:${getValue(option)}`"
       :class="ui?.item"
       class="akaza-checkbox-group-item"
       :data-akaza-state="isChecked(option) ? 'checked' : 'unchecked'"
@@ -249,6 +255,10 @@ function setAll(value: CheckboxValue, details: AkazaChangeEventDetails) {
   .akaza-checkbox-group[data-akaza-orientation="horizontal"] {
     display: flex;
     flex-wrap: wrap;
+  }
+
+  :is(.akaza-checkbox-group-item, .akaza-checkbox-group-parent) > .akaza-checkbox-wrapper {
+    vertical-align: top;
   }
 }
 </style>

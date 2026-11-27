@@ -2,12 +2,11 @@
 import type { ContextMenuProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
 import type { MenuItem } from "../menu";
-import { onClickOutside } from "@vueuse/core";
-import { computed, nextTick, onUnmounted, provide, ref, useId, useSlots, useTemplateRef, watch } from "vue";
+import { bindHold } from "@ui-sdk/core";
+import { clamp } from "@ui-sdk/core/number";
+import { computed, nextTick, provide, ref, shallowRef, useId, useSlots, useTemplateRef, watch, watchPostEffect } from "vue";
+import { usePopup } from "../../composables/internal/sdk/usePopup";
 import { createChangeDetails } from "../../utils/changeEvent";
-import { useDismissableLayer } from "../../utils/dismissableLayer";
-import { useFloatingPosition } from "../../utils/floatingPosition";
-import { useFocusBranch } from "../../utils/focusScope";
 import { MENU_CONTEXT_KEY } from "../menu/context";
 import MenuPanel from "../menu/MenuPanel.vue";
 import { getMenuItemValue as getItemValue, normalizeMenuItems as normalizeItems, useMenuActions } from "../menu/useMenuActions";
@@ -34,67 +33,73 @@ const emit = defineEmits<{
 }>();
 
 const model = defineModel<boolean>({ default: false });
+const rootRef = useTemplateRef<HTMLElement>("rootRef");
 const contentRef = useTemplateRef<HTMLElement>("contentRef");
-useFocusBranch(contentRef);
 const panelRef = useTemplateRef<InstanceType<typeof MenuPanel>>("panelRef");
 const menuId = `akaza-context-menu-${useId()}`;
 const point = ref({ x: 0, y: 0 });
 const pointerAnchor = computed(() => {
   const { x, y } = point.value;
-  return { getBoundingClientRect: () => new DOMRect(x, y, 0, 0) };
+  // A stored pointer can leave the viewport after resize; keep the SDK anchor valid.
+  return { getBoundingClientRect: () => new DOMRect(
+    clamp(x, 4, Math.max(4, document.documentElement.clientWidth - 4)),
+    clamp(y, 4, Math.max(4, document.documentElement.clientHeight - 4)),
+    0, 0,
+  ) };
 });
-const { style: positionStyle, actualSide, actualAlign, update: computePosition } = useFloatingPosition({
-  reference: pointerAnchor,
-  floating: contentRef,
-  active: model,
-  side: "right",
-  align: "start",
+const previousFocus = shallowRef<HTMLElement | null>(null);
+const popup = usePopup({
+  kind: "menu",
+  open: model,
+  content: contentRef,
+  trigger: () => previousFocus.value?.isConnected ? previousFocus.value : null,
+  anchor: () => pointerAnchor.value,
+  initialFocus: "none",
+  get finalFocus() { return restoreFocus ? () => previousFocus.value : "none" as const; },
+  disabled: () => disabled,
+  side: () => "right",
+  align: () => "start",
   sideOffset: () => sideOffset,
   alignOffset: () => sideOffset,
-  flipAlign: true,
-  collisionPadding: 4,
-  strategy: "fixed",
+  collisionPadding: () => 4,
   cssVarPrefix: "akaza-context-menu",
+  constrainSize: true,
+  transition: () => "akaza-context-menu",
+  request: commitOpen,
 });
-let previousFocus: HTMLElement | null = null;
-let longPressTimer: number | undefined;
-let pressStart: { x: number; y: number } | null = null;
-const { layerOrder, register, unregister } = useDismissableLayer((event?: KeyboardEvent) => close("escape", event));
-const layeredPositionStyle = computed(() => ({ ...positionStyle.value, "--akaza-layer-order": String(layerOrder.value) }));
+const { present, contentAttrs, actualSide, actualAlign } = popup;
+const layeredPositionStyle = computed(() => ({ ...popup.style.value, "--akaza-layer-order": String(popup.layerOrder.value) }));
 
 
 const normalizedGroups = computed(() => normalizeItems(items));
 
 
-function setOpen(next: boolean, reason: string, event?: Event) {
+function commitOpen(next: boolean, reason: string, event?: Event) {
+  reason = reason === "escape-key" ? "escape" : reason === "outside-press" ? "outside-click" : reason;
   if (disabled && next) return;
   if (model.value === next) return;
   const changeEvent = createChangeDetails(reason, event);
   emit("open-change", next, changeEvent.details);
   if (changeEvent.canceled()) return;
   model.value = next;
-  if (!next && restoreFocus && reason !== "outside-click") {
-    nextTick(() => previousFocus?.focus({ preventScroll: true }));
-  }
 }
 
 function close(reason = "programmatic", event?: Event) {
-  setOpen(false, reason, event);
+  popup.setOpen(false, reason, event);
 }
 
 function openAt(x: number, y: number, reason = "programmatic", event?: Event) {
   point.value = { x, y };
-  if (event?.target instanceof HTMLElement) previousFocus = event.target;
-  else if (typeof document !== "undefined" && document.activeElement instanceof HTMLElement) previousFocus = document.activeElement;
+  if (event?.target instanceof HTMLElement) previousFocus.value = event.target;
+  else if (typeof document !== "undefined" && document.activeElement instanceof HTMLElement) previousFocus.value = document.activeElement;
   if (model.value) {
     void nextTick().then(() => {
-      computePosition();
       const first = panelRef.value?.getItems()?.[0];
       if (first) panelRef.value?.highlightItem(first);
     });
     return;
   }
-  setOpen(true, reason, event);
+  popup.setOpen(true, reason, event);
 }
 
 function onContextmenu(event: MouseEvent) {
@@ -111,34 +116,22 @@ function onRootKeydown(event: KeyboardEvent) {
   openAt(rect.left, rect.bottom, "keyboard", event);
 }
 
-function clearLongPress() {
-  if (typeof window !== "undefined") window.clearTimeout(longPressTimer);
-  longPressTimer = undefined;
-  pressStart = null;
-}
+watchPostEffect((cleanup) => {
+  const root = rootRef.value;
+  if (!root || longPressDelay <= 0) return;
+  cleanup(bindHold(root, {
+    delay: longPressDelay,
+    tolerance: 10,
+    keys: [],
+    disabled: () => disabled,
+    onPress: ({ input, event }) => (input === "touch" || input === "pen")
+      && !event.defaultPrevented && !contentRef.value?.contains(event.target as Node),
+    onHold: ({ event }) => {
+      if (event instanceof PointerEvent) openAt(event.clientX, event.clientY, "long-press", event);
+    },
+  }));
+});
 
-function onPointerDown(event: PointerEvent) {
-  if (disabled || longPressDelay <= 0 || event.pointerType === "mouse") return;
-  clearLongPress();
-  pressStart = { x: event.clientX, y: event.clientY };
-  longPressTimer = window.setTimeout(() => {
-    openAt(event.clientX, event.clientY, "long-press", event);
-    clearLongPress();
-  }, longPressDelay);
-}
-
-function onPointerMove(event: PointerEvent) {
-  if (!pressStart) return;
-  if (Math.hypot(event.clientX - pressStart.x, event.clientY - pressStart.y) > 10) clearLongPress();
-}
-
-
-function onContentKeydown(event: KeyboardEvent) {
-  if (event.key === "Escape") {
-    event.preventDefault();
-    close("escape", event);
-  }
-}
 
 const { onItemSelect, onCheckboxSelect, onRadioSelect, isRadioChecked } = useMenuActions({
   closeOnSelect: () => closeOnSelect,
@@ -173,12 +166,8 @@ watch(model, async (open, _previous, cleanup) => {
   if (open) {
     await nextTick();
     if (canceled) return;
-    register();
-    computePosition();
     const first = panelRef.value?.getItems()?.[0];
     if (first) panelRef.value?.highlightItem(first);
-  } else {
-    unregister();
   }
 }, { immediate: true });
 
@@ -186,20 +175,12 @@ watch(() => disabled, (value) => {
   if (value && model.value) close("disabled");
 });
 
-onClickOutside(contentRef, (event) => {
-  if (model.value) close("outside-click", event);
-});
-
-onUnmounted(() => {
-  clearLongPress();
-  unregister();
-});
-
 defineExpose({ openAt, close });
 </script>
 
 <template>
   <div
+    ref="rootRef"
     :class="ui?.root"
     :dir="dir"
     :data-akaza-state="model ? 'open' : 'closed'"
@@ -207,10 +188,6 @@ defineExpose({ openAt, close });
     class="akaza-context-menu-root"
     @contextmenu="onContextmenu"
     @keydown="onRootKeydown"
-    @pointerdown="onPointerDown"
-    @pointermove="onPointerMove"
-    @pointerup="clearLongPress"
-    @pointercancel="clearLongPress"
   >
     <slot
       :is-open="model"
@@ -219,22 +196,22 @@ defineExpose({ openAt, close });
     />
 
     <Teleport :to="typeof teleport === 'string' ? teleport : 'body'" :disabled="teleport === false">
-      <Transition name="akaza-context-menu">
-        <div
-          v-if="model"
-          :id="menuId"
-          ref="contentRef"
-          :class="ui?.content"
-          :style="layeredPositionStyle"
-          data-akaza-state="open"
-          :data-akaza-side="actualSide"
-          :data-akaza-align="actualAlign"
-          class="akaza-context-menu-content akaza-menu-content"
-          @keydown="onContentKeydown"
-        >
-          <MenuPanel ref="panelRef" :items="normalizedGroups" />
-        </div>
-      </Transition>
+      <div
+        v-if="present"
+        v-bind="contentAttrs"
+        :id="menuId"
+        ref="contentRef"
+        role="presentation"
+        :dir="dir"
+        :class="ui?.content"
+        :style="layeredPositionStyle"
+        :data-akaza-state="model ? 'open' : 'closed'"
+        :data-akaza-side="actualSide"
+        :data-akaza-align="actualAlign"
+        class="akaza-context-menu-content akaza-menu-content"
+      >
+        <MenuPanel ref="panelRef" :items="normalizedGroups" :open="model" />
+      </div>
     </Teleport>
   </div>
 </template>
@@ -246,6 +223,7 @@ defineExpose({ openAt, close });
   }
 
   .akaza-context-menu-content {
+    transform-origin: var(--akaza-context-menu-transform-origin);
     z-index: var(--akaza-z-context-menu, calc(var(--akaza-z-layer-base, 1200) + var(--akaza-layer-order, 0) + 1));
   }
 

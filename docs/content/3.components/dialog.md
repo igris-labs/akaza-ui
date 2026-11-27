@@ -3,9 +3,14 @@ title: Dialog
 description: A modal dialog that appears over the page and traps focus.
 navigation:
   icon: i-lucide-square
+  badge:
+    label: UPDATED
+    color: warning
 ---
 
 A modal panel that overlays the page. Focus is trapped inside while open and restored to the trigger when closed. Screen readers are informed via `role="dialog"` and `aria-modal`.
+
+The shared Core popup adapter owns presence, dismissal, focus, inertness, scroll locking, and native popover top-layer presentation. `teleport` still chooses the DOM destination; it does not opt out of the top layer. Existing `ui` classes and CSS layer overrides remain the styling API.
 
 For confirmations requiring a required response, use [Alert Dialog](/components/alert-dialog) instead.
 
@@ -163,7 +168,7 @@ const dialog = ref();
 | `closeOnBackdropClick` | `boolean` | `true` | Close when clicking the overlay. |
 | `fullscreen` | `boolean` | `false` | Expand the dialog to fill the viewport. |
 | `teleport` | `string \| false` | `"body"` | Teleport target. |
-| `transition` | `string \| false` | `"akaza-dialog"` | Named Vue transition. |
+| `transition` | `string \| false` | `"akaza-dialog"` | CSS transition class prefix; false disables panel and backdrop transitions. |
 | `duration` | `number` | `100` | Transition duration in ms. |
 | `as` | `string` | `"div"` | Root element tag. |
 | `ui` | `DialogUi` | — | CSS class overrides. |
@@ -221,6 +226,10 @@ const dialog = ref();
 | `footer` | `akaza-dialog-footer` | — |
 
 `Dialog` renders trigger slot content plus teleported overlay/content. Use `ui` keys instead of relying on plain `class` fallthrough.
+
+Named transitions apply `*-enter-active`, `*-enter-from`, `*-enter-to`, `*-leave-active`, and `*-leave-to` only during motion. Style the settled dialog through `ui` or `data-akaza-state="open"`. During exit, `data-akaza-state="closed"` remains on the panel and backdrop until the SDK removes them. The default motion respects reduced-motion preferences.
+
+`open-change` remains cancelable with `details.cancel()`. Escape reports `escape`; an outside press reports `backdrop-click` and respects `closeOnBackdropClick`. Slot and exposed actions preserve their supplied reason and native event. A controlled parent can refuse an update without releasing modal focus or inertness.
 
 ### Keyboard
 

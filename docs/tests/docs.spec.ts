@@ -99,6 +99,7 @@ test("package commands, code disclosure, copy actions, and dialog focus work", a
   await trigger.click();
   await expect(page.getByRole("dialog", { name: "Edit profile" })).toBeVisible();
   await page.keyboard.press("Escape");
+  await expect(page.getByRole("dialog", { name: "Edit profile" })).toBeHidden();
   await expect(trigger).toBeFocused();
   await page.getByRole("button", { name: "Show code" }).first().click();
   await expect(page.getByRole("button", { name: "Hide code" }).first()).toHaveAttribute(

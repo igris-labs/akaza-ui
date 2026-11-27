@@ -7,6 +7,8 @@ navigation:
 
 `DateRangePicker` combines Date Range Field and Calendar. Users can type either endpoint or select a range from the popup.
 
+The popup uses the browser's native top layer when available. `teleport` controls its DOM parent, while endpoint form controls stay inline. Calendar owns initial day focus and range navigation; popup dismissal does not add a second day-focus engine.
+
 Use [Date Range Field](/components/date-range-field) when you do not need a calendar popup.
 
 ::callout{icon="i-lucide-package"}
@@ -115,6 +117,8 @@ Fix the start or end while the other boundary remains editable through both segm
 ### Controlled popup
 
 Use `v-model:open` and the cancelable `open-change` event when application state owns dismissal.
+
+A canceled or refused close leaves content interactive and preserves focus. Trigger focus returns only after an accepted close, except for `outside-click`, which leaves the clicked control focused.
 
 ```vue
 <DateRangePicker

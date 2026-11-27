@@ -167,7 +167,7 @@ test("tap operates navigation composites and long press opens context menu", asy
   await tap(page, workspace);
   await expect(workspace).toHaveAttribute("aria-expanded", "true");
 
-  const menubar = section(page, "menubar").getByRole("menubar", { name: "Editor menu" });
+  const menubar = section(page, "menubar").getByRole("menubar", { name: "Editor menu", exact: true });
   const file = menubar.getByRole("menuitem", { name: "File", exact: true });
   await tap(page, file);
   await expect(file).toHaveAttribute("aria-expanded", "true");
@@ -182,7 +182,7 @@ test("tap operates navigation composites and long press opens context menu", asy
   // Playwright WebKit exposes real taps but no long-press gesture API.
   if (browserName === "webkit") return;
   const contextTarget = section(page, "context-menu").getByText("Right-click here", { exact: true });
-  await longPress(page, contextTarget, 1000, section(page, "context-menu").locator(".akaza-context-menu-root"));
+  await longPress(page, contextTarget, 1000, section(page, "context-menu").locator(".akaza-context-menu-root").first());
   await expect(page.locator(".akaza-context-menu-content")).toBeVisible();
 });
 
@@ -291,6 +291,7 @@ test("touch drag resizes sidebar and data table columns, then reorders rows", as
   const sourceBox = await handles.nth(0).boundingBox();
   const targetBox = await handles.nth(1).boundingBox();
   if (!sourceBox || !targetBox) throw new Error("Data table reorder handles have no bounding boxes");
-  await dragTouch(page, handles.nth(0), 0, targetBox.y - sourceBox.y);
+  // SDK reorder inserts after a row only once its midpoint is crossed.
+  await dragTouch(page, handles.nth(0), 0, targetBox.y + targetBox.height / 2 - sourceBox.y - sourceBox.height / 2 + 8);
   await expect(table.locator("tbody .akaza-data-table-row").first()).toHaveAttribute("data-akaza-row-key", "2");
 });

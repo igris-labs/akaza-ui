@@ -49,6 +49,7 @@ const disabledItems = [
 
 // 5. Manual activation
 const manual = ref('html')
+const rtl = ref('overview')
 const manualItems = [
   { value: 'html', label: 'HTML' },
   { value: 'css', label: 'CSS' },
@@ -253,6 +254,18 @@ function onPanelBMount() {
             With <code :class="inlineCode">unmountOnHide</code>, Tab B is removed from the DOM when
             inactive. Switch away and back to see the mount counter increment.
           </p>
+        </div>
+      </div>
+
+      <div>
+        <h3 :class="exampleTitle">Right-to-left, manual activation</h3>
+        <div :class="canvas" dir="rtl">
+          <Tabs v-model="rtl" :items="basicItems" activation-mode="manual" aria-label="RTL tabs" :ui="tabsUi">
+            <template #panel-overview>Overview panel.</template>
+            <template #panel-analytics>Analytics panel.</template>
+            <template #panel-settings>Settings panel.</template>
+          </Tabs>
+          <p class="mt-3 text-xs text-muted-foreground">Selected: {{ rtl }}</p>
         </div>
       </div>
     </div>

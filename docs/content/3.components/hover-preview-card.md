@@ -78,7 +78,11 @@ Bind `v-model` when another interaction should own the card state.
 
 ### Interactive and force-mounted content
 
-Focus may move from trigger into teleported content without closing it. `forceMount` keeps closed content in DOM with hidden, inert, and closed-state hooks for custom transitions.
+Focus may move from trigger into teleported content without closing it. Opening
+does not move focus into the preview. `forceMount` keeps closed content in DOM with
+hidden, inert, and closed-state hooks. The SDK owns hover/focus delays, hover
+handoff, dismissal, geometry, focus return, and exit completion. Native top-layer
+presentation does not change the selected Teleport target or logical parent.
 
 ```vue
 <HoverPreviewCard
@@ -121,6 +125,12 @@ Focus may move from trigger into teleported content without closing it. `forceMo
 |-------|---------|-------------|
 | `open-change` | `(open, details)` | Fired before open state changes. |
 
+Reasons retain Akaza's `hover`, `focus`, `trigger`, `escape`, `outside-click`,
+`disabled`, and `programmatic` names. The original event is available as
+`details.event`. Canceling the event or refusing a controlled update keeps the
+accepted state and focus unchanged. A content action can call `close()` or pass
+a custom reason, such as `close('follow')`.
+
 ### Slots
 
 | Slot | Props | Description |
@@ -148,16 +158,20 @@ Focus may move from trigger into teleported content without closing it. `forceMo
 
 Popup transitions follow their placement side and last `120ms`. Set `--akaza-hover-preview-card-duration` to change the duration. Reduced-motion mode removes the visible transition.
 
+Existing enter/leave CSS classes are mapped from SDK transition state. Content
+stays mounted until its exit animation finishes, then unmounts unless `forceMount`
+is set. `data-akaza-state="closed"` also covers that exit interval.
+
 ### Positioning Variables
 
-The card and its arrow update together when the trigger, content, or viewport changes size. Placement can switch sides to fit the viewport.
+SDK positioning updates the card and its arrow together when the trigger, content, or viewport changes size. Placement can flip to the opposite side to fit the viewport. Outside pointer presses use the shared popup dismissal stack.
 
 | Variable | Meaning |
 | --- | --- |
 | `--akaza-hover-preview-card-anchor-width` | Anchor width in pixels. |
 | `--akaza-hover-preview-card-anchor-height` | Anchor height in pixels. |
-| `--akaza-hover-preview-card-available-width` | Viewport width after collision padding. |
-| `--akaza-hover-preview-card-available-height` | Viewport height after collision padding. |
+| `--akaza-hover-preview-card-available-width` | Available width at the resolved placement. |
+| `--akaza-hover-preview-card-available-height` | Available height at the resolved placement. |
 | `--akaza-hover-preview-card-transform-origin` | Origin matching the resolved side and alignment. |
 
 ### Keyboard

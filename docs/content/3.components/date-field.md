@@ -181,7 +181,9 @@ Read-only segments stay focusable for inspection but cannot change. Disabled seg
 
 Changing min/max, required state, unavailable-date predicates, or the controlled value updates native custom validity without requiring another keystroke. Error presentation still follows interaction/submission state. Native reset restores the initial segments unless canceled.
 
-The optional calendar registers as a logical popup branch when used inside an Akaza modal, including when teleported to body.
+The optional calendar uses the browser's native top layer when available and remains a logical child of its owning popup. `calendarTeleport` controls its DOM parent, not its top-layer presentation; native form controls stay inline.
+
+Calendar owns its initial day focus; segments keep their native editing and focus behavior. `calendar-open-change` can cancel opening or dismissal. A controlled parent that refuses a close keeps the calendar interactive without returning focus to the trigger. After an accepted close, focus returns to the trigger unless the reason is `outside-click`.
 
 ## API Reference
 
@@ -282,6 +284,8 @@ Value `details.reason` can be `input`, `keyboard`, `paste`, `blur`, `clear`, or 
 Plain `class` applies to the Date Field root. Use `ui.segment` for generated inputs and data variants for state styling.
 
 ### Keyboard
+
+Segments keep native Tab stops and text selection. IME composition and modified text-editing shortcuts do not change the date or move focus. Canceled edits or updates refused by a controlled parent restore the accepted value without auto-advancing.
 
 | Key | Behavior |
 |-----|----------|

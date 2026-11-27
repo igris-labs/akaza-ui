@@ -140,6 +140,18 @@ Cancel a proposed step change until application validation passes. Akaza does no
 </template>
 ```
 
+### Right-to-left navigation
+
+Set `dir="rtl"` to reverse horizontal arrow movement. Manual activation remains the default: arrows move focus, then Enter or Space selects the step.
+
+```vue
+<template>
+  <Stepper v-model="step" :items="items" :linear="false" dir="rtl" show-controls />
+</template>
+```
+
+Give steps explicit, stable values when changing their order. Numeric `0` and string `"0"` remain distinct values. Next and previous controls follow permitted item order, not visual text direction.
+
 ## API Reference
 
 ### Model
@@ -269,3 +281,5 @@ Plain `class` applies to the root wrapper. Use `ui.trigger`, `ui.indicator`, and
 | `Enter` / `Space` | Activate focused step in manual mode. |
 
 With `activationMode="automatic"`, arrow-key focus also activates the destination step.
+
+Disabled and locked steps are skipped. Canceling `value-change` leaves the selected step unchanged, even if focus moved. `Home` and `End` use item order. Modified arrow keys and IME composition do not advance the flow. Programmatic navigation and next/previous controls update the tab stop without moving focus away from the control used.

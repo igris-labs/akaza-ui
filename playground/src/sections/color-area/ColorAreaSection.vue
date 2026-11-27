@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { ColorFormat } from "akaza-ui";
+import type { AkazaChangeEventDetails, ColorFormat } from "akaza-ui";
 import { COLOR_FORMATS, ColorArea, ColorPicker, ColorSlider } from "akaza-ui";
 import { ref } from "vue";
 import { hueAreaUi, sliderUi } from "../color/styles";
@@ -8,6 +8,10 @@ const color = ref("#56d799");
 const formattedColor = ref("#56d799");
 const format = ref<ColorFormat>("hex");
 const rtlColor = ref("#56d799");
+const lastCommit = ref("No commit yet.");
+function onCommit(value: string, details: AkazaChangeEventDetails) {
+  lastCommit.value = `${value}, reason: ${details.reason}, event: ${details.event?.type ?? "none"}`;
+}
 </script>
 <template>
   <section id="color-area">
@@ -29,6 +33,7 @@ const rtlColor = ref("#56d799");
             v-slot="{ getChannel }"
             :ui="{ root: 'grid w-full max-w-64 gap-3' }"
             aria-label="Brand color controls"
+            @value-commit="onCommit"
           >
             <ColorArea
               color-space="hsl"
@@ -62,6 +67,7 @@ const rtlColor = ref("#56d799");
               />
             </label>
           </ColorPicker>
+          <output aria-label="Last area commit" class="break-all font-mono text-xs text-muted-foreground">{{ lastCommit }}</output>
         </div>
       </div>
       <div>
@@ -126,6 +132,7 @@ const rtlColor = ref("#56d799");
           </ColorPicker>
           <output
             class="block break-all font-mono text-xs"
+            aria-label="Formatted color"
             aria-live="polite"
           >
             {{ formattedColor }}

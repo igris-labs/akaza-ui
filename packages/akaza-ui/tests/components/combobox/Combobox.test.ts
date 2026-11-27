@@ -1,7 +1,9 @@
-import { mount } from "@vue/test-utils";
-import { describe, expect, it } from "vitest";
+import { enableAutoUnmount, mount } from "@vue/test-utils";
+import { afterEach, describe, expect, it } from "vitest";
 import { defineComponent, ref } from "vue";
 import { Combobox } from "@/components/combobox";
+
+enableAutoUnmount(afterEach);
 
 describe("combobox", () => {
   it("treats focus falling back to a focusable ancestor as scrollbar interaction", async () => {
@@ -61,7 +63,7 @@ describe("combobox", () => {
       (wrapper.get(".akaza-combobox-input").element as HTMLInputElement).focus();
       await wrapper.vm.$nextTick();
       await wrapper.get(".akaza-combobox-viewport").trigger("pointerdown");
-      document.body.dispatchEvent(new Event("pointerdown", { bubbles: true }));
+      document.body.dispatchEvent(new MouseEvent("pointerdown", { bubbles: true }));
       await wrapper.vm.$nextTick();
       expect(wrapper.find(".akaza-combobox-content").exists()).toBe(false);
       expect(wrapper.emitted("open-change")?.at(-1)?.[1]).toMatchObject({ reason: "outside-click" });

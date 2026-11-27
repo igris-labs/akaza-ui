@@ -15,6 +15,7 @@ import {
 
 const linearStep = ref(1);
 const freeStep = ref("account");
+const rtlStep = ref(1);
 const steps = [
   { value: 1, title: "Account", description: "Identity", content: "Collect account details." },
   { value: 2, title: "Workspace", description: "Configuration", content: "Configure workspace defaults." },
@@ -63,6 +64,22 @@ const verticalSteps = [
         <div :class="[canvasGrid, 'sm:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]']">
           <Stepper v-model="freeStep" :items="verticalSteps" :linear="false" orientation="vertical" :ui="stepperVerticalUi" />
           <code :class="codePill">active: {{ freeStep }}</code>
+        </div>
+      </div>
+
+      <div>
+        <h3 :class="exampleTitle">Right-to-left manual navigation</h3>
+        <div :class="canvasCol">
+          <Stepper
+            v-model="rtlStep"
+            :items="steps"
+            :linear="false"
+            dir="rtl"
+            aria-label="RTL steps"
+            show-controls
+            :ui="stepperUi"
+          />
+          <code :class="codePill">selected step: {{ rtlStep }}</code>
         </div>
       </div>
     </div>

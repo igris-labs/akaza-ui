@@ -2,13 +2,16 @@
 import type { ComponentPublicInstance } from "vue";
 import type { ListboxModelValue, ListboxOption, ListboxProps, ListboxValue } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
-import { useVirtualList } from "@vueuse/core";
+import { isComposing } from "@ui-sdk/core";
 import { computed, inject, nextTick, onMounted, onUpdated, ref, useId } from "vue";
-import { useTypeahead } from "../../composables/typeahead";
+import { useCollectionSelection } from "../../composables/internal/sdk/useCollectionSelection";
+import { useCollectionVirtualizer } from "../../composables/internal/sdk/useCollectionVirtualizer";
+import { useListNavigation } from "../../composables/internal/sdk/useListNavigation";
+import { useTypeaheadSearch } from "../../composables/internal/sdk/useTypeaheadSearch";
 import { createChangeDetails as emitDetails } from "../../utils/changeEvent";
+import { scrollWithin } from "../../utils/scrollWithin";
 import { useFieldControl } from "../../utils/useFieldControl";
 import { useFormReset } from "../../utils/useFormReset";
-import { nextEnabledIndex } from "../../utils/useRovingFocus";
 import { fieldContextKey } from "../field/context";
 
 const {
@@ -70,7 +73,6 @@ const focused = ref(false);
 const touched = ref(false);
 const validationActive = ref(false);
 const { nativeInvalid, syncValidity, registerControl } = useFieldControl(field);
-const { push: pushTypeahead } = useTypeahead();
 let previousActiveIndex = -1;
 
 const initialValue: ListboxModelValue = Array.isArray(model.value) ? [...model.value] : model.value;
@@ -98,18 +100,33 @@ const visibleOptions = computed(() => {
     return getLabel(option).toLowerCase().includes(query);
   });
 });
+const typeahead = useTypeaheadSearch({ items: () => visibleOptions.value, label: getLabel, disabled: isItemDisabled });
 const hasSelectableOption = computed(() => visibleOptions.value.some(isSelectableOption));
 const activeOption = computed(() => activeIndex.value >= 0 ? visibleOptions.value[activeIndex.value] : undefined);
 const state = computed(() => isFilled.value ? "selected" : "empty");
+const navigationItems = computed(() => visibleOptions.value.map((option, index) => ({
+  value: optionId(index),
+  label: getLabel(option),
+  disabled: isItemDisabled(option),
+})));
+const indexById = computed(() => new Map(navigationItems.value.map((item, index) => [item.value, index])));
+const navigation = useListNavigation({
+  items: () => navigationItems.value,
+  active: () => activeOption.value ? optionId(activeIndex.value) : null,
+  loop: () => loop,
+});
 
 const {
-  list: virtualRows,
+  rows: virtualRows,
   scrollTo: scrollToVirtualIndex,
-  containerProps: virtualContainerProps,
-  wrapperProps: virtualWrapperProps,
-} = useVirtualList(visibleOptions, {
+  wrapperStyle: virtualWrapperStyle,
+} = useCollectionVirtualizer({
+  rows: () => visibleOptions.value,
+  key: getOptionKey,
   itemHeight: () => virtualItemHeight,
-  overscan,
+  overscan: () => overscan,
+  enabled: () => virtualize,
+  viewport: listboxRef,
 });
 const renderedRows = computed(() => virtualize
   ? virtualRows.value
@@ -204,7 +221,7 @@ function updateValidity(reveal = validationActive.value) {
 }
 
 function commitValue(value: ListboxModelValue, reason: string, event?: Event): boolean {
-  if (isDisabled.value || readOnly) return false;
+  if (isDisabled.value || readOnly || hiddenRef.value?.matches(":disabled")) return false;
   const change = emitDetails(reason, event);
   emit("value-change", value, change.details);
   if (change.canceled()) return false;
@@ -223,28 +240,29 @@ function setSearch(value: string, reason: string, event?: Event): boolean {
   return true;
 }
 
-function rangeValues(from: number, to: number): ListboxValue[] {
-  const [start, end] = from <= to ? [from, to] : [to, from];
-  return visibleOptions.value
-    .slice(start, end + 1)
-    .filter((option) => !isItemDisabled(option))
-    .map(getValue);
-}
+const selection = useCollectionSelection<ListboxValue>({
+  value: () => selectedValues.value,
+  equals: valuesEqual,
+  change: (values, reason, event) => commitValue(multiple ? values : values[0] ?? nullableValue, reason, event),
+});
 
-function nextValueFor(option: ListboxOption, index: number, event?: MouseEvent | KeyboardEvent): ListboxModelValue {
-  const value = getValue(option);
-  if (!multiple) return value;
-  if (event?.shiftKey && selectionAnchor.value >= 0) return rangeValues(selectionAnchor.value, index);
-  if (selectionBehavior === "replace" && !event?.ctrlKey && !event?.metaKey) return [value];
-  return isOptionSelected(option)
-    ? selectedValues.value.filter((item) => !valuesEqual(item, value))
-    : [...selectedValues.value, value];
+function selectRange(index: number, reason: string, event?: Event): boolean {
+  return selection.replaceRange(
+    visibleOptions.value.map(option => ({ value: getValue(option), disabled: isItemDisabled(option) })),
+    Math.min(selectionAnchor.value, visibleOptions.value.length - 1),
+    index,
+    reason,
+    event,
+  );
 }
 
 function selectOption(option: ListboxOption, index: number, event?: MouseEvent | KeyboardEvent) {
   if (readOnly || isItemDisabled(option)) return;
-  const value = nextValueFor(option, index, event);
-  if (commitValue(value, event ? "select" : "programmatic", event)) {
+  const reason = event ? "select" : "programmatic";
+  const accepted = multiple && event?.shiftKey && selectionAnchor.value >= 0
+    ? selectRange(index, reason, event)
+    : selection.select(getValue(option), multiple && (selectionBehavior === "toggle" || Boolean(event?.ctrlKey || event?.metaKey)), reason, event);
+  if (accepted) {
     if (!event?.shiftKey) selectionAnchor.value = index;
     setActive(index, "select", event);
   }
@@ -254,21 +272,21 @@ function clear(event?: Event) {
   commitValue(multiple ? [] : nullableValue, "clear", event);
 }
 
-function findEnabledIndex(start = 0, direction = 1): number {
-  const count = visibleOptions.value.length;
-  if (!count) return -1;
-  let index = Math.min(Math.max(start, 0), count - 1);
-  for (let step = 0; step < count; step++) {
-    if (!isItemDisabled(visibleOptions.value[index]!)) return index;
-    index += direction;
-    if (loop) index = (index + count) % count;
-    else if (index < 0 || index >= count) return -1;
-  }
-  return -1;
+function optionId(index: number): string {
+  return `${listboxId.value}-option-${index}`;
+}
+
+function navigationIndex(step: number | "first" | "last", event?: Event): number {
+  const key = navigation.move(step, event);
+  return key === null ? -1 : indexById.value.get(key) ?? -1;
+}
+
+function findEnabledIndex(): number {
+  return navigationIndex("first");
 }
 
 function findLastEnabledIndex(): number {
-  return findEnabledIndex(visibleOptions.value.length - 1, -1);
+  return navigationIndex("last");
 }
 
 function setOptionRef(element: Element | ComponentPublicInstance | null, index: number) {
@@ -278,21 +296,21 @@ function setOptionRef(element: Element | ComponentPublicInstance | null, index: 
 function setListboxRef(element: Element | ComponentPublicInstance | null) {
   const target = element as HTMLElement | null;
   listboxRef.value = target;
-  virtualContainerProps.ref.value = target;
 }
 
-function setActive(index: number, reason: string, event?: Event) {
+function setActive(index: number, reason: string, event?: Event): boolean {
   const option = visibleOptions.value[index];
-  if (!option || isItemDisabled(option) || activeIndex.value === index) return;
+  if (!option || isItemDisabled(option) || activeIndex.value === index) return false;
   const change = emitDetails(reason, event);
   emit("highlight-change", option, change.details);
-  if (change.canceled()) return;
+  if (change.canceled()) return false;
   activeIndex.value = index;
   if (virtualize && (reason === "keyboard" || reason === "typeahead")) {
     scrollToVirtualIndex(index);
   } else if (!virtualize && reason !== "pointer") {
-    optionRefs.value[index]?.scrollIntoView?.({ block: "nearest" });
+    scrollWithin(optionRefs.value[index], listboxRef.value);
   }
+  return true;
 }
 
 function clearActive(reason: string, event?: Event) {
@@ -319,16 +337,26 @@ function onPointerLeave(event: PointerEvent) {
 }
 
 function move(delta: number, event: KeyboardEvent) {
-  const next = nextEnabledIndex(visibleOptions.value, activeIndex.value, delta, loop, isItemDisabled);
-  if (next < 0) return;
-  setActive(next, "keyboard", event);
+  const next = navigationIndex(delta, event);
+  if (next < 0 || !setActive(next, "keyboard", event)) return;
   if (multiple && event.shiftKey && selectionAnchor.value >= 0 && !readOnly) {
-    commitValue(rangeValues(selectionAnchor.value, next), "range", event);
+    selectRange(next, "range", event);
   }
 }
 
 function onKeydown(event: KeyboardEvent) {
-  if (isDisabled.value) return;
+  if (isDisabled.value || hiddenRef.value?.matches(":disabled") || event.defaultPrevented || isComposing(event)) return;
+  if (multiple && event.key.toLowerCase() === "a" && (event.ctrlKey || event.metaKey) && !event.altKey) {
+    event.preventDefault();
+    commitValue(visibleOptions.value.filter((option) => !isItemDisabled(option)).map(getValue), "select-all", event);
+    return;
+  }
+  if (event.ctrlKey || event.metaKey || event.altKey) return;
+  if (event.key === " " && typeahead.active()) {
+    const match = typeahead.search(event, activeIndex.value);
+    if (match >= 0) setActive(match, "typeahead", event);
+    return;
+  }
   const previousKey = orientation === "vertical" ? "ArrowUp" : dir === "rtl" ? "ArrowRight" : "ArrowLeft";
   const nextKey = orientation === "vertical" ? "ArrowDown" : dir === "rtl" ? "ArrowLeft" : "ArrowRight";
   if (event.key === previousKey || event.key === nextKey) {
@@ -345,14 +373,8 @@ function onKeydown(event: KeyboardEvent) {
       event.preventDefault();
       selectOption(activeOption.value, activeIndex.value, event);
     }
-  } else if (multiple && event.key.toLowerCase() === "a" && (event.ctrlKey || event.metaKey)) {
-    event.preventDefault();
-    commitValue(visibleOptions.value.filter((option) => !isItemDisabled(option)).map(getValue), "select-all", event);
-  } else if (event.key.length === 1 && !event.altKey && !event.ctrlKey && !event.metaKey) {
-    const typeahead = pushTypeahead(event.key.toLowerCase());
-    const match = visibleOptions.value.findIndex((option) =>
-      !isItemDisabled(option) && getLabel(option).toLowerCase().startsWith(typeahead),
-    );
+  } else {
+    const match = typeahead.search(event, activeIndex.value);
     if (match >= 0) setActive(match, "typeahead", event);
   }
 }
@@ -363,6 +385,7 @@ function onFilterInput(event: Event) {
 }
 
 function onFilterKeydown(event: KeyboardEvent) {
+  if (isDisabled.value || event.defaultPrevented || isComposing(event) || event.ctrlKey || event.metaKey || event.altKey) return;
   if (event.key === "ArrowDown" || event.key === "ArrowUp") {
     event.preventDefault();
     listboxRef.value?.focus();
@@ -391,6 +414,7 @@ function onFocusIn(event: FocusEvent) {
 
 function onFocusOut(event: FocusEvent) {
   if (rootRef.value?.contains(event.relatedTarget as Node | null)) return;
+  typeahead.reset();
   focused.value = false;
   touched.value = true;
   validationActive.value = true;
@@ -430,6 +454,7 @@ onUpdated(() => {
 <template>
   <div
     ref="rootRef"
+    :dir="dir"
     :class="ui?.root"
     class="akaza-listbox"
     :data-akaza-state="state"
@@ -500,9 +525,8 @@ onUpdated(() => {
       :aria-required="isRequired || undefined"
       :aria-invalid="isInvalid || undefined"
       :class="ui?.content"
-      :style="virtualize ? [virtualContainerProps.style, virtualContainerStyle] : undefined"
+      :style="virtualContainerStyle"
       class="akaza-listbox-content"
-      @scroll="virtualize && virtualContainerProps.onScroll()"
       @keydown="onKeydown"
       @pointerenter="onPointerEnter"
       @pointerleave="onPointerLeave"
@@ -517,7 +541,7 @@ onUpdated(() => {
       <div
         v-else
         :class="ui?.virtualWrapper"
-        :style="virtualize ? virtualWrapperProps.style : undefined"
+        :style="virtualize ? virtualWrapperStyle : undefined"
         class="akaza-listbox-virtual-wrapper"
       >
         <template

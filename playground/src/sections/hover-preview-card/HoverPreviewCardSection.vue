@@ -1,15 +1,25 @@
 <script setup lang="ts">
 import { HoverPreviewCard } from "akaza-ui";
+import type { AkazaChangeEventDetails } from "akaza-ui";
 import { ref } from "vue";
 import {
   canvasCol,
   codePill,
   hoverPreviewCardUi,
+  eventEntry,
+  eventLog as eventLogClass,
   sectionDescription,
   sectionTitle,
 } from "../styles";
 
 const open = ref(false);
+const blockEscape = ref(false);
+const eventLog = ref<string[]>([]);
+
+function onOpenChange(next: boolean, details: AkazaChangeEventDetails) {
+  if (!next && details.reason === "escape" && blockEscape.value) details.cancel();
+  eventLog.value = [`${next ? "opened" : "closed"}: ${details.reason}${!next && details.reason === "escape" && blockEscape.value ? " (blocked)" : ""}`, ...eventLog.value].slice(0, 5);
+}
 </script>
 
 <template>
@@ -57,6 +67,7 @@ const open = ref(false);
           side="top"
           :open-delay="0"
           :ui="hoverPreviewCardUi"
+          @open-change="onOpenChange"
         >
           <template #trigger="{ triggerProps }">
             <button
@@ -67,7 +78,7 @@ const open = ref(false);
               Interactive release preview
             </button>
           </template>
-          <template #content>
+          <template #content="{ close }">
             <div class="grid gap-2">
               <p class="text-sm font-semibold text-foreground">0.0.11-alpha</p>
               <button
@@ -76,10 +87,22 @@ const open = ref(false);
               >
                 View changes
               </button>
+              <button
+                type="button"
+                class="text-xs text-primary underline underline-offset-4"
+                @click="close('done', $event)"
+              >Close preview</button>
             </div>
           </template>
         </HoverPreviewCard>
         <code :class="[codePill, 'ml-3']">open: {{ open }}</code>
+        <label class="mt-3 flex items-center gap-2 text-xs text-foreground">
+          <input v-model="blockEscape" type="checkbox">
+          Block Escape close
+        </label>
+        <div v-if="eventLog.length" :class="eventLogClass">
+          <code v-for="(entry, index) in eventLog" :key="index" :class="eventEntry">{{ entry }}</code>
+        </div>
       </div>
     </div>
   </section>

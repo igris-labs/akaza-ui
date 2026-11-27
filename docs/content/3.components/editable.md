@@ -65,6 +65,12 @@ Choose when the preview enters edit mode. `focus` is keyboard-friendly and is th
 
 `submitMode` controls automatic submission. Escape always cancels. In multiline mode, `Ctrl+Enter` or `Cmd+Enter` submits when Enter submission is enabled.
 
+Unchanged values still emit cancelable `value-change` and `submit` events. Canceling either event keeps the draft open. Keys used by an IME, including legacy key code 229, do not submit or cancel the draft. Tab follows native focus order; moving to an action inside the editor does not count as leaving the editor.
+
+`draft-change` is synchronous and cancelable: rejection restores the last accepted draft in the input. Canceling `cancel` keeps that draft and the editing session open. Event details preserve the original native event and Akaza reason, including a custom reason passed to `submit(event, reason)`.
+
+Sessions use the SDK inline-edit behavior internally. Akaza retains its flat Vue API, submission-event policy, native focus/selection, and committed-value form control; no SDK parts or provider are required.
+
 ```vue
 <template>
   <Editable
@@ -89,9 +95,17 @@ Set `submitMode="none"` when only the generated submit button or exposed method 
 </template>
 ```
 
+### Controlled updates
+
+`v-model` is the only committed value. If a parent refuses `update:modelValue`, an accepted submit still closes editing, but the preview and native form value stay at the parent's value. The next edit starts from that value, not the refused draft. An external model update during editing does not overwrite the active draft; cancel restores the latest parent value.
+
+This differs from `details.cancel()` on `value-change` or `submit`, which rejects submission and keeps editing open.
+
 ### Field and form integration
 
 Inside [Field](/components/field), `Editable` inherits id, name, required, disabled, and description metadata. Its hidden native control submits only the committed value.
+
+An empty required draft cannot finish editing. Disabling or making an open editor read-only blocks submission without discarding its draft.
 
 ```vue
 <template>

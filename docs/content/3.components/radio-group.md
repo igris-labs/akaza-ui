@@ -123,6 +123,18 @@ RadioGroup inherits Field name, required/disabled state, label, description, and
 
 Native reset restores the initial selection unless canceled. Unselected required groups reveal errors after interaction or submission, not on initial render.
 
+## Text direction
+
+Set `dir="rtl"` on a parent to reverse horizontal arrow movement. Set `:loop="false"` to stop at the first and last enabled options.
+
+```vue
+<template>
+  <div dir="rtl">
+    <RadioGroup v-model="value" :options="options" orientation="horizontal" :loop="false" />
+  </div>
+</template>
+```
+
 ## API Reference
 
 ### Props
@@ -188,10 +200,10 @@ Native reset restores the initial selection unless canceled. Unselected required
 
 | Key | Behavior |
 |-----|----------|
-| `ArrowUp` / `ArrowDown` | Selects and focuses previous/next enabled item in vertical groups. |
-| `ArrowLeft` / `ArrowRight` | Selects and focuses previous/next enabled item in horizontal groups. |
+| `ArrowUp` / `ArrowDown` | Selects and focuses previous/next enabled item in either orientation. |
+| `ArrowLeft` / `ArrowRight` | Selects and focuses previous/next enabled item, respecting text direction, in either orientation. |
 | `Home` / `End` | Selects and focuses first or last enabled item. |
 | `Space` | Selects focused radio. |
 | `Tab` | Enters group at selected item, or first enabled item. |
 
-Arrow navigation wraps when `loop` is true and skips disabled items.
+Arrow navigation wraps when `loop` is true and skips disabled items. Horizontal arrows follow inherited text direction. `Home` and `End` use option order. IME composition and modified arrow keys do not change selection. Canceling `value-change` keeps the current value and native form data; focus can still move to another option.

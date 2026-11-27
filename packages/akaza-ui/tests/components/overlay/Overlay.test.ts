@@ -1,4 +1,4 @@
-import { mount } from "@vue/test-utils";
+import { enableAutoUnmount, mount } from "@vue/test-utils";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { defineComponent, nextTick, ref } from "vue";
 import { AlertDialog } from "@/components/alert-dialog";
@@ -7,6 +7,11 @@ import { Drawer } from "@/components/drawer";
 import { Menu } from "@/components/menu";
 import { Popover } from "@/components/popover";
 import { Tooltip } from "@/components/tooltip";
+import { outsidePress } from "../dialog/popup-fixture";
+import { installPopupTestEnvironment, settlePopup } from "../popover/popupTestEnvironment";
+
+enableAutoUnmount(afterEach);
+installPopupTestEnvironment();
 
 afterEach(() => {
   vi.useRealTimers();
@@ -33,17 +38,16 @@ describe("overlay components", () => {
     trigger.element.focus();
 
     await trigger.trigger("click");
-    await nextTick();
+    await settlePopup();
     const dialog = wrapper.get("[role='dialog']");
     expect(dialog.attributes("aria-modal")).toBe("true");
     expect(dialog.attributes("aria-labelledby")).toBe(wrapper.get(".akaza-dialog-title").attributes("id"));
-    expect(document.body.style.overflow).toBe("hidden");
+    expect(document.documentElement.style.overflow).toBe("hidden");
     expect(document.activeElement).toBe(wrapper.get(".dialog-action").element);
 
-    await wrapper.get(".akaza-dialog-overlay").trigger("click");
-    await nextTick();
+    await outsidePress(wrapper.get(".akaza-dialog-overlay").element);
     expect(wrapper.find("[role='dialog']").exists()).toBe(false);
-    expect(document.body.style.overflow).toBe("");
+    expect(document.documentElement.style.overflow).toBe("");
     expect(document.activeElement).toBe(trigger.element);
     wrapper.unmount();
   });
@@ -70,7 +74,7 @@ describe("overlay components", () => {
     await nextTick();
     await nextTick();
 
-    window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true }));
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true }));
     await nextTick();
     expect((wrapper.vm as unknown as { alertOpen: boolean }).alertOpen).toBe(true);
     expect((wrapper.vm as unknown as { dialogOpen: boolean }).dialogOpen).toBe(true);
@@ -78,7 +82,7 @@ describe("overlay components", () => {
 
     (wrapper.vm as unknown as { alertOpen: boolean }).alertOpen = false;
     await nextTick();
-    window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true }));
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true }));
     await nextTick();
     expect((wrapper.vm as unknown as { dialogOpen: boolean }).dialogOpen).toBe(false);
     wrapper.unmount();
@@ -121,14 +125,14 @@ describe("overlay components", () => {
 
     expect(trigger.attributes("aria-expanded")).toBe("true");
     expect(trigger.attributes("aria-controls")).toBe(wrapper.get(".akaza-popover-content").attributes("id"));
-    window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true }));
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true }));
     await nextTick();
     expect((wrapper.vm as unknown as { popoverOpen: boolean }).popoverOpen).toBe(false);
     expect((wrapper.vm as unknown as { dialogOpen: boolean }).dialogOpen).toBe(true);
     wrapper.unmount();
   });
 
-  it("opens Tooltip from child focus after its delay and restores focus on Escape", async () => {
+  it("opens Tooltip from keyboard focus and hides it on Escape without moving focus", async () => {
     vi.useFakeTimers();
     const wrapper = mount(Tooltip, {
       attachTo: document.body,
@@ -138,22 +142,21 @@ describe("overlay components", () => {
         content: "Helpful text",
       },
     });
-    const trigger = wrapper.get(".tooltip-button");
+    await nextTick();
+    const trigger = wrapper.get<HTMLButtonElement>(".tooltip-button");
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Tab", bubbles: true }));
     trigger.element.focus();
-    await wrapper.get(".akaza-tooltip-trigger").trigger("focusin");
-    vi.advanceTimersByTime(100);
-    await nextTick();
-    await nextTick();
+    await vi.advanceTimersByTimeAsync(40);
 
     const tooltip = wrapper.get("[role='tooltip']");
     expect(trigger.attributes("aria-describedby")).toBe(tooltip.attributes("id"));
     expect(wrapper.get(".akaza-tooltip-trigger").attributes("aria-describedby")).toBe(tooltip.attributes("id"));
     expect(tooltip.find(".akaza-tooltip-arrow").exists()).toBe(true);
 
-    window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true }));
-    vi.runAllTimers();
-    await nextTick();
-    expect(wrapper.find("[role='tooltip']").exists()).toBe(false);
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true }));
+    await vi.advanceTimersByTimeAsync(40);
+    expect(tooltip.attributes("hidden")).toBeDefined();
+    expect(tooltip.attributes("data-akaza-state")).toBe("closed");
     expect(document.activeElement).toBe(trigger.element);
     wrapper.unmount();
   });

@@ -114,6 +114,25 @@ function mergeAttrs(
   return typeof attrs === "function" ? attrs(context as never) : attrs ?? {};
 }
 
+/**
+ * Build table state without rendering a table. Call in setup.
+ * Pass refs or getters for rows and columns that change, and a stable key for each row.
+ * The controller gives you the rows to display and actions for sorting, filtering,
+ * selection, and pagination. Your template supplies the table and its controls.
+ *
+ * @example
+ * ```ts
+ * import { useDataTable } from "akaza-ui";
+ * import { ref } from "vue";
+ *
+ * const data = ref([{ id: "ada", name: "Ada" }]);
+ * const table = useDataTable({
+ *   data,
+ *   columns: [{ accessor: "name", header: "Name" }],
+ *   rowKey: "id",
+ * });
+ * ```
+ */
 export function useDataTable<T extends object>(options: UseDataTableOptions<T>): DataTableController<T> {
   const selection = options.selection ?? shallowRef<DataTableSelection>(null);
   const sorting = options.sorting ?? shallowRef<DataTableSorting[]>([]);

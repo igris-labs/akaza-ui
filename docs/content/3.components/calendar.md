@@ -145,7 +145,7 @@ Ranges containing disabled or unavailable dates are rejected by default. Set `al
 
 ### Multiple months
 
-`numberOfMonths` renders adjacent grids. Add `pagedNavigation` when previous and next should move by the full visible month count.
+`numberOfMonths` renders adjacent grids with one shared day tab stop. When a date also appears as an outside day in another grid, only its own month's copy holds that tab stop and receives programmatic focus. Add `pagedNavigation` when previous and next should move by the full visible month count.
 
 ```vue
 <Calendar
@@ -207,7 +207,7 @@ Both selection and visible-month changes emit cancelable details before updating
 
 ## Controlled pages and initial focus
 
-The initial focus target follows the displayed placeholder instead of assuming today's month is visible. Controlled paging keeps one eligible day as the grid tab stop without moving DOM focus when props change. Pages with no enabled days have no day tab stop, so keep the navigation controls accessible.
+The initial focus target follows the displayed placeholder instead of assuming today's month is visible. Controlled paging keeps one eligible day as the grid tab stop. If a prop change removes the focused day, focus moves to an enabled day on the new page. It does not move focus from navigation buttons or another control. Pages with no enabled days have no day tab stop, so keep the navigation controls accessible.
 
 Date formatters are reused per component and follow the value's calendar as well as the requested locale.
 

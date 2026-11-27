@@ -3,8 +3,8 @@ import type { AlertDialogProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
 import { useId, useTemplateRef } from "vue";
 import { useAlertDialog } from "../../composables/alert-dialog";
+import { usePopup } from "../../composables/internal/sdk/usePopup";
 import { createChangeDetails, resolveAction } from "../../utils/changeEvent";
-import { useModalLifecycle } from "../../utils/useModalLifecycle";
 
 const {
   as = "div",
@@ -22,45 +22,50 @@ const emit = defineEmits<{
 }>();
 
 const model = defineModel<boolean>({ default: false });
-const { isOpen, open: _open, close: _close, toggle: _toggle } = useAlertDialog(model);
+const { isOpen, open: _open, close: _close } = useAlertDialog(model);
 
 const contentRef = useTemplateRef<HTMLElement>("contentRef");
 const overlayRef = useTemplateRef<HTMLElement>("overlayRef");
 const titleId = useId();
 const descriptionId = useId();
-const { layerOrder, captureRestoreTarget } = useModalLifecycle({
+const popup = usePopup({
+  kind: "alertdialog",
   open: isOpen,
   content: contentRef,
-  overlay: overlayRef,
-  onEscape: () => {},
-  initialFocusSelector: "[data-akaza-cancel]",
+  backdrop: overlayRef,
+  get initialFocus() {
+    return contentRef.value?.querySelector("[data-akaza-cancel]") ? "[data-akaza-cancel]" : "auto";
+  },
+  transition: () => transition,
+  backdropTransition: () => transition === false ? false : "akaza-alert-dialog-overlay",
+  request(nextOpen, sdkReason, event) {
+    if (sdkReason === "escape-key" || sdkReason === "outside-press") return;
+    handleChange(nextOpen, sdkReason, event);
+  },
 });
-
-
-
+const { present, contentAttrs, backdropAttrs, style: popupStyle, layerOrder } = popup;
 
 function handleChange(open: boolean, reason: string, event?: Event) {
   const changeEvent = createChangeDetails(reason, event);
   emit('open-change', open, changeEvent.details);
   if (changeEvent.canceled()) return;
-  if (open) captureRestoreTarget(event);
   open ? _open() : _close();
 }
 
 function open(reasonOrEvent?: string | Event, event?: Event) {
   const details = resolveAction(reasonOrEvent, event);
-  handleChange(true, details.reason, details.event);
+  popup.setOpen(true, details.reason, details.event);
 }
 function close(reasonOrEvent?: string | Event, event?: Event) {
   const details = resolveAction(reasonOrEvent, event);
-  handleChange(false, details.reason, details.event);
+  popup.setOpen(false, details.reason, details.event);
 }
 function toggle(reasonOrEvent?: string | Event, event?: Event) {
   const details = resolveAction(reasonOrEvent, event);
-  handleChange(!isOpen.value, details.reason, details.event);
+  popup.setOpen(!isOpen.value, details.reason, details.event);
 }
 
-// Alert dialogs must NOT close on backdrop click or Escape — WAI-ARIA spec.
+// Akaza alert dialogs require an explicit response instead of Escape or backdrop dismissal.
 
 defineExpose({ open, close, toggle, titleId, descriptionId });
 </script>
@@ -78,81 +83,79 @@ defineExpose({ open, close, toggle, titleId, descriptionId });
     :to="typeof teleport === 'string' ? teleport : 'body'"
     :disabled="teleport === false"
   >
-    <Transition name="akaza-alert-dialog-overlay">
+    <div
+      v-if="present"
+      ref="overlayRef"
+      v-bind="backdropAttrs"
+      :class="ui?.overlay"
+      :style="{ '--akaza-dialog-duration': `${duration}ms`, '--akaza-layer-order': layerOrder }"
+      class="akaza-alert-dialog-overlay"
+      :data-akaza-backdrop-motion="transition === false ? undefined : ''"
+      :data-akaza-state="isOpen ? 'open' : 'closed'"
+    />
+    <component
+      :is="as"
+      v-if="present"
+      ref="contentRef"
+      v-bind="contentAttrs"
+      role="alertdialog"
+      aria-modal="true"
+      :aria-labelledby="($slots.title || title) ? titleId : undefined"
+      :aria-label="!($slots.title || title) ? ariaLabel : undefined"
+      :aria-describedby="($slots.description || description) ? descriptionId : undefined"
+      :class="ui?.content"
+      :style="{ ...popupStyle, '--akaza-dialog-duration': `${duration}ms`, '--akaza-layer-order': layerOrder }"
+      class="akaza-alert-dialog-content"
+      :data-akaza-state="isOpen ? 'open' : 'closed'"
+      tabindex="-1"
+    >
       <div
-        v-if="isOpen"
-        ref="overlayRef"
-        :class="ui?.overlay"
-        :style="{ '--akaza-dialog-duration': `${duration}ms`, '--akaza-layer-order': layerOrder }"
-        class="akaza-alert-dialog-overlay"
-        data-akaza-state="open"
-      />
-    </Transition>
+        v-if="$slots.header || $slots.title || title"
+        :class="ui?.header"
+        class="akaza-alert-dialog-header"
+      >
+        <slot name="header" :close="close" :title-id="titleId">
+          <div
+            v-if="$slots.title || title"
+            :id="titleId"
+            :class="ui?.title"
+            class="akaza-alert-dialog-title"
+          >
+            <slot name="title">{{ title }}</slot>
+          </div>
+        </slot>
+      </div>
 
-    <Transition v-bind="typeof transition === 'string' ? { name: transition } : {}">
-      <component
-        :is="as"
-        v-if="isOpen"
-        ref="contentRef"
-        role="alertdialog"
-        aria-modal="true"
-        :aria-labelledby="($slots.title || title) ? titleId : undefined"
-        :aria-label="!($slots.title || title) ? ariaLabel : undefined"
-        :aria-describedby="($slots.description || description) ? descriptionId : undefined"
-        :class="ui?.content"
-        :style="{ '--akaza-dialog-duration': `${duration}ms`, '--akaza-layer-order': layerOrder }"
-        class="akaza-alert-dialog-content"
-        data-akaza-state="open"
-        tabindex="-1"
+      <div
+        :class="ui?.body"
+        class="akaza-alert-dialog-body"
       >
         <div
-          v-if="$slots.header || $slots.title || title"
-          :class="ui?.header"
-          class="akaza-alert-dialog-header"
+          v-if="$slots.description || description"
+          :id="descriptionId"
+          :class="ui?.description"
+          class="akaza-alert-dialog-description"
         >
-          <slot name="header" :close="close" :title-id="titleId">
-            <div
-              v-if="$slots.title || title"
-              :id="titleId"
-              :class="ui?.title"
-              class="akaza-alert-dialog-title"
-            >
-              <slot name="title">{{ title }}</slot>
-            </div>
-          </slot>
+          <slot name="description">{{ description }}</slot>
         </div>
+        <slot
+          name="body"
+          :close="close"
+          :description-id="descriptionId"
+        />
+      </div>
 
-        <div
-          :class="ui?.body"
-          class="akaza-alert-dialog-body"
-        >
-          <div
-            v-if="$slots.description || description"
-            :id="descriptionId"
-            :class="ui?.description"
-            class="akaza-alert-dialog-description"
-          >
-            <slot name="description">{{ description }}</slot>
-          </div>
-          <slot
-            name="body"
-            :close="close"
-            :description-id="descriptionId"
-          />
-        </div>
-
-        <div
-          v-if="$slots.footer"
-          :class="ui?.footer"
-          class="akaza-alert-dialog-footer"
-        >
-          <slot
-            name="footer"
-            :close="close"
-          />
-        </div>
-      </component>
-    </Transition>
+      <div
+        v-if="$slots.footer"
+        :class="ui?.footer"
+        class="akaza-alert-dialog-footer"
+      >
+        <slot
+          name="footer"
+          :close="close"
+        />
+      </div>
+    </component>
   </Teleport>
 </template>
 
@@ -172,14 +175,25 @@ defineExpose({ open, close, toggle, titleId, descriptionId });
     z-index: var(--akaza-z-overlay-content, calc(var(--akaza-z-layer-base, 1200) + var(--akaza-layer-order, 0) + 1));
   }
 
-  .akaza-alert-dialog-overlay-enter-active,
-  .akaza-alert-dialog-overlay-leave-active {
-    transition: opacity var(--akaza-dialog-duration, 150ms) ease-out;
+  .akaza-alert-dialog-overlay[data-akaza-backdrop-motion] {
+    transition-property: none;
   }
 
-  .akaza-alert-dialog-overlay-enter-from,
-  .akaza-alert-dialog-overlay-leave-to {
+  .akaza-alert-dialog-overlay[data-akaza-backdrop-motion]:is([data-akaza-state="closed"], .akaza-alert-dialog-overlay-leave-to) {
     opacity: 0;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .akaza-alert-dialog-overlay[data-akaza-backdrop-motion] {
+      transition: opacity var(--akaza-dialog-duration, 150ms) ease-out;
+    }
+
+    /* The SDK can reveal the backdrop before its entry classes reach the DOM. */
+    @starting-style {
+      .akaza-alert-dialog-overlay[data-akaza-backdrop-motion] {
+        opacity: 0;
+      }
+    }
   }
 
   .akaza-alert-dialog-enter-active,
@@ -192,7 +206,20 @@ defineExpose({ open, close, toggle, titleId, descriptionId });
   .akaza-alert-dialog-enter-from,
   .akaza-alert-dialog-leave-to {
     opacity: 0;
-    transform: scale(0.95);
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .akaza-alert-dialog-enter-from,
+    .akaza-alert-dialog-leave-to {
+      transform: scale(0.95);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .akaza-alert-dialog-enter-active,
+    .akaza-alert-dialog-leave-active {
+      transition-duration: 0s;
+    }
   }
 }
 </style>

@@ -33,6 +33,7 @@ async function asyncFail() {
 
 // ── 6. type=submit inside a form ─────────────────────────────────────────────
 const formResult = ref("");
+const customClicks = ref(0);
 function handleSubmit(e: Event) {
   e.preventDefault();
   formResult.value = "Form submitted!";
@@ -239,7 +240,8 @@ function handleSubmit(e: Event) {
       <div :class="canvasRow">
         <Button as="a" href="#button" :class="buttonLink"> As &lt;a&gt; (scrolls to top) </Button>
 
-        <Button as="div" role="button" tabindex="0" :class="buttonGhost"> As &lt;div&gt; </Button>
+        <Button as="div" :class="buttonGhost" @click="customClicks++"> As &lt;div&gt; </Button>
+        <span class="text-sm text-muted-foreground" aria-live="polite">Custom activations: {{ customClicks }}</span>
       </div>
     </div>
   </section>

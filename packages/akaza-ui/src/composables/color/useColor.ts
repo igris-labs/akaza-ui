@@ -13,7 +13,22 @@ import {
   writeChannels,
 } from "./engine";
 
-/** Reactive color state with private full-precision storage and caller-selected CSS serialization. */
+/**
+ * Read and change a color without rendering a picker.
+ * Pass a writable Vue ref to share the color and a ref or getter for a format that changes.
+ * Read `value` for CSS output, or call `setValue` and `setChannels` to edit it.
+ * Invalid input or a canceled change leaves the color as it was.
+ *
+ * @example
+ * ```ts
+ * import { useColor } from "akaza-ui";
+ * import { ref } from "vue";
+ *
+ * const accent = ref("#336699");
+ * const { value, setValue } = useColor(accent, { format: "oklch" });
+ * setValue("#445566");
+ * ```
+ */
 export function useColor(model: Ref<string> = ref("#ff0000"), options: UseColorOptions = {}) {
   const color = shallowRef<ColorData | null>(parseColor(model.value));
   const initialColor = color.value;

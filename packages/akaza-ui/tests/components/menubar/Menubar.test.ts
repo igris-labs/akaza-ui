@@ -1,6 +1,9 @@
 import { flushPromises, mount } from "@vue/test-utils";
 import { describe, expect, it, vi } from "vitest";
 import { Menubar } from "@/components/menubar";
+import { installPopupTestEnvironment, settlePopup } from "../popover/popupTestEnvironment";
+
+installPopupTestEnvironment();
 
 describe("menubar", () => {
   it("keeps slotted trigger content mounted during focus and open updates", async () => {
@@ -89,6 +92,7 @@ describe("menubar", () => {
     const triggers = wrapper.findAll(".akaza-menubar-trigger");
     await triggers[0]!.trigger("click");
     await wrapper.find(".akaza-menubar-content").trigger("keydown", { key: "ArrowRight" });
+    await settlePopup();
 
     expect(wrapper.find(".akaza-menubar-content").exists()).toBe(false);
     expect(document.activeElement).toBe(triggers[1]!.element);

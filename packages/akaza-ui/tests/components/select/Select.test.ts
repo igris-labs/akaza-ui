@@ -1,15 +1,17 @@
-import { flushPromises, mount } from "@vue/test-utils";
-import { describe, expect, it } from "vitest";
+import { enableAutoUnmount, flushPromises, mount } from "@vue/test-utils";
+import { afterEach, describe, expect, it } from "vitest";
 import { defineComponent, ref } from "vue";
 import { Field } from "@/components/field";
 import { Select } from "@/components/select";
+
+enableAutoUnmount(afterEach);
 
 describe("select", () => {
   it("restores focus when a scrollbar press focuses an ancestor", async () => {
     const ancestor = document.createElement("main");
     ancestor.tabIndex = -1;
     document.body.append(ancestor);
-    const wrapper = mount(Select, { attachTo: ancestor, props: { options: [{ label: "Vue", value: "vue" }] } });
+    const wrapper = mount(Select, { attachTo: ancestor, props: { ariaLabel: "Framework", options: [{ label: "Vue", value: "vue" }] } });
     try {
       const trigger = wrapper.get(".akaza-select-trigger");
       (trigger.element as HTMLElement).focus();
@@ -29,7 +31,7 @@ describe("select", () => {
   it.each([false, true])("keeps scrollbar blur internal with autocomplete=%s", async (autocomplete) => {
     const wrapper = mount(Select, {
       attachTo: document.body,
-      props: { autocomplete, options: [{ value: "vue", label: "Vue" }] },
+      props: { autocomplete, ariaLabel: "Framework", options: [{ value: "vue", label: "Vue" }] },
     });
     try {
       const trigger = wrapper.get(".akaza-select-trigger");
@@ -56,6 +58,7 @@ describe("select", () => {
     const wrapper = mount(Select, {
       props: {
         modelValue: "",
+        ariaLabel: "Plan",
         name: "plan",
         required: true,
         options: [{ value: "startup", label: "Startup" }],
@@ -81,7 +84,7 @@ describe("select", () => {
       },
       template: `
         <Field name="plan" required>
-          <Select v-model="value" :options="options" />
+          <Select v-model="value" :options="options" aria-label="Plan" />
         </Field>
       `,
     }));
@@ -108,7 +111,7 @@ describe("select", () => {
         ];
         return { options, value };
       },
-      template: `<Select v-model="value" multiple :options="options" />`,
+      template: `<Select v-model="value" multiple :options="options" aria-label="Permissions" />`,
     }));
 
     await wrapper.find(".akaza-select-trigger").trigger("click");
@@ -133,7 +136,7 @@ describe("select", () => {
         ];
         return { options, value };
       },
-      template: `<Select v-model="value" autocomplete :options="options" />`,
+      template: `<Select v-model="value" autocomplete :options="options" aria-label="Framework" />`,
     }), { attachTo: document.body });
 
     await wrapper.find(".akaza-select-trigger").trigger("click");
@@ -151,6 +154,7 @@ describe("select", () => {
     const wrapper = mount(Select, {
       props: {
         open: true,
+        ariaLabel: "Framework",
         options: [{ value: "vue", label: "Vue" }],
       },
     });
@@ -164,6 +168,7 @@ describe("select", () => {
     const wrapper = mount(Select, {
       props: {
         modelValue: "",
+        ariaLabel: "Plan",
         required: true,
         options: [{ value: "vue", label: "Vue" }],
       },
@@ -178,6 +183,7 @@ describe("select", () => {
     const wrapper = mount(Select, {
       props: {
         open: true,
+        ariaLabel: "Framework",
         loading: true,
         options: [{ value: "vue", label: "Vue" }],
       },
@@ -195,6 +201,7 @@ describe("select", () => {
     const wrapper = mount(Select, {
       props: {
         modelValue: "none",
+        ariaLabel: "Framework",
         nullableValue: "none",
         required: true,
         options: [{ value: "vue", label: "Vue" }],

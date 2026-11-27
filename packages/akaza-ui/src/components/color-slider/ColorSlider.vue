@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import type { ColorSliderProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
-import { computed, ref, useTemplateRef } from "vue";
+import { computed, nextTick, ref, useTemplateRef, watch } from "vue";
 import { channelInfo, clamp, gradient, parseColor, round } from "../../composables/color/engine";
 import { useColorControl } from "../../composables/color/useColorControl";
-import { useColorInteraction } from "../../composables/color/useColorInteraction";
+import { usePointerDrag } from "../../composables/internal/sdk/usePointerDrag";
 
 const props = defineProps<ColorSliderProps>();
 const emit = defineEmits<{
@@ -18,7 +18,17 @@ const axis = useTemplateRef<HTMLInputElement>("axis");
 const input = useTemplateRef<HTMLInputElement>("input");
 const focusVisible = ref(false);
 let pointerFocus = false;
-const control = useColorControl(model, props, emit, input, () =>
+let reconcilingPointer = false;
+const colorModel = computed({
+  get: () => model.value,
+  set: (value: string) => { if (!reconcilingPointer) model.value = value; },
+});
+function emitColor(event: "value-change" | "value-commit", value: string, details: AkazaChangeEventDetails) {
+  if (reconcilingPointer) return;
+  if (event === "value-change") emit("value-change", value, details);
+  else emit("value-commit", value, details);
+}
+const control = useColorControl(colorModel, props, emitColor, input, () =>
   axis.value?.focus({ preventScroll: true }),
 );
 const space = computed(() => props.colorSpace ?? "hsb");
@@ -56,9 +66,7 @@ function change(next: number, reason: string, event: Event) {
   }
   const step =
     props.step && props.step > 0 && Number.isFinite(props.step) ? props.step : info.value.step;
-  const snapped = Number(
-    (Math.round((next - info.value.min) / step) * step + info.value.min).toFixed(6),
-  );
+  const snapped = round(Math.round((next - info.value.min) / step) * step + info.value.min);
   control.color.setChannels(
     space.value,
     { [channel.value]: clamp(snapped, info.value.min, info.value.max) },
@@ -67,26 +75,37 @@ function change(next: number, reason: string, event: Event) {
   );
   control.changed();
 }
-const pointer = useColorInteraction(
-  root,
-  control.blocked,
-  (event) => {
-    const rect = track.value?.getBoundingClientRect();
-    if (!rect || !rect.width || !rect.height || !info.value) return;
-    const raw = vertical.value
-      ? 1 - (event.clientY - rect.top) / rect.height
-      : (event.clientX - rect.left) / rect.width;
-    const fraction = reverse.value ? 1 - raw : raw;
-    change(info.value.min + clamp(fraction) * (info.value.max - info.value.min), "pointer", event);
-  },
-  (event) => control.color.commit("pointer", event),
-  () => axis.value?.focus({ preventScroll: true }),
-);
+const pointer = usePointerDrag(() => control.blocked() || !info.value);
+watch(control.resetVersion, () => pointer.cancel(), { flush: "sync" });
+function updatePointer(event: PointerEvent) {
+  const rect = track.value?.getBoundingClientRect();
+  if (!rect || !rect.width || !rect.height || !info.value) return;
+  const raw = vertical.value
+    ? 1 - (event.clientY - rect.top) / rect.height
+    : (event.clientX - rect.left) / rect.width;
+  const fraction = reverse.value ? 1 - raw : raw;
+  change(info.value.min + clamp(fraction) * (info.value.max - info.value.min), "pointer", event);
+  nextTick(() => {
+    if (!root.value || control.inherited || control.color.value.value === model.value) return;
+    // Restore the accepted color when a controlled parent refuses the optimistic pointer value.
+    reconcilingPointer = true;
+    try { control.color.setValue(model.value); }
+    finally { reconcilingPointer = false; }
+  });
+}
 function onPointerdown(event: PointerEvent) {
+  if (!root.value || !pointer.start(root.value, event, {
+    onMove: updatePointer,
+    onEnd(event, canceled) {
+      if (!canceled) control.color.commit("pointer", event);
+    },
+  })) return;
   // Programmatically focusing a range input may match :focus-visible after a pointer press.
   pointerFocus = true;
   focusVisible.value = false;
-  pointer.onPointerdown(event);
+  event.preventDefault();
+  axis.value?.focus({ preventScroll: true });
+  updatePointer(event);
 }
 function onFocusin(event: FocusEvent) {
   control.onFocus();
@@ -152,10 +171,6 @@ function keydown(event: KeyboardEvent) {
     @focusout="onFocusout"
     @keydown="onKeyboard"
     @pointerdown="onPointerdown"
-    @pointermove="pointer.onPointermove"
-    @pointerup="pointer.onPointerup"
-    @pointercancel="pointer.onPointercancel"
-    @lostpointercapture="pointer.onLostpointercapture"
   >
     <span
       ref="track"
@@ -173,8 +188,8 @@ function keydown(event: KeyboardEvent) {
       type="range"
       :min="info?.min ?? 0"
       :max="info?.max ?? 100"
-      :step="step ?? info?.step ?? 1"
-      :value="round(value)"
+      step="any"
+      :value="value"
       :disabled="control.disabled.value || !info"
       :tabindex="control.disabled.value || !info ? -1 : 0"
       :aria-label="ariaLabel ?? info?.label"

@@ -306,7 +306,8 @@ describe("tree", () => {
     await nextTick();
 
     expect(wrapper.text()).toContain("Custom Item 0");
-    expect(wrapper.findAll("[role='treeitem']").length).toBeLessThan(manyItems.length);
+    expect(wrapper.findAll("[role='treeitem']").length).toBeGreaterThan(0);
+    expect(wrapper.findAll("[role='treeitem']").length).toBeLessThanOrEqual(Math.ceil(80 / 20) + 2 * 2 + 1);
     expect(wrapper.get("[role='tree']").attributes("style")).toContain("80px");
   });
 });

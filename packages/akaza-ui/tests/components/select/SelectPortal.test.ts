@@ -42,7 +42,7 @@ describe("select portals", () => {
     await flushPromises();
     expect(target.querySelector(".akaza-select-content")).toBeNull();
     expect(wrapper.element.contains(wrapper.get(".akaza-select-content").element)).toBe(true);
-    expect((wrapper.get(".akaza-select-content").element as HTMLElement).style.position).toBe("absolute");
+    expect((wrapper.get(".akaza-select-content").element as HTMLElement).style.position).toBe("fixed");
   });
 
   it("keeps portaled search and scrollbar gestures internal, then dismisses outside", async () => {
@@ -68,7 +68,14 @@ describe("select portals", () => {
   it("dismisses a portaled search on Escape and returns focus to its trigger", async () => {
     const wrapper = mount(Select, {
       attachTo: document.body,
-      props: { options, open: true, autocomplete: true, teleport: "body", ariaLabel: "Project" },
+      props: {
+        options,
+        open: true,
+        autocomplete: true,
+        teleport: "body",
+        ariaLabel: "Project",
+        "onUpdate:open": open => wrapper.setProps({ open }),
+      },
     });
     await flushPromises();
     document.querySelector<HTMLInputElement>(".akaza-select-search-input")!
@@ -87,12 +94,59 @@ describe("select portals", () => {
       </template></Dialog>`,
     }), { attachTo: document.body });
     await flushPromises();
-    window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true }));
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true }));
     await flushPromises();
     expect(wrapper.vm.selectOpen).toBe(false);
     expect(wrapper.vm.dialogOpen).toBe(true);
-    window.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true }));
+    document.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true }));
     await flushPromises();
     expect(wrapper.vm.dialogOpen).toBe(false);
+  });
+
+  it.each([
+    { shiftKey: false, policy: "accepted" },
+    { shiftKey: true, policy: "accepted" },
+    { shiftKey: false, policy: "canceled" },
+    { shiftKey: true, policy: "canceled" },
+    { shiftKey: false, policy: "refused" },
+    { shiftKey: true, policy: "refused" },
+  ])("keeps modal-relative portal Tab order with shift=$shiftKey and a $policy close", async ({ shiftKey, policy }) => {
+    const wrapper = mount(defineComponent({
+      components: { Dialog, Select },
+      setup: () => ({
+        dialogOpen: ref(true),
+        selectOpen: ref(false),
+        options,
+        accept: policy !== "refused",
+        guard: (open: boolean, details: { cancel: () => void }) => { if (!open && policy === "canceled") details.cancel(); },
+      }),
+      template: `<Dialog v-model="dialogOpen" title="Project details">
+        <template #body>
+          <Select :open="selectOpen" :options="options" teleport="body" autocomplete aria-label="Project"
+            @update:open="($event || accept) && (selectOpen = $event)" @open-change="guard" />
+          <button type="button" class="save-project">Save project</button>
+        </template>
+        <template #footer><button type="button" class="close-project">Close project dialog</button></template>
+      </Dialog>`,
+    }), { attachTo: document.body });
+    await flushPromises();
+    const trigger = document.querySelector<HTMLButtonElement>(".akaza-select-trigger")!;
+    trigger.click();
+    await flushPromises();
+    const content = document.querySelector<HTMLElement>(".akaza-select-content")!;
+    const search = content.querySelector<HTMLInputElement>("input")!;
+    expect(content.tabIndex).toBe(-1);
+    expect(document.activeElement).toBe(search);
+    search.dispatchEvent(new KeyboardEvent("keydown", { key: "Tab", shiftKey, bubbles: true, cancelable: true }));
+    await flushPromises();
+    expect(wrapper.vm.dialogOpen).toBe(true);
+    expect(wrapper.vm.selectOpen).toBe(policy !== "accepted");
+    if (policy === "accepted") {
+      expect(document.querySelector(".akaza-select-content")).toBeNull();
+      expect(document.activeElement).toBe(document.querySelector(shiftKey ? ".close-project" : ".save-project"));
+    } else {
+      expect(content.hasAttribute("inert")).toBe(false);
+      expect(document.activeElement).toBe(search);
+    }
   });
 });

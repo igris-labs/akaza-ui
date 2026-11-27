@@ -16,6 +16,18 @@ const bold = ref(true);
 const italic = ref(false);
 const align = ref("left");
 const fontSize = ref("16");
+const rtlAction = ref("None");
+const rtlQuery = ref("");
+const rtlItems = computed<ToolbarItem[]>(() => [
+  { value: "cut", label: "Cut", onSelect: () => { rtlAction.value = "Cut"; } },
+  { type: "group", label: "History", children: [
+    { value: "undo", label: "Undo", disabled: true },
+    { value: "redo", label: "Redo", disabled: true, focusableWhenDisabled: true },
+    { value: "copy", label: "Copy", onSelect: () => { rtlAction.value = "Copy"; } },
+  ] },
+  { type: "input", value: "query", label: "Command query", inputValue: rtlQuery.value, placeholder: "Search", onUpdateValue: value => { rtlQuery.value = value; } },
+  { type: "link", value: "help", label: "Help", href: "#toolbar" },
+]);
 
 const items = computed<ToolbarItem[]>(() => [
   { label: "Bold", value: "bold", pressed: bold.value, onSelect: () => (bold.value = !bold.value) },
@@ -79,6 +91,17 @@ const items = computed<ToolbarItem[]>(() => [
             ]"
             :ui="toolbarUi"
           />
+        </div>
+      </div>
+
+      <div>
+        <div class="mb-3">
+          <h3 :class="exampleLabelTitle">Right-to-left commands and input</h3>
+          <p :class="exampleLabelDescription">Undo is skipped. Redo can take focus but cannot run. The input keeps its editing keys.</p>
+        </div>
+        <div :class="canvasCol" dir="rtl">
+          <Toolbar :items="rtlItems" aria-label="RTL commands" :loop="false" :ui="toolbarUi" />
+          <code :class="codePill">action: {{ rtlAction }}, query: {{ rtlQuery || '(empty)' }}</code>
         </div>
       </div>
     </div>

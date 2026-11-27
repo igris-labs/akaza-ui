@@ -2,6 +2,7 @@
 import type { ComponentPublicInstance } from "vue";
 import type { TagsInputProps, TagsInputValue } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
+import { isComposing, keepFocus } from "@ui-sdk/core";
 import { computed, inject, nextTick, onMounted, onUpdated, ref, useId } from "vue";
 import { createChangeDetails as createDetails } from "../../utils/changeEvent";
 import { useFieldControl } from "../../utils/useFieldControl";
@@ -223,7 +224,7 @@ function onInput(event: Event) {
 }
 
 function onInputKeydown(event: KeyboardEvent) {
-  if (event.isComposing) return;
+  if (isComposing(event)) return;
   if (isDisabled.value || readOnly) return;
   if (event.key === "Enter" || isDelimiterKey(event.key)) {
     if (!inputModel.value) return;
@@ -245,6 +246,7 @@ function onInputKeydown(event: KeyboardEvent) {
 }
 
 function onItemKeydown(index: number, event: KeyboardEvent) {
+  if (isComposing(event)) return;
   const previousKey = dir === "rtl" ? "ArrowRight" : "ArrowLeft";
   const nextKey = dir === "rtl" ? "ArrowLeft" : "ArrowRight";
   if (event.key === previousKey || event.key === nextKey) {
@@ -258,7 +260,9 @@ function onItemKeydown(index: number, event: KeyboardEvent) {
     focusItem(model.value.length - 1);
   } else if (event.key === "Backspace" || event.key === "Delete") {
     event.preventDefault();
-    if (removeTag(index, event)) nextTick(() => focusItem(Math.min(index, model.value.length - 1)));
+    if (removeTag(index, event)) {
+      keepFocus(() => itemRefs.value[Math.min(index, model.value.length - 1)] ?? inputRef.value ?? undefined);
+    }
   } else if (event.key === "Escape") {
     event.preventDefault();
     focusItem(-1);
@@ -350,6 +354,7 @@ function getInputProps() {
     "data-akaza-readonly": readOnly || undefined,
     "data-akaza-invalid": isInvalid.value || undefined,
     class: ["akaza-tags-input-input", ui?.input],
+    onFocus: () => { activeIndex.value = -1; },
     onInput,
     onKeydown: onInputKeydown,
     onPaste,

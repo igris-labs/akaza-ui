@@ -3,12 +3,9 @@ import type { CSSProperties } from "vue";
 import type { DateRangePickerProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
 import type { CalendarDateRange, CalendarDateValue, CalendarModelValue } from "../calendar";
-import { onClickOutside } from "@vueuse/core";
-import { computed, nextTick, onBeforeUnmount, useId, useTemplateRef, watch } from "vue";
+import { computed, useId, useTemplateRef, watch } from "vue";
+import { usePopup } from "../../composables/internal/sdk/usePopup";
 import { createChangeDetails as createDetails, resolveAction } from "../../utils/changeEvent";
-import { useDismissableLayer } from "../../utils/dismissableLayer";
-import { useFloatingPosition } from "../../utils/floatingPosition";
-import { useFocusBranch } from "../../utils/focusScope";
 import Calendar from "../calendar/Calendar.vue";
 import DateRangeField from "../date-range-field/DateRangeField.vue";
 
@@ -70,7 +67,6 @@ const rootRef = useTemplateRef<HTMLElement>("rootRef");
 const fieldRef = useTemplateRef<InstanceType<typeof DateRangeField>>("fieldRef");
 const triggerRef = useTemplateRef<HTMLButtonElement>("triggerRef");
 const contentRef = useTemplateRef<HTMLElement>("contentRef");
-useFocusBranch(contentRef);
 
 const state = computed(() => openModel.value ? "open" : "closed");
 const fieldBindings = computed(() => ({
@@ -131,16 +127,26 @@ const calendarBindings = computed(() => ({
   ...(prevPage && { prevPage }),
   ...(ui?.calendar && { ui: ui.calendar }),
 }));
-const { actualAlign, actualSide, style: positionStyle } = useFloatingPosition({
-  reference: rootRef,
-  floating: contentRef,
-  active: openModel,
+let closeReason: string | undefined;
+let openRequestAccepted = false;
+const popup = usePopup({
+  kind: "popover",
+  open: openModel,
+  content: contentRef,
+  contentId: pickerId,
+  trigger: () => triggerRef.value,
+  anchor: () => rootRef.value,
+  initialFocus: "none",
+  finalFocus: "none",
   side: () => side,
   align: () => align,
   sideOffset: () => sideOffset,
+  collisionPadding: () => 8,
   cssVarPrefix: "akaza-date-range-picker",
+  transition: () => "akaza-date-range-picker",
+  request: commitOpen,
 });
-const { layerOrder, register, unregister } = useDismissableLayer((event) => close("escape", event));
+const { present, contentAttrs, triggerAttrs, actualAlign, actualSide, style: positionStyle, layerOrder } = popup;
 const contentStyle = computed<CSSProperties>(() => ({
   ...positionStyle.value,
   "--akaza-layer-order": layerOrder.value,
@@ -149,12 +155,27 @@ const contentStyle = computed<CSSProperties>(() => ({
 
 function setOpen(open: boolean, reason: string, event?: Event): boolean {
   if ((open && disabled) || openModel.value === open) return false;
+  openRequestAccepted = false;
+  popup.setOpen(open, reason, event);
+  return openRequestAccepted;
+}
+
+function commitOpen(open: boolean, sdkReason: string, event?: Event) {
+  if ((open && disabled) || openModel.value === open) return;
+  const reason = ({
+    "escape-key": "escape",
+    "outside-press": "outside-click",
+    "trigger-press": "trigger",
+    "focus-out": "blur",
+    "window-blur": "blur",
+    imperative: "programmatic",
+  } as Record<string, string>)[sdkReason] ?? sdkReason;
   const change = createDetails(reason, event);
   emit("open-change", open, change.details);
-  if (change.canceled()) return false;
+  if (change.canceled()) return;
+  openRequestAccepted = true;
+  closeReason = open ? undefined : reason;
   openModel.value = open;
-  if (!open && reason !== "outside-click") nextTick(() => triggerRef.value?.focus({ preventScroll: true }));
-  return true;
 }
 
 function open(reasonOrEvent?: string | Event, event?: Event): boolean {
@@ -198,15 +219,10 @@ function clear(event?: Event): boolean {
 }
 
 watch(openModel, (open) => {
-  if (open) register();
-  else unregister();
-}, { immediate: true });
-
-onClickOutside(rootRef, (event) => {
-  if (openModel.value) close("outside-click", event);
-}, { ignore: [contentRef] });
-
-onBeforeUnmount(unregister);
+  const reason = closeReason;
+  closeReason = undefined;
+  if (!open && reason && reason !== "outside-click" && reason !== "blur") triggerRef.value?.focus({ preventScroll: true });
+}, { flush: "post" });
 
 defineExpose({ clear, close, focusEnd: () => fieldRef.value?.focusEnd(), focusStart: () => fieldRef.value?.focusStart(), open, toggle });
 </script>
@@ -240,6 +256,7 @@ defineExpose({ clear, close, focusEnd: () => fieldRef.value?.focusEnd(), focusSt
 
     <button
       ref="triggerRef"
+      v-bind="triggerAttrs"
       type="button"
       :disabled="disabled"
       :aria-label="calendarLabel"
@@ -258,49 +275,50 @@ defineExpose({ clear, close, focusEnd: () => fieldRef.value?.focusEnd(), focusSt
     </button>
 
     <Teleport :to="typeof teleport === 'string' ? teleport : 'body'" :disabled="teleport === false">
-      <Transition name="akaza-date-range-picker">
-        <div
-          v-if="openModel"
-          :id="pickerId"
-          ref="contentRef"
-          role="dialog"
-          :aria-label="calendarLabel"
-          :style="contentStyle"
-          :class="ui?.content"
-          :data-akaza-side="actualSide"
-          :data-akaza-align="actualAlign"
-          data-akaza-state="open"
-          class="akaza-date-range-picker-content"
-        >
-          <slot name="calendar" :value="model" :close="close">
-            <Calendar
-              v-bind="calendarBindings"
-              @update:model-value="model = $event as CalendarDateRange"
-              @update:placeholder="placeholderModel = $event"
-              @value-change="onCalendarValueChange"
-              @placeholder-change="onPlaceholderChange"
-            >
-              <template #previous="slotProps"><slot name="previous" v-bind="slotProps">‹</slot></template>
-              <template #heading="slotProps"><slot name="heading" v-bind="slotProps">{{ slotProps.label }}</slot></template>
-              <template #next="slotProps"><slot name="next" v-bind="slotProps">›</slot></template>
-              <template #weekday="slotProps"><slot name="weekday" v-bind="slotProps">{{ slotProps.label }}</slot></template>
-              <template #day="slotProps"><slot name="day" v-bind="slotProps">{{ slotProps.label }}</slot></template>
-              <template v-if="$slots.footer" #footer="slotProps"><slot name="footer" v-bind="slotProps" /></template>
-            </Calendar>
-          </slot>
-
-          <button
-            v-if="closeLabel || $slots.close"
-            type="button"
-            :aria-label="closeLabel || 'Close calendar'"
-            :class="ui?.close"
-            class="akaza-date-range-picker-close"
-            @click="close"
+      <div
+        v-if="present"
+        v-bind="contentAttrs"
+        :id="pickerId"
+        ref="contentRef"
+        :dir="dir"
+        role="dialog"
+        :aria-label="calendarLabel"
+        :style="contentStyle"
+        :class="ui?.content"
+        :data-akaza-side="actualSide"
+        :data-akaza-align="actualAlign"
+        :data-akaza-state="state"
+        :inert="!openModel || undefined"
+        class="akaza-date-range-picker-content"
+      >
+        <slot name="calendar" :value="model" :close="close">
+          <Calendar
+            v-bind="calendarBindings"
+            @update:model-value="model = $event as CalendarDateRange"
+            @update:placeholder="placeholderModel = $event"
+            @value-change="onCalendarValueChange"
+            @placeholder-change="onPlaceholderChange"
           >
-            <slot name="close" :close="close">{{ closeLabel || "Close" }}</slot>
-          </button>
-        </div>
-      </Transition>
+            <template #previous="slotProps"><slot name="previous" v-bind="slotProps">‹</slot></template>
+            <template #heading="slotProps"><slot name="heading" v-bind="slotProps">{{ slotProps.label }}</slot></template>
+            <template #next="slotProps"><slot name="next" v-bind="slotProps">›</slot></template>
+            <template #weekday="slotProps"><slot name="weekday" v-bind="slotProps">{{ slotProps.label }}</slot></template>
+            <template #day="slotProps"><slot name="day" v-bind="slotProps">{{ slotProps.label }}</slot></template>
+            <template v-if="$slots.footer" #footer="slotProps"><slot name="footer" v-bind="slotProps" /></template>
+          </Calendar>
+        </slot>
+
+        <button
+          v-if="closeLabel || $slots.close"
+          type="button"
+          :aria-label="closeLabel || 'Close calendar'"
+          :class="ui?.close"
+          class="akaza-date-range-picker-close"
+          @click="close"
+        >
+          <slot name="close" :close="close">{{ closeLabel || "Close" }}</slot>
+        </button>
+      </div>
     </Teleport>
   </div>
 </template>

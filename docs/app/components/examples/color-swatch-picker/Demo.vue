@@ -1,9 +1,12 @@
 <script setup lang="ts">
 import { ColorSwatch, ColorSwatchPicker } from "akaza-ui";
-import { ref } from "vue";
+import { onMounted, ref } from "vue";
 import { palette, paletteUi, swatchUi } from "../color/styles";
 const color = ref("#2a9d6f");
 const colors = ref<string[]>([]);
+const environmentColor = ref("");
+const ready = ref(false);
+onMounted(() => { ready.value = true; });
 const customItems = [
   { value: "#22c55e", label: "Production" },
   { value: "#f59e0b", label: "Staging" },
@@ -20,6 +23,7 @@ const customItems = [
       <ColorSwatchPicker
         v-model="color"
         :items="palette.filter((item) => !item.disabled)"
+        :disabled="!ready"
         :ui="paletteUi"
         aria-label="Brand palette"
       >
@@ -37,12 +41,12 @@ const customItems = [
     <section class="grid min-w-0 gap-3">
       <h3 class="text-sm font-medium">Multiple selection and RTL</h3>
       <p class="text-xs leading-5 text-muted-foreground">
-        Toggle several colors, use Shift with navigation to extend selection, and skip disabled
-        options.
+        Use Shift with arrow keys to select a range. Gray is disabled and skipped.
       </p>
       <ColorSwatchPicker
         v-model="colors"
         :items="palette"
+        :disabled="!ready"
         multiple
         dir="rtl"
         format="lch"
@@ -68,12 +72,14 @@ const customItems = [
         Replace the option content. The wrapper still handles selection and focus.
       </p>
       <ColorSwatchPicker
-        v-model="color"
+        v-model="environmentColor"
         :items="customItems"
+        :disabled="!ready"
         :ui="{
           ...paletteUi,
+          root: 'w-full',
           content: 'grid gap-2',
-          item: 'flex items-center gap-3 rounded-md border border-border p-2 data-[akaza-state=checked]:bg-accent',
+          item: `${paletteUi.item} flex items-center gap-3 border border-border p-2 data-[akaza-state=checked]:bg-accent`,
         }"
         aria-label="Environment colors"
       >

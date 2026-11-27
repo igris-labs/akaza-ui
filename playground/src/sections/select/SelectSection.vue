@@ -2,6 +2,7 @@
 import type { AkazaChangeEventDetails, SelectModelValue, SelectOption } from "akaza-ui";
 import { ref } from "vue";
 import { Dialog, Field, Select } from "akaza-ui";
+import { typeaheadHint, typeaheadItems } from "../typeahead";
 import {
   buttonGhost,
   canvasCol,
@@ -32,10 +33,18 @@ function submitProject(event: Event) {
 const server = ref("");
 const region = ref("iad");
 const permissions = ref<string[]>(["read", "deploy"]);
+const submittedPermissions = ref("Not submitted");
 const guarded = ref("viewer");
 const searchable = ref("");
 const selectSearch = ref("");
 const lastEvent = ref("No event yet.");
+const typeaheadSelected = ref("");
+const popupOpen = ref(false);
+const keepPopupOpen = ref(false);
+
+function guardPopup(open: boolean, details: AkazaChangeEventDetails) {
+  if (!open && keepPopupOpen.value) details.cancel();
+}
 
 const plans: SelectOption[] = [
   { value: "free", label: "Free", description: "Personal projects." },
@@ -69,6 +78,10 @@ function formatValue(value: SelectModelValue): string {
   return Array.isArray(value) ? value.join(", ") : value;
 }
 
+function submitPermissions(event: Event) {
+  submittedPermissions.value = new FormData(event.currentTarget as HTMLFormElement).getAll("permissions").join(", ") || "none";
+}
+
 function log(value: SelectModelValue, details: AkazaChangeEventDetails) {
   lastEvent.value = `value-change: ${value}, reason: ${details.reason}`;
 }
@@ -91,6 +104,15 @@ function blockOwner(value: SelectModelValue, details: AkazaChangeEventDetails) {
     </p>
 
     <div :class="exampleStack">
+      <div>
+        <h3 :class="exampleTitle">Cancelable popup dismissal</h3>
+        <div :class="canvasCol">
+          <label class="flex items-center gap-2 text-sm"><input v-model="keepPopupOpen" type="checkbox">Keep popup open</label>
+          <Select v-model:open="popupOpen" :options="plans" autocomplete aria-label="Guarded plan" :ui="selectUi" @open-change="guardPopup" />
+          <output :class="codePill">popup: {{ popupOpen ? "open" : "closed" }}</output>
+        </div>
+      </div>
+
       <div>
         <h3 :class="exampleTitle">Portal inside a scrolling dialog</h3>
         <div :class="canvasCol">
@@ -152,24 +174,27 @@ function blockOwner(value: SelectModelValue, details: AkazaChangeEventDetails) {
 
       <div>
         <h3 :class="exampleTitle">Multiple + grouped options</h3>
-        <div :class="canvasCol">
+        <form :class="canvasCol" @submit.prevent="submitPermissions">
           <Select
             v-model="permissions"
             aria-label="Permissions"
             multiple
+            name="permissions"
             :options="permissionOptions"
             placeholder="Choose permissions"
             :ui="selectUi"
             @value-change="log"
           />
           <code :class="codePill">permissions: {{ permissions.join(", ") }}</code>
-        </div>
+          <button type="submit" :class="buttonGhost">Submit permissions</button>
+          <p :class="eventEntry">Submitted permissions: {{ submittedPermissions }}</p>
+        </form>
       </div>
 
       <div>
-        <h3 :class="exampleTitle">Custom option slot</h3>
+        <h3 :class="exampleTitle">Custom option slot + no-wrap navigation</h3>
         <div :class="canvasCol">
-          <Select v-model="region" aria-label="Region" :options="regions" :ui="selectUi">
+          <Select v-model="region" aria-label="Region" :options="regions" :loop="false" :ui="selectUi">
             <template #option="{ label, description, isSelected }">
               <span class="mt-0.5 size-2 rounded-full bg-primary" :class="{ 'opacity-100': isSelected, 'opacity-20': !isSelected }" />
               <span class="grid gap-0.5">
@@ -223,6 +248,14 @@ function blockOwner(value: SelectModelValue, details: AkazaChangeEventDetails) {
             <p :class="eventEntry">{{ lastEvent }}</p>
           </div>
         </div>
+      </div>
+    </div>
+    <div class="mt-8">
+      <h3 :class="exampleTitle">Typeahead</h3>
+      <div :class="canvasCol">
+        <p :class="eventEntry">{{ typeaheadHint }}</p>
+        <Select v-model="typeaheadSelected" :options="typeaheadItems" aria-label="Typeahead select" placeholder="Choose a command" :ui="selectUi" />
+        <code :class="codePill">selected: {{ typeaheadSelected || "None" }}</code>
       </div>
     </div>
   </section>

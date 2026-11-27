@@ -106,6 +106,26 @@ Use labels and descriptions for richer option cards.
 </template>
 ```
 
+### Required and canceled changes
+
+`required` prevents clearing the last value. In single mode, `allowEmpty=false` prevents deselection but does not choose an initial value for you. Both rules leave arrow-key focus movement unchanged.
+
+Cancel `value-change` to reject a choice. The current model stays selected until your application accepts an update.
+
+```vue
+<template>
+  <ToggleGroup
+    v-model="alignment"
+    :options="options"
+    required
+    aria-label="Alignment"
+    @value-change="(value, details) => { if (value === 'right') details.cancel(); }"
+  />
+</template>
+```
+
+When a selected item is clicked with `allowEmpty=false`, `value-change` still reports the same value. A required group rejects an empty change before emitting that event.
+
 ### Vertical orientation
 
 Arrow key direction follows `orientation`.
@@ -140,6 +160,18 @@ When `name` is provided, selected values are submitted with the form. Multiple m
 Within `Field`, the group inherits name, required, disabled, label, and description metadata. An unnamed required group still participates in native validation. Invalid submission focuses an enabled toggle; disabled groups do not serialize selected values.
 
 A native form reset restores the initial model and clears interaction state. Calling `preventDefault()` on the reset event preserves the current value. Reset updates `v-model` without emitting `value-change`.
+
+### Right-to-left and changing options
+
+Set `dir="rtl"` on a parent to reverse horizontal arrow movement. Keep each option's value stable when reordering or replacing options. The remembered tab stop follows that value, not its array index.
+
+```vue
+<template>
+  <div dir="rtl">
+    <ToggleGroup v-model="value" :options="options" aria-label="Alignment" />
+  </div>
+</template>
+```
 
 ## API Reference
 
@@ -205,3 +237,5 @@ Plain `class` applies to the root group.
 | `Enter` / `Space` | Toggle focused item. |
 | Arrow keys | Move focus by orientation. |
 | `Home` / `End` | Move focus to first/last enabled item. |
+
+Arrow movement changes focus, not selection. Disabled options are skipped. Horizontal arrows follow inherited text direction. With `rovingFocus=false`, every enabled item is a Tab stop and arrow keys are left alone. IME composition and modified arrow keys do not move focus.

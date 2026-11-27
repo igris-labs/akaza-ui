@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import type { ToolbarItem, ToolbarProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
-import { computed, ref, useSlots } from "vue";
+import { computed, useSlots } from "vue";
+import { useRovingGroup } from "../../composables/internal/sdk/useRovingGroup";
 import { createChangeDetails } from "../../utils/changeEvent";
-import { nextEnabledIndex } from "../../utils/useRovingFocus";
 
 const {
   items = [],
@@ -23,15 +23,13 @@ const emit = defineEmits<{
 type ToolbarSlot = (props: { item: ToolbarItem; isDisabled: boolean }) => unknown;
 
 const slots = useSlots() as Record<string, ToolbarSlot | undefined>;
-const requestedActiveKey = ref(findFirstKey(items));
 const rovingKeys = computed(() => getRovingKeys(items));
-const activeKey = computed({
-  get: () => rovingKeys.value.includes(requestedActiveKey.value)
-    ? requestedActiveKey.value
-    : rovingKeys.value[0] ?? "",
-  set: (value: string) => {
-    requestedActiveKey.value = value;
-  },
+const roving = useRovingGroup({
+  keys: () => rovingKeys.value,
+  disabled: key => !rovingKeys.value.includes(key),
+  preferred: () => rovingKeys.value[0],
+  orientation: () => orientation,
+  loop: () => loop,
 });
 
 function getValue(item: ToolbarItem, index: number): string {
@@ -50,10 +48,6 @@ function getItemKey(item: ToolbarItem, index: number, parent = "root") {
   return `${parent}:${getValue(item, index)}`;
 }
 
-function findFirstKey(source: ToolbarItem[]): string {
-  return getRovingKeys(source)[0] ?? "";
-}
-
 function getRovingKeys(source: ToolbarItem[]): string[] {
   const keys: string[] = [];
   for (let index = 0; index < source.length; index++) {
@@ -69,46 +63,14 @@ function getRovingKeys(source: ToolbarItem[]): string[] {
 
 function getTabindex(item: ToolbarItem, key: string) {
   if (!isRovingItem(item)) return undefined;
-  if (isDisabled(item) && !item.focusableWhenDisabled) return -1;
-  return activeKey.value === key ? 0 : -1;
-}
-
-function getFocusable(root: HTMLElement): HTMLElement[] {
-  return Array.from(root.querySelectorAll<HTMLElement>("[data-akaza-toolbar-item]")).filter((el) => {
-    if (el instanceof HTMLInputElement) return false;
-    if (el.getAttribute("aria-disabled") === "true" && el.dataset.akazaFocusable !== "true") return false;
-    return !el.hasAttribute("disabled");
-  });
-}
-
-function focusNext(root: HTMLElement, current: HTMLElement, delta: number) {
-  const items = getFocusable(root);
-  const currentIndex = items.indexOf(current);
-  if (currentIndex < 0) return;
-  const next = nextEnabledIndex(items, currentIndex, delta, loop);
-  items[next]?.focus();
+  return roving.tabIndex(key);
 }
 
 function onKeydown(event: KeyboardEvent) {
   const target = event.target as HTMLElement;
   if (!target.matches("[data-akaza-toolbar-item]")) return;
   if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) return;
-  const root = event.currentTarget as HTMLElement;
-  const isVertical = orientation === "vertical";
-  const prev = isVertical ? "ArrowUp" : "ArrowLeft";
-  const next = isVertical ? "ArrowDown" : "ArrowRight";
-
-  if (event.key === prev || event.key === next) {
-    event.preventDefault();
-    focusNext(root, target, event.key === next ? 1 : -1);
-  } else if (event.key === "Home") {
-    event.preventDefault();
-    getFocusable(root)[0]?.focus();
-  } else if (event.key === "End") {
-    event.preventDefault();
-    const focusable = getFocusable(root);
-    focusable[focusable.length - 1]?.focus();
-  }
+  roving.keydown(event, target);
 }
 
 function selectItem(item: ToolbarItem, event: Event) {
@@ -119,12 +81,6 @@ function selectItem(item: ToolbarItem, event: Event) {
   const changeEvent = createChangeDetails("trigger", event);
   emit("select", item, changeEvent.details);
   if (!changeEvent.canceled()) item.onSelect?.();
-}
-
-function onItemFocus(event: FocusEvent) {
-  const target = event.currentTarget as HTMLElement;
-  const key = target.dataset.akazaToolbarKey;
-  if (key) activeKey.value = key;
 }
 
 function onInput(item: ToolbarItem, event: Event) {
@@ -173,6 +129,7 @@ function hasSlot(item: ToolbarItem): boolean {
         <button
           v-for="(child, childIndex) in item.children ?? []"
           :key="getValue(child, childIndex)"
+          :ref="element => roving.bind(`group-${index}/${getItemKey(child, childIndex)}`, element as HTMLElement | null)"
           type="button"
           data-akaza-toolbar-item
           :data-akaza-toolbar-key="`group-${index}/${getItemKey(child, childIndex)}`"
@@ -186,7 +143,6 @@ function hasSlot(item: ToolbarItem): boolean {
           :class="ui?.button"
           class="akaza-toolbar-button"
           @click="selectItem(child, $event)"
-          @focus="onItemFocus"
         >
           <slot
             v-if="hasSlot(child)"
@@ -219,6 +175,7 @@ function hasSlot(item: ToolbarItem): boolean {
 
       <a
         v-else-if="item.type === 'link'"
+        :ref="element => roving.bind(getItemKey(item, index), element as HTMLElement | null)"
         :href="item.href"
         data-akaza-toolbar-item
         :data-akaza-toolbar-key="getItemKey(item, index)"
@@ -229,7 +186,6 @@ function hasSlot(item: ToolbarItem): boolean {
         :class="ui?.link"
         class="akaza-toolbar-link"
         @click="selectItem(item, $event)"
-        @focus="onItemFocus"
       >
         <slot
           v-if="hasSlot(item)"
@@ -242,6 +198,7 @@ function hasSlot(item: ToolbarItem): boolean {
 
       <button
         v-else
+        :ref="element => roving.bind(getItemKey(item, index), element as HTMLElement | null)"
         type="button"
         data-akaza-toolbar-item
         :data-akaza-toolbar-key="getItemKey(item, index)"
@@ -255,7 +212,6 @@ function hasSlot(item: ToolbarItem): boolean {
         :class="ui?.button"
         class="akaza-toolbar-button"
         @click="selectItem(item, $event)"
-        @focus="onItemFocus"
       >
         <slot
           v-if="hasSlot(item)"

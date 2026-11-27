@@ -10,6 +10,7 @@ import {
 } from "../styles";
 
 const disabled = ref(false);
+const controlledOpen = ref(false);
 </script>
 
 <template>
@@ -21,29 +22,29 @@ const disabled = ref(false);
     <p class="text-xs font-medium text-muted-foreground mb-2">Directions</p>
     <div :class="[canvasRow, 'mb-6 gap-6']">
       <Tooltip :ui="{ content: tooltipContent }">
-        <template #trigger>
-          <button :class="buttonGhost">Top (default)</button>
+        <template #trigger="{ triggerProps }">
+          <button :class="buttonGhost" v-bind="triggerProps">Top (default)</button>
         </template>
         <template #content>Appears above</template>
       </Tooltip>
 
       <Tooltip direction="bottom" :ui="{ content: tooltipContent }">
-        <template #trigger>
-          <button :class="buttonGhost">Bottom</button>
+        <template #trigger="{ triggerProps }">
+          <button :class="buttonGhost" v-bind="triggerProps">Bottom</button>
         </template>
         <template #content>Appears below</template>
       </Tooltip>
 
       <Tooltip direction="right" :ui="{ content: tooltipContent }">
-        <template #trigger>
-          <button :class="buttonGhost">Right</button>
+        <template #trigger="{ triggerProps }">
+          <button :class="buttonGhost" v-bind="triggerProps">Right</button>
         </template>
         <template #content>Appears to the right</template>
       </Tooltip>
 
       <Tooltip direction="left" :ui="{ content: tooltipContent }">
-        <template #trigger>
-          <button :class="buttonGhost">Left</button>
+        <template #trigger="{ triggerProps }">
+          <button :class="buttonGhost" v-bind="triggerProps">Left</button>
         </template>
         <template #content>Appears to the left</template>
       </Tooltip>
@@ -53,15 +54,15 @@ const disabled = ref(false);
     <p class="text-xs font-medium text-muted-foreground mb-2">Arrow</p>
     <div :class="[canvasRow, 'mb-6 gap-6']">
       <Tooltip arrow :ui="{ content: tooltipContent }">
-        <template #trigger>
-          <button :class="buttonGhost">With arrow (top)</button>
+        <template #trigger="{ triggerProps }">
+          <button :class="buttonGhost" v-bind="triggerProps">With arrow (top)</button>
         </template>
         <template #content>Tooltip with arrow</template>
       </Tooltip>
 
       <Tooltip arrow direction="bottom" :ui="{ content: tooltipContent }">
-        <template #trigger>
-          <button :class="buttonGhost">With arrow (bottom)</button>
+        <template #trigger="{ triggerProps }">
+          <button :class="buttonGhost" v-bind="triggerProps">With arrow (bottom)</button>
         </template>
         <template #content>Tooltip with arrow</template>
       </Tooltip>
@@ -71,15 +72,15 @@ const disabled = ref(false);
     <p class="text-xs font-medium text-muted-foreground mb-2">Custom delay</p>
     <div :class="[canvasRow, 'mb-6 gap-6']">
       <Tooltip :delay-duration="0" :ui="{ content: tooltipContent }">
-        <template #trigger>
-          <button :class="buttonGhost">Instant (0ms)</button>
+        <template #trigger="{ triggerProps }">
+          <button :class="buttonGhost" v-bind="triggerProps">Instant (0ms)</button>
         </template>
         <template #content>No delay</template>
       </Tooltip>
 
       <Tooltip :delay-duration="800" :close-delay="300" :ui="{ content: tooltipContent }">
-        <template #trigger>
-          <button :class="buttonGhost">Slow open + close delay</button>
+        <template #trigger="{ triggerProps }">
+          <button :class="buttonGhost" v-bind="triggerProps">Slow open + close delay</button>
         </template>
         <template #content>800ms open · 300ms close</template>
       </Tooltip>
@@ -89,8 +90,8 @@ const disabled = ref(false);
     <p class="text-xs font-medium text-muted-foreground mb-2">Disabled</p>
     <div :class="[canvasRow, 'mb-6 gap-6']">
       <Tooltip :disabled="disabled" :ui="{ content: tooltipContent }">
-        <template #trigger>
-          <button :class="buttonGhost">Hover me</button>
+        <template #trigger="{ triggerProps }">
+          <button :class="buttonGhost" v-bind="triggerProps">Hover me</button>
         </template>
         <template #content>Tooltip is active</template>
       </Tooltip>
@@ -98,6 +99,18 @@ const disabled = ref(false);
         <input type="checkbox" v-model="disabled" />
         Disable tooltip
       </label>
+    </div>
+
+    <p class="text-xs font-medium text-muted-foreground mb-2">Controlled / no transition</p>
+    <div :class="[canvasRow, 'gap-6']">
+      <Tooltip v-model="controlledOpen" :transition="false" :ui="{ content: tooltipContent }">
+        <template #trigger="{ triggerProps }">
+          <button type="button" :class="buttonGhost" v-bind="triggerProps">Controlled tooltip</button>
+        </template>
+        <template #content>Hover, focus, or toggle externally</template>
+      </Tooltip>
+      <button type="button" :class="buttonGhost" @click="controlledOpen = !controlledOpen">Toggle externally</button>
+      <output class="text-xs text-muted-foreground">open: {{ controlledOpen }}</output>
     </div>
   </section>
 </template>

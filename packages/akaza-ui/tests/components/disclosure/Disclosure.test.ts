@@ -1,9 +1,12 @@
-import { mount } from "@vue/test-utils";
-import { describe, expect, it, vi } from "vitest";
+import { enableAutoUnmount, mount } from "@vue/test-utils";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { defineComponent, nextTick, ref } from "vue";
 import { Accordion } from "@/components/accordion";
 import { Collapsible } from "@/components/collapsible";
 import { Tabs } from "@/components/tabs";
+import "../../migration/panel-motion";
+
+enableAutoUnmount(afterEach);
 
 describe("disclosure components", () => {
   it("keeps accordion ids unique and hidden panels inert", async () => {

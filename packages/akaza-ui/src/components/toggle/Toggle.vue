@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import type { ToggleProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
+import { useButtonKeys } from "../../composables/internal/sdk/useButtonKeys";
 import { createChangeDetails } from "../../utils/changeEvent";
 
 const { as = "button", disabled = false, ariaLabel, ui } = defineProps<ToggleProps>();
@@ -10,6 +11,7 @@ const emit = defineEmits<{
 }>();
 
 const model = defineModel<boolean>({ default: false });
+const buttonKeys = useButtonKeys(() => disabled);
 
 function toggle(event?: Event) {
   if (disabled) return;
@@ -19,12 +21,6 @@ function toggle(event?: Event) {
   if (!changeEvent.canceled()) model.value = next;
 }
 
-function onKeydown(event: KeyboardEvent) {
-  if (as === "button") return;
-  if (event.key !== "Enter" && event.key !== " ") return;
-  event.preventDefault();
-  toggle(event);
-}
 </script>
 
 <template>
@@ -42,7 +38,8 @@ function onKeydown(event: KeyboardEvent) {
     :class="ui?.root"
     class="akaza-toggle"
     @click="toggle($event)"
-    @keydown="onKeydown"
+    @keydown="buttonKeys.keydown"
+    @keyup="buttonKeys.keyup"
   >
     <slot
       :pressed="model"

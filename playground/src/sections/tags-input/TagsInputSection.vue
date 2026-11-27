@@ -21,6 +21,11 @@ const recipients = ref<TagsInputValue[]>([]);
 const requiredTags = ref<TagsInputValue[]>([]);
 const input = ref("");
 const lastEvent = ref("Paste or type comma-separated email addresses.");
+const protectedTags = ref<TagsInputValue[]>(["required", "optional"]);
+
+function protectTag(value: TagsInputValue, details: AkazaChangeEventDetails) {
+  if (value === "required") details.cancel();
+}
 
 function isEmail(value: TagsInputValue) {
   return typeof value === "string" && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
@@ -43,6 +48,13 @@ function logInvalid(value: TagsInputValue | string, details: AkazaChangeEventDet
         <h3 :class="exampleTitle">Add, remove, and clear</h3>
         <div :class="canvasCol">
           <TagsInput v-model="technologies" clearable placeholder="Add technology" :ui="tagsInputUi" />
+          <TagsInput
+            v-model="protectedTags"
+            aria-label="Protected tags"
+            placeholder="Add tag"
+            :ui="tagsInputUi"
+            @remove="protectTag"
+          />
           <code :class="codePill">tags: {{ technologies.join(", ") || "none" }}</code>
         </div>
       </div>

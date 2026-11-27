@@ -248,6 +248,8 @@ Direct `class` applies to root. Use `ui.segment`, `ui.dayPeriod`, and other keys
 
 ### Keyboard
 
+Segments keep native Tab stops and text selection. IME composition and modified text-editing shortcuts do not change the time or move focus. Canceled or refused edits restore the accepted value without auto-advancing. If a focused seconds or AM/PM part is removed, focus moves to the nearest remaining part unless another control already took focus.
+
 | Key | Behavior |
 |-----|----------|
 | Number keys | Replaces selected segment text. Complete segments update model. |

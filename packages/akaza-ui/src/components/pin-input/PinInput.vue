@@ -2,6 +2,7 @@
 import type { ComponentPublicInstance } from "vue";
 import type { PinInputProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
+import { isComposing } from "@ui-sdk/core";
 import { computed, inject, nextTick, onMounted, onUpdated, ref, useId, watch } from "vue";
 import { createChangeDetails as createDetails } from "../../utils/changeEvent";
 import { useFieldControl } from "../../utils/useFieldControl";
@@ -111,13 +112,21 @@ function commitValue(value: string | string[], reason: string, event?: Event): b
   const change = createDetails(reason, event);
   emit("value-change", next, change.details);
   if (change.canceled()) return false;
+  const previousValue = model.value;
+  const previousCells = [...cells.value];
   validationActive.value = true;
   draftCells.value = nextCells;
   acceptedValue = next;
   model.value = next;
   nextTick(() => {
+    if (acceptedValue !== next) return;
+    // A controlled parent may refuse the request; keep its positional draft intact.
+    if (model.value !== next) {
+      draftCells.value = model.value === previousValue ? previousCells : Array.from(model.value);
+      acceptedValue = model.value;
+    }
     updateValidity();
-    if (isComplete.value) {
+    if (model.value === next && isComplete.value) {
       const completeDetails = createDetails("complete", event).details;
       emit("complete", next, completeDetails);
     }
@@ -155,7 +164,9 @@ function fillFrom(index: number, rawValue: string, reason: string, event?: Event
     cursor++;
   }
   if (commitValue(next, reason, event)) {
-    nextTick(() => focusInput(Math.min(cursor, safeLength.value - 1)));
+    nextTick(() => {
+      if (model.value === next.join("")) focusInput(Math.min(cursor, safeLength.value - 1));
+    });
   }
 }
 
@@ -175,6 +186,7 @@ function onPaste(index: number, event: ClipboardEvent) {
 }
 
 function onKeydown(index: number, event: KeyboardEvent) {
+  if (isComposing(event)) return;
   if (isDisabled.value || readOnly) return;
   const previousKey = dir === "rtl" ? "ArrowRight" : "ArrowLeft";
   const nextKey = dir === "rtl" ? "ArrowLeft" : "ArrowRight";

@@ -2,6 +2,7 @@
 import type { SliderProps, SliderValue } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
 import { computed, inject, onMounted, ref, useId, useTemplateRef } from "vue";
+import { usePointerDrag } from "../../composables/internal/sdk/usePointerDrag";
 import { createChangeDetails } from "../../utils/changeEvent";
 import { clampNumber, snapToStep } from "../../utils/number";
 import { useFieldControl } from "../../utils/useFieldControl";
@@ -43,7 +44,6 @@ const thumbRefs = ref<Array<HTMLElement | null>>([]);
 const touched = ref(false);
 const focused = ref(false);
 const validationActive = ref(false);
-const dragging = ref(false);
 const activeThumbIndex = ref(0);
 const { nativeInvalid, syncValidity, registerControl } = useFieldControl(field);
 const initialValue = Array.isArray(model.value) ? [...model.value] : model.value;
@@ -51,6 +51,8 @@ const initialValue = Array.isArray(model.value) ? [...model.value] : model.value
 const resolvedId = computed(() => id ?? field?.inputId.value ?? `akaza-slider-${autoId}`);
 const resolvedName = computed(() => name ?? field?.name.value);
 const isDisabled = computed(() => disabled || field?.disabled.value || false);
+const pointer = usePointerDrag(() => isDisabled.value || Boolean(inputRef.value?.matches(":disabled")));
+const dragging = pointer.dragging;
 const isRequired = computed(() => required || field?.required.value || false);
 const isInvalid = computed(() => invalid || field?.invalid.value || nativeInvalid.value || false);
 const describedBy = computed(() => ariaDescribedby ?? field?.describedBy.value);
@@ -117,7 +119,7 @@ useFormReset(() => inputRef.value, () => {
   touched.value = false;
   validationActive.value = false;
   nativeInvalid.value = false;
-  dragging.value = false;
+  pointer.cancel();
 });
 
 function updateValidity(reveal = validationActive.value) {
@@ -198,25 +200,14 @@ function valueFromPointer(event: PointerEvent): number {
 }
 
 function onPointerDown(event: PointerEvent) {
-  if (isDisabled.value || inputRef.value?.matches(":disabled")) return;
+  if (!pointer.start(event.currentTarget as HTMLElement, event, {
+    onMove: event => setValueAt(activeThumbIndex.value, valueFromPointer(event), "pointer", event),
+    onEnd: (event, canceled) => { if (!canceled) commitValue("pointer", event); },
+  })) return;
   const nextValue = valueFromPointer(event);
   activeThumbIndex.value = getClosestThumbIndex(nextValue);
-  dragging.value = true;
-  (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
   setValueAt(activeThumbIndex.value, nextValue, "pointer", event);
   thumbRefs.value[activeThumbIndex.value]?.focus();
-}
-
-function onPointerMove(event: PointerEvent) {
-  if (!dragging.value) return;
-  setValueAt(activeThumbIndex.value, valueFromPointer(event), "pointer", event);
-}
-
-function onPointerUp(event: PointerEvent) {
-  if (!dragging.value) return;
-  dragging.value = false;
-  (event.currentTarget as HTMLElement).releasePointerCapture(event.pointerId);
-  commitValue("pointer", event);
 }
 
 function onKeydown(event: KeyboardEvent, index: number) {
@@ -263,9 +254,6 @@ onMounted(() => updateValidity(false));
     v-bind="stateAttrs"
     class="akaza-slider"
     @pointerdown="onPointerDown"
-    @pointermove="onPointerMove"
-    @pointerup="onPointerUp"
-    @pointercancel="dragging = false"
   >
     <input
       ref="inputRef"

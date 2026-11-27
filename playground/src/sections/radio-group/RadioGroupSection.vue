@@ -49,6 +49,7 @@ const planOptions = [
 
 // 4. Per-item disabled
 const diskValue = ref("ssd");
+const rtlValue = ref("ssd");
 const diskOptions = [
   { value: "ssd", label: "SSD" },
   { value: "hdd", label: "HDD" },
@@ -91,7 +92,7 @@ function handleFormSubmit(e: Event) {
       <div>
         <h3 :class="exampleTitle">Basic</h3>
         <div :class="[canvasRow, 'items-start gap-8']">
-          <RadioGroup v-model="basicValue" :options="sizeOptions" class="grid gap-1" :ui="radioUi" />
+          <RadioGroup v-model="basicValue" :options="sizeOptions" aria-label="Size options" class="grid gap-1" :ui="radioUi" />
           <p class="text-sm text-muted-foreground self-center">
             Selected: <span class="text-foreground font-medium">{{ basicValue }}</span>
           </p>
@@ -180,6 +181,22 @@ function handleFormSubmit(e: Event) {
           <p class="text-xs text-muted-foreground mt-2">
             A hidden <code :class="inlineCode">&lt;input name="role"&gt;</code> carries the value on form submit.
           </p>
+        </div>
+      </div>
+
+      <div>
+        <h3 :class="exampleTitle">Right-to-left, no wrapping</h3>
+        <div :class="canvasCol" dir="rtl">
+          <RadioGroup
+            v-model="rtlValue"
+            :options="diskOptions"
+            orientation="horizontal"
+            :loop="false"
+            aria-label="RTL storage"
+            class="flex flex-wrap gap-2"
+            :ui="radioUi"
+          />
+          <p class="text-xs text-muted-foreground">Selected: {{ rtlValue }}</p>
         </div>
       </div>
 

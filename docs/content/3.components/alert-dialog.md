@@ -3,9 +3,14 @@ title: Alert Dialog
 description: A modal dialog that interrupts the user and requires a response.
 navigation:
   icon: i-lucide-triangle-alert
+  badge:
+    label: UPDATED
+    color: warning
 ---
 
 Alert Dialog blocks page interaction, traps focus, and uses `role="alertdialog"`.
+
+The shared Core popup adapter owns presence, focus, inertness, scroll locking, and native popover top-layer presentation. `teleport` still chooses the DOM destination. Akaza retains its explicit-response policy: Escape and backdrop presses do not close the dialog or emit `open-change`. Initial focus prefers `[data-akaza-cancel]`.
 
 Use this for destructive or irreversible actions. For non-critical dialogs, use [Dialog](/components/dialog) instead.
 
@@ -122,7 +127,7 @@ const dialog = ref();
 | `ariaLabel` | `string` | — | Fallback accessible name when no title is rendered. |
 | `description` | `string` | — | Convenience description prop. Slot `#description` takes priority. |
 | `teleport` | `string \| false` | `"body"` | Teleport target for the dialog. |
-| `transition` | `string \| false` | `"akaza-alert-dialog"` | Named Vue transition to apply. |
+| `transition` | `string \| false` | `"akaza-alert-dialog"` | CSS transition class prefix; false disables panel and backdrop transitions. |
 | `duration` | `number` | `150` | Transition duration in ms. |
 | `as` | `string` | `"div"` | Root element tag. |
 | `ui` | `AlertDialogUi` | — | CSS class overrides. |
@@ -179,6 +184,10 @@ const dialog = ref();
 | `footer` | `akaza-alert-dialog-footer` | — |
 
 `AlertDialog` renders trigger slot content plus teleported overlay/content. Use `ui` keys instead of relying on plain `class` fallthrough.
+
+Named transitions apply `*-enter-active`, `*-enter-from`, `*-enter-to`, `*-leave-active`, and `*-leave-to` only during motion. Style the settled alert dialog through `ui` or `data-akaza-state="open"`. The SDK keeps `data-akaza-state="closed"` on the panel and backdrop during exit. Default motion respects reduced-motion preferences.
+
+Slot and exposed actions retain their caller-supplied reason and native event. `open-change` remains cancelable with `details.cancel()`. Cancellation or a controlled parent's refused update keeps the dialog open without releasing focus or modal effects.
 
 ### Keyboard
 

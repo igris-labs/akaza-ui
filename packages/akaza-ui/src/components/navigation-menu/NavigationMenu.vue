@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import type { CSSProperties, Slot } from "vue";
+import type { ComponentPublicInstance, CSSProperties, Slot } from "vue";
 import type {
   NavigationMenuExpandedChangeEventDetails,
   NavigationMenuItem,
@@ -8,15 +8,15 @@ import type {
   NavigationMenuValueChangeEventDetails,
 } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
-import { onClickOutside, useResizeObserver } from "@vueuse/core";
-import { computed, nextTick, onUnmounted, ref, useId, useSlots, useTemplateRef, watch } from "vue";
-import { useTypeahead } from "../../composables/typeahead";
+import { isComposing } from "@ui-sdk/core";
+import { unrefElement, useResizeObserver } from "@vueuse/core";
+import { computed, nextTick, ref, shallowReactive, useId, useSlots, useTemplateRef, watch } from "vue";
+import { usePopup } from "../../composables/internal/sdk/usePopup";
+import { useRovingGroup } from "../../composables/internal/sdk/useRovingGroup";
+import { useTypeaheadSearch } from "../../composables/internal/sdk/useTypeaheadSearch";
 import { createChangeDetails } from "../../utils/changeEvent";
-import { useDismissableLayer } from "../../utils/dismissableLayer";
-import { useFloatingPosition } from "../../utils/floatingPosition";
 import SlotContent from "../../utils/SlotContent";
 import { useDelayedAction } from "../../utils/useDelayedAction";
-import { useRovingFocus } from "../../utils/useRovingFocus";
 import { getNavigationDestinationProps as getDestinationProps, getNavigationComponent as getLeafComponent, getNavigationValue as getValue, hasNavigationDestination as hasDestination } from "./items";
 import NavigationMenuInline from "./NavigationMenuInline.vue";
 
@@ -70,11 +70,10 @@ const expandedValue = computed<string[]>({
     expandedModel.value = value;
   },
 });
-const triggerRefs = ref<Array<HTMLElement | null>>([]);
+const triggerRefs = shallowReactive(new Map<string, HTMLElement>());
 const panelRefs = ref<Array<HTMLElement | null>>([]);
 const rootRef = useTemplateRef<HTMLElement>("rootRef");
 const contentRef = useTemplateRef<HTMLElement>("contentRef");
-const activeTriggerIndex = ref(Math.max(0, items.findIndex(isFocusableItem)));
 const activationDirection = ref<"left" | "right">();
 const previousOpenValue = ref<string | null>(null);
 const viewportStyle = ref<CSSProperties>({});
@@ -85,6 +84,16 @@ const effectiveContentMode = computed(() => {
   return orientation === "vertical" && !collapsed ? "inline" : "flyout";
 });
 const isFlyout = computed(() => effectiveContentMode.value === "flyout");
+const roving = useRovingGroup({
+  keys: () => isFlyout.value ? items.map(getValue) : [],
+  disabled: key => disabled || !items.some(item => getValue(item) === key && isFocusableItem(item)),
+  preferred: () => {
+    const first = items.find(isFocusableItem);
+    return first ? getValue(first) : undefined;
+  },
+  orientation: () => orientation,
+  loop: () => loop,
+});
 const floatingSide = computed(() => orientation === "vertical" ? (dir === "rtl" ? "left" : "right") : "bottom");
 const teleportTarget = computed(() => {
   if (teleport !== undefined) return teleport;
@@ -95,13 +104,11 @@ const delayedClose = useDelayedAction();
 let restoringFocus = false;
 let openedByHover = false;
 let dismissedTooltipValue: string | null = null;
-const { push: pushTypeahead } = useTypeahead();
-const { register, unregister } = useDismissableLayer((event?: KeyboardEvent) => {
-  const triggerIndex = items.findIndex((item) => getValue(item) === openValue.value);
-  setOpen(null, "escape", event);
-  if (triggerIndex >= 0) restoreTriggerFocus(triggerIndex);
+const typeahead = useTypeaheadSearch({
+  items: () => items,
+  label: item => item.label,
+  disabled: item => !isFocusableItem(item),
 });
-
 const panelItems = computed(() => items.filter((item) => item.type !== "label" && item.type !== "separator" && item.children?.length));
 const activeItem = computed(() => panelItems.value.find((item) => getValue(item) === openValue.value));
 const activeTopItem = computed(() => items.find((item) => getValue(item) === openValue.value));
@@ -117,17 +124,34 @@ const activePanelRef = computed(() => {
 });
 const activeTriggerRef = computed(() => {
   const index = items.findIndex((item) => getValue(item) === openValue.value);
-  return index >= 0 ? triggerRefs.value[index] ?? null : null;
+  return index >= 0 ? triggerRefs.get(getValue(items[index]!)) ?? null : null;
 });
-const { actualAlign, actualSide, style: contentStyle } = useFloatingPosition({
-  reference: activeTriggerRef,
-  floating: contentRef,
-  active: () => isFlyout.value && Boolean(activeItem.value?.children || activeTooltipItem.value),
-  side: floatingSide,
-  align: "start",
+const popupOpen = computed(() => isFlyout.value && Boolean(activeItem.value?.children || activeTooltipItem.value));
+const popup = usePopup({
+  kind: "navigation",
+  open: popupOpen,
+  content: contentRef,
+  trigger: () => activeTriggerRef.value,
+  anchor: () => activeTriggerRef.value,
+  initialFocus: "none",
+  finalFocus: "none",
+  side: () => floatingSide.value,
+  align: () => "start",
   sideOffset: () => sideOffset,
   cssVarPrefix: "akaza-navigation-menu",
+  transition: () => "akaza-navigation-menu",
+  request(open, reason, event) {
+    if (open) return;
+    const triggerIndex = items.findIndex(item => getValue(item) === openValue.value);
+    setOpen(null, reason === "escape-key" ? "escape" : "outside-click", event);
+    if (reason === "escape-key") {
+      void nextTick(() => {
+        if (!openValue.value && triggerIndex >= 0) restoreTriggerFocus(triggerIndex);
+      });
+    }
+  },
 });
+const { actualAlign, actualSide, style: contentStyle } = popup;
 const indicatorRevision = ref(0);
 useResizeObserver(rootRef, () => { indicatorRevision.value += 1; });
 useResizeObserver(activeTriggerRef, () => { indicatorRevision.value += 1; });
@@ -136,7 +160,7 @@ const indicatorStyle = computed(() => {
   if (orientation !== "horizontal") return {};
   void indicatorRevision.value;
   const index = items.findIndex((item) => getValue(item) === openValue.value);
-  const trigger = triggerRefs.value[index];
+  const trigger = index >= 0 ? triggerRefs.get(getValue(items[index]!)) : undefined;
   const root = rootRef.value;
   if (!trigger || !root) return {};
   const triggerRect = trigger.getBoundingClientRect();
@@ -203,12 +227,15 @@ function getActivationDirection(previous: string, next: string): "left" | "right
   return forward ? "right" : "left";
 }
 
-function setTriggerRef(el: HTMLElement | null, index: number) {
-  triggerRefs.value[index] = el;
-}
-
-function setIndexedTriggerRef(index: number) {
-  return (el: Element | null) => setTriggerRef(el as HTMLElement | null, index);
+function setIndexedTriggerRef(item: NavigationMenuItem) {
+  return (el: Element | ComponentPublicInstance | null) => {
+    const element = el instanceof Element ? el : unrefElement(el);
+    const target = element instanceof HTMLElement ? element : null;
+    const key = getValue(item);
+    if (target) triggerRefs.set(key, target);
+    else triggerRefs.delete(key);
+    roving.bind(key, target);
+  };
 }
 
 function setIndexedPanelRef(index: number) {
@@ -297,8 +324,7 @@ function selectItem(item: NavigationMenuItem, event: Event) {
 }
 
 function focusTrigger(index: number) {
-  activeTriggerIndex.value = index;
-  triggerRefs.value[index]?.focus({ preventScroll: true });
+  if (items[index]) roving.focus(getValue(items[index]!));
 }
 
 function restoreTriggerFocus(index: number) {
@@ -312,57 +338,31 @@ function onTriggerClick(item: NavigationMenuItem, event: MouseEvent) {
   setOpen(openValue.value === value && !openedByHover ? null : value, "trigger", event);
 }
 
-const roving = useRovingFocus({ items: () => items, isDisabled: item => !isFocusableItem(item), loop: () => loop });
-
-function move(index: number, delta: number) {
-  const next = roving.nextIndex(index, delta);
-  if (next >= 0) focusTrigger(next);
-}
-
 function onTriggerKeydown(event: KeyboardEvent, item: NavigationMenuItem, index: number) {
-  if (!isFlyout.value) return;
+  if (disabled || !isFlyout.value || !isFocusableItem(item) || event.defaultPrevented || isComposing(event)
+    || event.ctrlKey || event.metaKey || event.altKey) return;
+  if (event.key === " " && typeahead.active()) {
+    const next = typeahead.search(event, index);
+    if (next >= 0) focusTrigger(next);
+    return;
+  }
   const nextKey = dir === "rtl" ? "ArrowLeft" : "ArrowRight";
-  const previousKey = dir === "rtl" ? "ArrowRight" : "ArrowLeft";
-  const moveNextKey = orientation === "vertical" ? "ArrowDown" : nextKey;
-  const movePreviousKey = orientation === "vertical" ? "ArrowUp" : previousKey;
   const openKey = orientation === "vertical" ? nextKey : "ArrowDown";
-  if (event.key === moveNextKey) {
-    event.preventDefault();
-    move(index, 1);
-  } else if (event.key === movePreviousKey) {
-    event.preventDefault();
-    move(index, -1);
-  } else if ((event.key === openKey || event.key === "Enter" || event.key === " ") && item.children) {
+  if (roving.keydown(event, event.currentTarget as HTMLElement)) return;
+  if ((event.key === openKey || event.key === "Enter" || event.key === " ") && item.children) {
     event.preventDefault();
     setOpen(getValue(item), "keyboard", event);
   } else if (event.key === "Escape") {
     if (!openValue.value) return;
     event.preventDefault();
     setOpen(null, "escape", event);
-  } else if (event.key === "Home") {
-    event.preventDefault();
-    const first = items.findIndex(isFocusableItem);
-    if (first >= 0) focusTrigger(first);
-  } else if (event.key === "End") {
-    event.preventDefault();
-    for (let next = items.length - 1; next >= 0; next--) {
-      const candidate = items[next];
-      if (candidate && isFocusableItem(candidate)) {
-        focusTrigger(next);
-        break;
-      }
-    }
-  } else if (event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey) {
-    const typeahead = pushTypeahead(event.key.toLowerCase());
-    const next = items.findIndex((candidate) =>
-      isFocusableItem(candidate) && candidate.label.toLowerCase().startsWith(typeahead),
-    );
+  } else {
+    const next = typeahead.search(event, index);
     if (next >= 0) focusTrigger(next);
   }
 }
 
-function onTriggerFocus(event: FocusEvent, item: NavigationMenuItem, index: number) {
-  activeTriggerIndex.value = index;
+function onTriggerFocus(event: FocusEvent, item: NavigationMenuItem) {
   if (!restoringFocus && dismissedTooltipValue !== getValue(item) && collapsed && tooltip && !item.children) setOpen(getValue(item), "focus", event);
 }
 
@@ -375,12 +375,8 @@ function resetTooltipDismissal(item: NavigationMenuItem) {
   if (dismissedTooltipValue === getValue(item)) dismissedTooltipValue = null;
 }
 
-function getTriggerTabindex(item: NavigationMenuItem, index: number) {
-  if (disabled || !isFocusableItem(item)) return -1;
-  if (!items[activeTriggerIndex.value] || !isFocusableItem(items[activeTriggerIndex.value]!)) {
-    return index === items.findIndex(isFocusableItem) ? 0 : -1;
-  }
-  return index === activeTriggerIndex.value ? 0 : -1;
+function getTriggerTabindex(item: NavigationMenuItem) {
+  return roving.tabIndex(getValue(item));
 }
 
 function scheduleOpen(item: NavigationMenuItem, event: MouseEvent) {
@@ -503,31 +499,21 @@ function onInlineKeydown(event: KeyboardEvent) {
   }
 }
 
-onClickOutside(rootRef, (event) => {
-  if (openValue.value) setOpen(null, "outside-click", event);
-}, { ignore: [contentRef] });
-
 watch(() => disabled, (value) => {
   if (value && openValue.value) setOpen(null, "disabled");
 });
 watch(effectiveContentMode, (mode) => {
   if (mode === "inline" && openValue.value) setOpen(null, "content-mode");
 });
-watch(() => isFlyout.value && Boolean(activeItem.value?.children || activeTooltipItem.value), (open) => {
-  if (open) register();
-  else unregister();
-}, { immediate: true });
 // Direction depends on previous state, including externally controlled v-model updates.
 watch(openValue, async (value, previous) => {
+  if (!value) typeahead.reset();
   previousOpenValue.value = value && previous ? previous : null;
   activationDirection.value = value && previous ? getActivationDirection(previous, value) : undefined;
   await nextTick();
   updateViewportSize();
 });
 
-onUnmounted(() => {
-  unregister();
-});
 </script>
 
 <template>
@@ -590,7 +576,7 @@ onUnmounted(() => {
             :is="item.children ? 'button' : getLeafComponent(item)"
             v-else
             :id="getTriggerId(index)"
-            :ref="setIndexedTriggerRef(index)"
+            :ref="setIndexedTriggerRef(item)"
             v-bind="!item.children ? getDestinationProps(item) : {}"
             :type="item.children || !hasDestination(item) ? 'button' : undefined"
             :disabled="item.children || !hasDestination(item) ? (disabled || item.disabled) : undefined"
@@ -600,13 +586,13 @@ onUnmounted(() => {
             :aria-controls="item.children ? getContentId(index) : undefined"
             :aria-describedby="collapsed && tooltip && !item.children ? getTooltipId(index) : undefined"
             :aria-label="collapsed ? item.label : undefined"
-            :tabindex="getTriggerTabindex(item, index)"
+            :tabindex="getTriggerTabindex(item)"
             :class="[item.children ? ui?.trigger : ui?.link, item.children ? 'akaza-navigation-menu-trigger' : 'akaza-navigation-menu-link']"
             :data-akaza-active="containsActiveItem(item) || undefined"
             :data-akaza-state="item.children?.length ? (openValue === getValue(item) ? 'open' : 'closed') : (isItemActive(item) ? 'active' : 'inactive')"
             :data-akaza-disabled="disabled || item.disabled || undefined"
             @click="item.children ? onTriggerClick(item, $event) : selectItem(item, $event)"
-            @focus="onTriggerFocus($event, item, index)"
+            @focus="onTriggerFocus($event, item)"
             @blur="onTriggerBlur($event, item)"
             @keydown="onTriggerKeydown($event, item, index)"
             @mouseenter="scheduleOpen(item, $event)"
@@ -668,123 +654,123 @@ onUnmounted(() => {
       />
 
       <Teleport :to="teleportTarget || 'body'" :disabled="!teleportTarget">
-        <Transition name="akaza-navigation-menu">
+        <div
+          v-if="popup.present.value"
+          v-bind="popup.contentAttrs.value"
+          ref="contentRef"
+          :dir="dir"
+          :style="contentStyle"
+          :class="ui?.content"
+          :data-akaza-state="popupOpen ? 'open' : 'closed'"
+          :data-akaza-side="actualSide"
+          :data-akaza-align="actualAlign"
+          class="akaza-navigation-menu-content"
+          @mouseenter="cancelClose"
+          @mouseleave="scheduleClose($event)"
+          @keydown="onContentKeydown"
+        >
           <div
-            v-if="activeItem?.children || activeTooltipItem"
-            ref="contentRef"
-            :style="contentStyle"
-            :class="ui?.content"
-            data-akaza-state="open"
-            :data-akaza-side="actualSide"
-            :data-akaza-align="actualAlign"
-            class="akaza-navigation-menu-content"
-            @mouseenter="cancelClose"
-            @mouseleave="scheduleClose($event)"
-            @keydown="onContentKeydown"
+            v-if="activeTooltipItem"
+            :id="getTooltipId(items.indexOf(activeTooltipItem))"
+            role="tooltip"
+            :class="ui?.tooltip"
+            class="akaza-navigation-menu-tooltip"
           >
-            <div
-              v-if="activeTooltipItem"
-              :id="getTooltipId(items.indexOf(activeTooltipItem))"
-              role="tooltip"
-              :class="ui?.tooltip"
-              class="akaza-navigation-menu-tooltip"
+            {{ activeTooltipItem.label }}
+          </div>
+          <div
+            v-else
+            :style="viewportStyle"
+            :class="ui?.viewport"
+            :data-akaza-activation-direction="activationDirection"
+            class="akaza-navigation-menu-viewport"
+          >
+            <Transition
+              v-for="(panelItem, panelIndex) in panelItems"
+              :key="getValue(panelItem)"
+              name="akaza-navigation-menu-panel"
             >
-              {{ activeTooltipItem.label }}
-            </div>
-            <div
-              v-else
-              :style="viewportStyle"
-              :class="ui?.viewport"
-              :data-akaza-activation-direction="activationDirection"
-              class="akaza-navigation-menu-viewport"
-            >
-              <Transition
-                v-for="(panelItem, panelIndex) in panelItems"
-                :key="getValue(panelItem)"
-                name="akaza-navigation-menu-panel"
+              <ul
+                v-show="isPanelOpen(panelItem)"
+                :id="getContentId(items.indexOf(panelItem))"
+                :ref="setIndexedPanelRef(panelIndex)"
+                :aria-labelledby="getTriggerId(items.indexOf(panelItem))"
+                :aria-hidden="!isPanelOpen(panelItem) || undefined"
+                :inert="!isPanelOpen(panelItem) || undefined"
+                :class="[ui?.panel, ui?.contentList]"
+                :data-akaza-state="isPanelOpen(panelItem) ? 'open' : 'closed'"
+                :data-akaza-motion="getPanelMotion(panelItem)"
+                :data-akaza-activation-direction="activationDirection"
+                class="akaza-navigation-menu-panel akaza-navigation-menu-content-list"
               >
-                <ul
-                  v-show="isPanelOpen(panelItem)"
-                  :id="getContentId(items.indexOf(panelItem))"
-                  :ref="setIndexedPanelRef(panelIndex)"
-                  :aria-labelledby="getTriggerId(items.indexOf(panelItem))"
-                  :aria-hidden="!isPanelOpen(panelItem) || undefined"
-                  :inert="!isPanelOpen(panelItem) || undefined"
-                  :class="[ui?.panel, ui?.contentList]"
-                  :data-akaza-state="isPanelOpen(panelItem) ? 'open' : 'closed'"
-                  :data-akaza-motion="getPanelMotion(panelItem)"
-                  :data-akaza-activation-direction="activationDirection"
-                  class="akaza-navigation-menu-panel akaza-navigation-menu-content-list"
+                <li
+                  v-for="child in panelItem.children"
+                  :key="getValue(child)"
+                  :class="ui?.contentItem"
+                  :data-akaza-disabled="child.disabled || undefined"
+                  :data-akaza-active="containsActiveItem(child) || undefined"
+                  :data-akaza-state="isItemActive(child) ? 'active' : 'inactive'"
+                  class="akaza-navigation-menu-content-item"
                 >
-                  <li
-                    v-for="child in panelItem.children"
-                    :key="getValue(child)"
-                    :class="ui?.contentItem"
-                    :data-akaza-disabled="child.disabled || undefined"
+                  <component
+                    :is="getLeafComponent(child)"
+                    v-bind="getDestinationProps(child)"
+                    :type="!hasDestination(child) ? 'button' : undefined"
+                    :disabled="!hasDestination(child) ? child.disabled : undefined"
+                    :aria-disabled="child.disabled || undefined"
+                    :aria-current="isItemActive(child) ? (child.ariaCurrent ?? 'page') : undefined"
+                    :class="ui?.contentLink"
                     :data-akaza-active="containsActiveItem(child) || undefined"
                     :data-akaza-state="isItemActive(child) ? 'active' : 'inactive'"
-                    class="akaza-navigation-menu-content-item"
+                    data-akaza-navigation-menu-link
+                    class="akaza-navigation-menu-content-link"
+                    @click="selectItem(child, $event)"
                   >
-                    <component
-                      :is="getLeafComponent(child)"
-                      v-bind="getDestinationProps(child)"
-                      :type="!hasDestination(child) ? 'button' : undefined"
-                      :disabled="!hasDestination(child) ? child.disabled : undefined"
-                      :aria-disabled="child.disabled || undefined"
-                      :aria-current="isItemActive(child) ? (child.ariaCurrent ?? 'page') : undefined"
-                      :class="ui?.contentLink"
-                      :data-akaza-active="containsActiveItem(child) || undefined"
-                      :data-akaza-state="isItemActive(child) ? 'active' : 'inactive'"
-                      data-akaza-navigation-menu-link
-                      class="akaza-navigation-menu-content-link"
-                      @click="selectItem(child, $event)"
-                    >
-                      <SlotContent v-if="hasSlot(child, 'item')" :render="slots[child.slot ?? 'item']!" :scope="getSlotProps(child, 1)" />
-                      <template v-else>
-                        <span :class="ui?.label" class="akaza-navigation-menu-label">{{ child.label }}</span>
-                        <span v-if="child.badge !== undefined" :class="ui?.badge" class="akaza-navigation-menu-badge">{{ child.badge }}</span>
-                        <span v-if="child.description" :class="ui?.description" class="akaza-navigation-menu-description">{{ child.description }}</span>
-                      </template>
-                    </component>
+                    <SlotContent v-if="hasSlot(child, 'item')" :render="slots[child.slot ?? 'item']!" :scope="getSlotProps(child, 1)" />
+                    <template v-else>
+                      <span :class="ui?.label" class="akaza-navigation-menu-label">{{ child.label }}</span>
+                      <span v-if="child.badge !== undefined" :class="ui?.badge" class="akaza-navigation-menu-badge">{{ child.badge }}</span>
+                      <span v-if="child.description" :class="ui?.description" class="akaza-navigation-menu-description">{{ child.description }}</span>
+                    </template>
+                  </component>
 
-                    <ul
-                      v-if="child.children?.length"
-                      :class="ui?.contentList"
-                      class="akaza-navigation-menu-content-list akaza-navigation-menu-sub-list"
+                  <ul
+                    v-if="child.children?.length"
+                    :class="ui?.contentList"
+                    class="akaza-navigation-menu-content-list akaza-navigation-menu-sub-list"
+                  >
+                    <li
+                      v-for="nested in child.children"
+                      :key="getValue(nested)"
+                      :class="ui?.contentItem"
+                      :data-akaza-active="isItemActive(nested) || undefined"
+                      :data-akaza-state="isItemActive(nested) ? 'active' : 'inactive'"
+                      class="akaza-navigation-menu-content-item"
                     >
-                      <li
-                        v-for="nested in child.children"
-                        :key="getValue(nested)"
-                        :class="ui?.contentItem"
+                      <component
+                        :is="getLeafComponent(nested)"
+                        v-bind="getDestinationProps(nested)"
+                        :type="!hasDestination(nested) ? 'button' : undefined"
+                        :disabled="!hasDestination(nested) ? nested.disabled : undefined"
+                        :aria-disabled="nested.disabled || undefined"
+                        :aria-current="isItemActive(nested) ? (nested.ariaCurrent ?? 'page') : undefined"
+                        :class="ui?.contentLink"
                         :data-akaza-active="isItemActive(nested) || undefined"
                         :data-akaza-state="isItemActive(nested) ? 'active' : 'inactive'"
-                        class="akaza-navigation-menu-content-item"
+                        data-akaza-navigation-menu-link
+                        class="akaza-navigation-menu-content-link"
+                        @click="selectItem(nested, $event)"
                       >
-                        <component
-                          :is="getLeafComponent(nested)"
-                          v-bind="getDestinationProps(nested)"
-                          :type="!hasDestination(nested) ? 'button' : undefined"
-                          :disabled="!hasDestination(nested) ? nested.disabled : undefined"
-                          :aria-disabled="nested.disabled || undefined"
-                          :aria-current="isItemActive(nested) ? (nested.ariaCurrent ?? 'page') : undefined"
-                          :class="ui?.contentLink"
-                          :data-akaza-active="isItemActive(nested) || undefined"
-                          :data-akaza-state="isItemActive(nested) ? 'active' : 'inactive'"
-                          data-akaza-navigation-menu-link
-                          class="akaza-navigation-menu-content-link"
-                          @click="selectItem(nested, $event)"
-                        >
-                          <SlotContent v-if="hasSlot(nested, 'item')" :render="slots[nested.slot ?? 'item']!" :scope="getSlotProps(nested, 2)" />
-                          <template v-else>{{ nested.label }}</template>
-                        </component>
-                      </li>
-                    </ul>
-                  </li>
-                </ul>
-              </Transition>
-            </div>
+                        <SlotContent v-if="hasSlot(nested, 'item')" :render="slots[nested.slot ?? 'item']!" :scope="getSlotProps(nested, 2)" />
+                        <template v-else>{{ nested.label }}</template>
+                      </component>
+                    </li>
+                  </ul>
+                </li>
+              </ul>
+            </Transition>
           </div>
-        </Transition>
+        </div>
       </Teleport>
     </template>
   </nav>
@@ -852,6 +838,7 @@ onUnmounted(() => {
 }
 
 .akaza-navigation-menu-content {
+  transform-origin: var(--akaza-navigation-menu-transform-origin);
   position: absolute;
   z-index: var(--akaza-z-navigation-menu, 1000);
   transition:
@@ -912,6 +899,8 @@ onUnmounted(() => {
 .akaza-navigation-menu-enter-active,
 .akaza-navigation-menu-leave-active {
   transition:
+    left var(--akaza-navigation-menu-resize-duration, 200ms) cubic-bezier(0.22, 1, 0.36, 1),
+    top var(--akaza-navigation-menu-resize-duration, 200ms) cubic-bezier(0.22, 1, 0.36, 1),
     opacity var(--akaza-navigation-menu-duration, 120ms) ease-out,
     scale var(--akaza-navigation-menu-duration, 120ms) ease-out,
     translate var(--akaza-navigation-menu-duration, 120ms) ease-out;

@@ -38,7 +38,7 @@ function blockOdd(value: number | null, details: AkazaChangeEventDetails) {
 }
 
 function logCommit(value: number | null, details: AkazaChangeEventDetails) {
-  commitEvent.value = `value-commit: ${value ?? "(empty)"}, reason: ${details.reason}`;
+  commitEvent.value = `value-commit: ${value ?? "(empty)"}, reason: ${details.reason}, event: ${details.event?.type ?? "none"}`;
 }
 </script>
 
@@ -103,7 +103,7 @@ function logCommit(value: number | null, details: AkazaChangeEventDetails) {
       <div>
         <h3 :class="exampleTitle">States + cancelable event</h3>
         <div :class="[canvasGrid, 'sm:grid-cols-2']">
-          <NumberField v-model="guarded" aria-label="Guarded value" :min="0" :max="10" :ui="numberFieldUi" @value-change="blockOdd" />
+          <NumberField v-model="guarded" aria-label="Guarded value" scrub-label="Even values" :min="0" :max="10" :ui="numberFieldUi" @value-change="blockOdd" />
           <NumberField :model-value="4" aria-label="Disabled value" disabled :ui="numberFieldUi" />
           <p :class="eventEntry">{{ lastEvent }}</p>
         </div>

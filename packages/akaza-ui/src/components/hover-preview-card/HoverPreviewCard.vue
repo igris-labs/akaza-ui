@@ -2,13 +2,9 @@
 import type { CSSProperties } from "vue";
 import type { HoverPreviewCardProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
-import { onClickOutside } from "@vueuse/core";
-import { computed, nextTick, onUnmounted, useId, useTemplateRef, watch } from "vue";
-import { createChangeDetails } from "../../utils/changeEvent";
-import { useDismissableLayer } from "../../utils/dismissableLayer";
-import { getFloatingArrowStyle, useFloatingPosition } from "../../utils/floatingPosition";
-import { useFocusBranch } from "../../utils/focusScope";
-import { useDelayedAction } from "../../utils/useDelayedAction";
+import { computed, useId, useTemplateRef, watch } from "vue";
+import { usePopup } from "../../composables/internal/sdk/usePopup";
+import { createChangeDetails, resolveAction } from "../../utils/changeEvent";
 
 const {
   side = "bottom",
@@ -31,95 +27,63 @@ const emit = defineEmits<{
 
 const model = defineModel<boolean>({ default: false });
 const cardId = useId();
-const rootRef = useTemplateRef<HTMLElement>("rootRef");
 const triggerRef = useTemplateRef<HTMLElement>("triggerRef");
 const contentRef = useTemplateRef<HTMLElement>("contentRef");
-useFocusBranch(contentRef);
-const { style: posStyle, actualSide, geometry } = useFloatingPosition({
-  reference: triggerRef,
-  floating: contentRef,
-  active: model,
+const arrowRef = useTemplateRef<HTMLElement>("arrowRef");
+const { present, contentAttrs, triggerAttrs, arrowAttrs, style, actualSide, actualAlign, layerOrder, setOpen } = usePopup({
+  kind: "hover",
+  open: model,
+  content: contentRef,
+  contentId: cardId,
+  keepMounted: () => forceMount,
+  trigger: getTriggerFocusTarget,
+  anchor: () => triggerRef.value,
+  initialFocus: "none",
+  finalFocus: getTriggerFocusTarget,
+  disabled: () => disabled,
+  delay: () => openDelay,
+  closeDelay: () => closeDelay,
   side: () => side,
   align: () => align,
   sideOffset: () => sideOffset,
-  collisionPadding: 4,
-  fallbackSides: ["bottom", "top", "right", "left"],
-  strategy: () => teleport === false ? "absolute" : "fixed",
+  collisionPadding: () => 4,
+  arrow: arrowRef,
   cssVarPrefix: "akaza-hover-preview-card",
+  transition: () => "akaza-hover-preview-card",
+  request: commitOpen,
 });
-const arrowStyle = computed(() => getFloatingArrowStyle(geometry.value, 8));
-const delayed = useDelayedAction();
 let lastPointerType = "mouse";
-let restoringFocus = false;
-const { layerOrder, register, unregister } = useDismissableLayer((event?: KeyboardEvent) => {
-  event?.preventDefault();
-  closeImmediately("escape", event);
-  nextTick(() => {
-    const target = getTriggerFocusTarget();
-    restoringFocus = document.activeElement !== target;
-    target?.focus();
-    queueMicrotask(() => { restoringFocus = false; });
-  });
-});
 
 const contentStyle = computed<CSSProperties>(() => ({
-  ...posStyle.value,
+  ...style.value,
   transform: undefined,
   transformOrigin: undefined,
 }));
 
-function setOpen(next: boolean, reason: string, event?: Event) {
+function commitOpen(next: boolean, reason: string, event?: Event) {
   if (disabled && next) return;
   if (model.value === next) return;
-  const changeEvent = createChangeDetails(reason, event);
+  const akazaReason = reason === "escape-key" ? "escape"
+    : reason === "outside-press" ? "outside-click"
+      : reason === "trigger-hover" ? "hover"
+        : reason === "trigger-focus" || reason === "focus-out" ? "focus"
+          : reason === "trigger-press" ? "trigger"
+            : reason === "imperative" ? "programmatic" : reason;
+  const changeEvent = createChangeDetails(akazaReason, event);
   emit("open-change", next, changeEvent.details);
   if (!changeEvent.canceled()) model.value = next;
 }
 
-function open(reason = "programmatic", event?: Event) {
-  if (typeof window === "undefined") return;
-  delayed.cancel();
-  if (model.value) return;
-  delayed.schedule(() => setOpen(true, reason, event), openDelay);
-}
-
-function close(reason = "programmatic", event?: Event) {
-  if (typeof window === "undefined") {
-    setOpen(false, reason, event);
-    return;
-  }
-  delayed.schedule(() => setOpen(false, reason, event), closeDelay);
-}
-
-function closeImmediately(reason = "programmatic", event?: Event) {
-  delayed.cancel();
-  setOpen(false, reason, event);
-}
-
-
-function containsTarget(target: EventTarget | null) {
-  return target instanceof Node
-    && (Boolean(rootRef.value?.contains(target)) || Boolean(contentRef.value?.contains(target)));
+function close(reasonOrEvent?: string | Event, event?: Event) {
+  const details = resolveAction(reasonOrEvent, event);
+  setOpen(false, details.reason, details.event);
 }
 
 function getTriggerFocusTarget() {
   const trigger = triggerRef.value;
   if (!trigger) return null;
   const selector = "button:not([disabled]),a[href],input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex='-1'])";
-  return trigger.matches(selector) ? trigger : trigger.querySelector<HTMLElement>(selector);
-}
-
-function onFocusOut(event: FocusEvent) {
-  if (containsTarget(event.relatedTarget)) return;
-  close("focus", event);
-}
-
-function onTriggerFocusIn(event: FocusEvent) {
-  if (restoringFocus) {
-    restoringFocus = false;
-    return;
-  }
-  open("focus", event);
+  return trigger.querySelector<HTMLElement>(selector) ?? trigger;
 }
 
 function onPointerDown(event: PointerEvent) {
@@ -128,33 +92,16 @@ function onPointerDown(event: PointerEvent) {
 
 function onTriggerClick(event: MouseEvent) {
   if (!openOnClick || lastPointerType === "mouse") return;
-  if (model.value) close("trigger", event);
-  else open("trigger", event);
+  const details = resolveAction(event);
+  setOpen(!model.value, details.reason, details.event);
 }
-
-
-watch(model, async (open, _previous, cleanup) => {
-  let canceled = false;
-  cleanup(() => { canceled = true; });
-  if (open) {
-    await nextTick();
-    if (!canceled) register();
-  } else {
-    unregister();
-  }
-}, { immediate: true });
 
 watch(() => disabled, (value) => {
   if (value && model.value) setOpen(false, "disabled");
 });
 
-onClickOutside(rootRef, (event) => {
-  if (model.value) setOpen(false, "outside-click", event);
-}, { ignore: [contentRef] });
-
-onUnmounted(unregister);
-
 const triggerProps = computed(() => ({
+  "data-slot": triggerAttrs.value["data-slot"],
   "aria-expanded": model.value,
   "aria-controls": model.value ? cardId : undefined,
   "aria-describedby": model.value && !ariaLabel ? cardId : undefined,
@@ -164,7 +111,6 @@ const triggerProps = computed(() => ({
 
 <template>
   <span
-    ref="rootRef"
     :class="ui?.root"
     :data-akaza-state="model ? 'open' : 'closed'"
     class="akaza-hover-preview-card-root"
@@ -176,46 +122,37 @@ const triggerProps = computed(() => ({
       class="akaza-hover-preview-card-trigger"
       @pointerdown="onPointerDown"
       @click="onTriggerClick"
-      @mouseenter="open('hover', $event)"
-      @mouseleave="close('hover', $event)"
-      @focusin="onTriggerFocusIn"
-      @focusout="onFocusOut"
     >
       <slot name="trigger" :is-open="model" :trigger-props="triggerProps" />
     </span>
 
     <Teleport :to="typeof teleport === 'string' ? teleport : 'body'" :disabled="teleport === false">
-      <Transition name="akaza-hover-preview-card">
-        <div
-          v-if="model || forceMount"
-          v-show="model"
-          :id="cardId"
-          ref="contentRef"
-          :class="ui?.content"
-          :style="[contentStyle, { '--akaza-layer-order': layerOrder }]"
-          :role="ariaLabel ? 'dialog' : undefined"
-          :aria-label="ariaLabel"
-          :aria-hidden="!model || undefined"
-          :inert="!model || undefined"
-          :data-akaza-state="model ? 'open' : 'closed'"
-          :data-akaza-side="actualSide"
-          :data-akaza-align="align"
-          class="akaza-hover-preview-card-content"
-          @mouseenter="open('hover', $event)"
-          @mouseleave="close('hover', $event)"
-          @focusin="open('focus', $event)"
-          @focusout="onFocusOut"
-        >
-          <slot name="content" :close="() => closeImmediately('programmatic')" />
-          <span
-            v-if="arrow"
-            :class="ui?.arrow"
-            :style="arrowStyle"
-            class="akaza-hover-preview-card-arrow"
-            aria-hidden="true"
-          />
-        </div>
-      </Transition>
+      <div
+        v-if="present"
+        v-bind="contentAttrs"
+        :id="cardId"
+        ref="contentRef"
+        :class="ui?.content"
+        :style="[contentStyle, { '--akaza-layer-order': layerOrder }]"
+        :role="ariaLabel ? 'dialog' : undefined"
+        :aria-label="ariaLabel"
+        :aria-hidden="!model || undefined"
+        :inert="!model || undefined"
+        :data-akaza-state="model ? 'open' : 'closed'"
+        :data-akaza-side="actualSide"
+        :data-akaza-align="actualAlign"
+        class="akaza-hover-preview-card-content"
+      >
+        <slot name="content" :close="close" />
+        <span
+          v-if="arrow"
+          v-bind="arrowAttrs"
+          ref="arrowRef"
+          :class="ui?.arrow"
+          class="akaza-hover-preview-card-arrow"
+          aria-hidden="true"
+        />
+      </div>
     </Teleport>
   </span>
 </template>
@@ -244,6 +181,11 @@ const triggerProps = computed(() => ({
     border: inherit;
     transform: rotate(45deg);
   }
+
+  .akaza-hover-preview-card-arrow[data-side="top"] { bottom: -4px; }
+  .akaza-hover-preview-card-arrow[data-side="bottom"] { top: -4px; }
+  .akaza-hover-preview-card-arrow[data-side="left"] { right: -4px; }
+  .akaza-hover-preview-card-arrow[data-side="right"] { left: -4px; }
 
   .akaza-hover-preview-card-enter-active,
   .akaza-hover-preview-card-leave-active {

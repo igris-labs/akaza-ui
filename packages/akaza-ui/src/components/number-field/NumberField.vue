@@ -2,6 +2,7 @@
 import type { NumberFieldProps } from ".";
 import type { AkazaChangeEventDetails } from "../../types";
 import { computed, inject, nextTick, onMounted, onUpdated, ref, useId, useTemplateRef } from "vue";
+import { usePointerDrag } from "../../composables/internal/sdk/usePointerDrag";
 import { createChangeDetails } from "../../utils/changeEvent";
 import { clampNumber, snapToStep } from "../../utils/number";
 import { useFieldControl } from "../../utils/useFieldControl";
@@ -46,14 +47,13 @@ const focused = ref(false);
 const touched = ref(false);
 const validationActive = ref(false);
 const { nativeInvalid, syncValidity, registerControl } = useFieldControl(field);
-const scrubbing = ref(false);
-let scrubStartX = 0;
-let scrubStartValue = 0;
 let pendingCommitValue: number | null | undefined;
 
 const resolvedId = computed(() => id ?? field?.inputId.value ?? `akaza-number-field-${autoId}`);
 const resolvedName = computed(() => name ?? field?.name.value);
 const isDisabled = computed(() => disabled || field?.disabled.value || false);
+const pointer = usePointerDrag(() => disableScrub || isDisabled.value || readonly || Boolean(inputRef.value?.matches(":disabled")));
+const scrubbing = pointer.dragging;
 const isRequired = computed(() => required || field?.required.value || false);
 const isInvalid = computed(() => invalid || field?.invalid.value || nativeInvalid.value || false);
 const describedBy = computed(() => ariaDescribedby ?? field?.describedBy.value);
@@ -166,25 +166,16 @@ function onWheel(event: WheelEvent) {
 }
 
 function onScrubPointerDown(event: PointerEvent) {
-  if (disableScrub || isDisabled.value || readonly) return;
-  scrubbing.value = true;
-  scrubStartX = event.clientX;
-  scrubStartValue = model.value ?? min ?? 0;
-  (event.currentTarget as HTMLElement).setPointerCapture(event.pointerId);
-}
-
-function onScrubPointerMove(event: PointerEvent) {
-  if (!scrubbing.value) return;
-  const nextStep = scrubStep ?? step;
-  const steps = Math.trunc((event.clientX - scrubStartX) / 8);
-  setValue(scrubStartValue + steps * nextStep, "scrub", event);
-}
-
-function onScrubPointerUp(event: PointerEvent) {
-  if (!scrubbing.value) return;
-  scrubbing.value = false;
-  (event.currentTarget as HTMLElement).releasePointerCapture(event.pointerId);
-  commitValue("scrub", event);
+  const startX = event.clientX;
+  const startValue = model.value ?? min ?? 0;
+  pointer.start(event.currentTarget as HTMLElement, event, {
+    onMove(event) {
+      const steps = Math.trunc((event.clientX - startX) / 8);
+      setValue(startValue + steps * (scrubStep ?? step), "scrub", event);
+      pendingCommitValue = undefined;
+    },
+    onEnd: (event, canceled) => { if (!canceled) commitValue("scrub", event); },
+  });
 }
 
 function onFocus() {
@@ -206,6 +197,7 @@ function onInvalid() {
 }
 
 useFormReset(() => inputRef.value, async () => {
+  pointer.cancel();
   model.value = initialValue;
   pendingCommitValue = undefined;
   touched.value = false;
@@ -233,10 +225,7 @@ onUpdated(updateValidity);
       :class="ui?.scrubArea"
       v-bind="stateAttrs"
       class="akaza-number-field-scrub-area"
-      @pointercancel="scrubbing = false"
       @pointerdown="onScrubPointerDown"
-      @pointermove="onScrubPointerMove"
-      @pointerup="onScrubPointerUp"
     >
       <slot name="scrub" :value="model" :is-scrubbing="scrubbing">
         {{ scrubLabel }}

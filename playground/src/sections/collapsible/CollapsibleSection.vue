@@ -24,6 +24,7 @@ const open2 = ref(true);
 
 // ── 3. unmountOnHide ─────────────────────────────────────────────────────────
 const open3 = ref(false);
+const retainedOpen = ref(false);
 const mountCount = ref(0);
 
 // ── 4. Custom trigger slot ───────────────────────────────────────────────────
@@ -55,7 +56,7 @@ function onCollapsibleChange(open: boolean, details: AkazaChangeEventDetails) {
     <h2 :class="sectionTitle">Collapsible</h2>
     <p :class="sectionDescription">
       An expandable panel with a trigger. Supports keyboard interaction, CSS
-      grid animation, DOM unmounting, and programmatic control.
+      SDK-coordinated CSS transitions, DOM unmounting, and programmatic control.
     </p>
 
     <!-- ── 1. Basic ────────────────────────────────────────────────────────── -->
@@ -105,15 +106,27 @@ function onCollapsibleChange(open: boolean, details: AkazaChangeEventDetails) {
       <div class="mb-3">
         <span class="block text-sm font-medium text-foreground">unmountOnHide</span>
         <span class="text-xs text-muted-foreground">
-          When <code :class="inlineCode">unmount-on-hide</code> is set, the content is removed from the DOM on close —
+          When <code :class="inlineCode">unmount-on-hide</code> is set, slot content is removed after the closing transition;
           mount count below increments each time you open it.
         </span>
       </div>
-      <div :class="canvasCol">
+      <div :class="canvasCol" data-panel-lifecycle="collapsible">
+        <Collapsible
+          v-model="retainedOpen"
+          :ui="{ ...collapsibleUi, contentWrapper: 'panel-lifecycle-collapsible' }"
+        >
+          <template #trigger>Retained draft</template>
+          <template #content>
+            <label class="grid gap-1">
+              <span>Saved draft</span>
+              <input aria-label="Retained collapsible draft" class="rounded border border-border bg-background px-2 py-1" value="Keep this draft">
+            </label>
+          </template>
+        </Collapsible>
         <Collapsible
           v-model="open3"
           unmount-on-hide
-          :ui="collapsibleUi"
+          :ui="{ ...collapsibleUi, contentWrapper: 'panel-lifecycle-collapsible' }"
         >
           <template #trigger>
             <span>Lazy panel</span>
@@ -122,10 +135,14 @@ function onCollapsibleChange(open: boolean, details: AkazaChangeEventDetails) {
             <div @vue:mounted="mountCount++">
               This panel remounts each time it opens.
               <span :class="codePill">Mounted {{ mountCount }}×</span>
+              <label class="grid gap-1">
+                <span>Temporary draft</span>
+                <input aria-label="Unmounted collapsible draft" class="rounded border border-border bg-background px-2 py-1" value="Reset on close">
+              </label>
             </div>
           </template>
         </Collapsible>
-        <p class="m-0 text-xs text-muted-foreground">Inspect the DOM — this node disappears when closed.</p>
+        <p class="m-0 text-xs text-muted-foreground">Content stays mounted through the 240ms exit transition.</p>
       </div>
     </div>
 
@@ -300,3 +317,12 @@ function onCollapsibleChange(open: boolean, details: AkazaChangeEventDetails) {
     </div>
   </section>
 </template>
+
+<style>
+.panel-lifecycle-collapsible {
+  transition-duration: 240ms;
+}
+@media (prefers-reduced-motion: reduce) {
+  .panel-lifecycle-collapsible { transition: none; }
+}
+</style>

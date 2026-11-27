@@ -1,9 +1,14 @@
 <script setup lang="ts">
+import type { AkazaChangeEventDetails } from "akaza-ui";
 import { ColorSlider, ColorSwatch } from "akaza-ui";
 import { ref } from "vue";
 import { sliderUi, swatchUi } from "../color/styles";
 import { canvasCol, exampleStack, exampleTitle, sectionDescription, sectionTitle } from "../styles";
 const color = ref("#56d799");
+const lastCommit = ref("No commit yet.");
+function onCommit(value: string, details: AkazaChangeEventDetails) {
+  lastCommit.value = `${value}, reason: ${details.reason}, event: ${details.event?.type ?? "none"}`;
+}
 </script>
 <template>
   <section id="color-slider">
@@ -23,6 +28,7 @@ const color = ref("#56d799");
             channel="hue"
             :ui="sliderUi"
             aria-label="Hue"
+            @value-commit="onCommit"
           />
           <div class="flex items-center gap-3">
             <ColorSwatch
@@ -31,6 +37,7 @@ const color = ref("#56d799");
             />
             <output class="break-all font-mono text-xs text-muted-foreground">{{ color }}</output>
           </div>
+          <output aria-label="Last hue commit" class="break-all font-mono text-xs text-muted-foreground">{{ lastCommit }}</output>
           <label class="grid max-w-sm gap-2 text-xs">
             Opacity
             <ColorSlider

@@ -25,6 +25,12 @@ const britishDate = shallowRef<CalendarDateValue>(new CalendarDate(2026, 11, 24)
 const guarded = shallowRef<CalendarDateValue>(new CalendarDate(2026, 8, 14));
 const submitted = ref("Not submitted.");
 const lastEvent = ref("No canceled change yet.");
+const calendarOpen = ref(false);
+const keepCalendarOpen = ref(false);
+
+function guardCalendar(open: boolean, details: AkazaChangeEventDetails) {
+  if (!open && keepCalendarOpen.value) details.cancel();
+}
 
 function unavailable(date: CalendarDateValue) {
   return date.toString() === "2026-08-18";
@@ -58,6 +64,15 @@ function blockWeekends(value: CalendarDateValue | undefined, details: AkazaChang
             <template #calendar-trigger>Calendar</template>
           </DateField>
           <code :class="codePill">selected: {{ selected?.toString() ?? "none" }}</code>
+        </div>
+      </div>
+
+      <div>
+        <h3 :class="exampleTitle">Cancelable calendar dismissal</h3>
+        <div :class="canvasCol">
+          <label class="flex items-center gap-2 text-sm"><input v-model="keepCalendarOpen" type="checkbox">Keep calendar open</label>
+          <DateField v-model:calendar-open="calendarOpen" show-calendar aria-label="Guarded date" calendar-label="Guarded calendar" :placeholder="new CalendarDate(2026, 8, 12)" :ui="dateFieldUi" @calendar-open-change="guardCalendar" />
+          <output :class="codePill">calendar: {{ calendarOpen ? "open" : "closed" }}</output>
         </div>
       </div>
 

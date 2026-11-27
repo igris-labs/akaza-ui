@@ -23,6 +23,8 @@ The component owns the flat `role="tree"` structure, roving focus, keyboard navi
 
 Every item slot receives `item`, normalized `node` state, node `actions`, `toggleProps`, and the `tree` controller.
 
+Generated items take their accessible name from `#label` content, excluding the toggle, indicator, trailing actions, and loading status. Full `#item` and `#item-[name]` replacements use the `labelKey` value as their accessible name; keep that value consistent with the visible item title. Toggle buttons keep their own expand/collapse names and do not add a tab stop.
+
 ## Usage
 
 ::component-preview
@@ -65,6 +67,14 @@ const items = [
 ::
 
 ## Examples
+
+### Stable keys and explicit selection
+
+Keys are unique across the entire tree, not just among siblings. Numeric `1` and string `"1"` are distinct keys. Duplicate keys, including cycles that revisit an item key, throw before rendering. Replacing or reordering items preserves selection and expansion by key; accessors still receive the original item shape.
+
+An empty `children` array is a leaf unless `hasChildren` marks it as a branch. Expanded lazy branches retain their key while the application replaces their children. Selection contains explicit keys: loading new children under a selected branch does not automatically select those children.
+
+Disabled and non-selectable nodes are excluded from propagation, but their enabled selectable descendants can still participate. Upward mixed state counts selectable descendants, including intermediate branches, rather than only leaves. `selectionPropagation="up"` and `"both"` expose mixed state; `"none"` and `"down"` do not.
 
 ### Lazy children
 
@@ -179,6 +189,8 @@ Use the granular slots for content that should keep the built-in row behavior. U
 
 Interactive controls in a row do not activate or select the node. Add `data-akaza-tree-ignore` to a custom interactive wrapper that is not a native button, link, input, select, textarea, or editable element.
 
+Keys from these controls stay with the control rather than triggering Tree navigation, selection, or activation. Native inputs and form submission remain application-owned.
+
 The data contract has no built-in description field. Render a title, description, or any other item content through `#label`:
 
 ```vue
@@ -245,7 +257,7 @@ Motion is disabled automatically for virtualized trees and reduced to an effecti
 
 ### Virtualization
 
-Virtualization keeps only the visible rows mounted. Set a fixed row height and viewport height.
+The SDK virtualizer keeps a bounded window of visible and overscan rows mounted. Set a fixed row height and viewport height.
 
 ```vue
 <template>
@@ -258,6 +270,10 @@ Virtualization keeps only the visible rows mounted. Set a fixed row height and v
 ```
 
 Keep custom rows and loading content compatible with `itemHeight`; variable-height virtualization is not supported.
+
+The SDK determines the initial and overscan windows, including a bounded set of rows during SSR. Exact mounted row counts are not a public contract. Changes to expansion, loaded children, row height, and overscan refresh the window without aligning it to the selection or focused key. Accepted focus actions scroll to their target; canceled focus actions do not. Manual scrolling can unmount the focused row without snapping back. IDs remain consistent when rows scroll out and return. Tree does not serialize selection into native form inputs; any inputs in slots remain application-owned.
+
+When the selected or last-focused item is outside the mounted window, a rendered enabled item remains the keyboard entry point. This tab-stop fallback does not change selection, move DOM focus, or scroll the viewport. Mounted items retain their full-tree level and sibling position, not their virtual-window position.
 
 ## API Reference
 
@@ -394,7 +410,7 @@ Default accessors recognize these keys. Accessor props support any data shape.
 |--------|-----------|------------|
 | `root` | `akaza-tree` | `data-akaza-state`, `data-akaza-orientation`, `data-akaza-disabled`, `data-akaza-readonly`, `data-akaza-selection-highlight`, `data-akaza-transition` |
 | `viewport` | `akaza-tree-viewport` | tree ARIA attrs, virtual height style |
-| `virtualWrapper` | `akaza-tree-virtual-wrapper` | virtual transform/height style |
+| `virtualWrapper` | `akaza-tree-virtual-wrapper` | virtual offset/height style |
 | `item` | `akaza-tree-item` | `data-akaza-state`, `data-akaza-selected`, `data-akaza-indeterminate`, `data-akaza-focused`, `data-akaza-disabled`, `data-akaza-selectable`, `data-akaza-loading`, `data-akaza-depth`, hierarchy ARIA attrs |
 | `row` | `akaza-tree-row` | Item state attrs plus `data-akaza-selection-highlight` |
 | `indent` | `akaza-tree-indent` | Width uses `--akaza-tree-indent-offset` |
@@ -415,6 +431,8 @@ Plain `class` applies to the root. Use `ui.viewport`, `ui.item`, and the granula
 
 ### Keyboard
 
+Typeahead searches enabled visible items using `textValue` or their labels. Matching ignores case and accents. Repeat a letter to cycle matches. The query clears after 500ms. Space continues an active query; otherwise it selects the focused item. With `selectOnFocus`, focus changes can also select an item.
+
 | Key | Behavior |
 |-----|----------|
 | `ArrowDown` / `ArrowUp` | Move through visible items in a vertical tree. |
@@ -431,3 +449,7 @@ Plain `class` applies to the root. Use `ui.viewport`, `ui.item`, and the granula
 Horizontal orientation maps movement to Left/Right and expansion to Down/Up. One visible enabled item participates in the page tab order.
 
 In multiple mode, `Shift` + click selects the visible range from the last selection anchor. `Ctrl` / `Cmd` + `Shift` + click adds that range to the current selection.
+
+Ranges include only visible enabled selectable nodes before applying propagation. A canceled focus move does not extend a Shift range. Canceling selection still allows an accepted focus move, including with `selectOnFocus`. Canceled ranges do not establish a new selection anchor. Requests always read the accepted model, so a controlled parent can refuse an update without creating optimistic selection state.
+
+When a focused row disappears after collapse or data removal, focus recovers to its nearest visible enabled ancestor, then a selected enabled row or the first enabled row. Recovery does not take focus from another control or run after the Tree unmounts. Its `focus-change` request can cancel the DOM move; structural tab-stop repair still keeps a valid enabled entry point. Scrolling a focused row out of a virtual window does not snap the viewport back.

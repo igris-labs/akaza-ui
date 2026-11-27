@@ -2,8 +2,11 @@
 import type { CSSProperties } from "vue";
 import type { ToastProps, ToastSwipeDirection } from ".";
 import type { ToastCloseReason, ToastItem } from "../../composables/toast";
-import { computed, onBeforeUnmount, onMounted, ref, useTemplateRef } from "vue";
+import { bindPersistentLayer, createFocusRecovery, matchesShortcut, supportsTopLayer } from "@ui-sdk/core";
+import { computed, onBeforeUnmount, onMounted, onUpdated, ref, shallowReactive, useTemplateRef, watch } from "vue";
+import { usePointerDrag } from "../../composables/internal/sdk/usePointerDrag";
 import { useToast } from "../../composables/toast";
+import { setToastPaused } from "../../composables/toast/pause";
 
 const {
   position = "bottom-right",
@@ -34,13 +37,19 @@ const emit = defineEmits<{
 }>();
 
 const viewportRef = useTemplateRef<HTMLElement>("viewportRef");
-const expanded = ref(false);
+const hovered = ref(false);
+const focused = ref(false);
+const expanded = computed(() => hovered.value || focused.value);
 const toast = useToast(manager);
-const { toasts, close, pause, resume } = toast;
-const swipe = ref<{ id: string; pointerId: number; x: number; y: number } | null>(null);
+const { toasts, close } = toast;
+const drag = usePointerDrag(() => false);
+let swipeElement: HTMLElement | undefined;
 const toastHeights = ref<Record<string, number>>({});
 const toastElements = new Map<string, HTMLElement>();
 const pauseReasons = new Set<string>();
+const pendingActions = shallowReactive(new Map<ToastItem, object>());
+const focusBindings = new Map<string, () => void>();
+let disposed = false;
 let resizeObserver: ResizeObserver | undefined;
 
 const side = computed(() => position.split("-")[0]!);
@@ -53,6 +62,13 @@ const resolvedSwipeDirection = computed<ToastSwipeDirection>(() => {
 });
 const openToasts = computed(() => toasts.value.filter((item) => item.state === "open"));
 const maxVisible = computed(() => Math.max(1, limit));
+const recovery = createFocusRecovery({
+  fallback: () => {
+    if (disposed) return;
+    const latest = openToasts.value[openToasts.value.length - 1];
+    return (latest && toastElements.get(latest.id)) || viewportRef.value;
+  },
+});
 const viewportAttrs = computed(() => ({
   "data-akaza-side": side.value,
   "data-akaza-align": align.value,
@@ -114,6 +130,7 @@ function getToastAttrs(item: ToastItem, index: number) {
   const live: "assertive" | "polite" = item.priority === "high" ? "assertive" : "polite";
   return {
     role: getRole(item),
+    tabindex: -1,
     "aria-live": live,
     "aria-atomic": true,
     "aria-hidden": limited || undefined,
@@ -138,6 +155,9 @@ function measureToast(id: string, element: HTMLElement) {
 function setToastRef(id: string, element: HTMLElement | null) {
   const previous = toastElements.get(id);
   if (previous === element) return;
+  focusBindings.get(id)?.();
+  focusBindings.delete(id);
+  if (previous && previous === swipeElement) cancelSwipe();
   if (previous) resizeObserver?.unobserve(previous);
   if (!element) {
     toastElements.delete(id);
@@ -145,6 +165,7 @@ function setToastRef(id: string, element: HTMLElement | null) {
     return;
   }
   toastElements.set(id, element);
+  focusBindings.set(id, recovery.bind(element, { key: id, props: { id } }));
   resizeObserver?.observe(element);
   measureToast(id, element);
 }
@@ -152,40 +173,52 @@ function setToastRef(id: string, element: HTMLElement | null) {
 function setPaused(reason: string, value: boolean) {
   if (value) pauseReasons.add(reason);
   else pauseReasons.delete(reason);
-  if (pauseReasons.size) pause();
-  else resume();
+  setToastPaused(toast, pauseReasons, pauseReasons.size > 0);
 }
 
+function isCurrent(item: ToastItem) {
+  return !disposed && item.state === "open" && toasts.value.includes(item);
+}
+
+watch(openToasts, () => {
+  for (const [item, owner] of pendingActions) {
+    if (isCurrent(item)) continue;
+    pendingActions.delete(item);
+    setToastPaused(toast, owner, false);
+  }
+}, { flush: "sync" });
+
 async function onAction(item: ToastItem, event?: Event) {
-  if (!item.action) return;
+  const action = item.action;
+  if (!action || !isCurrent(item) || pendingActions.has(item)) return;
+  const owner = {};
+  pendingActions.set(item, owner);
+  setToastPaused(toast, owner, true, item.id);
   try {
-    await item.action.onSelect(event);
-    if (item.action.closeOnSelect !== false) close(item.id, "action");
+    await action.onSelect(event);
+    if (isCurrent(item) && action.closeOnSelect !== false) close(item.id, "action");
   } catch (error) {
-    emit("action-error", error, item);
+    if (isCurrent(item)) emit("action-error", error, item);
+  } finally {
+    pendingActions.delete(item);
+    setToastPaused(toast, owner, false);
   }
 }
 
 function closeToast(item: ToastItem, reasonOrEvent: ToastCloseReason | Event = "programmatic") {
+  if (!isCurrent(item)) return;
   const reason = typeof reasonOrEvent === "string" ? reasonOrEvent : "programmatic";
   close(item.id, reason);
 }
 
 function matchesHotkey(event: KeyboardEvent) {
-  const normalized = hotkey.map((key) => key.toLowerCase());
-  const modifiers = ["control", "ctrl", "alt", "shift", "meta"];
-  const expectedKey = normalized.find((key) => !modifiers.includes(key));
-  return (!expectedKey || event.key.toLowerCase() === expectedKey)
-    && event.ctrlKey === (normalized.includes("control") || normalized.includes("ctrl"))
-    && event.altKey === normalized.includes("alt")
-    && event.shiftKey === normalized.includes("shift")
-    && event.metaKey === normalized.includes("meta");
+  return hotkey.length > 0 && matchesShortcut(event, hotkey.join("+"));
 }
 
 function onDocumentKeydown(event: KeyboardEvent) {
+  if (event.defaultPrevented) return;
   if (openToasts.value.length && matchesHotkey(event)) {
     event.preventDefault();
-    expanded.value = true;
     viewportRef.value?.focus();
     return;
   }
@@ -199,7 +232,7 @@ function onDocumentKeydown(event: KeyboardEvent) {
 
 function onVisibilityChange() {
   if (!pauseOnWindowBlur) return;
-  setPaused("window", document.hidden);
+  setPaused("page", document.hidden);
 }
 
 function onWindowBlur() {
@@ -211,23 +244,40 @@ function onWindowFocus() {
 }
 
 function onPointerDown(item: ToastItem, event: PointerEvent) {
-  if (event.button !== 0) return;
+  if (event.defaultPrevented || swipeElement) return;
   const target = event.target as HTMLElement | null;
   if (target?.closest("button, a, input, select, textarea, [contenteditable='true']")) return;
-  swipe.value = { id: item.id, pointerId: event.pointerId, x: event.clientX, y: event.clientY };
-  (event.currentTarget as HTMLElement).setPointerCapture?.(event.pointerId);
-  (event.currentTarget as HTMLElement).dataset.akazaSwipe = "start";
+  const element = event.currentTarget as HTMLElement;
+  const direction = resolvedSwipeDirection.value;
+  const horizontal = direction === "left" || direction === "right";
+  const sign = direction === "left" || direction === "up" ? -1 : 1;
+  const distance = (sample: PointerEvent) => sign * (horizontal
+    ? sample.clientX - event.clientX
+    : sample.clientY - event.clientY);
+  if (!drag.start(element, event, {
+    onMove(sample) {
+      element.dataset.akazaSwipe = "move";
+      setSwipeStyle(element, distance(sample));
+      emit("swipe-move", item, sample);
+    },
+    onEnd(sample, canceled) {
+      swipeElement = undefined;
+      setPaused("swipe", false);
+      if (!canceled && distance(sample) >= swipeThreshold) {
+        setSwipeStyle(element, distance(sample));
+        element.dataset.akazaSwipe = "end";
+        emit("swipe-end", item, sample);
+        close(item.id, "swipe");
+      } else {
+        resetSwipe(element);
+        emit("swipe-cancel", item, sample);
+      }
+    },
+  })) return;
+  swipeElement = element;
+  setPaused("swipe", true);
+  element.dataset.akazaSwipe = "start";
   emit("swipe-start", item, event);
-}
-
-function getSwipeDistance(event: PointerEvent) {
-  if (!swipe.value) return 0;
-  const x = event.clientX - swipe.value.x;
-  const y = event.clientY - swipe.value.y;
-  if (resolvedSwipeDirection.value === "left") return -x;
-  if (resolvedSwipeDirection.value === "right") return x;
-  if (resolvedSwipeDirection.value === "up") return -y;
-  return y;
 }
 
 function setSwipeStyle(element: HTMLElement, distance: number) {
@@ -245,49 +295,50 @@ function resetSwipe(element: HTMLElement) {
   element.style.removeProperty("--akaza-toast-swipe-move-y");
 }
 
-function onPointerMove(item: ToastItem, event: PointerEvent) {
-  if (swipe.value?.id !== item.id || swipe.value.pointerId !== event.pointerId) return;
-  const element = event.currentTarget as HTMLElement;
-  element.dataset.akazaSwipe = "move";
-  setSwipeStyle(element, getSwipeDistance(event));
-  emit("swipe-move", item, event);
+function cancelSwipe() {
+  drag.cancel();
+  if (swipeElement) resetSwipe(swipeElement);
+  swipeElement = undefined;
+  setPaused("swipe", false);
 }
 
-function finishSwipe(item: ToastItem, event: PointerEvent, canceled = false) {
-  if (swipe.value?.id !== item.id || swipe.value.pointerId !== event.pointerId) return;
-  const element = event.currentTarget as HTMLElement;
-  const distance = getSwipeDistance(event);
-  swipe.value = null;
-  if (!canceled && distance >= swipeThreshold) {
-    element.dataset.akazaSwipe = "end";
-    emit("swipe-end", item, event);
-    close(item.id, "swipe");
-    return;
-  }
-  resetSwipe(element);
-  emit("swipe-cancel", item, event);
+watch(resolvedSwipeDirection, cancelSwipe);
+function showViewport() {
+  const element = viewportRef.value;
+  if (element && supportsTopLayer() && !element.matches(":popover-open")) element.showPopover();
 }
+watch(viewportRef, (element, _previous, cleanup) => {
+  if (!element) return;
+  // Persistent registration preserves ordering only for elements already in the top layer.
+  if (supportsTopLayer()) element.setAttribute("popover", "manual");
+  showViewport();
+  const unbind = bindPersistentLayer(element);
+  cleanup(() => {
+    unbind();
+    if (element.hasAttribute("popover")) element.hidePopover?.();
+  });
+}, { flush: "post" });
+onUpdated(showViewport);
 
 function onViewportMouseenter() {
-  expanded.value = true;
-  if (pauseOnHover) setPaused("hover", true);
+  hovered.value = true;
 }
 
 function onViewportMouseleave() {
-  expanded.value = false;
-  if (pauseOnHover) setPaused("hover", false);
+  hovered.value = false;
 }
 
 function onViewportFocusin() {
-  expanded.value = true;
-  if (pauseOnFocus) setPaused("focus", true);
+  focused.value = true;
 }
 
 function onViewportFocusout(event: FocusEvent) {
   if (viewportRef.value?.contains(event.relatedTarget as Node | null)) return;
-  expanded.value = false;
-  if (pauseOnFocus) setPaused("focus", false);
+  focused.value = false;
 }
+
+watch([hovered, () => pauseOnHover], ([value, enabled]) => setPaused("hover", value && enabled), { flush: "sync" });
+watch([focused, () => pauseOnFocus], ([value, enabled]) => setPaused("focus", value && enabled), { flush: "sync" });
 
 onMounted(() => {
   if (typeof ResizeObserver !== "undefined") {
@@ -304,21 +355,35 @@ onMounted(() => {
   }
   document.addEventListener("keydown", onDocumentKeydown);
   document.addEventListener("visibilitychange", onVisibilityChange);
-  if (pauseOnWindowBlur) {
-    window.addEventListener("blur", onWindowBlur);
-    window.addEventListener("focus", onWindowFocus);
-  }
+  watch(() => pauseOnWindowBlur, (enabled) => {
+    window.removeEventListener("blur", onWindowBlur);
+    window.removeEventListener("focus", onWindowFocus);
+    if (enabled) {
+      window.addEventListener("blur", onWindowBlur);
+      window.addEventListener("focus", onWindowFocus);
+      onVisibilityChange();
+    } else {
+      setPaused("window", false);
+      setPaused("page", false);
+    }
+  }, { immediate: true, flush: "sync" });
 });
 
 onBeforeUnmount(() => {
+  disposed = true;
+  cancelSwipe();
   document.removeEventListener("keydown", onDocumentKeydown);
   document.removeEventListener("visibilitychange", onVisibilityChange);
   window.removeEventListener("blur", onWindowBlur);
   window.removeEventListener("focus", onWindowFocus);
   resizeObserver?.disconnect();
   toastElements.clear();
+  for (const unbind of focusBindings.values()) unbind();
+  focusBindings.clear();
+  for (const owner of pendingActions.values()) setToastPaused(toast, owner, false);
+  pendingActions.clear();
   pauseReasons.clear();
-  resume();
+  setToastPaused(toast, pauseReasons, false);
 });
 </script>
 
@@ -337,7 +402,10 @@ onBeforeUnmount(() => {
       @focusin="onViewportFocusin"
       @focusout="onViewportFocusout"
     >
-      <TransitionGroup name="akaza-toast">
+      <TransitionGroup
+        name="akaza-toast"
+        :move-class="side === 'top' && openToasts.length === 1 ? 'akaza-toast-single-move' : 'akaza-toast-move'"
+      >
         <div
           v-for="(item, index) in openToasts"
           :key="`${item.id}:${item.updateKey}`"
@@ -347,9 +415,6 @@ onBeforeUnmount(() => {
           :class="ui?.toast"
           class="akaza-toast"
           @pointerdown="onPointerDown(item, $event)"
-          @pointermove="onPointerMove(item, $event)"
-          @pointerup="finishSwipe(item, $event)"
-          @pointercancel="finishSwipe(item, $event, true)"
         >
           <slot
             name="toast"
@@ -371,6 +436,8 @@ onBeforeUnmount(() => {
               v-if="item.action"
               type="button"
               :aria-label="item.action.altText"
+              :aria-busy="pendingActions.has(item) || undefined"
+              :aria-disabled="pendingActions.has(item) || undefined"
               :class="ui?.action"
               class="akaza-toast-action"
               @click="onAction(item, $event)"
@@ -397,6 +464,11 @@ onBeforeUnmount(() => {
 @layer akaza-reset {
   .akaza-toast-viewport {
     position: fixed;
+    inset: auto;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: inherit;
     z-index: var(--akaza-z-toast, 1200);
     display: grid;
     max-height: 100vh;
@@ -497,6 +569,11 @@ onBeforeUnmount(() => {
 
   .akaza-toast-move {
     transition: transform var(--akaza-toast-duration, 500ms) cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  /* The first height measurement must not replace the single top toast's entry with a move. */
+  .akaza-toast-single-move {
+    transition: none;
   }
 
   @starting-style {

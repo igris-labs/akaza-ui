@@ -18,11 +18,26 @@ import {
 
 const framework = ref("vue");
 const search = ref("");
+const popupOpen = ref(false);
+const keepPopupOpen = ref(false);
+
+function guardPopup(open: boolean, details: AkazaChangeEventDetails) {
+  if (!open && keepPopupOpen.value) details.cancel();
+}
 const skills = ref<string[]>(["a11y"]);
 const fieldValue = ref("");
 const events = ref<string[]>([]);
 const customValue = ref("");
 const customOptions = ref<ComboboxOption[]>([{ value: "vue", label: "Vue" }]);
+const assignees = ref<ComboboxModelValue>([{ id: 1, name: "Mira" }]);
+const assigneeOptions: ComboboxOption[] = [
+  { value: { id: 1, name: "Mira" }, label: "Mira" },
+  { value: { id: 2, name: "Arun" }, label: "Arun" },
+];
+
+function sameAssignee(a: ComboboxModelValue, b: ComboboxModelValue) {
+  return typeof a === "object" && typeof b === "object" && !Array.isArray(a) && !Array.isArray(b) && a.id === b.id;
+}
 
 const options: ComboboxOption[] = [
   { type: "label", label: "Frameworks" },
@@ -55,8 +70,15 @@ function onCreate(value: string) {
 
     <div class="space-y-8">
       <div :class="canvasCol">
+        <h3 :class="exampleLabelTitle">Cancelable popup dismissal</h3>
+        <label class="flex items-center gap-2 text-sm"><input v-model="keepPopupOpen" type="checkbox">Keep popup open</label>
+        <Combobox v-model:open="popupOpen" :options="options" aria-label="Guarded framework" :ui="comboboxUi" @open-change="guardPopup" />
+        <output :class="codePill">popup: {{ popupOpen ? "open" : "closed" }}</output>
+      </div>
+
+      <div :class="canvasCol">
         <div>
-          <h3 :class="exampleLabelTitle">Single selection + controlled search</h3>
+          <h3 :class="exampleLabelTitle">Controlled search + no-wrap navigation</h3>
           <p :class="exampleLabelDescription">Typing filters options; closing restores selected label instead of leaving stale query text.</p>
         </div>
         <Combobox
@@ -64,6 +86,7 @@ function onCreate(value: string) {
           v-model:search="search"
           aria-label="Framework or skill"
           :options="options"
+          :loop="false"
           placeholder="Search framework or skill"
           :ui="comboboxUi"
           @value-change="onValue"
@@ -87,6 +110,23 @@ function onCreate(value: string) {
           @value-change="onValue"
         />
         <code :class="codePill">skills: {{ skills.join(", ") }}</code>
+      </div>
+
+      <div :class="canvasCol">
+        <div>
+          <h3 :class="exampleLabelTitle">Recreated object selections</h3>
+        </div>
+        <Combobox
+          v-model="assignees"
+          multiple
+          name="assignees"
+          aria-label="Assignees"
+          :options="assigneeOptions"
+          :is-equal="sameAssignee"
+          :serialize-value="value => typeof value === 'object' ? String(value.id) : String(value)"
+          :ui="comboboxUi"
+        />
+        <code :class="codePill">assignees: {{ JSON.stringify(assignees) }}</code>
       </div>
 
       <div :class="canvasCol">

@@ -18,13 +18,31 @@ test("touch selection in a portaled dialog popup stays inside the owning modal",
   await expect(dialog).toBeHidden();
 });
 
-test("touch opens a parent-aligned submenu and outside tap dismisses it", async ({ page }) => {
-  await tap(page, section(page, "menu").getByRole("button", { name: "Aligned account menu" }));
+test("touch aligns a submenu with its trigger row and outside tap dismisses it", async ({ page }) => {
+  const trigger = section(page, "menu").getByRole("button", { name: "Aligned account menu" });
+  await trigger.scrollIntoViewIfNeeded();
+  await trigger.locator("..").evaluate(element => { (element as HTMLElement).style.cssText = "position:fixed;left:16px;top:96px;z-index:1100"; });
+  await tap(page, trigger);
   const parent = page.locator(".akaza-menu-content:not(.akaza-menu-submenu-content)");
-  await tap(page, parent.getByRole("menuitem", { name: "Theme", exact: true }));
+  const theme = parent.getByRole("menuitem", { name: "Theme", exact: true });
+  await tap(page, theme);
   const submenu = page.locator(".akaza-menu-submenu-content");
   await expect(submenu).toBeVisible();
-  await expect(submenu).toHaveAttribute("data-akaza-align", "end");
+  await expect(submenu).toHaveAttribute("data-akaza-align", "start");
+  await expect.poll(async () => {
+    const anchor = await theme.boundingBox();
+    const panel = await submenu.boundingBox();
+    return anchor && panel ? Math.abs(anchor.y - panel.y) : Infinity;
+  }).toBeLessThan(2);
+  await expect.poll(async () => {
+    const anchor = await parent.boundingBox();
+    const panel = await submenu.boundingBox();
+    if (!anchor || !panel) return Infinity;
+    const gap = await submenu.getAttribute("data-akaza-side") === "left"
+      ? anchor.x - panel.x - panel.width
+      : panel.x - anchor.x - anchor.width;
+    return Math.abs(gap - 4);
+  }).toBeLessThan(1);
   await expect(submenu.getByRole("menuitem", { name: "Light", exact: true })).toBeFocused();
   await page.touchscreen.tap(2, 2);
   await expect(parent).toBeHidden();

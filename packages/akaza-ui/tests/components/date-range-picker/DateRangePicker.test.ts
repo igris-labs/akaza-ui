@@ -1,9 +1,10 @@
 import { CalendarDate } from "@internationalized/date";
-import { mount } from "@vue/test-utils";
+import { enableAutoUnmount, mount } from "@vue/test-utils";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { nextTick } from "vue";
 import { DateRangePicker } from "@/components/date-range-picker";
 
+enableAutoUnmount(afterEach);
 afterEach(() => {
   document.body.innerHTML = "";
 });
